@@ -1,11 +1,23 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="referrer" content="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>Super Snake</title>
+    <script>
+      // LANGUAGE BEFORE FIRST PAINT: English (LTR) unless the player saved another language; never auto-detected.
+      // A saved non-English choice sets lang/dir now and hides the page until the strings are swapped in (applyLang lifts it).
+      (function () {
+        var l = null, h = document.documentElement;
+        try { l = window.localStorage.getItem("ss-lang"); } catch (_) {}
+        if (["ar", "tr", "fr", "es", "hi"].indexOf(l) < 0) return;
+        h.lang = l; h.dir = l === "ar" ? "rtl" : "ltr"; h.classList.add("x-l10n");
+        setTimeout(function () { h.classList.remove("x-l10n"); }, 2500); // safety net
+      })();
+    </script>
+    <style>html.x-l10n body { visibility: hidden; }</style>
     <meta name="description" content="Super Snake: a neon snake arena with evolutions, leagues, teams, skins and a drawing studio. Plays in your browser in six languages." />
     <meta name="theme-color" content="#05060d" />
     <meta name="color-scheme" content="dark" />
@@ -580,50 +592,50 @@
       </div></div>
       <div class="x-ov x-auth x-hide" id="reg">
         <div class="x-box x-form">
-        <h2 class="x-cy" data-i18n="register">تسجيل حساب</h2>
+        <h2 class="x-cy" data-i18n="register">Sign up</h2>
         <div class="x-g2">
-        <input class="x-name" id="ru" minlength="3" maxlength="20" spellcheck="false" autocapitalize="off" placeholder="اسم المستخدم" data-i18n-ph="uname" autocomplete="off" aria-label="اسم المستخدم" data-i18n-al="uname" aria-describedby="runote" />
-        <input class="x-name" id="re" type="email" maxlength="254" spellcheck="false" autocapitalize="off" placeholder="الإيميل" data-i18n-ph="email" autocomplete="off" aria-label="الإيميل" data-i18n-al="email" />
-        <input class="x-name" id="rp" type="password" minlength="8" maxlength="128" placeholder="كلمة المرور" data-i18n-ph="password" autocomplete="new-password" aria-label="كلمة المرور" data-i18n-al="password" />
-        <input class="x-name" id="rp2" type="password" maxlength="128" placeholder="تأكيد كلمة المرور" data-i18n-ph="confirmPw" autocomplete="new-password" aria-label="تأكيد كلمة المرور" data-i18n-al="confirmPw" />
+        <input class="x-name" id="ru" minlength="3" maxlength="20" spellcheck="false" autocapitalize="off" placeholder="Username" data-i18n-ph="uname" autocomplete="off" aria-label="Username" data-i18n-al="uname" aria-describedby="runote" />
+        <input class="x-name" id="re" type="email" maxlength="254" spellcheck="false" autocapitalize="off" placeholder="Email" data-i18n-ph="email" autocomplete="off" aria-label="Email" data-i18n-al="email" />
+        <input class="x-name" id="rp" type="password" minlength="8" maxlength="128" placeholder="Password" data-i18n-ph="password" autocomplete="new-password" aria-label="Password" data-i18n-al="password" />
+        <input class="x-name" id="rp2" type="password" maxlength="128" placeholder="Confirm password" data-i18n-ph="confirmPw" autocomplete="new-password" aria-label="Confirm password" data-i18n-al="confirmPw" />
         </div>
-        <p class="x-note" id="runote" data-i18n="unameHint">اسم المستخدم: 3 إلى 20 حرف أو رقم أو _ · كلمة المرور: 8 أحرف على الأقل</p>
-        <p data-i18n="pickAv">اختر صورتك</p>
+        <p class="x-note" id="runote" data-i18n="unameHint">Username: 3–20 letters, digits or _ · Password: at least 8 characters</p>
+        <p data-i18n="pickAv">Pick your avatar</p>
         <div class="x-emo" id="remo"></div>
         <p class="x-err" id="rerr" role="alert"></p>
         <div class="x-row x-arow">
-        <button class="x-btn x-main" data-go="doreg" data-i18n="register">تسجيل حساب</button>
-        <button class="x-btn x-sub" data-go="back" data-i18n="back">رجوع</button>
+        <button class="x-btn x-main" data-go="doreg" data-i18n="register">Sign up</button>
+        <button class="x-btn x-sub" data-go="back" data-i18n="back">Back</button>
         </div>
-        <p class="x-note" data-i18n="memNote">الحسابات تنحفظ طول ما اللعبة مفتوحة. كود الحفظ يرجّع حسابك بعد إعادة فتحها.</p>
+        <p class="x-note" data-i18n="memNote">Accounts are kept while the game stays open. A save code brings yours back after reopening.</p>
       </div></div>
       <div class="x-ov x-auth" id="login">
         <div class="x-box x-form" id="logv">
         <h1 class="x-logo" dir="ltr">SUPER <br />SNAKE</h1>
-        <h2 class="x-cy" data-i18n="login" tabindex="-1">تسجيل الدخول</h2>
-        <p class="x-note" data-i18n="needAcct">سجّل دخول أو أنشئ حساب عشان تلعب.</p>
-        <input class="x-name" id="lu" maxlength="254" spellcheck="false" autocapitalize="off" placeholder="اسم المستخدم أو الإيميل" data-i18n-ph="idPh" autocomplete="off" aria-label="اسم المستخدم أو الإيميل" data-i18n-al="idPh" />
-        <input class="x-name" id="lp" type="password" maxlength="128" placeholder="كلمة المرور" data-i18n-ph="password" autocomplete="current-password" aria-label="كلمة المرور" data-i18n-al="password" />
-        <label class="x-chk"><input type="checkbox" id="rem" /><span data-i18n="remember">تذكرني</span></label>
+        <h2 class="x-cy" data-i18n="login" tabindex="-1">Log in</h2>
+        <p class="x-note" data-i18n="needAcct">Log in or create an account to play.</p>
+        <input class="x-name" id="lu" maxlength="254" spellcheck="false" autocapitalize="off" placeholder="Username or email" data-i18n-ph="idPh" autocomplete="off" aria-label="Username or email" data-i18n-al="idPh" />
+        <input class="x-name" id="lp" type="password" maxlength="128" placeholder="Password" data-i18n-ph="password" autocomplete="current-password" aria-label="Password" data-i18n-al="password" />
+        <label class="x-chk"><input type="checkbox" id="rem" /><span data-i18n="remember">Remember me</span></label>
         <p class="x-err" id="lerr" role="alert"></p>
-        <button class="x-btn x-main" data-go="dologin" data-i18n="login">تسجيل الدخول</button>
+        <button class="x-btn x-main" data-go="dologin" data-i18n="login">Log in</button>
         <div class="x-row x-arow">
-        <button class="x-btn x-sub" data-go="reg" data-i18n="register">تسجيل حساب</button>
-        <button class="x-btn x-sub" id="impgo" aria-controls="impv"><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4M5 14v6h14v-6" /></svg><span data-i18n="importCode">استيراد كود الحفظ</span></button>
+        <button class="x-btn x-sub" data-go="reg" data-i18n="register">Sign up</button>
+        <button class="x-btn x-sub" id="impgo" aria-controls="impv"><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4M5 14v6h14v-6" /></svg><span data-i18n="importCode">Import save code</span></button>
         </div>
-        <p class="x-note" data-i18n="memNote">الحسابات تنحفظ طول ما اللعبة مفتوحة. كود الحفظ يرجّع حسابك بعد إعادة فتحها.</p>
+        <p class="x-note" data-i18n="memNote">Accounts are kept while the game stays open. A save code brings yours back after reopening.</p>
         </div>
         <div class="x-box x-form x-hide" id="impv">
         <h1 class="x-logo" dir="ltr">SUPER <br />SNAKE</h1>
-        <h2 class="x-cy" data-i18n="importCode" tabindex="-1">استيراد كود الحفظ</h2>
-        <textarea class="x-code" id="icode" rows="4" maxlength="400000" placeholder="الصق كود الحفظ هنا" data-i18n-ph="codePh" aria-label="كود الحفظ" data-i18n-al="saveCode" spellcheck="false"></textarea>
-        <input class="x-name" id="ipw" type="password" maxlength="128" placeholder="كلمة مرور الحساب" data-i18n-ph="codePw" autocomplete="current-password" aria-label="كلمة مرور الحساب" data-i18n-al="codePw" />
+        <h2 class="x-cy" data-i18n="importCode" tabindex="-1">Import save code</h2>
+        <textarea class="x-code" id="icode" rows="4" maxlength="400000" placeholder="Paste your save code here" data-i18n-ph="codePh" aria-label="Save code" data-i18n-al="saveCode" spellcheck="false"></textarea>
+        <input class="x-name" id="ipw" type="password" maxlength="128" placeholder="Account password" data-i18n-ph="codePw" autocomplete="current-password" aria-label="Account password" data-i18n-al="codePw" />
         <p class="x-err" id="ierr" role="alert"></p>
         <div class="x-row x-arow">
-        <button class="x-btn x-main" data-go="import"><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4M5 14v6h14v-6" /></svg><span data-i18n="importCode">استيراد كود الحفظ</span></button>
-        <button class="x-btn x-sub" id="impbk" aria-controls="logv" data-i18n="back">رجوع</button>
+        <button class="x-btn x-main" data-go="import"><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4M5 14v6h14v-6" /></svg><span data-i18n="importCode">Import save code</span></button>
+        <button class="x-btn x-sub" id="impbk" aria-controls="logv" data-i18n="back">Back</button>
         </div>
-        <p class="x-note" data-i18n="memNote">الحسابات تنحفظ طول ما اللعبة مفتوحة. كود الحفظ يرجّع حسابك بعد إعادة فتحها.</p>
+        <p class="x-note" data-i18n="memNote">Accounts are kept while the game stays open. A save code brings yours back after reopening.</p>
       </div></div>
       <div class="x-ov x-hide" id="shop"><div class="x-box">
         <h2 class="x-cy" data-i18n="shop">المتجر</h2>
@@ -1314,7 +1326,7 @@
         resumed: ["⏸ وقفت اللعبة وأنت برا. كمّل!", "⏸ Paused while you were away. Go!", "⏸ Sen yokken duraklatıldı. Devam!", "⏸ En pause pendant ton absence. C'est reparti !", "⏸ En pausa mientras no estabas. ¡Sigue!", "⏸ आपके जाने पर रुका था। चलो!"],
         tx_tp: ["عملات مضافة", "Coins added", "Jeton eklendi", "Pièces ajoutées", "Monedas añadidas", "सिक्के जोड़े गए"],
       };
-      let LANG = "ar";
+      let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
       function t(k, o) {
         const r = I18N[k]; let s = r ? r[I18N_L.indexOf(LANG)] || r[0] : k;
         if (o) for (const x in o) s = s.split("{" + x + "}").join(o[x]);
@@ -1322,12 +1334,15 @@
       }
       const _t = t; // alias for game code, where many local variables are named t
       function applyLang(l) {
-        LANG = I18N_L.includes(l) ? l : "ar";
+        LANG = I18N_L.includes(l) ? l : "en";
         const h = document.documentElement; h.lang = LANG; h.dir = LANG === "ar" ? "rtl" : "ltr";
         document.querySelectorAll("[data-i18n]").forEach((e) => { e.textContent = t(e.dataset.i18n); });
         document.querySelectorAll("[data-i18n-ph]").forEach((e) => { e.placeholder = t(e.dataset.i18nPh); });
         document.querySelectorAll("[data-i18n-al]").forEach((e) => e.setAttribute("aria-label", t(e.dataset.i18nAl)));
+        h.classList.remove("x-l10n");
       }
+      // first paint: the saved choice if there is one, otherwise English; the browser's language is never consulted
+      { let sl = null; try { sl = window.localStorage.getItem("ss-lang"); } catch (_) {} applyLang(I18N_L.includes(sl) ? sl : "en"); }
     </script>
     <script>
       (function () {
@@ -1572,7 +1587,7 @@
           achR = n;
         }
         let parts = [], dna = [], fxs = [], decoys = [], evoKey = "";
-        const S = { lang: "ar", ctrl: "follow", side: "right", bots: 10, speed: 1, sound: 1, map: 1, cam: "auto", zoom: 1, q: "h", fps: 0, mini: 1, mode: "n", diff: 1, tf: 2 };
+        const S = { lang: LANG, ctrl: "follow", side: "right", bots: 10, speed: 1, sound: 1, map: 1, cam: "auto", zoom: 1, q: "h", fps: 0, mini: 1, mode: "n", diff: 1, tf: 2 };
         // low-end devices (2 GB or 2 cores) start on Medium: fewer particles, rain and prey; auto-quality still steps down further if needed
         { const nv = navigator; if ((nv.deviceMemory && nv.deviceMemory <= 2) || (nv.hardwareConcurrency && nv.hardwareConcurrency <= 2)) S.q = "m"; }
         // DIFFICULTY: a = bot hunting chance, s = bot reaction speed, r = XP and coin multiplier; d4 (Legends) needs level 30
