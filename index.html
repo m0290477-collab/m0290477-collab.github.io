@@ -520,6 +520,33 @@
       .x-note { line-height: 1.5; }
       .x-adm .x-row .x-btn { font-size: 14px; }
       .x-btn:focus-visible, .x-it button:focus-visible, .x-seg button:focus-visible, .x-tabs button:focus-visible, .x-chip:focus-visible { outline: 2px solid #e3c46e; outline-offset: 2px; }
+      /* first-run tutorial: 4 short animated cards, shown once before the first match */
+      #tut { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); background: radial-gradient(120% 90% at 50% 40%, rgba(6,8,7,.92), rgba(4,5,5,.98)); color: var(--x-tx); animation: x-in .3s ease-out; }
+      .tu-card { width: 100%; max-width: 640px; display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: center; background: linear-gradient(180deg, #171c1a, #0e1211); border: 1px solid var(--x-ln); border-radius: 22px; padding: 18px 20px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+      .tu-vis { width: 220px; height: 160px; border-radius: 16px; background: radial-gradient(circle at 50% 40%, #12321f, #0a1510); border: 1px solid rgba(201,165,74,.35); overflow: hidden; }
+      .tu-vis svg { width: 100%; height: 100%; display: block; }
+      .tu-txt h3 { margin: 0 0 6px; font-size: 22px; color: var(--x-gold); letter-spacing: .02em; }
+      .tu-txt p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--x-tx); }
+      .tu-step { font-size: 12px; letter-spacing: .2em; color: var(--x-mu); margin-bottom: 4px; }
+      .tu-bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; }
+      .tu-dots { display: flex; gap: 6px; flex: 1; }
+      .tu-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(230,225,210,.25); transition: all .25s; }
+      .tu-dots i.on { width: 22px; border-radius: 4px; background: var(--x-gold); }
+      #tut .x-btn { width: auto; min-width: 110px; min-height: 44px; margin: 0; }
+      .tu-sk { background: none; border: 0; color: var(--x-mu); font: inherit; font-size: 14px; min-height: 44px; padding: 0 10px; cursor: pointer; }
+      .tu-sn { fill: none; stroke: #34d399; stroke-width: 12; stroke-linecap: round; stroke-dasharray: 70 400; animation: tu-run 3s linear infinite; filter: drop-shadow(0 0 4px rgba(52,211,153,.6)); }
+      .tu-or { animation: tu-eat 3s linear infinite; }
+      .tu-fg { animation: tu-fing 3s ease-in-out infinite; }
+      .tu-pl { animation: tu-pulse 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+      .tu-bm { animation: tu-boom 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+      @keyframes tu-run { from { stroke-dashoffset: 70; } to { stroke-dashoffset: -400; } }
+      @keyframes tu-eat { 0%, 30% { opacity: 1; } 40%, 100% { opacity: 0; } }
+      @keyframes tu-fing { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(60px,-30px); } }
+      @keyframes tu-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+      @keyframes tu-boom { 0%, 55% { transform: scale(0); opacity: 0; } 65% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+      @media (max-height: 360px) { .tu-card { grid-template-columns: 170px 1fr; padding: 12px 16px; gap: 14px; } .tu-vis { width: 170px; height: 124px; } .tu-txt h3 { font-size: 19px; } .tu-txt p { font-size: 14px; } }
+      @media (max-width: 520px) { .tu-card { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
+      @media (prefers-reduced-motion: reduce) { .tu-sn, .tu-or, .tu-fg, .tu-pl, .tu-bm { animation: none; } .tu-sn { stroke-dasharray: none; } }
     </style>
   </head>
   <body>
@@ -714,6 +741,11 @@
           <button data-v="1" data-i18n="showW">إظهار</button><button data-v="0" data-i18n="hideW">إخفاء</button></div></div>
         <a class="x-btn x-sub" href="privacy.html" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none" data-i18n="privacy">سياسة الخصوصية</a>
         <button class="x-btn" data-go="back" data-i18n="back">رجوع</button>
+      </div></div>
+      <div id="tut" class="x-hide" role="dialog" aria-modal="true"><div class="tu-card">
+        <div class="tu-vis" id="tuV"></div>
+        <div class="tu-txt"><div class="tu-step" id="tuN"></div><h3 id="tuH"></h3><p id="tuP"></p></div>
+        <div class="tu-bar"><div class="tu-dots" id="tuD"><i></i><i></i><i></i><i></i></div><button class="tu-sk" id="tuS" data-i18n="tuSkip">تخطي</button><button class="x-btn x-main" id="tuB"></button></div>
       </div></div>
       <div class="x-ov x-hide" id="how"><div class="x-box">
         <h2 class="x-cy" data-i18n="how">كيف تلعب</h2>
@@ -943,6 +975,19 @@
         showW: ["إظهار", "Show", "Göster", "Afficher", "Mostrar", "दिखाएँ"],
         hideW: ["إخفاء", "Hide", "Gizle", "Masquer", "Ocultar", "छिपाएँ"],
         privacy: ["سياسة الخصوصية", "Privacy Policy", "Gizlilik Politikası", "Politique de confidentialité", "Política de privacidad", "गोपनीयता नीति"],
+        tuSkip: ["تخطي", "Skip", "Geç", "Passer", "Omitir", "छोड़ें"],
+        tuNext: ["التالي", "Next", "İleri", "Suivant", "Siguiente", "आगे"],
+        tuGo: ["يلا نلعب!", "Let's play!", "Hadi oyna!", "C'est parti !", "¡A jugar!", "चलो खेलें!"],
+        tuH1: ["حرّك الثعبان", "Steer your snake", "Yılanını yönlendir", "Dirige ton serpent", "Dirige tu serpiente", "साँप को घुमाएँ"],
+        tuP1f: ["حط إصبعك على الشاشة والثعبان يلحقه. تقدر تغيّر طريقة التحكم من الإعدادات.", "Touch the screen and your snake follows your finger. You can change controls in Settings.", "Ekrana dokun, yılan parmağını izler. Kontrolleri Ayarlar'dan değiştirebilirsin.", "Touche l'écran, ton serpent suit ton doigt. Change les contrôles dans les Paramètres.", "Toca la pantalla y tu serpiente sigue tu dedo. Cambia los controles en Ajustes.", "स्क्रीन छुएँ, साँप आपकी उंगली के पीछे चलेगा। नियंत्रण सेटिंग्स में बदलें।"],
+        tuP1j: ["اسحب عصا التحكم بالاتجاه اللي تريده والثعبان يلف وياها.", "Drag the joystick toward where you want to go and your snake turns with it.", "Joystick'i gitmek istediğin yöne sürükle, yılan onunla döner.", "Fais glisser le joystick vers ta direction, ton serpent tourne avec.", "Arrastra el joystick hacia donde quieras ir y tu serpiente gira.", "जॉयस्टिक को दिशा में खींचें, साँप उसी तरफ़ मुड़ेगा।"],
+        tuP1b: ["اضغط أزرار الاتجاه يمين ويسار حتى يلف الثعبان.", "Press the left and right turn buttons to steer your snake.", "Yılanı döndürmek için sol ve sağ tuşlara bas.", "Appuie sur les boutons gauche et droite pour tourner.", "Pulsa los botones izquierda y derecha para girar.", "मुड़ने के लिए बाएँ और दाएँ बटन दबाएँ।"],
+        tuH2: ["كُل وكبر", "Eat and grow", "Ye ve büyü", "Mange et grandis", "Come y crece", "खाओ और बढ़ो"],
+        tuP2: ["كُل النقاط المضيئة حتى تطول وتزيد نقاطك. الجواهر والكرات الذهبية تعطي أكثر بكثير، وكرات الحمض النووي 🧬 تطوّرك.", "Eat glowing orbs to grow longer and score. Gems and golden orbs are worth much more, and DNA orbs 🧬 evolve you.", "Uzamak ve puan kazanmak için parlayan noktaları ye. Mücevherler ve altın küreler çok daha değerli, DNA 🧬 seni evrimleştirir.", "Mange les orbes lumineux pour grandir et marquer. Gemmes et orbes dorés valent bien plus, l'ADN 🧬 te fait évoluer.", "Come orbes brillantes para crecer y sumar puntos. Gemas y orbes dorados valen mucho más, y el ADN 🧬 te hace evolucionar.", "चमकते गोले खाकर लंबे बनो और अंक पाओ। रत्न और सुनहरे गोले ज़्यादा देते हैं, DNA 🧬 से विकास होता है।"],
+        tuH3: ["لا تصطدم", "Don't crash", "Çarpma", "Ne te cogne pas", "No choques", "टकराओ मत"],
+        tuP3: ["إذا لمس راسك جسم ثعبان ثاني أو الحدود الحمراء تخسر. خلّي الخصوم يصطدمون بجسمك ويصيرون أكل إلك.", "If your head hits another snake's body or the red border, you're out. Make rivals crash into you and they turn into food.", "Kafan başka bir yılana ya da kırmızı sınıra çarparsa kaybedersin. Rakipleri sana çarptır, yeme dönüşsünler.", "Si ta tête touche un autre serpent ou le bord rouge, tu perds. Fais-les se cogner contre toi, ils deviennent de la nourriture.", "Si tu cabeza toca otra serpiente o el borde rojo, pierdes. Haz que los rivales choquen contigo y se vuelven comida.", "सिर किसी और साँप या लाल किनारे से टकराया तो हार। विरोधियों को अपने से टकराओ, वे खाना बन जाएँगे।"],
+        tuH4: ["سرّع وانطلق", "Boost!", "Hızlan!", "Accélère !", "¡Acelera!", "बूस्ट!"],
+        tuP4: ["اضغط مطوّلًا على زر التسريع حتى تنطلق، بس ياكل شوية من طولك. استخدمه حتى تقطع على الخصوم.", "Hold the boost button to speed up. It burns a little length, so use it to cut off rivals.", "Hızlanmak için hız tuşuna basılı tut. Biraz uzunluk harcar, rakiplerin önünü kesmek için kullan.", "Maintiens le bouton boost pour accélérer. Ça coûte un peu de longueur : coupe la route aux rivaux.", "Mantén el botón de turbo para acelerar. Gasta algo de longitud: úsalo para cortar a los rivales.", "तेज़ चलने के लिए बूस्ट बटन दबाए रखें। थोड़ी लंबाई घटती है, विरोधियों को रोकने में इस्तेमाल करें।"],
         camera: ["الكاميرا", "Camera", "Kamera", "Caméra", "Cámara", "कैमरा"],
         auto: ["تلقائي", "Auto", "Otomatik", "Auto", "Auto", "ऑटो"],
         near: ["قريبة", "Near", "Yakın", "Proche", "Cerca", "पास"],
@@ -3721,10 +3766,32 @@
           } else if (b.dataset.t !== undefined) { const id = b.dataset.t; if (id && !P.ach[id]) return; P.title = id; beep(620, 0.08, "triangle", 0.05, 900); }
           achR = aReady(); profile(); paintAch();
         });
+        // FIRST-RUN TUTORIAL: shown once (KV "ss-tut") before the first match; Skip or the last card starts the match
+        const TU_V = [
+          '<svg viewBox="0 0 220 160"><path class="tu-sn" d="M20 120 C60 120 70 60 110 60 S170 100 200 40"/><g class="tu-fg"><circle cx="120" cy="110" r="14" fill="rgba(255,255,255,.18)"/><path d="M116 96 v22 l-6 -4 a4 4 0 0 0 -5 6 l12 12 h14 a6 6 0 0 0 6 -6 v-14 a4 4 0 0 0 -8 0 v-4 a4 4 0 0 0 -8 0 v-12 a4 4 0 0 0 -5 0z" fill="#fff"/></g></svg>',
+          '<svg viewBox="0 0 220 160"><circle class="tu-or" cx="70" cy="80" r="6" fill="#7dd3fc" style="animation-delay:-2.4s"/><circle class="tu-or" cx="110" cy="80" r="6" fill="#f472b6" style="animation-delay:-2s"/><circle class="tu-pl" cx="160" cy="80" r="11" fill="#fbbf24" style="filter:drop-shadow(0 0 8px #fbbf24)"/><text x="186" y="50" font-size="22">🧬</text><path class="tu-sn" d="M10 80 H210"/></svg>',
+          '<svg viewBox="0 0 220 160"><path d="M150 20 V140" stroke="#f97316" stroke-width="14" stroke-linecap="round" fill="none"/><path class="tu-sn" d="M20 80 H150" style="stroke-dasharray:60 400;animation-duration:2.4s"/><g class="tu-bm"><circle cx="146" cy="80" r="22" fill="none" stroke="#ef4444" stroke-width="4"/><path d="M134 68 l24 24 M158 68 l-24 24" stroke="#ef4444" stroke-width="5" stroke-linecap="round"/></g><rect x="206" y="6" width="8" height="148" rx="3" fill="#ef4444" opacity=".7"/></svg>',
+          '<svg viewBox="0 0 220 160"><path class="tu-sn" d="M10 70 H210" style="animation-duration:1.1s"/><path d="M30 92 H90 M50 102 H110" stroke="rgba(52,211,153,.5)" stroke-width="3" stroke-linecap="round"/><g class="tu-pl"><circle cx="175" cy="120" r="24" fill="rgba(201,165,74,.25)" stroke="#c9a54a" stroke-width="3"/><path d="M178 106 l-12 16 h9 l-3 12 12 -16 h-9z" fill="#fbbf24"/></g></svg>',
+        ];
+        let tuI = 0;
+        function tuDraw() {
+          const n = tuI + 1, c = S.ctrl === "joy" ? "j" : S.ctrl === "btns" ? "b" : "f";
+          $("tuV").innerHTML = TU_V[tuI];
+          $("tuN").textContent = n + " / 4";
+          $("tuH").textContent = _t("tuH" + n);
+          $("tuP").textContent = _t(n === 1 ? "tuP1" + c : "tuP" + n);
+          $("tuB").textContent = _t(n === 4 ? "tuGo" : "tuNext");
+          [...$("tuD").children].forEach((d, i) => d.classList.toggle("on", i === tuI));
+        }
+        function tuOpen() { tuI = 0; tuDraw(); $("tut").classList.remove("x-hide"); $("tuB").focus(); }
+        function tuDone() { KV.set("ss-tut", "1"); $("tut").classList.add("x-hide"); start(); }
+        $("tuB").addEventListener("click", () => { beep(520, 0.06, "triangle", 0.04); if (tuI < 3) { tuI++; tuDraw(); } else tuDone(); });
+        $("tuS").addEventListener("click", tuDone);
         function start() {
           lockLand(); // every way into a match is a tap or key press, so this stays inside the user gesture
           if (!cur) { show("login"); return; }
           if (CFG.mt && !isStaff()) { L.on = false; if (state !== "menu") home(); else show("mnt"); return; } // maintenance: admin only
+          if (!KV.get("ss-tut")) { tuOpen(); return; } // first match ever: the 4-card tutorial runs first
           beep(660, 0.12, "triangle", 0.05, 990);
           MD = L.on ? "l" : S.mode; tmRes = "";
           if (MD === "p") { // the room code seeds the map and bot count, so the same code gives the same match
