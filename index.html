@@ -1555,6 +1555,13 @@
           "VU:d21034.009543.000000.fdce12:Vanuatu;VE:ffcc00.00247d.cf142b.ffffff:Venezuela;VN:da251d.ffff00:Vietnam;YE:ce1126.ffffff.000000:Yemen;" +
           "ZM:198a00.de2010.000000.ef7d00:Zambia;ZW:006400.ffd200.d40000.000000:Zimbabwe;" +
           "PS:000000.ffffff.007a3d.ce1126:Palestine;VA:ffe000.ffffff:Vatican City;XK:244aa5.d0a650.ffffff:Kosovo;TW:fe0000.000095.ffffff:Taiwan";
+        // body layout per country (FLAG_LY[code], "h" when not listed): h bands along the body, v bands across it, e emblem on the base colour (ed = diamond),
+        // c canton: "c" + canton colour index + the two stripe colour indexes
+        const FLAG_LY = {};
+        ("v:FR.IT.BE.IE.CI.ML.GN.NG.RO.TD.MX.GT.PE.MN.AF.AD.MD.SN.CM.BB.VC.VA.MT.DZ.PT;" +
+          "e:JP.CA.TR.SA.BD.PW.KR.CH.MK.CN.VN.TN.MA.PK.KZ.KG.AL.ME.SO.XK.DM.CY.FM;ed:BR;" +
+          "c201:US.LR.MY.TV.CL.TG;c001:GR.AU;c002:NZ;c010:UY;c100:WS.TW;c102:FJ")
+          .split(";").forEach((g) => { const [l, cs] = g.split(":"); cs.split(".").forEach((c) => { FLAG_LY[c] = l; }); });
         const FLAG0 = SKINS.length, FLAG_P = 300, FL_PAGE = 24, FLAGS = [], FLAG_DN = {};
         const flagEmo = (c) => String.fromCodePoint(...[...c].map((x) => 0x1f1a5 + x.charCodeAt(0))); // regional indicator letters
         function flagName(f, l) { // the country name in the game language, from the ISO code; English from the table when Intl has none
@@ -1567,7 +1574,7 @@
           const [c, h, en] = e.split(":"), cols = h.split(".").map((x) => "#" + x), f = { c, en, cols, id: SKINS.length };
           const st = cols.map((x, j) => `${x} ${Math.round((j * 100) / cols.length)}% ${Math.round(((j + 1) * 100) / cols.length)}%`).join(", ");
           FLAGS.push(f);
-          SKINS.push({ t: "fl", fl: c, fc: cols, r: 1, lv: 1, p: FLAG_P, f: (i) => cols[((i / 3) | 0) % cols.length], // body: bands of 3 segments per colour
+          SKINS.push({ t: "fl", fl: c, fc: cols, ly: FLAG_LY[c] || "h", r: 1, lv: 1, p: FLAG_P, f: (i) => cols[((i / 3) | 0) % cols.length], // body: bands of 3 segments per colour
             sw: `linear-gradient(180deg, ${st})`, get n() { return flagName(f); } });
         });
         const FLAGN = FLAGS.length;
@@ -1887,6 +1894,16 @@
           if (s.t === "rb") return `hsl(${(((i * 14) % 360) / 15 | 0) * 15},100%,58%)`;
           if (s.t === "disco") return `hsl(${(((i * 14 + time * 240) % 360) / 15 | 0) * 15},100%,60%)`;
           return s.t === "st" ? s.c[i % 6 < 3 ? 0 : 1] : s.c[i % 8 < 4 ? 0 : 1];
+        }
+        // the body sprite key for segment i: flag skins get a pattern key ("F" + layout part + "|" + skin id or colour) that bodySpr draws; others their colour
+        function bodyKey(k, i) {
+          const s = typeof k === "number" ? SKINS[k] : null;
+          if (!s || !s.fl) return segColor(k, i);
+          const l = s.ly[0];
+          if (l === "h") return "Fh|" + k;
+          if (l === "e") return "Fe|" + k;
+          if (l === "c") return (i < 6 ? "Fc|" : "Fs|") + k;
+          return "Fg|" + s.fc[((i / 3) | 0) % s.fc.length]; // v: whole segments in band order
         }
         function swatch(s) {
           if (s.sw) return s.sw;
@@ -2226,7 +2243,7 @@
               const q = dc.seg[Math.max(0, i - 1)], o = dc.seg[Math.min(dc.seg.length - 1, i + 1)], an = Math.atan2((q.y - o.y) * ST, q.x - o.x);
               pr(p.x, p.y, dc.r); const wd = dc.r * 1.9 * PK, c = Math.cos(an), s = Math.sin(an);
               ctx.setTransform(dpr * c, dpr * s, -dpr * s, dpr * c, dpr * PX, dpr * PY);
-              ctx.drawImage(bodySz(segColor(dc.skin, i * 2), 0, wd * dpr), -wd * 0.55, -wd / 2, wd * 1.1, wd);
+              ctx.drawImage(bodySz(bodyKey(dc.skin, i * 2), 0, wd * dpr), -wd * 0.55, -wd / 2, wd * 1.1, wd);
             }
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
           }
@@ -2766,11 +2783,16 @@
         class XCap extends Map { constructor(n) { super(); this.n = n; } set(k, v) { if (this.size >= this.n && !this.has(k)) this.delete(this.keys().next().value); return super.set(k, v); } }
         const SP = new XCap(900), SR = 40, SS = 2; // sprites drawn at 2x so they stay crisp on high-DPR screens
         function mk(n) { const c = document.createElement("canvas"); c.width = c.height = n * SS; c.getContext("2d").scale(SS, SS); return c; }
-        // a flag skin's head emblem on a 64 grid, drawn once per country: the emoji, or the 2-letter code on a dark badge where emoji flags don't render
+        // a flag skin's head emblem on a 64 grid, drawn once per country: a round badge (the emoji clipped to a circle, thin gold rim),
+        // or the 2-letter code on a dark badge where emoji flags don't render
         function flagSpr(code) {
           const key = "fl" + code; let c = SP.get(key); if (c) return c;
           c = mk(64); const g = c.getContext("2d"); g.textAlign = "center"; g.textBaseline = "middle";
-          if (FLAG_OK) { g.font = "50px " + EMOJI_F; g.fillText(flagEmo(code), 32, 35); }
+          if (FLAG_OK) {
+            g.save(); g.beginPath(); g.arc(32, 32, 22, 0, 6.283); g.fillStyle = "#222"; g.fill(); g.clip();
+            g.font = "72px " + EMOJI_F; g.fillText(flagEmo(code), 32, 36); g.restore();
+            g.strokeStyle = "#d4af37"; g.lineWidth = 2.5; g.beginPath(); g.arc(32, 32, 22, 0, 6.283); g.stroke();
+          }
           else {
             g.fillStyle = "rgba(16,19,18,.92)"; g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 3; g.beginPath();
             if (g.roundRect) g.roundRect(5, 15, 54, 34, 9); else g.rect(5, 15, 54, 34);
@@ -2910,6 +2932,7 @@
           const key = "b" + v + col; let c = SP.get(key); if (c) return c;
           const n = SR * 2; c = mk(n); const g = c.getContext("2d"), k = SR * 0.75;
           const shape = () => { g.beginPath(); g.moveTo(k, 1); g.arcTo(n - 1, 1, n - 1, n - 1, k); g.arcTo(n - 1, n - 1, 1, n - 1, k); g.arcTo(1, n - 1, 1, 1, k); g.arcTo(1, 1, n - 1, 1, k); g.closePath(); };
+          if (col[0] === "F") { flagBody(g, shape, col, v, n, k); SP.set(key, c); return c; }
           shape(); g.fillStyle = col; g.fill();
           g.save(); shape(); g.clip();
           if (v) { g.fillStyle = "rgba(0,0,0,.26)"; g.beginPath(); g.ellipse(SR, SR, 15, 11, 0, 0, 6.283); g.fill(); }
@@ -2926,6 +2949,40 @@
           gr.addColorStop(0.58, "rgba(0,0,0,0)"); gr.addColorStop(0.8, "rgba(0,0,0,.14)"); gr.addColorStop(1, "rgba(0,0,0,.55)");
           g.fillStyle = gr; g.fillRect(0, 0, n, n); g.restore();
           SP.set(key, c); return c;
+        }
+        // a flag skin's segment, drawn once per key into the cached sprite (so its gradient is made once per skin, never per frame).
+        // x runs along the body, y across it. Fh: the flag's colours as bands along the body; Fs: the two stripe colours alternating along it;
+        // Fc: the canton colour with small dots; Fe: the base colour, with the emblem (circle, or diamond for "ed") on every 4th segment (v);
+        // Fg|colour: one whole colour (the "v" layout picks it per segment). All get light scales, a top highlight arc and a darker rim.
+        function flagBody(g, shape, key, v, n, k) {
+          const t = key[1], p = key.slice(3), s = t === "g" ? null : SKINS[+p], cl = s ? s.fc : [p], ly = s ? s.ly : "";
+          const bands = (cs) => { const h = n / cs.length; cs.forEach((x, j) => { g.fillStyle = x; g.fillRect(0, j * h, n, h + 1); }); };
+          g.save(); shape(); g.clip();
+          if (t === "h") bands(cl);
+          else if (t === "s") { const a = cl[+ly[2]], b = cl[+ly[3]]; bands([a, b, a, b, a]); }
+          else if (t === "c") {
+            const cc = cl[+ly[1]]; g.fillStyle = cc; g.fillRect(0, 0, n, n);
+            const lt = parseInt(cc.slice(1, 3), 16) + parseInt(cc.slice(3, 5), 16) + parseInt(cc.slice(5, 7), 16) > 600;
+            g.fillStyle = lt ? "#f5c400" : "#fff";
+            for (let r = 0; r < 3; r++) for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(18 + q * 22 + (r & 1) * 11 - 5, 20 + r * 20, 3.2, 0, 6.283); g.fill(); }
+          } else {
+            g.fillStyle = cl[0]; g.fillRect(0, 0, n, n);
+            if (t === "e" && v) {
+              g.fillStyle = cl[1]; g.beginPath();
+              if (ly === "ed") { g.moveTo(SR, SR - 22); g.lineTo(SR + 26, SR); g.lineTo(SR, SR + 22); g.lineTo(SR - 26, SR); g.closePath(); }
+              else g.arc(SR, SR, 15, 0, 6.283);
+              g.fill();
+            }
+          }
+          g.strokeStyle = "rgba(0,0,0,.12)"; g.lineWidth = 1;
+          for (let row = 0; row < 9; row++) for (let x = (row & 1 ? 2 : 8); x < n + 8; x += 12) { g.beginPath(); g.arc(x, 4 + row * 9, 6.5, Math.PI / 2, Math.PI * 1.5); g.stroke(); }
+          const gr = g.createLinearGradient(0, 0, 0, n);
+          gr.addColorStop(0, "rgba(0,0,0,.3)"); gr.addColorStop(0.25, "rgba(0,0,0,0)"); gr.addColorStop(0.75, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,.38)");
+          g.fillStyle = gr; g.fillRect(0, 0, n, n);
+          g.lineCap = "round"; g.strokeStyle = "rgba(255,255,255,.42)"; g.lineWidth = 5; // highlight arc on the lit (top) side
+          g.beginPath(); g.moveTo(14, 20); g.quadraticCurveTo(SR, 7, n - 14, 20); g.stroke();
+          g.restore();
+          shape(); g.strokeStyle = "rgba(0,0,0,.34)"; g.lineWidth = 2; g.stroke(); // slightly darker rim
         }
         // body sprites pre-scaled to a few device-pixel widths (shares the size cache with segSz)
         function bodySz(col, v, px) {
@@ -3157,7 +3214,7 @@
               const an = Math.atan2((sn.wy[j0] - sn.wy[j1]) * ST, sn.wx[j0] - sn.wx[j1]), c = Math.cos(an), s = Math.sin(an);
               pr(px, py, r); const wd = r * 1.9 * PK, ln = wd * (sn.st > 1 ? 1.05 : 0.85);
               ctx.setTransform(dpr * c, dpr * s, -dpr * s, dpr * c, dpr * PX, dpr * PY);
-              ctx.drawImage(bodySz(sn.frz > 0 ? "#8fd8ff" : segColor(sn.skin, i), i % 4 < sn.st ? 1 : 0, wd * dpr), -ln * 0.5, -wd * 0.5, ln, wd);
+              ctx.drawImage(bodySz(sn.frz > 0 ? "#8fd8ff" : bodyKey(sn.skin, i), i % 4 < sn.st ? 1 : 0, wd * dpr), -ln * 0.5, -wd * 0.5, ln, wd);
             }
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             band(sn, 1, 0.4, 0.44, 0.55, "#000", 0.2 * ga); // darker belly edge, away from the light
@@ -3291,7 +3348,7 @@
           for (let i = n - 1; i > 0; i--) {
             const r = rr(i), an = Math.atan2(Y(i - 1) - Y(Math.min(n - 1, i + 1)), 2 * gap), c = Math.cos(an), s = Math.sin(an), wd = r * 1.9, ln = wd * 0.85;
             pc.setTransform(dpr * c, dpr * s, -dpr * s, dpr * c, dpr * X(i), dpr * Y(i));
-            pc.drawImage(bodySpr(segColor(skin, i), i % 4 === 0 ? 1 : 0), -ln / 2, -wd / 2, ln, wd);
+            pc.drawImage(bodySpr(bodyKey(skin, i), i % 4 === 0 ? 1 : 0), -ln / 2, -wd / 2, ln, wd);
           }
           pc.setTransform(dpr, 0, 0, dpr, 0, 0);
           line(0.4, 0.44, 0.55, "#000", 0.2, (n * 0.6) | 0);
@@ -4760,7 +4817,7 @@
             const t = i / (n - 1), r = R0 * (t < 0.5 ? 1 : 1 - (t - 0.5) * 1.7), an = Math.atan2(Y(i - 1) - Y(Math.min(n - 1, i + 1)), 2 * gap);
             const c = Math.cos(an), sn = Math.sin(an), wd = r * 1.9, ln = wd * 0.85;
             g.setTransform(dpr * c, dpr * sn, -dpr * sn, dpr * c, dpr * X(i), dpr * Y(i));
-            g.drawImage(bodySpr(segColor(k, i), i % 4 === 0 ? 1 : 0), -ln / 2, -wd / 2, ln, wd);
+            g.drawImage(bodySpr(bodyKey(k, i), i % 4 === 0 ? 1 : 0), -ln / 2, -wd / 2, ln, wd);
           }
           g.setTransform(dpr, 0, 0, dpr, 0, 0);
           const ha = Math.atan2(Y(0) - Y(1), gap), hw = R0 * 3;
