@@ -27,6 +27,8 @@
     <meta name="apple-mobile-web-app-title" content="Super Snake" />
     <meta name="application-name" content="Super Snake" />
     <meta name="format-detection" content="telephone=no" />
+    <meta name="screen-orientation" content="landscape" />
+    <meta name="x5-orientation" content="landscape" />
     <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAkFBMVEXS1ICFzIiysmBxrnVG2Z1Fq3iqlkqlgjBqjlU8lW0ug1uCbyVJbkRbUSAtbUwvSy4PbE0QXUAMTzsUPy8EQTMkMR4TMCUIMSsHKCUCMy0BLioBJycLIBwCHyEBISMBGx8AICIAGh4IFBYBFhwBEBgAFRsAEhkAEBkADxcADhcBDBUADRYACxYBCRQBCBMBBhJwBNSPAAACsElEQVR42jWU2aKjIBBEQYICKoiA+xo1JhqT//+7ac3c9knrUPQCou/3+/l8jm1/Pqa+q6uyqrt+fDz3Az6DiEA/Ln0Zu7osrbVlVXXDtO7bRSDQQQa97yprpdY6tVbl3fjY38dxfNFPX5e+Lm0akQRCJ76p6nFq7mCCYP/9tYJ/aTXzOaeUC+JrW3bO8+/Hgf72r6zmYXQDnSKf0cSWJ/AGYNtfj2mobcq51lJKglmsIspt7poZgGN7rdOZgKAyYpxRqpuMe4xzW49QCtr2+dog4TyiGBNT6tSkUkRcVN3yuoCpBYOECYYJCWKCdd40KpJgMT13BB08DVJBBMW8CQiJTOacs1bIun+80F8LBIUNEk6FBHPnlFORqNrlBKYfIAWDJkQRY7ebdEoZJct2WhHU2BpzArAGZHyDECdgZNldwDj6vtWJENfiKwywmUn+gFYpmyaC0//yTRpGojzVFYwMPc82whyShP9UyqVimKkqsdUwPdBrvpLUgoLEJOSmIBEcZel/4FdmygmXJo59z/OZh7woc0la1nBuLqCzMGOp4gD5gYeQx+Ks4DDPrl+eZyf7gQtBVBx7QYBA91XWL4ICAGcTvV/rwzBFhHJhEIKOAl/ds1jRpIIqd/R+z5vWIQYgCCEH5IdB7CJfiZvsz2G993lLrUREuTiIwyAIwQjOi4HxmefrAt4mNwRHcQwWYXgCFMvcRFIf8/tMci3yXFLCo/AX0AaRF0Yb85z3s5NjZ1oDBPY8xgjBGEuT5bnJiwXKPC/ckOdNZiQ/NYwpU4VzTVPkfQ+dXMaha6eiclkN45FSp8p1LhubrNnGrp8AaLtu+s6NKzp4alhcFc22za91qAcArjtdD+ux3fu2LUBv75/vsQz1ec2vYU1jW9cVvLZn9GPfwk/g/Au04zTv/wD+uVk0Jn47/AAAAABJRU5ErkJggg==" />
     <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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" />
     <link rel="stylesheet" href="hark.css" />
@@ -137,8 +139,18 @@
       .x-res div { flex: 1; padding: 12px 4px; border-radius: var(--r-m); background: rgba(10, 14, 30, .8); border: 1px solid rgba(0, 229, 255, .25); }
       .x-res b { display: block; font-size: 30px; color: #ffe600; font-family: "Geist Mono", monospace; }
       .x-res span { font-size: 13px; color: #b9c6e6; }
-      .x-rot { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px;
-        background: #05060d; color: #00e5ff; font-size: 26px; font-weight: 600; text-align: center; text-shadow: 0 0 14px #00e5ff; }
+      /* LANDSCAPE ONLY: a phone or tablet held upright gets this opaque cover instead of the game. JS adds body.x-pt and pauses the match;
+         the media query covers the same case before any script runs. Nothing of the page shows underneath. */
+      .x-rot { position: fixed; inset: 0; z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+        box-sizing: border-box; padding: var(--x-st) var(--x-sr) var(--x-sb) var(--x-sl); background: #05060d; color: #e9e6dd; text-align: center; touch-action: none; }
+      .x-rot p { margin: 0; max-width: 280px; font-size: 20px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+      .x-rotic { width: 96px; height: 96px; color: #c9a54a; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+        animation: x-rotq 2.4s ease-in-out infinite; }
+      @keyframes x-rotq { 0%, 20% { transform: rotate(0deg); } 50%, 80% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
+      @media (prefers-reduced-motion: reduce) { .x-rotic { animation: none; } }
+      body.x-pt .x-rot { display: flex; }
+      body.x-pt .page { visibility: hidden; }
+      @media (orientation: portrait) and (pointer: coarse) { .x-rot { display: flex; } .page { visibility: hidden; } }
       .x-col { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
       .x-chip { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 6px 16px; min-height: 52px;
         border-radius: var(--r-pill); background: rgba(10, 14, 30, .8); border: 1px solid rgba(255, 230, 0, .35); font-size: 15px; }
@@ -197,8 +209,6 @@
       .x-fps { top: auto; bottom: max(4px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 40; padding: 2px 6px; opacity: .6; font-family: "Geist Mono", monospace; font-size: 12px; color: #39ff14; }
       .x-zoom { width: 100%; min-height: 44px; accent-color: #00e5ff; margin: 0; }
       .x-hide { display: none !important; }
-      body.x-port .page { position: fixed; top: 0; left: 0; margin: 0; padding: 0; max-width: none; overflow: hidden;
-        transform-origin: 0 0; transform: rotate(90deg) translateY(-100%); }
       .x-tabs { display: flex; gap: 8px; width: 100%; }
       .x-tabs button { flex: 1; min-height: 44px; border-radius: var(--r-pill); border: 2px solid rgba(0, 229, 255, .3); background: rgba(10, 14, 30, .8);
         color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
@@ -329,6 +339,17 @@
       .x-rb { display: inline-block; vertical-align: middle; font-style: normal; font-size: 12px; font-weight: 600; line-height: 1.5; padding: 0 8px; border-radius: var(--r-pill); color: #0b0d12; background: #aab3bd; white-space: nowrap; }
       .x-rb[data-r="1"] { background: #5aaeff; } .x-rb[data-r="2"] { background: #c08bff; } .x-rb[data-r="3"] { background: #ffb53a; }
       .x-rb[data-r="4"] { background: linear-gradient(90deg, #ff5c86, #ffa04d); }
+      /* flag skins: category switch, emoji (or a code badge where emoji flags don't render), "show more" */
+      .x-skcat { width: 100%; box-sizing: border-box; }
+      .x-skcat bdi { font-weight: 400; opacity: .8; }
+      .x-fe { font-size: 22px; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .55)); }
+      .x-cc { display: inline-block; padding: 0 4px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, .45); background: rgba(16, 19, 18, .9);
+        color: #fff; font: 600 12px/1.4 var(--sans, sans-serif); letter-spacing: .03em; }
+      .x-skins button { display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+      .x-sknote { flex: 1 1 100%; margin: 0; color: var(--x-mu); font-size: 12px; }
+      .x-skmore { grid-column: 1 / -1; min-height: 44px; padding: 0 14px; border-radius: var(--r-s); border: 1px solid rgba(201, 165, 74, .6); background: rgba(201, 165, 74, .08);
+        color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+      .x-skmore:focus-visible { outline: 2px solid #e3c46e; outline-offset: 2px; }
       /* drawn avatars: same circle everywhere an emoji avatar sits */
       .x-avi { display: block; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: rgba(255, 255, 255, .08); }
       .x-it i .x-avi { width: 100%; height: 100%; }
@@ -398,7 +419,7 @@
       @media (max-width: 599px) { .x-ov:not(.x-stu) { padding-top: calc(var(--x-st) + 52px); } }
       /* wider screens: keep a lane under the 🌐 corner button so the lobby title (RTL) or profile chip (LTR) never sits beneath it */
       @media (min-width: 600px) { .x-ov:not(.x-stu):not(.x-auth) { padding-inline-end: calc(var(--x-sx) + 56px); } }
-      /* short landscape (or a phone held upright, which the game turns sideways): ~40% title, tight spacing, no scrolling */
+      /* short landscape (every phone; portrait is covered by the rotate screen): ~40% title, tight spacing, no scrolling */
       body.x-short .x-ov.x-auth { padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
       body.x-short .x-auth .x-box.x-form { gap: 6px; }
       body.x-short .x-auth h1.x-logo { font-size: 31px; line-height: 1; letter-spacing: .05em; text-shadow: none; margin: 0; }
@@ -416,15 +437,17 @@
       body.x-short .x-auth .x-emo button { min-height: 44px; font-size: 22px; }
       body.x-short .x-langpop { top: calc(var(--x-st) + 48px); width: 240px; }
       body.x-short .x-langpop .x-segw button { flex-basis: 40%; }
-      /* phone held upright: the page is rotated 90°, so page top/right/bottom/left sit on the physical right/bottom/left/top */
-      body.x-port.x-short .x-ov.x-auth { padding: max(8px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-top)); }
-      body.x-port .x-globe { top: max(12px, env(safe-area-inset-right)); }
-      body.x-port .x-langpop { top: calc(max(12px, env(safe-area-inset-right)) + 48px); max-height: calc(100% - max(12px, env(safe-area-inset-right)) - max(12px, env(safe-area-inset-left)) - 56px); }
-      [dir="ltr"] body.x-port .x-globe, [dir="ltr"] body.x-port .x-langpop { inset-inline-end: max(12px, env(safe-area-inset-bottom)); }
-      [dir="rtl"] body.x-port .x-globe, [dir="rtl"] body.x-port .x-langpop { inset-inline-end: max(12px, env(safe-area-inset-top)); }
       /* PHONE LANDSCAPE (iPhone and similar): compact, light lobby and screens; no blur, no big shadows */
       @media (orientation: landscape) and (max-height: 500px) {
         .x-ov { padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+        /* every phone width, from 568px-wide small iPhones to a 956px Pro Max on its side: two columns, the 🌐 lane at the side, not the top */
+        .x-ov:not(.x-stu) { padding-top: max(12px, env(safe-area-inset-top)); }
+        .x-ov:not(.x-stu):not(.x-auth) { padding-inline-end: calc(var(--x-sx) + 56px); }
+        .x-box { max-width: 860px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; column-gap: 16px; }
+        .x-box > :not(.x-set):not(.x-col) { grid-column: 1 / -1; }
+        .x-ov .x-box.x-lob { display: grid; }
+        .x-shop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+        .x-skl { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
         .x-ov *, .x-globe, .x-hud { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
         .x-ov .x-btn, .x-ov .x-btn.x-main { box-shadow: none; }
         .x-ov h2, .x-ov h2.x-cy { font-size: 22px; margin-bottom: 0; }
@@ -493,6 +516,18 @@
     </style>
   </head>
   <body>
+    <!--
+      LANDSCAPE ONLY. The game never lays out in portrait: a phone or tablet held upright sees only the rotate cover below, and the match
+      pauses until it is turned back. Where supported, screen.orientation.lock("landscape") runs on the Play tap.
+      NATIVE APP NOTE (Capacitor): the iOS project must also lock orientation natively. In ios/App/App/Info.plist set
+      UISupportedInterfaceOrientations (and UISupportedInterfaceOrientations~ipad) to only
+      UIInterfaceOrientationLandscapeLeft and UIInterfaceOrientationLandscapeRight (no Portrait, no PortraitUpsideDown).
+      On Android set android:screenOrientation="sensorLandscape" on the main activity in AndroidManifest.xml.
+    -->
+    <div class="x-rot" id="xrot" role="alertdialog" aria-modal="true" aria-labelledby="xrott" aria-hidden="true">
+      <svg class="x-rotic" viewBox="0 0 64 64" aria-hidden="true"><rect x="20" y="6" width="24" height="44" rx="5" /><path d="M29 43h6" /><path d="M8 46a24 24 0 0 0 24 10" /><path d="M28 52l4 4-4 4" /></svg>
+      <p id="xrott" data-i18n="rotate">Rotate your device to landscape</p>
+    </div>
     <div class="page" id="top">
       <canvas id="c"></canvas>
       <div class="x-hud x-fps x-hide" id="fps" aria-hidden="true">-- FPS</div>
@@ -1324,7 +1359,14 @@
         memOff: ["المتصفح هنا يمنع الحفظ، فتقدمك يبقى بس لين تسكّر اللعبة. صدّر كود الحفظ من الحساب.", "This browser blocks saving here, so progress lasts only until you close the game. Export a save code from Account.", "Bu tarayıcı burada kaydetmeyi engelliyor; ilerleme yalnızca oyunu kapatana kadar kalır. Hesap'tan kayıt kodu al.", "Ce navigateur bloque l'enregistrement ici : la progression dure jusqu'à la fermeture du jeu. Exporte un code depuis Compte.", "Este navegador bloquea el guardado aquí: el progreso dura hasta cerrar el juego. Exporta un código desde Cuenta.", "यह ब्राउज़र यहाँ सेव करने से रोकता है, प्रगति गेम बंद होने तक ही रहेगी। खाते से सेव कोड निकालें।"],
         stFull: ["ما قدرنا نحفظ على الجهاز (المساحة ممتلئة). صدّر كود الحفظ حتى ما يضيع تقدمك.", "Couldn't save on this device (storage full). Export a save code so you don't lose progress.", "Bu cihaza kaydedilemedi (alan dolu). İlerlemeni kaybetmemek için kayıt kodu al.", "Impossible d'enregistrer sur cet appareil (stockage plein). Exporte un code pour ne rien perdre.", "No se pudo guardar en este dispositivo (almacenamiento lleno). Exporta un código para no perder progreso.", "इस डिवाइस पर सेव नहीं हो सका (स्टोरेज भरा है)। प्रगति बचाने के लिए सेव कोड निकालें।"],
         resumed: ["⏸ وقفت اللعبة وأنت برا. كمّل!", "⏸ Paused while you were away. Go!", "⏸ Sen yokken duraklatıldı. Devam!", "⏸ En pause pendant ton absence. C'est reparti !", "⏸ En pausa mientras no estabas. ¡Sigue!", "⏸ आपके जाने पर रुका था। चलो!"],
+        rotate: ["لف جهازك للوضع الأفقي", "Rotate your device to landscape", "Cihazını yatay konuma çevir", "Tourne ton appareil en mode paysage", "Gira tu dispositivo a horizontal", "अपने डिवाइस को लैंडस्केप में घुमाएँ"],
         tx_tp: ["عملات مضافة", "Coins added", "Jeton eklendi", "Pièces ajoutées", "Monedas añadidas", "सिक्के जोड़े गए"],
+        skCat: ["فئة الأشكال", "Skin category", "Görünüm kategorisi", "Catégorie de skins", "Categoría de aspectos", "स्किन श्रेणी"],
+        skCls: ["كلاسيكي", "Classic", "Klasik", "Classiques", "Clásicos", "क्लासिक"],
+        skFlags: ["الأعلام", "Flags", "Bayraklar", "Drapeaux", "Banderas", "झंडे"],
+        flSearch: ["ابحث عن دولة أو رمزها", "Search a country or code", "Ülke veya kod ara", "Chercher un pays ou un code", "Buscar país o código", "देश या कोड खोजें"],
+        flNote: ["مرتبة أبجدياً · {p} 🪙 لكل علم", "Sorted A–Z · {p} 🪙 each", "A–Z sıralı · tanesi {p} 🪙", "Triés de A à Z · {p} 🪙 chacun", "Orden A–Z · {p} 🪙 cada una", "A–Z क्रम · हर एक {p} 🪙"],
+        flMore: ["عرض المزيد ({n} متبقٍ)", "Show more ({n} left)", "Daha fazla göster ({n} kaldı)", "Afficher plus ({n} restants)", "Mostrar más ({n} restantes)", "और दिखाएँ ({n} बाकी)"],
       };
       let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
       function t(k, o) {
@@ -1357,8 +1399,7 @@
         function resize() {
           QL = Math.max(0, QS.indexOf(Q)); QC = QCFG[QS[QL]];
           dpr = Math.min(window.devicePixelRatio || 1, QC.dpr); // 3 only on Ultra
-          const pt = document.body.classList.contains("x-port");
-          W = pt ? innerHeight : innerWidth; H = pt ? innerWidth : innerHeight;
+          W = innerWidth; H = innerHeight; // landscape only: portrait is covered by the rotate screen, never rotated in software
           cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
           ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
           cv.style.width = W + "px"; cv.style.height = H + "px";
@@ -1458,6 +1499,97 @@
           else { s.f = (i) => ((i * 7 + ((skT() * 10) | 0)) % 11 === 0 ? "#ffffff" : pp(i)); s.sw = `radial-gradient(circle at 30% 30%, #fff 0 2px, transparent 3px), radial-gradient(circle at 70% 60%, #fff 0 1.5px, transparent 2.5px), linear-gradient(135deg, ${a}, ${b})`; }
           SKINS.push(s);
         }));
+        // FLAG SKINS: ids FLAG0 (120) to FLAG0 + 196, in this table's order. Saves store the id, so never reorder or remove an entry; add new ones at the end.
+        // One entry per country: ISO 3166-1 alpha-2 code : 2-4 main flag colours in flag order : English name (used when Intl.DisplayNames has none).
+        // 193 UN member states, then Palestine, Vatican City, Kosovo and Taiwan.
+        const FLAG_T = "AF:000000.d32011.007a36:Afghanistan;AL:e41e20.000000:Albania;DZ:006633.ffffff.d21034:Algeria;AD:10069f.fedf00.d50032:Andorra;AO:cc092f.000000.ffcb00:Angola;" +
+          "AG:ce1126.000000.0072c6.fcd116:Antigua and Barbuda;AR:74acdf.ffffff.f6b40e:Argentina;AM:d90012.0033a0.f2a800:Armenia;AU:012169.ffffff.e4002b:Australia;AT:ed2939.ffffff:Austria;" +
+          "AZ:0092bc.e4002b.00af66:Azerbaijan;BS:00778b.ffc72c.000000:Bahamas;BH:ce1126.ffffff:Bahrain;BD:006a4e.f42a41:Bangladesh;BB:00267f.ffc726.000000:Barbados;" +
+          "BY:c8313e.4aa657.ffffff:Belarus;BE:000000.fdda24.ef3340:Belgium;BZ:003f87.ce1126.ffffff:Belize;BJ:008751.fcd116.e8112d:Benin;BT:ffd520.ff4e12.ffffff:Bhutan;" +
+          "BO:d52b1e.f9e300.007934:Bolivia;BA:002395.fecb00.ffffff:Bosnia and Herzegovina;BW:6da9d2.ffffff.000000:Botswana;BR:009c3b.ffdf00.002776.ffffff:Brazil;" +
+          "BN:f7e017.ffffff.000000.cf1126:Brunei;BG:ffffff.00966e.d62612:Bulgaria;BF:ef2b2d.009e49.fcd116:Burkina Faso;BI:ce1126.1eb53a.ffffff:Burundi;" +
+          "CV:003893.ffffff.cf2027.f7d116:Cabo Verde;KH:032ea1.e00025.ffffff:Cambodia;CM:007a5e.ce1126.fcd116:Cameroon;CA:d80621.ffffff:Canada;" +
+          "CF:003082.289728.ffce00.d21034:Central African Republic;TD:002664.fecb00.c60c30:Chad;CL:ffffff.d52b1e.0039a6:Chile;CN:ee1c25.ffff00:China;" +
+          "CO:fcd116.003893.ce1126:Colombia;KM:ffc61e.ffffff.ce1126.3a75c4:Comoros;CG:009543.fbde4a.dc241f:Congo;CD:007fff.f7d618.ce1021:DR Congo;" +
+          "CR:002b7f.ffffff.ce1126:Costa Rica;CI:f77f00.ffffff.009e60:Côte d'Ivoire;HR:ff0000.ffffff.171796:Croatia;CU:002a8f.ffffff.cf142b:Cuba;" +
+          "CY:ffffff.d57800.4e5b31:Cyprus;CZ:ffffff.d7141a.11457e:Czechia;DK:c8102e.ffffff:Denmark;DJ:6ab2e7.12ad2b.ffffff.d7141a:Djibouti;" +
+          "DM:006b3f.fcd116.000000.d41c30:Dominica;DO:002d62.ffffff.ce1126:Dominican Republic;EC:ffdd00.034ea2.ed1c24:Ecuador;EG:ce1126.ffffff.000000.c09300:Egypt;" +
+          "SV:0f47af.ffffff:El Salvador;GQ:3e9a00.ffffff.e32118.0073ce:Equatorial Guinea;ER:12ad2b.ea0437.4189dd.ffc726:Eritrea;EE:0072ce.000000.ffffff:Estonia;" +
+          "SZ:3e5eb9.ffd900.b10c0c:Eswatini;ET:078930.fcdd09.da121a.0f47af:Ethiopia;FJ:68bfe5.012169.ffffff.ce1126:Fiji;FI:ffffff.002f6c:Finland;" +
+          "FR:002654.ffffff.ed2939:France;GA:009e60.fcd116.3a75c4:Gabon;GM:ce1126.ffffff.0c1c8c.3a7728:Gambia;GE:ffffff.ff0000:Georgia;DE:000000.dd0000.ffce00:Germany;" +
+          "GH:ce1126.fcd116.006b3f.000000:Ghana;GR:0d5eaf.ffffff:Greece;GD:ce1126.fcd116.007a5e:Grenada;GT:4997d0.ffffff:Guatemala;GN:ce1126.fcd116.009460:Guinea;" +
+          "GW:ce1126.fcd116.009e49.000000:Guinea-Bissau;GY:009e49.fcd116.ce1126.000000:Guyana;HT:00209f.d21034.ffffff:Haiti;HN:00bce4.ffffff:Honduras;" +
+          "HU:ce2939.ffffff.477050:Hungary;IS:02529c.ffffff.dc1e35:Iceland;IN:ff9933.ffffff.138808.000080:India;ID:ff0000.ffffff:Indonesia;IR:239f40.ffffff.da0000:Iran;" +
+          "IQ:ce1126.ffffff.000000.007a3d:Iraq;IE:169b62.ffffff.ff883e:Ireland;IL:ffffff.0038b8:Israel;IT:009246.ffffff.ce2b37:Italy;JM:009b3a.fed100.000000:Jamaica;" +
+          "JP:ffffff.bc002d:Japan;JO:000000.ffffff.007a3d.ce1126:Jordan;KZ:00afca.fec50c:Kazakhstan;KE:000000.bb0000.006600.ffffff:Kenya;KI:ce1126.fcd116.003f87.ffffff:Kiribati;" +
+          "KP:024fa2.ffffff.ed1c27:North Korea;KR:ffffff.cd2e3a.0047a0.000000:South Korea;KW:007a3d.ffffff.ce1126.000000:Kuwait;KG:e8112d.ffef00:Kyrgyzstan;" +
+          "LA:ce1126.002868.ffffff:Laos;LV:9e3039.ffffff:Latvia;LB:ed1c24.ffffff.00a651:Lebanon;LS:00209f.ffffff.009543.000000:Lesotho;LR:bf0a30.ffffff.002868:Liberia;" +
+          "LY:e70013.000000.239e46.ffffff:Libya;LI:002b7f.ce1126.ffd83d:Liechtenstein;LT:fdb913.006a44.c1272d:Lithuania;LU:ed2939.ffffff.00a1de:Luxembourg;" +
+          "MG:ffffff.fc3d32.007e3a:Madagascar;MW:000000.ce1126.339e35:Malawi;MY:cc0001.ffffff.010066.ffcc00:Malaysia;MV:d21034.007e3a.ffffff:Maldives;" +
+          "ML:14b53a.fcd116.ce1126:Mali;MT:ffffff.cf142b:Malta;MH:003893.dd7500.ffffff:Marshall Islands;MR:d01c1f.00a95c.ffd700:Mauritania;" +
+          "MU:eb2336.141a6a.ffd500.00a551:Mauritius;MX:006847.ffffff.ce1126:Mexico;FM:75b2dd.ffffff:Micronesia;MD:0046ae.ffd200.cc092f:Moldova;MC:ce1126.ffffff:Monaco;" +
+          "MN:c4272f.015197.f9cf02:Mongolia;ME:c40308.d4af3a:Montenegro;MA:c1272d.006233:Morocco;MZ:007168.000000.fce100.d21034:Mozambique;" +
+          "MM:fecb00.34b233.ea2839.ffffff:Myanmar;NA:003580.d21034.009543.ffce00:Namibia;NR:002b7f.ffc61e.ffffff:Nauru;NP:dc143c.003893.ffffff:Nepal;" +
+          "NL:ae1c28.ffffff.21468b:Netherlands;NZ:012169.ffffff.c8102e:New Zealand;NI:0067c6.ffffff:Nicaragua;NE:e05206.ffffff.0db02b:Niger;NG:008751.ffffff:Nigeria;" +
+          "MK:d20000.ffe600:North Macedonia;NO:ba0c2f.ffffff.00205b:Norway;OM:db161b.ffffff.008000:Oman;PK:01411c.ffffff:Pakistan;PW:0099ff.ffde00:Palau;" +
+          "PA:ffffff.d21034.005293:Panama;PG:ce1126.000000.fcd116.ffffff:Papua New Guinea;PY:d52b1e.ffffff.0038a8:Paraguay;PE:d91023.ffffff:Peru;" +
+          "PH:0038a8.ce1126.ffffff.fcd116:Philippines;PL:ffffff.dc143c:Poland;PT:046a38.da291c.ffe900:Portugal;QA:8a1538.ffffff:Qatar;RO:002b7f.fcd116.ce1126:Romania;" +
+          "RU:ffffff.0039a6.d52b1e:Russia;RW:20603d.fad201.00a1de:Rwanda;KN:009e49.fcd116.000000.ce1126:Saint Kitts and Nevis;LC:66ccff.ffce00.000000.ffffff:Saint Lucia;" +
+          "VC:0072c6.fcd116.009e60:Saint Vincent and the Grenadines;WS:ce1126.002b7f.ffffff:Samoa;SM:ffffff.5eb6e4:San Marino;ST:12ad2b.ffce00.d21034.000000:São Tomé and Príncipe;" +
+          "SA:006c35.ffffff:Saudi Arabia;SN:00853f.fdef42.e31b23:Senegal;RS:c6363c.0c4076.ffffff:Serbia;SC:003f87.fcd856.d62828.007a3d:Seychelles;" +
+          "SL:1eb53a.ffffff.0072c6:Sierra Leone;SG:ef3340.ffffff:Singapore;SK:ffffff.0b4ea2.ee1c25:Slovakia;SI:ffffff.005da4.ed1c24:Slovenia;" +
+          "SB:0051ba.fcd116.215b33:Solomon Islands;SO:4189dd.ffffff:Somalia;ZA:007749.ffb81c.de3831.001489:South Africa;SS:000000.da121a.078930.0f47af:South Sudan;" +
+          "ES:aa151b.f1bf00:Spain;LK:ffb700.8d153a.eb7400.005641:Sri Lanka;SD:d21034.ffffff.000000.007229:Sudan;SR:377e3f.ffffff.b40a2d.ecc81d:Suriname;" +
+          "SE:006aa7.fecc00:Sweden;CH:da291c.ffffff:Switzerland;SY:007a3d.ffffff.000000.ce1126:Syria;TJ:cc0000.ffffff.006600.f8c300:Tajikistan;" +
+          "TZ:1eb53a.fcd116.000000.00a3dd:Tanzania;TH:a51931.f4f5f8.2d2a4a:Thailand;TL:dc241f.ffc726.000000.ffffff:Timor-Leste;TG:006a4e.ffce00.d21034.ffffff:Togo;" +
+          "TO:c10000.ffffff:Tonga;TT:ce1126.ffffff.000000:Trinidad and Tobago;TN:e70013.ffffff:Tunisia;TR:e30a17.ffffff:Türkiye;TM:00843d.d22630.ffffff:Turkmenistan;" +
+          "TV:009fca.ffd100.012169.ffffff:Tuvalu;UG:000000.fcdc04.d90000.ffffff:Uganda;UA:0057b7.ffd700:Ukraine;AE:00732f.ffffff.000000.ff0000:United Arab Emirates;" +
+          "GB:012169.ffffff.c8102e:United Kingdom;US:b22234.ffffff.3c3b6e:United States;UY:ffffff.0038a8.fcd116:Uruguay;UZ:0099b5.ffffff.1eb53a.ce1126:Uzbekistan;" +
+          "VU:d21034.009543.000000.fdce12:Vanuatu;VE:ffcc00.00247d.cf142b.ffffff:Venezuela;VN:da251d.ffff00:Vietnam;YE:ce1126.ffffff.000000:Yemen;" +
+          "ZM:198a00.de2010.000000.ef7d00:Zambia;ZW:006400.ffd200.d40000.000000:Zimbabwe;" +
+          "PS:000000.ffffff.007a3d.ce1126:Palestine;VA:ffe000.ffffff:Vatican City;XK:244aa5.d0a650.ffffff:Kosovo;TW:fe0000.000095.ffffff:Taiwan";
+        const FLAG0 = SKINS.length, FLAG_P = 300, FL_PAGE = 24, FLAGS = [], FLAG_DN = {};
+        const flagEmo = (c) => String.fromCodePoint(...[...c].map((x) => 0x1f1a5 + x.charCodeAt(0))); // regional indicator letters
+        function flagName(f, l) { // the country name in the game language, from the ISO code; English from the table when Intl has none
+          l = l || LANG;
+          if (!(l in FLAG_DN)) { try { FLAG_DN[l] = new Intl.DisplayNames([l], { type: "region", fallback: "none" }); } catch (_) { FLAG_DN[l] = null; } }
+          let v = ""; try { v = FLAG_DN[l] ? FLAG_DN[l].of(f.c) : ""; } catch (_) { v = ""; }
+          return v && v !== f.c ? v : f.en;
+        }
+        FLAG_T.split(";").forEach((e) => {
+          const [c, h, en] = e.split(":"), cols = h.split(".").map((x) => "#" + x), f = { c, en, cols, id: SKINS.length };
+          const st = cols.map((x, j) => `${x} ${Math.round((j * 100) / cols.length)}% ${Math.round(((j + 1) * 100) / cols.length)}%`).join(", ");
+          FLAGS.push(f);
+          SKINS.push({ t: "fl", fl: c, fc: cols, r: 1, lv: 1, p: FLAG_P, f: (i) => cols[((i / 3) | 0) % cols.length], // body: bands of 3 segments per colour
+            sw: `linear-gradient(180deg, ${st})`, get n() { return flagName(f); } });
+        });
+        const FLAGN = FLAGS.length;
+        const botSkin = () => (R() < 0.3 ? FLAG0 + ((R() * FLAGN) | 0) : (R() * 8) | 0); // bots: a free skin, or now and then a flag
+        // can this device draw flag emoji? A French flag drawn on a canvas has coloured pixels; letters "FR" in boxes (e.g. Windows) do not
+        const EMOJI_F = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif';
+        const FLAG_OK = (() => {
+          try {
+            const c = document.createElement("canvas"); c.width = c.height = 24; const g = c.getContext("2d", { willReadFrequently: true });
+            g.font = "20px " + EMOJI_F; g.textBaseline = "top"; g.fillStyle = "#000"; g.fillText(flagEmo("FR"), 0, 0);
+            const d = g.getImageData(0, 0, 24, 24).data;
+            for (let i = 0; i < 2304; i += 4) if (d[i + 3] > 100 && Math.max(d[i], d[i + 1], d[i + 2]) - Math.min(d[i], d[i + 1], d[i + 2]) > 60) return true;
+          } catch (_) {}
+          return false;
+        })();
+        // the flag as HTML: the emoji, or the 2-letter code in a small badge where emoji flags don't render
+        const flagIco = (c) => (FLAG_OK ? `<span class="x-fe" aria-hidden="true">${flagEmo(c)}</span>` : `<span class="x-cc" dir="ltr" aria-hidden="true">${esc(c)}</span>`);
+        const nrm = (s) => String(s).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+        let FLS = { l: "", a: [], k: {} };
+        function flSorted() { // flag skin ids A-Z by name in the game language, plus a search key per id (name, English name, code)
+          if (FLS.l !== LANG) {
+            let col = null; try { col = new Intl.Collator(LANG, { sensitivity: "base" }); } catch (_) {}
+            const nm = FLAGS.map((f) => flagName(f)), k = {};
+            FLAGS.forEach((f, j) => { k[f.id] = nrm(nm[j] + " " + f.en + " " + f.c); });
+            const a = FLAGS.map((_, j) => j).sort((x, y) => (col ? col.compare(nm[x], nm[y]) : nm[x] < nm[y] ? -1 : nm[x] > nm[y] ? 1 : 0)).map((j) => FLAGS[j].id);
+            FLS = { l: LANG, a, k };
+          }
+          return FLS;
+        }
         const skR = (s) => s.r ?? (!s.p ? 0 : s.p <= 150 ? 1 : 2); // rarity; the original skins are Common (free), Rare or Epic
         const skV = (s) => (!s.p ? 0 : s.cur ? s.p * 100 : s.p); // value in coins for sorting (1 gem = 100 coins, as in the gem exchange)
         const M = { eat: 0, kill: 0, dragon: 0, games: 0, wheelAt: -3, chest: 0, done: {} };
@@ -1936,7 +2068,7 @@
         function syncBots() {
           const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || Math.max(2, (L.on ? 8 + L.round * 4 : MD === "p" ? PB : S.bots) + (state === "play" ? AD.bAdd : 0));
           while (bots.length < nb) {
-            const b = makeSnake(bn(bots.length), (R() * 8) | 0, true);
+            const b = makeSnake(bn(bots.length), botSkin(), true);
             b.ni = bots.length; b.len = rnd(20, 70); snakes.push(b); bots.push(b);
           }
           while (bots.length > nb) snakes.splice(snakes.indexOf(bots.pop()), 1);
@@ -2278,7 +2410,7 @@
           else if (e === "fog") { const a = player.a + rnd(-0.6, 0.6); AD.fog = { x: h.x + Math.cos(a) * 420, y: h.y + Math.sin(a) * 420, r: 320, l: 25 }; }
           else if (e === "mini") { const b = makeSnake(_t("adMiniName"), 12, false); Object.assign(b, { boss: true, len: 150, ad: 1, hat: "horns" }); snakes.push(b); bossT = 0; }
           else for (let i = 0; i < (e === "swarm" ? 6 : 1); i++) {
-            const b = makeSnake(e === "gold" ? _t("adGoldName") : "⚡" + bn((R() * BN.length) | 0), e === "gold" ? "gold" : (R() * 8) | 0, true);
+            const b = makeSnake(e === "gold" ? _t("adGoldName") : "⚡" + bn((R() * BN.length) | 0), e === "gold" ? "gold" : botSkin(), true);
             const a = R() * 6.28, dx = clamp(h.x + Math.cos(a) * 700, 300, A - 300) - b.seg[0].x, dy = clamp(h.y + Math.sin(a) * 700, 300, A - 300) - b.seg[0].y;
             for (const p of b.seg) { p.x += dx; p.y += dy; }
             Object.assign(b, e === "gold" ? { gd: 1, len: 70, ad: 1 } : { sw: 1, len: 14, spd: 25, ad: 1 }); snakes.push(b);
@@ -2529,7 +2661,7 @@
           }
           for (const s of snakes) {
             if (!s.alive) {
-              if (s.bot && !(MD === "s" && state === "play") && (s.respawn -= dt) <= 0) Object.assign(s, makeSnake(s.name, s.tm !== undefined ? s.skin : (R() * 8) | 0, true));
+              if (s.bot && !(MD === "s" && state === "play") && (s.respawn -= dt) <= 0) Object.assign(s, makeSnake(s.name, s.tm !== undefined ? s.skin : botSkin(), true));
               continue;
             }
             if (s.bot) think(s, dt);
@@ -2627,6 +2759,18 @@
         class XCap extends Map { constructor(n) { super(); this.n = n; } set(k, v) { if (this.size >= this.n && !this.has(k)) this.delete(this.keys().next().value); return super.set(k, v); } }
         const SP = new XCap(900), SR = 40, SS = 2; // sprites drawn at 2x so they stay crisp on high-DPR screens
         function mk(n) { const c = document.createElement("canvas"); c.width = c.height = n * SS; c.getContext("2d").scale(SS, SS); return c; }
+        // a flag skin's head emblem on a 64 grid, drawn once per country: the emoji, or the 2-letter code on a dark badge where emoji flags don't render
+        function flagSpr(code) {
+          const key = "fl" + code; let c = SP.get(key); if (c) return c;
+          c = mk(64); const g = c.getContext("2d"); g.textAlign = "center"; g.textBaseline = "middle";
+          if (FLAG_OK) { g.font = "50px " + EMOJI_F; g.fillText(flagEmo(code), 32, 35); }
+          else {
+            g.fillStyle = "rgba(16,19,18,.92)"; g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 3; g.beginPath();
+            if (g.roundRect) g.roundRect(5, 15, 54, 34, 9); else g.rect(5, 15, 54, 34);
+            g.fill(); g.stroke(); g.fillStyle = "#fff"; g.font = "600 25px Geist, system-ui, sans-serif"; g.fillText(code, 32, 33);
+          }
+          SP.set(key, c); return c;
+        }
         function gloss(g, x, y, r) {
           const gr = g.createRadialGradient(x - r * 0.35, y - r * 0.4, 0, x, y, r * 1.2);
           gr.addColorStop(0, "rgba(255,255,255,.55)"); gr.addColorStop(0.35, "rgba(255,255,255,.05)"); gr.addColorStop(0.7, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,.5)");
@@ -3035,6 +3179,9 @@
               pr(h.x - ca * r * 0.3, h.y - sa0 * r * 0.3, r * 1.3); const ar = r * 0.55 * PK;
               ctx.save(); ctx.beginPath(); ctx.arc(PX, PY, ar, 0, 6.283); ctx.clip(); ctx.drawImage(avImg, PX - ar, PY - ar, ar * 2, ar * 2); ctx.restore();
               ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(PX, PY, ar, 0, 6.283); ctx.stroke();
+            } else if (typeof sn.skin === "number" && SKINS[sn.skin] && SKINS[sn.skin].fl) { // flag skin: the country's flag on the crown of the head, scaled to it
+              pr(h.x - ca * r * 0.3, h.y - sa0 * r * 0.3, r * 1.3); const fr = r * 0.8 * PK;
+              ctx.drawImage(flagSpr(SKINS[sn.skin].fl), PX - fr, PY - fr, fr * 2, fr * 2);
             }
             // eyes on the sides of the wide jaw; slit pupils that shift toward where the snake is steering
             const blink = (time * 0.7 + sn.ph) % 3.5 < 0.13, look = sa + clamp(angDiff(sn.ta, sn.a), -0.7, 0.7) * 0.9;
@@ -3144,6 +3291,7 @@
           line(-0.3, -0.34, 0.7, "#fff", 0.13, (n * 0.6) | 0);
           const ha = Math.atan2(Y(0) - Y(1), gap), hw = R0 * 3;
           pc.save(); pc.translate(X(0), Y(0)); pc.rotate(ha); pc.drawImage(headSpr(segColor(skin, 0)), -hw * 0.45, -hw * 0.37, hw, hw * 0.74);
+          if (SKINS[skin].fl) { const fr = R0 * 0.8; pc.drawImage(flagSpr(SKINS[skin].fl), -R0 * 0.3 - fr, -fr, fr * 2, fr * 2); }
           for (const s of [-1, 1]) {
             const ex = Math.cos(0.73) * R0 * 0.87, ey = s * Math.sin(0.73) * R0 * 0.87, er = R0 * 0.27;
             pc.fillStyle = "#e9b829"; pc.beginPath(); pc.arc(ex, ey, er, 0, 6.283); pc.fill();
@@ -3508,6 +3656,7 @@
           achR = aReady(); profile(); paintAch();
         });
         function start() {
+          lockLand(); // every way into a match is a tap or key press, so this stays inside the user gesture
           if (!cur) { show("login"); return; }
           if (CFG.mt && !isStaff()) { L.on = false; if (state !== "menu") home(); else show("mnt"); return; } // maintenance: admin only
           beep(660, 0.12, "triangle", 0.05, 990);
@@ -3660,7 +3809,7 @@
         const skinsEl = $("skins");
         SKINS.forEach((s, i) => {
           const b = document.createElement("button");
-          b.style.background = swatch(s); b.setAttribute("aria-label", s.n);
+          b.style.background = swatch(s); b.setAttribute("aria-label", s.n); if (s.fl) b.innerHTML = flagIco(s.fl);
           b.addEventListener("click", () => { skin = i; paintSkins(); beep(500 + (i % 12) * 60, 0.06, "triangle", 0.04); });
           skinsEl.appendChild(b);
         });
@@ -3714,7 +3863,7 @@
           else if (g === "acct") { back = "menu"; outW = false; arm = ""; $("frm").textContent = ""; paintProf(); show("acct"); }
           else if (g === "save") { P.av = av; $("nick").value = P.name; profile(); show("menu"); }
           else if (g === "menu") show("menu");
-          else if (g === "mplay") { if (S.mode === "l") { back = "menu"; paintLeague(); show("league"); } else start(); }
+          else if (g === "mplay") { lockLand(); if (S.mode === "l") { back = "menu"; paintLeague(); show("league"); } else start(); }
           else if (g === "reg") { back = "login"; $("rerr").textContent = ""; rav = P.av; paintR(); show("reg"); }
           else if (g === "doreg") reg();
           else if (g === "dologin") login();
@@ -3789,7 +3938,9 @@
             for (const k of PSTX) if (!Number.isInteger(PST[k])) PST[k] = k === "rtm" ? 1000 : 0;
             PST.rtm = Math.max(PST.rtm, P.rt); PST.dgm = Math.max(PST.dgm, P.dg.s || 0);
             L.tier = Number.isInteger(d.L.tier) ? clamp(d.L.tier, 0, 4) : 0; L.tro = num(d.L.tro); best = num(d.best);
-            skin = Number.isInteger(d.skin) && SKINS[d.skin] ? d.skin : 0; if (!AV.includes(P.av)) P.av = AV[0]; av = P.av;
+            // skin ids are checked against the known list: unknown owned ids are dropped, and an unknown or unowned equipped skin falls back to the first one
+            if (isObj(P.own)) { for (const k of Object.keys(P.own)) if (k[0] === "s" && !(/^\d+$/.test(k.slice(1)) && SKINS[+k.slice(1)] && SKINS[+k.slice(1)].p)) delete P.own[k]; } else P.own = {};
+            skin = Number.isInteger(d.skin) && SKINS[d.skin] && (!SKINS[d.skin].p || P.own["s" + d.skin]) ? d.skin : 0; if (!AV.includes(P.av)) P.av = AV[0]; av = P.av;
             if (typeof P.name !== "string") P.name = "";
             S.tf = 2; if (d.S) for (const k in S) if (k in d.S) S[k] = d.S[k];
             if (Array.isArray(d.cc) && d.cc.length === 2 && d.cc.every((c) => /^#[0-9a-f]{6}$/i.test(c))) { SKINS[CUST].c = d.cc.slice(0, 2); $("cc1").value = d.cc[0]; $("cc2").value = d.cc[1]; skinsEl.children[CUST].style.background = swatch(SKINS[CUST]); }
@@ -4105,7 +4256,7 @@
             for (const k in p.own) {
               const t = k[0], id = k.slice(1);
               if (p.own[k] !== 1) return false;
-              // skin ids 0-119 (old saves only hold 8-20); each must be a paid skin the save's level could unlock
+              // skin ids 0-119, flags 120-316 (old saves only hold 8-20); each must be a known paid skin the save's level could unlock, so an unknown flag id rejects the save
               if (t === "s") { const s = /^\d+$/.test(id) && SKINS[+id]; if (!s || !s.p || lv < skinLv(s)) return false; }
               else if (!(t === "h" ? HATS : t === "t" ? TRAILS : []).some((x) => x.id === id)) return false;
             }
@@ -4539,7 +4690,8 @@
         }, 5000);
 
         // SKIN SHOP: filters (search, rarity, owned, price sort), a selected skin for the live preview, buy with coins or gems
-        const SF = { q: "", r: -1, o: "a", s: "d", sel: -1 };
+        // cat: "c" classic skins or "f" flags (A-Z, searchable, shown FL_PAGE at a time so weak phones never build 197 rows at once)
+        const SF = { q: "", r: -1, o: "a", s: "d", sel: -1, cat: "c", lim: FL_PAGE };
         const skOwn = (i) => !SKINS[i].p || !!P.own["s" + i];
         const skCost = (s) => `<bdi dir="ltr">${s.p} ${s.cur ? "💎" : "🪙"}</bdi>`;
         const skSub = (i) => { const s = SKINS[i], lv = skinLv(s);
@@ -4550,20 +4702,44 @@
           if (level() < lv) return `<button disabled>🔒 ${_t("lvl")} ${lv}</button>`;
           return `<button data-k="s${i}" ${(s.cur ? P.gems : P.coins) < s.p ? "disabled" : ""}>${_t("buy")} ${skCost(s)}</button>`;
         }
-        function skList() {
-          const q = SF.q.trim().toLowerCase(), cur = SF.sel < 0 ? skin : SF.sel;
-          const a = SKINS.map((_, i) => i).filter((i) => (SF.r < 0 || skR(SKINS[i]) === SF.r) && (SF.o === "a" || (SF.o === "o") === skOwn(i)) && (!q || SKINS[i].n.toLowerCase().includes(q)));
+        function skIds() { // the ids the current category and filters show, in order
+          const q = nrm(SF.q.trim()), own = (i) => SF.o === "a" || (SF.o === "o") === skOwn(i);
+          if (SF.cat === "f") { const f = flSorted(); return f.a.filter((i) => own(i) && (!q || f.k[i].includes(q))); }
+          const a = SKINS.map((_, i) => i).filter((i) => !SKINS[i].fl && (SF.r < 0 || skR(SKINS[i]) === SF.r) && own(i) && (!q || nrm(SKINS[i].n).includes(q)));
           if (SF.s !== "d") a.sort((x, y) => (skV(SKINS[x]) - skV(SKINS[y])) * (SF.s === "u" ? 1 : -1) || x - y);
-          return a.length ? a.map((i) => { const s = SKINS[i], r = skR(s);
-            return `<div class="x-it${skOwn(i) ? " own" : ""}${i === cur ? " x-sel" : ""}" data-sv="${i}"><i style="background:${swatch(s)}"></i>` +
-              `<b><bdi>${esc(s.n)}</bdi> <em class="x-rb" data-r="${r}">${_t("rar" + r)}</em><small>${skSub(i)}</small></b>${skBtn(i)}</div>`; }).join("")
-            : `<p class="x-note">${_t("skNone")}</p>`;
+          return a;
         }
-        $("items").addEventListener("input", (e) => { if (e.target.id === "skq") { SF.q = e.target.value; $("skl").innerHTML = skList(); } });
+        function skRow(i, cur) {
+          const s = SKINS[i], r = skR(s);
+          return `<div class="x-it${skOwn(i) ? " own" : ""}${i === cur ? " x-sel" : ""}" data-sv="${i}"><i style="background:${swatch(s)}">${s.fl ? flagIco(s.fl) : ""}</i>` +
+            `<b><bdi>${esc(s.n)}</bdi>${s.fl ? "" : ` <em class="x-rb" data-r="${r}">${_t("rar" + r)}</em>`}<small>${skSub(i)}</small></b>${skBtn(i)}</div>`;
+        }
+        const skMoreB = (left) => `<button type="button" class="x-skmore" data-more="1">${_t("flMore", { n: left })}</button>`;
+        function skList() {
+          const a = skIds(), cur = SF.sel < 0 ? skin : SF.sel, n = SF.cat === "f" ? Math.min(a.length, SF.lim) : a.length;
+          if (!a.length) return `<p class="x-note">${_t("skNone")}</p>`;
+          return a.slice(0, n).map((i) => skRow(i, cur)).join("") + (n < a.length ? skMoreB(a.length - n) : "");
+        }
+        // the next page of flags is appended (the rows already built stay), by the button or when it scrolls near the view
+        let skIO = null;
+        function skMore() {
+          const l = $("skl"), mb = l && l.querySelector("[data-more]"); if (!mb) return;
+          const a = skIds(), cur = SF.sel < 0 ? skin : SF.sel, from = SF.lim; SF.lim = Math.min(a.length, from + FL_PAGE);
+          mb.insertAdjacentHTML("beforebegin", a.slice(from, SF.lim).map((i) => skRow(i, cur)).join(""));
+          if (SF.lim >= a.length) { if (skIO) skIO.disconnect(); mb.remove(); } else { mb.textContent = _t("flMore", { n: a.length - SF.lim }); if (skIO) { skIO.unobserve(mb); skIO.observe(mb); } }
+        }
+        function skLazy() {
+          if (skIO) { skIO.disconnect(); skIO = null; }
+          const l = $("skl"), mb = l && l.querySelector("[data-more]"); if (!mb || typeof IntersectionObserver !== "function") return;
+          skIO = new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) skMore(); }, { rootMargin: "240px" });
+          skIO.observe(mb);
+        }
+        const skRe = () => { SF.lim = FL_PAGE; $("skl").innerHTML = skList(); skLazy(); };
+        $("items").addEventListener("input", (e) => { if (e.target.id === "skq") { SF.q = e.target.value; skRe(); } });
         $("items").addEventListener("change", (e) => {
           const id = e.target.id; if (!["skr", "sko", "sks"].includes(id)) return;
           if (id === "skr") SF.r = +e.target.value; else SF[id === "sko" ? "o" : "s"] = e.target.value;
-          $("skl").innerHTML = skList();
+          skRe();
         });
         // live preview: the selected skin crawls on its own canvas while the shop is open
         function drawSkPv() {
@@ -4582,6 +4758,7 @@
           g.setTransform(dpr, 0, 0, dpr, 0, 0);
           const ha = Math.atan2(Y(0) - Y(1), gap), hw = R0 * 3;
           g.save(); g.translate(X(0), Y(0)); g.rotate(ha); g.drawImage(headSpr(segColor(k, 0)), -hw * 0.45, -hw * 0.37, hw, hw * 0.74);
+          if (SKINS[k].fl) { const fr = R0 * 0.8; g.drawImage(flagSpr(SKINS[k].fl), -R0 * 0.3 - fr, -fr, fr * 2, fr * 2); }
           for (const s of [-1, 1]) {
             const ex = Math.cos(0.73) * R0 * 0.87, ey = s * Math.sin(0.73) * R0 * 0.87, er = R0 * 0.27;
             g.fillStyle = "#e9b829"; g.beginPath(); g.arc(ex, ey, er, 0, 6.283); g.fill();
@@ -4596,13 +4773,17 @@
               : `<button data-k="${key}" ${P.coins < p ? "disabled" : ""}>${_t("buy")} ${p} 🪙</button>`) + `</div>`;
           const k = SF.sel < 0 ? skin : SF.sel, s = SKINS[k], r = skR(s);
           const sel = (id, opts, v, al) => `<select id="${id}" aria-label="${al}">` + opts.map(([x, n]) => `<option value="${x}"${x === v ? " selected" : ""}>${n}</option>`).join("") + `</select>`;
+          const fc = SF.cat === "f", ph = _t(fc ? "flSearch" : "skSearch");
           let h = `<h3>${_t("skins")} · <bdi dir="ltr">${SKINS.length}</bdi></h3><div class="x-sk">` +
-            `<div class="x-skpv"><canvas id="skpv" role="img" aria-label="${_t("skPv")}: ${esc(s.n)}"></canvas><div><bdi>${esc(s.n)}</bdi><em class="x-rb" data-r="${r}">${_t("rar" + r)}</em>` +
-            `<small>${skSub(k)}</small>${skBtn(k)}</div></div>` +
-            `<div class="x-skf"><input id="skq" type="search" dir="auto" autocomplete="off" value="${esc(SF.q)}" placeholder="${_t("skSearch")}" aria-label="${_t("skSearch")}" />` +
-            sel("skr", [[-1, _t("fAll") + " · " + _t("fRar")], ...[0, 1, 2, 3, 4].map((x) => [x, _t("rar" + x)])], SF.r, _t("fRar")) +
+            `<div class="x-skpv"><canvas id="skpv" role="img" aria-label="${_t("skPv")}: ${esc(s.n)}"></canvas><div><bdi>${esc(s.n)}</bdi>` +
+            (s.fl ? flagIco(s.fl) : `<em class="x-rb" data-r="${r}">${_t("rar" + r)}</em>`) + `<small>${skSub(k)}</small>${skBtn(k)}</div></div>` +
+            `<div class="x-seg x-skcat" role="group" aria-label="${_t("skCat")}">` +
+            `<button type="button" data-cat="c" class="${fc ? "" : "on"}" aria-pressed="${!fc}">${_t("skCls")} <bdi dir="ltr">${FLAG0}</bdi></button>` +
+            `<button type="button" data-cat="f" class="${fc ? "on" : ""}" aria-pressed="${fc}">${_t("skFlags")} <bdi dir="ltr">${FLAGN}</bdi></button></div>` +
+            `<div class="x-skf"><input id="skq" type="search" dir="auto" autocomplete="off" value="${esc(SF.q)}" placeholder="${ph}" aria-label="${ph}" />` +
+            (fc ? "" : sel("skr", [[-1, _t("fAll") + " · " + _t("fRar")], ...[0, 1, 2, 3, 4].map((x) => [x, _t("rar" + x)])], SF.r, _t("fRar"))) +
             sel("sko", [["a", _t("fAll") + " · " + _t("fOwn")], ["o", _t("owned")], ["n", _t("fNot")]], SF.o, _t("fOwn")) +
-            sel("sks", [["d", _t("sortDef")], ["u", _t("sortUp")], ["w", _t("sortDn")]], SF.s, _t("sortP")) +
+            (fc ? `<p class="x-sknote">${_t("flNote", { p: FLAG_P })}</p>` : sel("sks", [["d", _t("sortDef")], ["u", _t("sortUp")], ["w", _t("sortDn")]], SF.s, _t("sortP"))) +
             `</div><div class="x-skl" id="skl">${skList()}</div></div>`;
           h += `<h3>${_t("hats")}</h3>`;
           HATS.forEach((x) => { h += it("h" + x.id, `<i>${x.e}</i>`, _t("h_" + x.id), _t(P.own["h" + x.id] ? "owned" : "onHead"), x.p, P.own["h" + x.id], P.hat === x.id); });
@@ -4613,7 +4794,7 @@
           h += `<h3>💎 ${_t("gemShop")}</h3><p class="x-note">${_t("gemHow")}</p>` +
             `<div class="x-it"><i>🪙</i><b>${_t("gx")}<small>${_t("gxSub")}</small></b><button data-g="gx" ${P.gems < 1 ? "disabled" : ""}>1 💎</button></div>` +
             `<div class="x-it"><i>🎁</i><b>${_t("pack")}<small>${_t("packSub")}</small></b><button data-g="pack" ${P.gems < 3 ? "disabled" : ""}>3 💎</button></div>`;
-          $("items").innerHTML = h; $("gems").textContent = P.gems;
+          $("items").innerHTML = h; $("gems").textContent = P.gems; skLazy();
         }
         function paintTx() {
           $("coins").textContent = P.coins; $("gems").textContent = P.gems;
@@ -4622,6 +4803,9 @@
             `<span style="padding-inline-end:10px;font-weight:600;color:${a > 0 ? "#39ff14" : "#ff6b6b"}" dir="ltr">${a > 0 ? "+" : ""}${a}</span></div>`).join("") : `<p class="x-note">${_t("txEmpty")}</p>`;
         }
         $("items").addEventListener("click", (e) => {
+          const cb = e.target.closest("button[data-cat]");
+          if (cb) { if (SF.cat !== cb.dataset.cat) { SF.cat = cb.dataset.cat === "f" ? "f" : "c"; SF.q = ""; SF.lim = FL_PAGE; paintShop(); } return; }
+          if (e.target.closest("button[data-more]")) { skMore(); return; }
           const g = e.target.closest("button[data-g]");
           if (g && !g.disabled) {
             if (g.dataset.g === "gx" && P.gems >= 1) { pay(0, "gx", -1); pay(100, "gx"); }
@@ -4748,18 +4932,43 @@
         }
 
         const touch = matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
+        // LANDSCAPE ONLY: a phone or tablet held upright (taller than wide, or the portrait media query) shows the rotate cover.
+        // While it shows, the match is paused exactly like a hidden tab: held inputs drop, nothing steps (see loop), progress is saved;
+        // turning back resumes the same match where it stood.
+        const portQ = matchMedia("(orientation: portrait)");
+        let rotOn = false, rotPlay = false;
         function orient() {
-          const port = touch && innerHeight > innerWidth, pg = $("top");
-          document.body.classList.toggle("x-port", port);
-          pg.style.width = port ? innerHeight + "px" : ""; pg.style.height = port ? innerWidth + "px" : "";
-          const ew = port ? innerHeight : innerWidth, eh = port ? innerWidth : innerHeight;
-          document.body.classList.toggle("x-short", ew > eh && eh <= 500); // short landscape, as the player sees it
+          const port = touch && (innerHeight > innerWidth || !!portQ.matches);
+          if (port !== rotOn) {
+            rotOn = port;
+            document.body.classList.toggle("x-pt", port);
+            $("xrot").setAttribute("aria-hidden", port ? "false" : "true");
+            if (port) {
+              rotPlay = state === "play" && !!player && player.alive;
+              if (state === "play") { release(); commit(); persist(); }
+            } else {
+              aqReset(2); // the loop restarts its clock on the first frame back, so no time jumps
+              if (rotPlay && state === "play" && player && player.alive) xBan(_t("resumed"));
+              rotPlay = false;
+            }
+          }
+          document.body.classList.toggle("x-short", innerWidth > innerHeight && innerHeight <= 500); // short landscape (phones)
           resize();
         }
-        const isPort = () => document.body.classList.contains("x-port");
-        addEventListener("resize", orient); addEventListener("orientationchange", orient); orient();
+        addEventListener("resize", orient); addEventListener("orientationchange", orient);
+        try { if (portQ.addEventListener) portQ.addEventListener("change", orient); else if (portQ.addListener) portQ.addListener(orient); } catch (_) {}
+        try { if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener("change", orient); } catch (_) {}
+        orient();
+        // pin the screen sideways where the browser allows it; must run inside a tap (the Play button). iOS Safari has no lock(),
+        // and some browsers reject it outside fullscreen: both are fine, the rotate cover handles those cases.
+        function lockLand() {
+          try {
+            const so = screen.orientation;
+            if (so && typeof so.lock === "function") { const p = so.lock("landscape"); if (p && typeof p.catch === "function") p.catch(() => {}); }
+          } catch (_) {}
+        }
 
-        const setPtr = (e) => { const p = isPort(); ptr.x = p ? e.clientY : e.clientX; ptr.y = p ? innerWidth - e.clientX : e.clientY; ptr.active = true; };
+        const setPtr = (e) => { ptr.x = e.clientX; ptr.y = e.clientY; ptr.active = true; };
         cv.addEventListener("pointerdown", (e) => { setPtr(e); if (e.pointerType === "mouse") mouseBoost = true; });
         cv.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse" || e.buttons || e.pressure > 0) setPtr(e); });
         addEventListener("pointerup", (e) => { if (e.pointerType === "mouse") mouseBoost = false; });
@@ -4773,8 +4982,7 @@
         const joyEl = $("joy"), knob = $("knob");
         function joyMove(e) {
           const r = joyEl.getBoundingClientRect();
-          const sx = e.clientX - (r.left + r.width / 2), sy = e.clientY - (r.top + r.height / 2), p = isPort();
-          const dx = p ? sy : sx, dy = p ? -sx : sy;
+          const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
           const m = Math.hypot(dx, dy), k = Math.min(1, 40 / (m || 1));
           joy.a = Math.atan2(dy, dx); joy.m = m;
           knob.style.transform = `translate(${dx * k}px,${dy * k}px)`;
@@ -4782,11 +4990,11 @@
         // floating joystick: appears where the touch lands, fades on release
         cv.addEventListener("pointerdown", (e) => {
           if (S.ctrl !== "joy" || state !== "play" || joyId !== null) return;
-          const p = isPort(); joyId = e.pointerId;
-          const jx = (p ? e.clientY : e.clientX) + "px", jy = (p ? innerWidth - e.clientX : e.clientY) + "px";
+          joyId = e.pointerId;
+          const jx = e.clientX + "px", jy = e.clientY + "px";
           // keep the whole joystick ring clear of the notch / Dynamic Island and the screen edges
-          joyEl.style.left = p ? jx : `clamp(calc(var(--x-sl) + 57px), ${jx}, calc(100% - var(--x-sr) - 57px))`;
-          joyEl.style.top = p ? jy : `clamp(calc(var(--x-st) + 57px), ${jy}, calc(100% - var(--x-sb) - 57px))`;
+          joyEl.style.left = `clamp(calc(var(--x-sl) + 57px), ${jx}, calc(100% - var(--x-sr) - 57px))`;
+          joyEl.style.top = `clamp(calc(var(--x-st) + 57px), ${jy}, calc(100% - var(--x-sb) - 57px))`;
           joyEl.classList.add("x-on"); joy.on = true; joy.m = 0; knob.style.transform = "";
         });
         addEventListener("pointermove", (e) => { if (joy.on && e.pointerId === joyId) joyMove(e); });
@@ -4804,6 +5012,7 @@
         });
 
         addEventListener("keydown", (e) => {
+          if (rotOn) return; // paused behind the rotate cover: no keys reach the game or the menus
           if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") { if (e.key === "Enter" && state === "menu" && e.target.id === "nick") start(); return; }
           const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
           // non-button controls that carry data-go (the profile chip) answer Enter and Space like buttons
@@ -4911,7 +5120,7 @@
           if (!AQ.told) { AQ.told = true; toast(_t("aqDown", { x: _t(QN[S.q]) })); }
         }
         function loop(now) {
-          if (document.hidden) { last = now; requestAnimationFrame(loop); return; } // paused while hidden
+          if (document.hidden || rotOn) { last = now; requestAnimationFrame(loop); return; } // paused while hidden or held upright
           const raw = Math.max(0, (now - last) / 1000), dt = Math.min(0.05, raw);
           last = now; fdt = dt;
           if (S.fps && ++fpsN && (fpsT += raw) >= 0.5) { $("fps").textContent = Math.round(fpsN / fpsT) + " FPS"; fpsN = fpsT = 0; }
