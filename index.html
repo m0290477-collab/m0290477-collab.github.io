@@ -452,42 +452,7 @@
         .x-res div { padding: 8px 4px; }
         .x-res b { font-size: 22px; }
       }
-      /* COIN PACKS: six cards, a coin pile that grows per tier, a bonus ribbon and a price button */
-      .x-pkg { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; }
       .x-shop > .x-note { grid-column: 1 / -1; }
-      @media (min-width: 600px) { .x-pkg { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-      .x-pk { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 10px 10px; border-radius: var(--r-m);
-        background: var(--x-ch); border: 1px solid var(--x-ln); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); text-align: center; }
-      .x-pk.x-hot { border-color: rgba(201, 165, 74, .7); box-shadow: inset 0 0 0 1px rgba(201, 165, 74, .25); }
-      .x-pk svg.x-pile { width: 100%; max-width: 132px; height: auto; aspect-ratio: 4 / 3; }
-      .x-pk b { font-family: "Geist Mono", monospace; font-size: 20px; font-weight: 400; color: var(--x-tx); }
-      .x-pk small { font-size: 12px; color: var(--x-mu); min-height: 16px; }
-      .x-pk .x-rib { position: absolute; top: 10px; inset-inline-end: -30px; width: 110px; padding: 2px 0; transform: rotate(45deg); background: #2e5b45; color: #f3e3b0;
-        font-size: 12px; font-weight: 600; letter-spacing: .02em; }
-      [dir="rtl"] .x-pk .x-rib { transform: rotate(-45deg); }
-      .x-pk .x-ptag { position: absolute; top: 8px; inset-inline-start: 8px; padding: 1px 8px; border-radius: var(--r-pill); background: var(--x-gold); color: #15130c; font-size: 12px; font-weight: 600; }
-      .x-pk button { width: 100%; min-height: 44px; margin-top: 4px; border-radius: var(--r-s); border: 1px solid rgba(201, 165, 74, .6); background: rgba(201, 165, 74, .12);
-        color: var(--x-tx); font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
-      .x-pk button:active { transform: scale(.97); }
-      /* PAYMENTS SHEET: shown instead of a purchase; grants nothing */
-      .x-psh { position: fixed; inset: 0; z-index: 80; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .55); }
-      .x-psh > div { width: 100%; max-width: 440px; box-sizing: border-box; margin: 0 12px max(12px, env(safe-area-inset-bottom)); padding: 22px 20px 16px; border-radius: var(--r-l);
-        background: rgba(16, 19, 18, .96); border: 1px solid rgba(201, 165, 74, .5); color: var(--x-tx); text-align: center; display: flex; flex-direction: column; gap: 10px;
-        animation: x-up .28s var(--ease-out, ease-out); }
-      @keyframes x-up { from { transform: translateY(24px); opacity: 0; } }
-      @media (prefers-reduced-motion: reduce) { .x-psh > div { animation: none; } }
-      .x-psh h3 { margin: 0; font-size: 20px; font-weight: 600; }
-      .x-psh p { margin: 0; font-size: 14px; color: var(--x-mu); line-height: 1.5; }
-      .x-psh .x-pshp { color: var(--x-gold); font-family: "Geist Mono", monospace; }
-      /* TOP-UP BADGE: an emblem by total topped up; small next to names, large with progress on the profile */
-      svg.x-tui { width: 18px; height: 18px; vertical-align: -3px; margin-inline-start: 6px; flex: none; }
-      .x-tuc { display: flex; align-items: center; gap: 14px; width: 100%; box-sizing: border-box; padding: 12px 16px; border-radius: var(--r-m);
-        background: var(--x-ch); border: 1px solid var(--x-ln); text-align: start; }
-      .x-tuc svg { width: 64px; height: 64px; flex: none; }
-      .x-tuc div { flex: 1; min-width: 0; }
-      .x-tuc b { display: block; font-size: 16px; font-weight: 600; color: var(--x-tx); }
-      .x-tuc small { display: block; font-size: 12px; color: var(--x-mu); }
-      .x-tuc .x-lvb { height: 6px; margin: 6px 0 4px; }
       /* TIDY PASS: one rhythm for every menu screen (12px gaps, 16px section breaks), aligned rows and cards, clear headings */
       .x-box > h2 { margin: 0 0 4px; }
       .x-box > .x-btn.x-sub:last-child, .x-box > .x-btn:last-child { margin-top: 4px; }
@@ -504,8 +469,7 @@
       .x-row > .x-btn.x-fra { flex: none; }
       .x-tabs { flex-wrap: wrap; }
       .x-tabs button { padding: 4px 8px; line-height: 1.2; }
-      #tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      @media (min-width: 600px) { #tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+      #tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .x-set p { color: var(--x-mu) !important; font-size: 12px !important; letter-spacing: .08em; text-transform: uppercase; }
       [lang="ar"] .x-set p, [lang="hi"] .x-set p { letter-spacing: 0; text-transform: none; font-size: 14px !important; }
       .x-res div { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
@@ -513,7 +477,7 @@
       .x-chip > span { flex: none; white-space: nowrap; }
       .x-note { line-height: 1.5; }
       .x-adm .x-row .x-btn { font-size: 14px; }
-      .x-btn:focus-visible, .x-it button:focus-visible, .x-seg button:focus-visible, .x-tabs button:focus-visible, .x-pk button:focus-visible, .x-chip:focus-visible { outline: 2px solid #e3c46e; outline-offset: 2px; }
+      .x-btn:focus-visible, .x-it button:focus-visible, .x-seg button:focus-visible, .x-tabs button:focus-visible, .x-chip:focus-visible { outline: 2px solid #e3c46e; outline-offset: 2px; }
     </style>
   </head>
   <body>
@@ -586,7 +550,6 @@
       <div class="x-ov x-hide" id="acct"><div class="x-box x-form">
         <h2 class="x-cy" data-i18n="profile">الملف الشخصي</h2>
         <div class="x-chip" id="pcard"></div>
-        <div class="x-tuc x-hide" id="ptub"></div>
         <p class="x-pid x-hide" id="pidP"><span><span data-i18n="pidS">ID</span>: <bdi dir="ltr" class="pidv"></bdi></span><button class="x-btn x-sub" data-go="pidcopy" aria-label="نسخ رقم اللاعب" data-i18n-al="pidCopy" data-i18n="copy">نسخ</button></p>
         <div class="x-res x-st" id="pst"></div>
         <p data-i18n="pickAv">اختر صورتك</p>
@@ -665,22 +628,13 @@
       <div class="x-ov x-hide" id="shop"><div class="x-box">
         <h2 class="x-cy" data-i18n="shop">المتجر</h2>
         <p><span data-i18n="balance">رصيدك:</span> <span id="coins">0</span> 🪙 · <span id="gems">0</span> 💎</p>
-        <div class="x-tabs" id="tabs"><button data-t="items" class="on" data-i18n="items">العناصر</button><button data-t="cpk" data-i18n="packs">باقات العملات</button><button data-t="pts" data-i18n="ptsShop">متجر النقاط</button><button data-t="txl" data-i18n="txLog">سجل المعاملات</button></div>
+        <div class="x-tabs" id="tabs"><button data-t="items" class="on" data-i18n="items">العناصر</button><button data-t="pts" data-i18n="ptsShop">متجر النقاط</button><button data-t="txl" data-i18n="txLog">سجل المعاملات</button></div>
         <div class="x-shop" id="items"></div>
-        <div class="x-shop x-hide" id="cpk"></div>
         <div class="x-shop x-hide" id="pts"></div>
         <div class="x-shop x-hide" id="txl"></div>
         <button class="x-btn x-sub" data-go="back" data-i18n="back">رجوع</button>
       </div></div>
       <div class="x-toast x-hide" id="toast" role="status"></div>
-      <div class="x-psh x-hide" id="psh" role="dialog" aria-modal="true" aria-labelledby="psht"><div>
-        <svg viewBox="0 0 48 48" width="48" height="48" style="align-self:center" aria-hidden="true"><rect x="5" y="11" width="38" height="26" rx="5" fill="#2e5b45" stroke="#c9a54a" stroke-width="1.5" /><rect x="5" y="17" width="38" height="5" fill="#1a2f25" /><rect x="10" y="28" width="12" height="3" rx="1.5" fill="#c9a54a" /></svg>
-        <h3 id="psht" data-i18n="pshT">الدفع قريباً</h3>
-        <p data-i18n="pshB">سيتم شراء العملات عبر الشراء داخل التطبيق من App Store.</p>
-        <p class="x-pshp" id="pshp"></p>
-        <p data-i18n="pshN">لم يتم خصم أي مبلغ ولم تُضف أي عملات.</p>
-        <button class="x-btn x-main" id="pshok" data-i18n="pshOk">حسناً</button>
-      </div></div>
       <div class="x-ov x-hide" id="set"><div class="x-box">
         <h2 class="x-cy" data-i18n="settings">الإعدادات</h2>
         <div class="x-set"><p data-i18n="ctrl">طريقة التحكم</p><div class="x-seg" data-k="ctrl">
@@ -770,8 +724,6 @@
               <div class="x-row"><input class="x-name" id="admamt" type="number" inputmode="numeric" min="1" max="1000000" step="1" placeholder="الكمية" data-i18n-ph="admAmt" aria-label="الكمية" data-i18n-al="admAmt" /><input class="x-name" id="admwhy" maxlength="60" autocomplete="off" placeholder="السبب" data-i18n-ph="admWhy" aria-label="السبب" data-i18n-al="admWhy" /></div>
               <div class="x-row"><button class="x-btn x-sub" data-go="admx" data-a="c+">+ 🪙</button><button class="x-btn x-sub" data-go="admx" data-a="g+">+ 💎</button><button class="x-btn x-sub" data-go="admx" data-a="x+">+ XP</button></div>
               <div class="x-row"><button class="x-btn x-sub" data-go="admx" data-a="c-">− 🪙</button><button class="x-btn x-sub" data-go="admx" data-a="g-">− 💎</button><button class="x-btn x-sub" data-go="admx" data-a="x-">− XP</button></div>
-              <p class="x-note" data-i18n="admTopH">شحن تجريبي (محاكاة): يضيف العملات ويُحتسب في وسام الشحن</p>
-              <div class="x-row"><select class="x-name" id="admpk" aria-label="باقة العملات" data-i18n-al="packs"></select><button class="x-btn x-sub" data-go="admx" data-a="tp">💳 <span data-i18n="admTop">شحن</span></button></div>
               <button class="x-btn x-sub" id="admban" data-go="admx" data-a="ban"></button>
               <button class="x-btn x-sub" id="admdel" data-go="admx" data-a="del"></button>
               <p class="x-note" id="admem" aria-live="polite"></p>
@@ -1049,10 +1001,6 @@
         mis_dragon: ["تطوّر لتنين", "Evolve into a dragon", "Ejderhaya evrimleş", "Deviens dragon", "Evoluciona a dragón", "ड्रैगन बनें"],
         claim: ["استلم", "Claim", "Al", "Récupérer", "Reclamar", "लें"],
         inProg: ["جارٍ", "In progress", "Sürüyor", "En cours", "En curso", "जारी"],
-        packs: ["باقات العملات", "Coin packs", "Jeton paketleri", "Packs de pièces", "Packs de monedas", "सिक्का पैक"],
-        coinsW: ["عملة", "coins", "jeton", "pièces", "monedas", "सिक्के"],
-        pack: ["باقة", "Pack", "Paket", "Pack", "Pack", "पैक"],
-        paySoon: ["الدفع الحقيقي قريباً", "Real payments coming soon", "Gerçek ödeme yakında", "Paiement réel bientôt", "Pagos reales pronto", "असली भुगतान जल्द"],
         won: ["ربحت", "You won", "Kazandın", "Gagné :", "Ganaste", "आप जीते"],
         selected: ["مختارة ✓", "Selected ✓", "Seçili ✓", "Choisie ✓", "Elegido ✓", "चुना ✓"],
         select: ["اختيار", "Select", "Seç", "Choisir", "Elegir", "चुनें"],
@@ -1364,30 +1312,7 @@
         memOff: ["المتصفح هنا يمنع الحفظ، فتقدمك يبقى بس لين تسكّر اللعبة. صدّر كود الحفظ من الحساب.", "This browser blocks saving here, so progress lasts only until you close the game. Export a save code from Account.", "Bu tarayıcı burada kaydetmeyi engelliyor; ilerleme yalnızca oyunu kapatana kadar kalır. Hesap'tan kayıt kodu al.", "Ce navigateur bloque l'enregistrement ici : la progression dure jusqu'à la fermeture du jeu. Exporte un code depuis Compte.", "Este navegador bloquea el guardado aquí: el progreso dura hasta cerrar el juego. Exporta un código desde Cuenta.", "यह ब्राउज़र यहाँ सेव करने से रोकता है, प्रगति गेम बंद होने तक ही रहेगी। खाते से सेव कोड निकालें।"],
         stFull: ["ما قدرنا نحفظ على الجهاز (المساحة ممتلئة). صدّر كود الحفظ حتى ما يضيع تقدمك.", "Couldn't save on this device (storage full). Export a save code so you don't lose progress.", "Bu cihaza kaydedilemedi (alan dolu). İlerlemeni kaybetmemek için kayıt kodu al.", "Impossible d'enregistrer sur cet appareil (stockage plein). Exporte un code pour ne rien perdre.", "No se pudo guardar en este dispositivo (almacenamiento lleno). Exporta un código para no perder progreso.", "इस डिवाइस पर सेव नहीं हो सका (स्टोरेज भरा है)। प्रगति बचाने के लिए सेव कोड निकालें।"],
         resumed: ["⏸ وقفت اللعبة وأنت برا. كمّل!", "⏸ Paused while you were away. Go!", "⏸ Sen yokken duraklatıldı. Devam!", "⏸ En pause pendant ton absence. C'est reparti !", "⏸ En pausa mientras no estabas. ¡Sigue!", "⏸ आपके जाने पर रुका था। चलो!"],
-        pshT: ["الدفع قريباً", "Payments coming soon", "Ödemeler yakında", "Paiements bientôt disponibles", "Pagos muy pronto", "भुगतान जल्द आ रहा है"],
-        pshB: ["شراء العملات سيكون عبر الشراء داخل التطبيق من App Store.", "Coin purchases will use App Store In-App Purchase.", "Jeton satın alma App Store Uygulama İçi Satın Alma ile olacak.", "Les achats de pièces passeront par l'achat intégré de l'App Store.", "Las compras de monedas usarán la compra dentro de la app de App Store.", "सिक्कों की खरीद App Store इन-ऐप खरीदारी से होगी।"],
-        pshN: ["ما انخصم أي مبلغ وما انضافت أي عملات.", "Nothing was charged and no coins were added.", "Hiçbir ücret alınmadı ve jeton eklenmedi.", "Rien n'a été débité et aucune pièce n'a été ajoutée.", "No se cobró nada y no se añadieron monedas.", "कोई पैसा नहीं कटा और कोई सिक्का नहीं जुड़ा।"],
-        pshOk: ["تمام", "Got it", "Tamam", "Compris", "Entendido", "ठीक है"],
-        pkBonus: ["+{n}% مكافأة", "+{n}% bonus", "+%{n} bonus", "+{n} % bonus", "+{n}% extra", "+{n}% बोनस"],
-        pkExtra: ["+{n} عملة مجاناً", "+{n} free coins", "+{n} bedava jeton", "+{n} pièces offertes", "+{n} monedas gratis", "+{n} मुफ़्त सिक्के"],
-        pkPop: ["الأكثر طلباً", "Popular", "Popüler", "Populaire", "Popular", "लोकप्रिय"],
-        pkBest: ["أفضل قيمة", "Best value", "En iyi değer", "Meilleure offre", "Mejor valor", "सबसे फ़ायदेमंद"],
-        pkNote: ["الأسعار بالدولار الأمريكي. الدفع الحقيقي غير متاح بعد، وكل باقة أكبر فيها مكافأة أكبر.", "Prices in US dollars. Real payments aren't live yet; bigger packs carry a bigger bonus.", "Fiyatlar ABD doları. Gerçek ödeme henüz yok; büyük paketlerde bonus daha büyük.", "Prix en dollars US. Le paiement réel n'est pas encore actif ; plus le pack est grand, plus le bonus l'est.", "Precios en dólares estadounidenses. Los pagos reales aún no están activos; los packs más grandes dan más extra.", "कीमतें अमेरिकी डॉलर में। असली भुगतान अभी चालू नहीं; बड़े पैक में बड़ा बोनस।"],
-        tx_tp: ["شحن تجريبي {x}", "Simulated top-up {x}", "Deneme yüklemesi {x}", "Recharge simulée {x}", "Recarga simulada {x}", "सिम्युलेटेड टॉप-अप {x}"],
-        admTop: ["شحن", "Top up", "Yükle", "Recharger", "Recargar", "टॉप-अप"],
-        admTopH: ["شحن تجريبي (محاكاة، بدون دفع): يضيف عملات الباقة ويُحتسب في وسام الشحن ويُسجَّل في سجل المعاملات.", "Simulated top-up (test, no payment): adds the pack's coins, counts toward the top-up badge and is logged in the transaction history.", "Deneme yüklemesi (ödeme yok): paketin jetonlarını ekler, yükleme rozetine sayılır ve işlem geçmişine yazılır.", "Recharge simulée (test, sans paiement) : ajoute les pièces du pack, compte pour le badge de recharge et figure dans l'historique.", "Recarga simulada (prueba, sin pago): añade las monedas del pack, cuenta para la insignia de recarga y queda en el historial.", "सिम्युलेटेड टॉप-अप (टेस्ट, बिना भुगतान): पैक के सिक्के जोड़ता है, टॉप-अप बैज में गिना जाता है और लेन-देन इतिहास में दर्ज होता है।"],
-        admTopL: ["شحن تجريبي", "Simulated top-up", "Deneme yüklemesi", "Recharge simulée", "Recarga simulada", "सिम्युलेटेड टॉप-अप"],
-        tuBadge: ["وسام الشحن", "Top-up badge", "Yükleme rozeti", "Badge de recharge", "Insignia de recarga", "टॉप-अप बैज"],
-        tuOf: ["وسام الشحن: {n}", "Top-up badge: {n}", "Yükleme rozeti: {n}", "Badge de recharge : {n}", "Insignia de recarga: {n}", "टॉप-अप बैज: {n}"],
-        tuTot: ["إجمالي الشحن {x}", "{x} topped up", "Toplam yükleme {x}", "{x} rechargés", "{x} recargados", "कुल टॉप-अप {x}"],
-        tuNext: ["باقي {x} للوصول إلى {n}", "{x} more to reach {n}", "{n} için {x} daha", "Encore {x} pour {n}", "Faltan {x} para {n}", "{n} तक {x} और"],
-        tuMax: ["وصلت لأعلى مستوى", "Highest tier reached", "En yüksek seviyeye ulaştın", "Niveau maximal atteint", "Nivel máximo alcanzado", "सबसे ऊँचा स्तर मिल गया"],
-        tu0: ["برونزي", "Bronze", "Bronz", "Bronze", "Bronce", "कांस्य"],
-        tu1: ["فضي", "Silver", "Gümüş", "Argent", "Plata", "रजत"],
-        tu2: ["ذهبي", "Gold", "Altın", "Or", "Oro", "स्वर्ण"],
-        tu3: ["بلاتيني", "Platinum", "Platin", "Platine", "Platino", "प्लैटिनम"],
-        tu4: ["ماسي", "Diamond", "Elmas", "Diamant", "Diamante", "हीरा"],
-        tu5: ["أسطوري", "Legend", "Efsane", "Légende", "Leyenda", "लीजेंड"],
+        tx_tp: ["عملات مضافة", "Coins added", "Jeton eklendi", "Pièces ajoutées", "Monedas añadidas", "सिक्के जोड़े गए"],
       };
       let LANG = "ar";
       function t(k, o) {
@@ -1529,7 +1454,7 @@
         const AV = ["🐍", "🦊", "🐯", "🦁", "🐸", "🐼", "🐵", "🦄", "🐲", "👽", "🤖", "😎"];
         const P = { name: "", av: "🐍", xp: 0, coins: 0, own: {}, hat: "", trail: "", bst: {}, dg: { d: -1, s: 0 }, gems: 0, tx: [], rt: 1000, dc: -1, ach: {}, title: "",
           fr: [], gs: { d: -1, n: [] }, inb: [], gcl: [], dv: { i: "", e: 0, r: [] }, // friends (account keys), gifts sent today, inbox, claimed gift ids, drawn avatar
-          ri: [], ro: [], bl: [], ch: {}, tr: 1000, tg: 0, tu: 0 }; // tu total topped up in US cents (top-up badge); tr team rating, tg team matches played; friend requests in / out [{ k, ts ms }], blocked keys, chats { key: [{ o 1 mine, t text, ts ms, r read }] }
+          ri: [], ro: [], bl: [], ch: {}, tr: 1000, tg: 0, tu: 0 }; // tu legacy field from older saves (never shown, nothing adds to it); tr team rating, tg team matches played; friend requests in / out [{ k, ts ms }], blocked keys, chats { key: [{ o 1 mine, t text, ts ms, r read }] }
         // DRAWN AVATAR (P.dv): i a 128×128 png/webp data URL up to 40KB, e 1 = also the snake head emblem, r rare-tool markers used in it
         const AV_MAX = 40960, RARE = { rb: { lv: 20 }, ng: { lv: 40 }, gp: { ach: 10 }, ss: { dia: 1 } };
         // checked from the bytes, not the label: the header must match the declared type and the image must be 128×128
@@ -1574,56 +1499,8 @@
           for (const [a, u] of [[c || 0, "c"], [g || 0, "g"]]) if (a) { P[u === "c" ? "coins" : "gems"] += a; P.tx.unshift([Math.floor(Date.now() / 1000), w, a, u]); }
           if (P.tx.length > 40) P.tx.length = 40;
         }
-        // COIN PACKS: [price in US cents, coins, bonus %]. No real payment exists: buying shows the payments sheet and grants nothing;
-        // only the admin's simulated top-up grants a pack (tuGrant), which adds to P.tu and logs a "tp" transaction
-        const PACKS = [[999, 1000, 0], [2499, 2800, 12], [4999, 6000, 20], [10000, 13000, 30, "pkPop"], [30000, 42000, 40], [50000, 75000, 50, "pkBest"]];
-        const usd = (c) => "$" + (c % 100 ? (c / 100).toFixed(2) : (c / 100).toLocaleString("en"));
-        // a "tp" log line names the pack's price when the coins match a pack (a capped grant just says simulated top-up)
-        const txTp = (a) => { const k = PACKS.find((x) => x[1] === a); return _t("tx_tp", { x: k ? `<bdi dir="ltr">${usd(k[0])}</bdi>` : "" }).trim(); };
-        function tuGrant(p, i) {
-          const [c, n] = PACKS[i], add = Math.min(n, 1e7 - (p.coins || 0));
-          p.tu = Math.min(1e8, (Number.isInteger(p.tu) ? p.tu : 0) + c);
-          if (!Array.isArray(p.tx)) p.tx = [];
-          if (add > 0) { p.coins = (p.coins || 0) + add; p.tx.unshift([Math.floor(Date.now() / 1000), "tp", add, "c"]); if (p.tx.length > 40) p.tx.length = 40; }
-          return add;
-        }
-        // TOP-UP BADGE: tiers by total topped up (cents): Bronze, Silver, Gold, Platinum, Diamond, Legend; -1 = none (hidden)
-        const TUB = [999, 5000, 15000, 50000, 100000, 300000];
-        const tuTier = (p) => { const c = p && Number.isInteger(p.tu) ? p.tu : 0; return TUB.filter((x) => c >= x).length - 1; };
-        // each tier's emblem, drawn as inline SVG with flat fills (no gradient ids, so many copies can share a page)
-        function tuSvg(t, cls, lbl) {
-          const a = lbl ? `role="img" aria-label="${lbl}"` : `aria-hidden="true"`, o = `<svg class="${cls}" viewBox="0 0 40 40" ${a}>${lbl ? `<title>${lbl}</title>` : ""}`;
-          const star = (cx, cy, r, f) => { let d = ""; for (let k = 0; k < 10; k++) { const rr = k % 2 ? r * 0.45 : r, an = -Math.PI / 2 + (k * Math.PI) / 5; d += (k ? "L" : "M") + (cx + rr * Math.cos(an)).toFixed(1) + " " + (cy + rr * Math.sin(an)).toFixed(1); } return `<path d="${d}Z" fill="${f}"/>`; };
-          const shield = "M20 3 L34 8 V19 C34 28 28 34 20 37 C12 34 6 28 6 19 V8 Z", inner = "M20 7 L30.5 10.8 V19 C30.5 26 26 30.6 20 33 C14 30.6 9.5 26 9.5 19 V10.8 Z";
-          const hex = (r) => [0, 1, 2, 3, 4, 5].map((k) => { const an = -Math.PI / 2 + (k * Math.PI) / 3; return (k ? "L" : "M") + (20 + r * Math.cos(an)).toFixed(1) + " " + (20 + r * Math.sin(an)).toFixed(1); }).join("") + "Z";
-          let b = "";
-          if (t === 0) b = `<path d="M13 24 L9 38 L14 35 L17 39 L20 27Z M27 24 L31 38 L26 35 L23 39 L20 27Z" fill="#7a4a22"/><circle cx="20" cy="17" r="14" fill="#8a5527"/><circle cx="20" cy="17" r="11.5" fill="#cd7f32"/><circle cx="20" cy="17" r="11.5" fill="none" stroke="#f0b27a" stroke-width="1"/><path d="M14 19 L20 13 L26 19" fill="none" stroke="#5e3716" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
-          else if (t === 1) b = `<path d="${shield}" fill="#6f7a86"/><path d="${inner}" fill="#c9d1da"/><path d="M13 16 L20 11 L27 16 M13 23 L20 18 L27 23" fill="none" stroke="#4e5864" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
-          else if (t === 2) b = `<path d="M6 12 C1 14 1 22 4 26 L8 22Z M34 12 C39 14 39 22 36 26 L32 22Z" fill="#b8860b"/><path d="${shield}" fill="#a87a0a"/><path d="${inner}" fill="#f2c230"/>${star(20, 19, 8, "#fff4b8")}<path d="M20 7 L30.5 10.8 V13 L20 9.4 L9.5 13 V10.8Z" fill="#ffe27a"/>`;
-          else if (t === 3) b = `<path d="M8 30 C3 24 3 14 8 8 M32 30 C37 24 37 14 32 8" fill="none" stroke="#7fb3ba" stroke-width="2.2" stroke-linecap="round"/><path d="M5.5 14 l3 1 M4.8 20 l3.2 0 M5.8 26 l3 -1 M34.5 14 l-3 1 M35.2 20 l-3.2 0 M34.2 26 l-3 -1" stroke="#7fb3ba" stroke-width="2" stroke-linecap="round"/><path d="${hex(15)}" fill="#5f8f96"/><path d="${hex(12)}" fill="#cfeef2"/>${star(20, 20, 7.5, "#5f8f96")}`;
-          else if (t === 4) b = `<circle cx="20" cy="20" r="18" fill="none" stroke="#5ad1ff" stroke-width="1.2" stroke-dasharray="2 3"/><path d="M11 9 H29 L36 17 L20 35 L4 17Z" fill="#1f8fc7"/><path d="M11 9 H29 L36 17 H4Z" fill="#5ad1ff"/><path d="M11 9 L15 17 L20 9 L25 17 L29 9" fill="none" stroke="#c9f2ff" stroke-width="1.2" stroke-linejoin="round"/><path d="M4 17 L20 35 L15 17 M36 17 L20 35 L25 17" fill="none" stroke="#9fe6ff" stroke-width="1.2" stroke-linejoin="round"/><path d="M15 17 H25 L20 35Z" fill="#8fe0ff"/><path d="M31 5 l1 2.5 2.5 1 -2.5 1 -1 2.5 -1 -2.5 -2.5 -1 2.5 -1Z" fill="#fff"/>`;
-          else b = `<path d="M8 33 C4 27 6 21 9 17 C9 22 11 24 13 25 M32 33 C36 27 34 21 31 17 C31 22 29 24 27 25" fill="#ff6a3d"/><path d="M20 10 L32 14 V22 C32 29 27 34 20 37 C13 34 8 29 8 22 V14Z" fill="#5a1a8c"/><path d="M20 13.5 L29 16.5 V22 C29 27.5 25.5 31.3 20 33.5 C14.5 31.3 11 27.5 11 22 V16.5Z" fill="#c04bff"/>${star(20, 23, 6.5, "#ffd54a")}<path d="M10 11 L13 3 L17 8 L20 1.5 L23 8 L27 3 L30 11Z" fill="#ffd54a" stroke="#8a5a00" stroke-width="1" stroke-linejoin="round"/><circle cx="20" cy="6.5" r="1.4" fill="#ff3860"/>`;
-          return o + b + "</svg>";
-        }
-        // small emblem next to a name; empty when nothing was topped up
-        const tuI = (p) => { const t = tuTier(p); return t < 0 ? "" : tuSvg(t, "x-tui", esc(_t("tuOf", { n: _t("tu" + t) }))); };
-        // coin pile for pack card i: more and taller stacks per tier, sparkles on the top two
-        function pileSvg(i) {
-          const ST = [[3], [3, 5], [4, 6, 3], [5, 8, 6, 3], [4, 7, 10, 8, 5], [6, 9, 12, 13, 10, 7]][i], n = ST.length;
-          const w = Math.min(34, 104 / n), rx = w / 2 - 1, ry = rx * 0.36, step = Math.max(3.4, 5 - n * 0.25), base = 80;
-          const order = ST.map((h, j) => j).sort((x, y) => Math.abs(y - (n - 1) / 2) - Math.abs(x - (n - 1) / 2)); // outer stacks first, middle in front
-          let s = `<svg class="x-pile" viewBox="0 0 120 90" aria-hidden="true"><ellipse cx="60" cy="${base + 4}" rx="${Math.min(56, 14 + n * 9)}" ry="4" fill="rgba(0,0,0,.35)"/>`;
-          for (const j of order) {
-            const cx = 60 + (j - (n - 1) / 2) * w * 0.92;
-            for (let k = 0; k < ST[j]; k++) {
-              const y = base - k * step, top = k === ST[j] - 1;
-              s += `<ellipse cx="${cx.toFixed(1)}" cy="${(y + 1.6).toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="#9a6b12"/><ellipse cx="${cx.toFixed(1)}" cy="${y.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="${top ? "#f5c84a" : "#d9a42a"}" stroke="#b07d16" stroke-width=".6"/>`;
-              if (top) s += `<ellipse cx="${cx.toFixed(1)}" cy="${y.toFixed(1)}" rx="${(rx * 0.6).toFixed(1)}" ry="${(ry * 0.6).toFixed(1)}" fill="none" stroke="#fff0b0" stroke-width=".9"/>`;
-            }
-          }
-          if (i >= 4) s += [[22, 18], [98, 24], [80, 8]].slice(0, i - 2).map(([x, y]) => `<path d="M${x} ${y - 5} L${x + 1.4} ${y - 1.4} L${x + 5} ${y} L${x + 1.4} ${y + 1.4} L${x} ${y + 5} L${x - 1.4} ${y + 1.4} L${x - 5} ${y} L${x - 1.4} ${y - 1.4}Z" fill="#fff4c4"/>`).join("");
-          return s + "</svg>";
-        }
+        // The game is free: there are no coin packs and no real-money purchases. Older saves may still carry a "tp" transaction
+        // (a past simulated top-up) and a P.tu total; both still load, a "tp" line reads "Coins added", and P.tu is never shown.
         // per-account stats shown on the profile; mk best kills in one match, sw/tw/r1 survival, team and ranked-#1 wins,
         // dly daily challenges done, dgm longest gift streak, rtm peak rating (the last seven feed achievements)
         const PST = { games: 0, kills: 0, wins: 0, mk: 0, sw: 0, tw: 0, r1: 0, dly: 0, dgm: 0, rtm: 1000 };
@@ -1748,6 +1625,7 @@
         // admin state (this device): PIN hash+salt, wrong tries, lock and audit log (last 200) are kept on the device; who unlocked and the selection are per session
         // it = PBKDF2 iterations of the stored PIN hash (older devices: 100,000, upgraded on the next correct PIN)
         const ADM = { h: "", s: "", it: 100000, n: 0, until: 0, ok: null, log: [], sel: null, arm: 0, tab: "u" };
+        // "tp" (a past simulated top-up) is no longer created, but stays valid so older device logs still load
         const ADM_ACT = new Set(["c", "g", "x", "b", "u", "d", "a+", "a-", "sx", "sc", "m1", "m0", "mm", "n1", "n0", "nm", "tp"]);
         const logOk = (e) => e && typeof e === "object" && Number.isFinite(e.ts) && ADM_ACT.has(e.act) && Number.isFinite(e.v) &&
           typeof e.by === "string" && e.by.length <= 40 && typeof e.u === "string" && e.u.length <= 40 && typeof e.r === "string" && e.r.length <= 140;
@@ -3410,7 +3288,7 @@
           const ek = (k) => esc(k), ib = (d, k, ic, al) => `<button class="x-ib" data-${d}="${ek(k)}" aria-label="${esc(al)}" title="${esc(al)}">${ic}</button>`;
           const sure = (d, k, ic, al) => arm === d + ":" + k ? `<button data-${d}="${ek(k)}">${_t("sure")}</button>` : ib(d, k, ic, al);
           const row = (k, sub, btns) => { const a = ACC[k], id = a && pidOk(a.id) ? `${esc(_t("pidS"))}: <bdi dir="ltr">${a.id}</bdi> · ` : "";
-            return `<div class="x-it"><i>${a ? avH(a.d.P) : "❔"}</i><b>${esc(nameOf(k))}${a ? tuI(a.d.P) : ""}<small>${id}${sub}</small></b>${btns}</div>`; };
+            return `<div class="x-it"><i>${a ? avH(a.d.P) : "❔"}</i><b>${esc(nameOf(k))}<small>${id}${sub}</small></b>${btns}</div>`; };
           let h;
           if (frTab === "f") {
             h = P.fr.length ? P.fr.map((k) => {
@@ -3584,7 +3462,7 @@
           if (state !== "play") for (const s of snakes) if (s.bot && s.ni !== undefined && s.tm === undefined && !s.ad) s.name = bn(s.ni); // bot names follow the language
           profile(); evoKey = ""; lbT = 0; const on = (id) => !$(id).classList.contains("x-hide");
           [...$("skins").children].forEach((b, i) => b.setAttribute("aria-label", SKINS[i].n)); $("skn").textContent = SKINS[skin].n; stNote();
-          if (on("shop")) { paintShop(); paintPk(); paintPts(); paintTx(); } if (on("maps")) paintMaps(); if (on("league")) paintLeague(); if (on("achs")) paintAch(); if (on("inbox")) paintInb(); if (on("chat")) paintChat(); if (on("adm")) admPaint();
+          if (on("shop")) { paintShop(); paintPts(); paintTx(); } if (on("maps")) paintMaps(); if (on("league")) paintLeague(); if (on("achs")) paintAch(); if (on("inbox")) paintInb(); if (on("chat")) paintChat(); if (on("adm")) admPaint();
         }
         // achievements screen: titles to equip first, then every achievement with its progress bar and claim button
         function paintAch() {
@@ -3700,12 +3578,12 @@
           if (tTab === "b") {
             h = Object.keys(ACC).map((k) => { const d = k === cur ? { P, PST } : ACC[k].d || {}, p = d.P || {}; return { k, r: Number.isInteger(p.tr) ? p.tr : 1000, w: (d.PST && d.PST.tw) || 0 }; })
               .sort((a, b) => b.r - a.r || b.w - a.w)
-              .map((x, i) => it(i + 1, esc(nameOf(x.k)) + tuI(x.k === cur ? P : ACC[x.k].d && ACC[x.k].d.P), `${_t("tRating")} ${x.r} · ${_t("tWins")} ${x.w}`, "", x.k === cur)).join("");
+              .map((x, i) => it(i + 1, esc(nameOf(x.k)), `${_t("tRating")} ${x.r} · ${_t("tWins")} ${x.w}`, "", x.k === cur)).join("");
           } else {
-            h = `<p class="x-note">${_t("tVs", { n: tCnt() - 1 })} · ${_t("tRating")} ${P.tr}</p>` + it("🔵", esc(P.name || nameOf(cur)) + tuI(P), _t("tYou"), "", 1);
-            for (let i = 0; i < f - 1; i++) h += TI[i] ? it("👥", esc(nameOf(TI[i])) + tuI(ACC[TI[i]].d.P), _t("tYours"), `<button data-ti="${esc(TI[i])}">${_t("tOut")}</button>`)
+            h = `<p class="x-note">${_t("tVs", { n: tCnt() - 1 })} · ${_t("tRating")} ${P.tr}</p>` + it("🔵", esc(P.name || nameOf(cur)), _t("tYou"), "", 1);
+            for (let i = 0; i < f - 1; i++) h += TI[i] ? it("👥", esc(nameOf(TI[i])), _t("tYours"), `<button data-ti="${esc(TI[i])}">${_t("tOut")}</button>`)
               : it("🤖", _t("tBot"), _t("tAuto"));
-            if (f > 1) h += P.fr.filter((k) => ACC[k] && !TI.includes(k)).map((k) => it(avH(ACC[k].d.P), esc(nameOf(k)) + tuI(ACC[k].d.P), `${_t("tRating")} ${Number.isInteger(ACC[k].d.P.tr) ? ACC[k].d.P.tr : 1000}`,
+            if (f > 1) h += P.fr.filter((k) => ACC[k] && !TI.includes(k)).map((k) => it(avH(ACC[k].d.P), esc(nameOf(k)), `${_t("tRating")} ${Number.isInteger(ACC[k].d.P.tr) ? ACC[k].d.P.tr : 1000}`,
               `<button data-ti="${esc(k)}" ${TI.length >= f - 1 ? "disabled" : ""}>${_t(TI.length >= f - 1 ? "tFull" : "tInv")}</button>`)).join("") || `<p class="x-note">${_t("tNoFr")}</p>`;
             h += `<p class="x-note">${_t("tLocal")}</p>`;
           }
@@ -3857,7 +3735,7 @@
         }
         function chipH() {
           const lv = lvInfo(), ta = P.title && ACH.find((a) => a[0] === P.title);
-          return `<i>${avH(P)}</i><b>${esc(P.name || "—")}${tuI(P)}${ta ? `<small style="color:#ffe600">🏷️ ${aName(ta)}</small>` : ""}<small>${_t("lvl")} ${lv.n} · ${lv.x}/${lv.need} ${_t("xp")}<em class="x-lvb"><u style="width:${((lv.x / lv.need) * 100).toFixed(1)}%"></u></em></small></b><span>${num(P.coins)} 🪙 · ${num(P.gems)} 💎</span>`;
+          return `<i>${avH(P)}</i><b>${esc(P.name || "—")}${ta ? `<small style="color:#ffe600">🏷️ ${aName(ta)}</small>` : ""}<small>${_t("lvl")} ${lv.n} · ${lv.x}/${lv.need} ${_t("xp")}<em class="x-lvb"><u style="width:${((lv.x / lv.need) * 100).toFixed(1)}%"></u></em></small></b><span>${num(P.coins)} 🪙 · ${num(P.gems)} 💎</span>`;
         }
         let av = P.av, rav = P.av;
         const emoEl = $("emo"), remoEl = $("remo");
@@ -4127,8 +4005,8 @@
           const ks = Object.keys(ACC).filter((k) => !q || k.includes(q) || (ACC[k].email || "").includes(q));
           const tag = (k) => { const r = roleOf(k); return [r === "o" ? "👑 " + _t("admOwner") : "", ACC[k].ban ? "🚫 " + _t("admBanned") : ""].filter(Boolean).join(" · "); };
           $("admul").innerHTML = ks.length ? ks.map((k) => {
-            const a = ACC[k], p = a.d.P, tg = tag(k), xp = num(p.xp), tu = Number.isInteger(p.tu) ? p.tu : 0;
-            return `<div class="x-it${k === ADM.sel ? " own" : ""}"><i>${avH(p)}</i><b>${esc(a.u)}${tuI(p)}<small>${esc(a.email || "")}</small><small>${num(p.coins)} 🪙 · ${num(p.gems)} 💎 · ${_t("lvl")} ${lvOf(xp)} · ${xp} XP${tu ? ` · 💳 <bdi dir="ltr">${usd(tu)}</bdi>` : ""}${tg ? " · " + tg : ""}</small></b>` +
+            const a = ACC[k], p = a.d.P, tg = tag(k), xp = num(p.xp);
+            return `<div class="x-it${k === ADM.sel ? " own" : ""}"><i>${avH(p)}</i><b>${esc(a.u)}<small>${esc(a.email || "")}</small><small>${num(p.coins)} 🪙 · ${num(p.gems)} 💎 · ${_t("lvl")} ${lvOf(xp)} · ${xp} XP${tg ? " · " + tg : ""}</small></b>` +
               (admMay(k) ? `<button data-adk="${esc(k)}">${_t("admManage")}</button>` : "") + `</div>`;
           }).join("") : `<p class="x-note">${_t("admNone")}</p>`;
           admEd();
@@ -4138,8 +4016,6 @@
           if (!a) { ADM.sel = null; $("admed").classList.add("x-hide"); return; }
           $("admed").classList.remove("x-hide");
           $("admen").textContent = (me ? "★ " : "") + a.u;
-          const pk = $("admpk"), pv = pk.value || "0";
-          pk.innerHTML = PACKS.map(([c, n], i) => `<option value="${i}">${usd(c)} → ${n.toLocaleString("en")} 🪙</option>`).join(""); pk.value = pv;
           $("admbr").textContent = a.ban ? _t("banMsg", { r: a.ban.r }) : "";
           const hit = !me && roleOf(k) !== "o";
           $("admban").classList.toggle("x-hide", !hit); $("admban").textContent = _t(a.ban ? "admUnban" : "admBan");
@@ -4155,12 +4031,7 @@
           if (!admMay(k)) return msg("admNo");
           const why = $("admwhy").value.replace(CTRL0g, "").trim().slice(0, 60);
           if (g !== "del") ADM.arm = 0;
-          if (g === "tp") { // simulated top-up: grants one coin pack, counts toward the top-up badge, logged for the player and the admin
-            const i = Number($("admpk").value); if (!Number.isInteger(i) || !PACKS[i]) return;
-            const p = me ? P : a.d.P, add = tuGrant(p, i);
-            admAdd(k, "tp", add, usd(PACKS[i][0]) + (why ? " · " + why : ""));
-            if (me) profile(); else a.x = 1;
-          } else if (/^[cgx][+-]$/.test(g)) {
+          if (/^[cgx][+-]$/.test(g)) {
             const n = Number($("admamt").value);
             if (!Number.isInteger(n) || n < 1 || n > 1e6) return msg("admNeedAmt");
             if (!why) return msg("admNeedWhy");
@@ -4183,10 +4054,11 @@
         function admLogP() {
           const f = new Intl.DateTimeFormat(LANG, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }), IC = { c: "🪙", g: "💎", x: "XP" };
           const AC = { b: ["🚫", "admBan"], u: ["✅", "admUnban"], d: ["🗑️", "admDel"], "a+": ["🛡️", "admMkA"], "a-": ["🛡️", "admRmA"],
-            sx: ["⚡", "setXp"], sc: ["⚡", "setCo"], m1: ["🚧", "mntOn"], m0: ["🚧", "mntOff"], mm: ["🚧", "mntMsg"], n1: ["📢", "annOn"], n0: ["📢", "annOff"], nm: ["📢", "annMsg"], tp: ["💳", "admTopL"] };
+            sx: ["⚡", "setXp"], sc: ["⚡", "setCo"], m1: ["🚧", "mntOn"], m0: ["🚧", "mntOff"], mm: ["🚧", "mntMsg"], n1: ["📢", "annOn"], n0: ["📢", "annOff"], nm: ["📢", "annMsg"], tp: ["🪙", "tx_tp"] };
           $("adml").innerHTML = ADM.log.length ? ADM.log.map((e) => {
             const w = IC[e.act] ? `${e.v > 0 ? "+" : ""}${e.v} ${IC[e.act]}` : _t(AC[e.act][1]) + (e.act[0] === "s" ? ` <bdi dir="ltr">${e.v}x</bdi>` : e.act === "tp" ? ` <bdi dir="ltr">+${e.v.toLocaleString("en")}</bdi> 🪙` : "");
-            return `<div class="x-it"><i>${IC[e.act] ? (e.v < 0 ? "➖" : "➕") : AC[e.act][0]}</i><b>${esc(e.u)} · ${w}<small>${esc(e.by)} · ${f.format(e.ts)}${e.r ? " · " + esc(e.r) : ""}</small></b></div>`;
+            const r = e.act === "tp" ? e.r.replace(/^\$[\d.,]+(?: · )?/, "") : e.r; // older "tp" entries began with a dollar price; it is not shown
+            return `<div class="x-it"><i>${IC[e.act] ? (e.v < 0 ? "➖" : "➕") : AC[e.act][0]}</i><b>${esc(e.u)} · ${w}<small>${esc(e.by)} · ${f.format(e.ts)}${r ? " · " + esc(r) : ""}</small></b></div>`;
           }).join("") : `<p class="x-note">${_t("admLogE")}</p>`;
         }
         $("admul").addEventListener("click", (e) => {
@@ -4236,7 +4108,7 @@
             // team rating and team matches (optional, so older codes still import): a moved rating needs team matches behind it
             if ((p.tr !== undefined && !isInt(p.tr, 0, 1e5)) || (p.tg !== undefined && !isInt(p.tg, 0, st.games))) return false;
             if (p.tr !== undefined && p.tr !== 1000 && !p.tg) return false;
-            // total topped up (optional, so older codes still import): kept as imported, unverified, within range
+            // tu, a legacy field (optional, so older codes still import): kept as imported, within range, never shown
             if (p.tu !== undefined && !isInt(p.tu, 0, 1e8)) return false;
             if (d.S.diff === 4 && lv < LEG_LV) return false;
             if (p.dg !== undefined && (!isObj(p.dg) || !isInt(p.dg.d, -1, 1e6) || !isInt(p.dg.s, 0, 7) || p.dg.d > today() + 1)) return false;
@@ -4390,15 +4262,6 @@
 
         function paintProf() {
           $("pcard").innerHTML = chipH();
-          { // top-up badge: emblem, name, total and progress to the next tier; hidden at $0
-            const t = tuTier(P), c = P.tu || 0, el = $("ptub"); el.classList.toggle("x-hide", t < 0 || !cur);
-            if (t >= 0) {
-              const lo = TUB[t], hi = TUB[t + 1], pc = hi ? Math.min(100, ((c - lo) / (hi - lo)) * 100) : 100;
-              el.innerHTML = tuSvg(t, "", "") + `<div><small>${_t("tuBadge")}</small><b>${_t("tu" + t)}</b>` +
-                `<em class="x-lvb" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pc)}" aria-label="${esc(_t("tuBadge"))}"><u style="width:${pc.toFixed(1)}%"></u></em>` +
-                `<small>${_t("tuTot", { x: `<bdi dir="ltr">${usd(c)}</bdi>` })} · ${hi ? _t("tuNext", { x: `<bdi dir="ltr">${usd(hi - c)}</bdi>`, n: _t("tu" + (t + 1)) }) : _t("tuMax")}</small></div>`;
-            } else el.innerHTML = "";
-          }
           $("pst").innerHTML = [["games", PST.games], ["bestLen", best], ["kills", PST.kills], ["wins", PST.wins], ["trophies", L.tro]]
             .map(([k, v]) => `<div><b>${num(v)}</b><span>${_t(k)}</span></div>`).join("");
           $("logout").classList.toggle("x-hide", !cur); $("xsec").classList.toggle("x-hide", !cur); $("frs").classList.toggle("x-hide", !cur); paintFr();
@@ -4740,7 +4603,7 @@
         function paintTx() {
           $("coins").textContent = P.coins; $("gems").textContent = P.gems;
           const f = new Intl.DateTimeFormat(LANG, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-          $("txl").innerHTML = P.tx.length ? P.tx.filter((x) => Array.isArray(x) && TXK.includes(x[1]) && Number.isFinite(x[0]) && Number.isFinite(x[2])).map(([ts, w, a, u]) => `<div class="x-it"><i>${u === "g" ? "💎" : "🪙"}</i><b>${w === "tp" ? txTp(a) : _t("tx_" + w)}<small>${f.format(ts * 1000)}</small></b>` +
+          $("txl").innerHTML = P.tx.length ? P.tx.filter((x) => Array.isArray(x) && TXK.includes(x[1]) && Number.isFinite(x[0]) && Number.isFinite(x[2])).map(([ts, w, a, u]) => `<div class="x-it"><i>${u === "g" ? "💎" : "🪙"}</i><b>${_t("tx_" + w)}<small>${f.format(ts * 1000)}</small></b>` +
             `<span style="padding-inline-end:10px;font-weight:600;color:${a > 0 ? "#39ff14" : "#ff6b6b"}" dir="ltr">${a > 0 ? "+" : ""}${a}</span></div>`).join("") : `<p class="x-note">${_t("txEmpty")}</p>`;
         }
         $("items").addEventListener("click", (e) => {
@@ -4781,8 +4644,8 @@
         $("tabs").addEventListener("click", (e) => {
           const b = e.target.closest("button[data-t]"); if (!b) return;
           [...$("tabs").children].forEach((x) => x.classList.toggle("on", x === b));
-          ["items", "cpk", "pts", "txl"].forEach((id) => $(id).classList.toggle("x-hide", b.dataset.t !== id));
-          if (b.dataset.t === "pts") paintPts(); else if (b.dataset.t === "txl") paintTx(); else if (b.dataset.t === "cpk") paintPk(); else paintShop();
+          ["items", "pts", "txl"].forEach((id) => $(id).classList.toggle("x-hide", b.dataset.t !== id));
+          if (b.dataset.t === "pts") paintPts(); else if (b.dataset.t === "txl") paintTx(); else paintShop();
         });
         const WP = [{ c: 50 }, { b: "mag" }, { c: 120 }, { b: "shield" }, { c: 250 }, { b: "big" }]; // wheel prizes, labelled by wpN()
         let wheelDeg = 0, spinning = false;
@@ -4803,31 +4666,9 @@
           });
           $("pts").innerHTML = h;
         }
-        // COIN PACK cards: tapping a price opens the payments sheet; nothing is granted
-        function paintPk() {
-          $("coins").textContent = P.coins; $("gems").textContent = P.gems;
-          $("cpk").innerHTML = `<h3>${_t("packs")}</h3><div class="x-pkg">` + PACKS.map(([c, n, bn, tg], i) =>
-            `<div class="x-pk${tg ? " x-hot" : ""}">${bn ? `<span class="x-rib">${_t("pkBonus", { n: bn })}</span>` : ""}${tg ? `<span class="x-ptag">${_t(tg)}</span>` : ""}` +
-            pileSvg(i) + `<b dir="ltr">${n.toLocaleString("en")} 🪙</b><small>${bn ? _t("pkExtra", { n: (n - Math.round(n / (1 + bn / 100))).toLocaleString("en") }) : _t("coinsW")}</small>` +
-            `<button data-pk="${i}" aria-label="${esc(`${n.toLocaleString("en")} ${_t("coinsW")} · ${usd(c)}`)}">${usd(c)}</button></div>`).join("") +
-            `</div><p class="x-note">${_t("pkNote")}</p>`;
-        }
-        let pshBack = null;
-        function pshOpen(i) {
-          const [c, n] = PACKS[i]; pshBack = document.activeElement;
-          $("pshp").textContent = `${n.toLocaleString("en")} 🪙 · ${usd(c)}`;
-          $("psh").classList.remove("x-hide"); $("pshok").focus({ preventScroll: true });
-          beep(520, 0.08, "triangle", 0.04);
-        }
-        function pshClose() { $("psh").classList.add("x-hide"); if (pshBack && pshBack.isConnected) pshBack.focus({ preventScroll: true }); pshBack = null; }
-        $("cpk").addEventListener("click", (e) => { const b = e.target.closest("button[data-pk]"); if (b) pshOpen(+b.dataset.pk); });
-        $("pshok").addEventListener("click", pshClose);
-        $("psh").addEventListener("click", (e) => { if (e.target === $("psh")) pshClose(); });
-        document.addEventListener("keydown", (e) => { if (!$("psh").classList.contains("x-hide") && (e.key === "Escape" || e.key === "Tab")) { e.preventDefault(); e.stopPropagation(); if (e.key === "Escape") pshClose(); else $("pshok").focus(); } }, true);
         $("pts").addEventListener("click", (e) => {
           const b = e.target.closest("button[data-p]"); if (!b || b.disabled) return;
           const p = b.dataset.p;
-          if (p === "buy") { toast(_t("paySoon")); return; }
           if (p === "chest") { const c = 50 + ((R() * 151) | 0); M.chest = 1; pay(c, "chest"); toast(`🎁 +${c} 🪙`); }
           else if (p === "wheel") {
             const k = (R() * WP.length) | 0, pz = WP[k];
