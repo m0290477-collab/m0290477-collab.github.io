@@ -1410,9 +1410,7 @@
           <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
         <div class="x-set"><p data-i18n="nfWxS">nfWxS</p><div class="x-seg" data-nk="wx">
           <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
-        <div class="x-set" id="nfvoR"><p data-i18n="nfVoS">nfVoS</p><div class="x-seg" data-nk="vo">
-          <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
-        <a class="x-btn x-sub" href="privacy.html" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none" data-i18n="privacy">سياسة الخصوصية</a>
+        <a class="x-btn x-sub" id="privL" href="/privacy.html" rel="noopener" style="display:block;text-align:center;text-decoration:none" data-i18n="privacy">سياسة الخصوصية</a>
         <button class="x-btn" data-go="back" data-i18n="back">رجوع</button>
       </div></div>
       <div id="tut" class="x-hide" role="dialog" aria-modal="true"><div class="tu-card">
@@ -7705,7 +7703,7 @@
         // ===================== VOICE BOOST =====================
         // say "boost" (or "سرعة", "hız", "vite", "rápido", "तेज़"...) to boost for 1.5 s; only where the browser has speech recognition,
         // hidden elsewhere. The microphone is asked for only on the Settings tap, and listening runs only during matches.
-        const SRC = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const SRC = null; // voice boost removed (owner request); no microphone use anywhere
         const VO = { r: null, on: false, dead: false, last: 0 };
         const VO_W = ["boost", "go", "fast", "turbo", "speed", "سرعة", "سرع", "اسرع", "أسرع", "تيربو", "يلا", "hız", "hızlan", "hizlan", "git", "vite", "rapide", "accélère", "rápido", "rapido", "acelera", "corre", "तेज़", "तेज", "बूस्ट", "चलो"];
         const VO_L = { ar: "ar-SA", en: "en-US", tr: "tr-TR", fr: "fr-FR", es: "es-ES", hi: "hi-IN" };
@@ -8867,6 +8865,7 @@
           return o;
         })();
         ON.boot();
+        { const pl = $("privL"); if (pl) pl.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); let w = null; try { w = window.open("/privacy.html", "_blank"); if (w) w.opener = null; } catch (x) {} if (!w) location.assign("/privacy.html"); }, true); }
         NFR = true; nfPaintSet(); for (const f of NFH.load) f();
         // ================= END NEW FEATURES =================
         requestAnimationFrame(loop);
