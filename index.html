@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://api.open-meteo.com; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="referrer" content="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>Super Snake</title>
@@ -821,6 +821,12 @@
         <div class="x-set"><p data-i18n="fpsC">عداد الإطارات FPS</p><div class="x-seg" data-k="fps">
           <button data-v="1" data-i18n="showW">إظهار</button><button data-v="0" data-i18n="hideW">إخفاء</button></div></div>
         <div class="x-set"><p data-i18n="nfGhostS">nfGhostS</p><div class="x-seg" data-nk="gh">
+          <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
+        <div class="x-set"><p data-i18n="nfRivalS">nfRivalS</p><div class="x-seg" data-nk="rv">
+          <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
+        <div class="x-set"><p data-i18n="nfWxS">nfWxS</p><div class="x-seg" data-nk="wx">
+          <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
+        <div class="x-set" id="nfvoR"><p data-i18n="nfVoS">nfVoS</p><div class="x-seg" data-nk="vo">
           <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
         <a class="x-btn x-sub" href="privacy.html" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none" data-i18n="privacy">سياسة الخصوصية</a>
         <button class="x-btn" data-go="back" data-i18n="back">رجوع</button>
@@ -1686,6 +1692,43 @@
         tx_rp: ["رويال باس", "Royal Pass", "Royal Pass", "Royal Pass", "Royal Pass", "रॉयल पास"],
         tx_shop2: ["المتجر الملكي", "Royal Shop", "Kraliyet Mağazası", "Boutique royale", "Tienda real", "रॉयल शॉप"],
         tx_crate: ["صندوق", "Crate", "Sandık", "Caisse", "Caja", "क्रेट"],
+        nfRivalS: ["الخصم الذكي", "Smart rival", "Akıllı rakip", "Rival intelligent", "Rival inteligente", "स्मार्ट विरोधी"],
+        nfWxS: ["الطقس والوقت الحقيقي", "Real weather & time", "Gerçek hava ve saat", "Météo et heure réelles", "Clima y hora reales", "असली मौसम और समय"],
+        nfVoS: ["تسريع بالصوت", "Voice boost", "Sesle hızlanma", "Boost vocal", "Turbo por voz", "आवाज़ से बूस्ट"],
+        nfRivalN: ["النمسيس", "Nemesis", "Nemesis", "Némésis", "Némesis", "नेमेसिस"],
+        nfRivalD0: ["خصم يتعلم أسلوبك من كل مباراة", "A rival that learns your style every match", "Her maçta tarzını öğrenen bir rakip", "Un rival qui apprend ton style à chaque match", "Un rival que aprende tu estilo cada partida", "हर मैच में आपकी शैली सीखने वाला विरोधी"],
+        nfRivalD: ["درس {n} مباراة: تلف يسار {l}% · تسرّع {b}% · قرب الجدار {w}% · قتلك {k}", "Studied {n} matches: you turn left {l}% · boost {b}% · near walls {w}% · got you {k}×", "{n} maç inceledi: sola dönüş %{l} · hızlanma %{b} · duvar yakını %{w} · seni {k} kez yendi", "{n} matchs étudiés : gauche {l}% · boost {b}% · près des murs {w}% · t'a eu {k}×", "Estudió {n} partidas: giras a la izquierda {l}% · turbo {b}% · cerca de muros {w}% · te ganó {k}×", "{n} मैच देखे: बाएँ {l}% · बूस्ट {b}% · दीवार के पास {w}% · आपको {k} बार हराया"],
+        nfTa_h_new: ["أنا أراقبك يا {x}... وأتعلم.", "I'm watching you, {x}... and learning.", "Seni izliyorum {x}... ve öğreniyorum.", "Je t'observe, {x}... et j'apprends.", "Te observo, {x}... y aprendo.", "मैं तुम्हें देख रहा हूँ, {x}... और सीख रहा हूँ।"],
+        nfTa_h_boost: ["تسرّع كثير يا {x}. بستناك قدّام.", "You boost too much, {x}. I'll be waiting ahead.", "Çok hızlanıyorsun {x}. Önünde bekleyeceğim.", "Tu boostes trop, {x}. Je t'attends devant.", "Usas mucho el turbo, {x}. Te espero delante.", "तुम बहुत बूस्ट करते हो, {x}। मैं आगे इंतज़ार करूँगा।"],
+        nfTa_h_wall: ["لاصق بالجدار؟ ما راح يحميك.", "Hugging the walls won't save you.", "Duvara yapışmak seni kurtarmaz.", "Raser les murs ne te sauvera pas.", "Pegarte a los muros no te salvará.", "दीवार से चिपकना तुम्हें नहीं बचाएगा।"],
+        nfTa_h_left: ["دايم تلف يسار. أعرف.", "You always turn left. I know.", "Hep sola dönüyorsun. Biliyorum.", "Tu tournes toujours à gauche. Je sais.", "Siempre giras a la izquierda. Lo sé.", "तुम हमेशा बाएँ मुड़ते हो। मुझे पता है।"],
+        nfTa_h_right: ["دايم تلف يمين. أعرف.", "You always turn right. I know.", "Hep sağa dönüyorsun. Biliyorum.", "Tu tournes toujours à droite. Je sais.", "Siempre giras a la derecha. Lo sé.", "तुम हमेशा दाएँ मुड़ते हो। मुझे पता है।"],
+        nfTa_h_plain: ["حفظت حركاتك يا {x}.", "I've memorised your moves, {x}.", "Hareketlerini ezberledim {x}.", "J'ai mémorisé tes mouvements, {x}.", "Me sé tus movimientos, {x}.", "मुझे तुम्हारी चालें याद हैं, {x}।"],
+        nfTa_near: ["قريب... قريب جداً.", "Close... very close.", "Yakın... çok yakın.", "Proche... très proche.", "Cerca... muy cerca.", "पास... बहुत पास।"],
+        nfTa_lose: ["حظ! المرة الجاية لي.", "Lucky! Next time is mine.", "Şanslısın! Sonraki benim.", "De la chance ! La prochaine est à moi.", "¡Suerte! La próxima es mía.", "किस्मत! अगली बार मेरी।"],
+        nfTa_kill: ["متوقَّع جداً يا {x}!", "Too predictable, {x}!", "Çok tahmin edilebilirsin {x}!", "Trop prévisible, {x} !", "¡Demasiado predecible, {x}!", "बहुत अनुमानित, {x}!"],
+        nfTa_next: ["هالمرة نجوت. راح أتعلم أكثر.", "You got away this time. I'll learn more.", "Bu sefer kaçtın. Daha çok öğreneceğim.", "Tu t'en sors cette fois. J'apprendrai encore.", "Esta vez escapaste. Aprenderé más.", "इस बार बच गए। मैं और सीखूँगा।"],
+        nfTa_emote: ["حلو التعبير. لسا خسران.", "Nice emote. Still losing.", "Güzel ifade. Yine de kaybediyorsun.", "Jolie émote. Tu perds quand même.", "Bonito gesto. Sigues perdiendo.", "अच्छा इमोट। फिर भी हार रहे हो।"],
+        nfNight: ["ليل", "Night", "Gece", "Nuit", "Noche", "रात"],
+        nfDusk: ["غروب", "Dusk", "Alacakaranlık", "Crépuscule", "Atardecer", "सांझ"],
+        nfDay: ["نهار", "Day", "Gündüz", "Jour", "Día", "दिन"],
+        nfWx_storm: ["عاصفة", "Storm", "Fırtına", "Orage", "Tormenta", "तूफ़ान"],
+        nfWx_snow: ["ثلج", "Snow", "Kar", "Neige", "Nieve", "बर्फ़"],
+        nfWx_rain: ["مطر", "Rain", "Yağmur", "Pluie", "Lluvia", "बारिश"],
+        nfWx_fog: ["ضباب", "Fog", "Sis", "Brouillard", "Niebla", "कोहरा"],
+        nfWx_cloud: ["غيوم", "Cloudy", "Bulutlu", "Nuageux", "Nublado", "बादल"],
+        nfWx_clear: ["صافي", "Clear", "Açık", "Dégagé", "Despejado", "साफ़"],
+        nfWxTimeS: ["حسب وقتك", "your local time", "yerel saatin", "ton heure locale", "tu hora local", "आपका स्थानीय समय"],
+        nfWxTime: ["ما قدرنا نعرف موقعك، الساحة تتبع وقتك فقط", "Location not available, the arena follows your time only", "Konum yok, arena yalnızca saatini izler", "Position indisponible, l'arène suit seulement ton heure", "Ubicación no disponible, la arena solo sigue tu hora", "लोकेशन नहीं मिली, मैदान सिर्फ़ आपका समय दिखाएगा"],
+        nfVoNo: ["التسريع بالصوت غير متاح (الميكروفون مرفوض أو غير مدعوم)", "Voice boost isn't available (microphone blocked or unsupported)", "Sesle hızlanma kullanılamıyor (mikrofon engelli veya desteklenmiyor)", "Boost vocal indisponible (micro bloqué ou non pris en charge)", "Turbo por voz no disponible (micrófono bloqueado o no compatible)", "आवाज़ बूस्ट उपलब्ध नहीं (माइक बंद या सपोर्ट नहीं)"],
+        nfVoOk: ["قل \"سرعة\" أو \"boost\" أثناء اللعب", "Say \"boost\" during a match", "Maçta \"hız\" veya \"boost\" de", "Dis « vite » ou « boost » pendant un match", "Di \"rápido\" o \"boost\" en la partida", "मैच में \"तेज़\" या \"boost\" बोलें"],
+        nfPhT: ["شكل من صورتك", "Your photo skin", "Fotoğraf görünümün", "Skin avec ta photo", "Aspecto con tu foto", "आपकी फ़ोटो वाली स्किन"],
+        nfPhD: ["صورتك تصير نقشة على ثعبانك (تبقى على هذا الجهاز)", "Your photo becomes your snake's pattern (stays on this device)", "Fotoğrafın yılanının deseni olur (bu cihazda kalır)", "Ta photo devient le motif de ton serpent (reste sur cet appareil)", "Tu foto se vuelve el patrón de tu serpiente (se queda en este dispositivo)", "आपकी फ़ोटो साँप का पैटर्न बनती है (इसी डिवाइस पर रहती है)"],
+        nfPhPick: ["اختر صورة", "Choose photo", "Fotoğraf seç", "Choisir une photo", "Elegir foto", "फ़ोटो चुनें"],
+        nfPhNew: ["غيّر", "Change", "Değiştir", "Changer", "Cambiar", "बदलें"],
+        nfPhDel: ["احذف الصورة", "Delete photo", "Fotoğrafı sil", "Supprimer la photo", "Borrar foto", "फ़ोटो हटाएँ"],
+        nfPhOk: ["تم! صورتك على ثعبانك", "Done! Your photo is on your snake", "Tamam! Fotoğrafın yılanında", "C'est fait ! Ta photo est sur ton serpent", "¡Listo! Tu foto está en tu serpiente", "हो गया! आपकी फ़ोटो साँप पर है"],
+        nfPhBad: ["ما قدرنا نفتح الصورة", "Couldn't open that image", "Görsel açılamadı", "Impossible d'ouvrir l'image", "No se pudo abrir la imagen", "तस्वीर नहीं खुली"],
       };
       Object.assign(I18N, NF_I18N);
       let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
@@ -6575,6 +6618,204 @@
           return "👻 " + _t("nfGhostNew");
         });
         NFCARDS.push(() => nfCard("👻", _t("nfGhostT"), _t("nfGhostD") + " · " + _t(NX.set.gh ? "on" : "off"), ""));
+
+        // ===================== SMART RIVAL "Nemesis" =====================
+        // One bot in Classic-type matches studies how you play (which way you turn, how much you boost, how close you stay to walls;
+        // remembered per account in NX.ai), hunts you with it, and taunts you in your language.
+        const TAUNT_CD = 12;
+        function taunt(k, o) {
+          if (!NFS.rv || state !== "play") return; if (NFS.tT && NFS.t - NFS.tT < TAUNT_CD && k !== "kill") return;
+          NFS.tT = NFS.t; xBan("👿 " + _t("nfTa_" + k, Object.assign({ x: (player && player.name) || "" }, o || {})));
+        }
+        function habitKey() { const a = NX.ai; if (a.n < 1) return "new"; if (a.b > 0.35) return "boost"; if (a.w > 0.4) return "wall"; if (a.l > 0.58) return "left"; if (a.l < 0.42) return "right"; return "plain"; }
+        NFH.start.push(() => {
+          NFS.rv = null; NFS.ai = { n: 0, l: 0, r: 0, b: 0, w: 0 }; NFS.aiT = 0; NFS.tT = 0; NFS.rvA = false;
+          if (!NX.set.rv || MD !== "n" || NFM.m === "story") return;
+          const b = snakes.find((s) => s.bot && !s.ad && !s.boss && s.tm === undefined); if (!b) return;
+          b.rv = 1; b.name = "👿 " + _t("nfRivalN"); b.len = Math.max(b.len, 60 + Math.min(120, NX.ai.n * 4)); b.skin = 4; NFS.rv = b; NFS.rvA = true;
+          setTimeout(() => { if (state === "play" && NFS.rv) { NFS.tT = 0; taunt("h_" + habitKey()); } }, 2600);
+        });
+        NFH.home.push(() => { for (const s of snakes) if (s.rv) { s.rv = 0; if (s.ni !== undefined) s.name = bn(s.ni); } });
+        NFH.upd.push((dt) => {
+          if (state !== "play" || !player || !player.alive) return;
+          if ((NFS.aiT -= dt) <= 0) { // learn: two samples a second
+            NFS.aiT = 0.5; const a = NFS.ai, h = player.seg[0], tv = angDiff(player.ta, player.a);
+            a.n++; if (tv > 0.15) a.r++; else if (tv < -0.15) a.l++; if (player.boost && player.len > 12) a.b++;
+            if (Math.min(h.x, h.y, A - h.x, A - h.y) < 450) a.w++;
+          }
+          const rv = NFS.rv; if (!rv) return;
+          if (rv.alive && !NFS.rvA) NFS.rvA = true;
+          if (!rv.alive && NFS.rvA) { NFS.rvA = false; const near = Math.hypot(rv.seg[0].x - player.seg[0].x, rv.seg[0].y - player.seg[0].y) < 600; if (near) { NFS.tT = 0; taunt("lose"); } }
+          if (rv.alive && NFS.t > 6 && Math.hypot(rv.seg[0].x - player.seg[0].x, rv.seg[0].y - player.seg[0].y) < 650 && R() < dt * 0.25) taunt(R() < 0.5 ? "near" : "h_" + habitKey());
+        });
+        RIV.fn = (s, dt) => {
+          if (!player || !player.alive || state !== "play" || s.frz > 0) return;
+          const h = s.seg[0], p = player.seg[0], d = Math.hypot(p.x - h.x, p.y - h.y), ai = NX.ai, m = 260;
+          if (h.x < m || h.y < m || h.x > A - m || h.y > A - m) return; // let the normal brain handle walls
+          const ax = h.x + Math.cos(s.a) * 130, ay = h.y + Math.sin(s.a) * 130;
+          if (obs.some((o) => oD(o, ax, ay) < o.r + 70 || oD(o, h.x, h.y) < o.r + 90)) return;
+          let danger = false;
+          gCells(SG, ax, ay, 70, (c) => { for (let j = 0; j < c.length; j += 2) { const o = c[j], q = c[j + 1]; if (o === s || !o.alive) continue; if (Math.abs(q.x - ax) < 60 && Math.abs(q.y - ay) < 60) { danger = true; return false; } } });
+          if (danger) return;
+          if (d > 1600) { s.ta = Math.atan2(p.y - h.y, p.x - h.x); return; }
+          const side = ai.n < 1 ? (Math.sin(time * 0.4) > 0 ? 1 : -1) : ai.l > 0.5 ? -1 : 1; // cut off on the side you usually turn to
+          const lead = 150 + ai.b * 260 + Math.min(220, d * 0.25);
+          let tx = p.x + Math.cos(player.a) * lead + Math.cos(player.a + (side * Math.PI) / 2) * 80, ty = p.y + Math.sin(player.a) * lead + Math.sin(player.a + (side * Math.PI) / 2) * 80;
+          if (ai.w > 0.35) { const wx = p.x < A / 2 ? 0 : A, wy = p.y < A / 2 ? 0 : A; if (Math.abs(p.x - wx) < Math.abs(p.y - wy)) tx = (tx + (p.x + wx) / 2) / 2; else ty = (ty + (p.y + wy) / 2) / 2; } // squeeze wall-huggers
+          s.ta = Math.atan2(clamp(ty, m, A - m) - h.y, clamp(tx, m, A - m) - h.x);
+          s.boost = d < 560 && s.len > 40;
+        };
+        RIV.onEmote = () => { if (NFS.rv && NFS.rv.alive && R() < 0.7) setTimeout(() => { NFS.tT = 0; taunt("emote"); }, 900); };
+        NFH.death.push((s) => {
+          const rv = NFS.rv; if (!rv || s !== player || !rv.alive) return;
+          const h = s.seg[0]; if (rv.seg.some((q, i) => i % 3 === 0 && Math.hypot(q.x - h.x, q.y - h.y) < s.r + rv.r + 40)) { NFS.rvK = 1; NX.ai.k++; }
+        });
+        NFH.over.push(() => {
+          const a = NFS.ai; let line = "";
+          if (a && a.n >= 10) { // remember: a slow moving average, so one odd match doesn't flip the rival
+            const k = NX.ai.n < 3 ? 0.5 : 0.25, lr = a.l + a.r ? a.l / (a.l + a.r) : 0.5;
+            NX.ai.l = +(NX.ai.l * (1 - k) + lr * k).toFixed(3); NX.ai.b = +(NX.ai.b * (1 - k) + (a.b / a.n) * k).toFixed(3); NX.ai.w = +(NX.ai.w * (1 - k) + (a.w / a.n) * k).toFixed(3); NX.ai.n++;
+          }
+          if (NFS.rv) line = "👿 " + _t(NFS.rvK ? "nfTa_kill" : NFS.rv.alive ? "nfTa_next" : "nfTa_lose", { x: (player && player.name) || "" });
+          NFS.rvK = 0; return line;
+        });
+
+        // ===================== REAL TIME + REAL WEATHER ARENA =====================
+        // Settings → "Real weather & time" (off by default). Night/day follows your clock; with location allowed (asked only on that tap),
+        // the current weather from Open-Meteo (free, no key) brings rain, snow, fog or storms. Only the weather is stored, never coordinates.
+        var WXS = { d: null, snow: [], fl: 0, flT: 6 };
+        try { const o = JSON.parse(KV.get("ss-wx") || "null"); if (o && Number.isFinite(o.code) && Number.isFinite(o.t)) WXS.d = o; } catch (e) {}
+        const wxFresh = () => WXS.d && Date.now() - WXS.d.t < 3 * 36e5;
+        const wxKind = () => { const c = wxFresh() ? WXS.d.code : -1; return c < 0 ? "" : c >= 95 ? "storm" : (c >= 71 && c <= 77) || c === 85 || c === 86 ? "snow" : (c >= 51 && c <= 67) || (c >= 80 && c <= 82) ? "rain" : c === 45 || c === 48 ? "fog" : c >= 2 ? "cloud" : "clear"; };
+        const WXE = { storm: "⛈️", snow: "🌨️", rain: "🌧️", fog: "🌫️", cloud: "☁️", clear: "☀️" };
+        function wxNight() { if (wxFresh() && (WXS.d.day === 0 || WXS.d.day === 1)) { const h = new Date().getHours(); return WXS.d.day ? (h === 6 || h === 18 || h === 19 ? 0.35 : 0) : 0.9; } const h = new Date().getHours(); return h >= 20 || h < 6 ? 0.9 : h < 7 || h >= 18 ? 0.4 : 0; }
+        async function wxFetch(ask) {
+          if (!navigator.geolocation) return false;
+          if (!ask) { try { const q = await navigator.permissions.query({ name: "geolocation" }); if (q.state !== "granted") return false; } catch (e) { return false; } }
+          const pos = await new Promise((res) => { try { navigator.geolocation.getCurrentPosition((p) => res(p), () => res(null), { timeout: 9000, maximumAge: 30 * 60000 }); } catch (e) { res(null); } });
+          if (!pos) return false;
+          try {
+            const la = pos.coords.latitude.toFixed(2), lo = pos.coords.longitude.toFixed(2);
+            const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m,weather_code,is_day&timezone=auto`);
+            const c = (await r.json()).current; if (!c || !Number.isFinite(c.weather_code)) return false;
+            WXS.d = { code: c.weather_code, day: c.is_day, temp: Math.round(c.temperature_2m), t: Date.now() }; KV.set("ss-wx", JSON.stringify(WXS.d)); paintWx(); return true;
+          } catch (e) { return false; }
+        }
+        function paintWx() {
+          const el = $("nfwx"); if (!el) return; const on = !!NX.set.wx; el.classList.toggle("x-hide", !on); if (!on) return;
+          const n = wxNight(), k = wxKind();
+          el.textContent = `${n > 0.6 ? "🌙 " + _t("nfNight") : n > 0 ? "🌅 " + _t("nfDusk") : "☀️ " + _t("nfDay")}` + (k ? ` · ${WXE[k]} ${_t("nfWx_" + k)}${wxFresh() && Number.isFinite(WXS.d.temp) ? " " + WXS.d.temp + "°" : ""}` : " · " + _t("nfWxTimeS"));
+        }
+        NFSET.wx = async (v) => { if (!v) { setTimeout(paintWx, 0); return true; } NX.set.wx = 1; paintWx(); const ok = await wxFetch(true); if (!ok) toast(_t("nfWxTime")); paintWx(); return true; };
+        NFH.load.push(paintWx); NFH.relang.push(paintWx); NFH.home.push(() => setTimeout(paintWx, 50));
+        NFH.pre.push(() => { if (NX.set.wx && !wxFresh()) wxFetch(false); });
+        NFH.wx.push(() => {
+          if (!NX.set.wx || NFS.my === "night" || (state === "play" && AD.mod === "night")) return;
+          xN = wxNight();
+          const k = wxKind();
+          if (k === "rain" || k === "storm") { rainOn = Math.max(rainOn, 1); }
+          else if (k) { rainOn = 0; rainNext = 999; } // known dry weather: no made-up rain
+        });
+        NFH.upd.push((dt) => {
+          if (!NX.set.wx) return; const k = wxKind();
+          if (k === "storm") { if ((WXS.flT -= dt) <= 0) { WXS.flT = rnd(4, 11); WXS.fl = 0.35; if (state === "play") setTimeout(() => beep(60, 0.9, "sawtooth", 0.05, 40), 400); } if (WXS.fl > 0) WXS.fl -= dt; }
+          if (k === "snow") { const n = Math.round(70 * VQ()); while (WXS.snow.length < n) WXS.snow.push({ x: R(), y: R(), v: rnd(0.4, 1), p: R() * 6 }); if (WXS.snow.length > n) WXS.snow.length = n;
+            for (const s of WXS.snow) { s.y += dt * 0.07 * s.v; s.p += dt; s.x += Math.sin(s.p) * dt * 0.02; if (s.y > 1.03) { s.y = -0.03; s.x = R(); } } }
+        });
+        NFH.top.push(() => {
+          if (!NX.set.wx) return; const k = wxKind();
+          if (k === "snow") { ctx.fillStyle = "#fff"; for (const s of WXS.snow) { ctx.globalAlpha = 0.5 + 0.4 * s.v; const d = 1.5 + 2.2 * s.v; ctx.fillRect(s.x * W, s.y * H, d, d); } }
+          else if (k === "fog") { ctx.globalAlpha = 0.22; ctx.fillStyle = "#cfd8e3"; ctx.fillRect(0, 0, W, H); }
+          else if (k === "cloud") { ctx.globalAlpha = 0.07; ctx.fillStyle = "#6b7380"; ctx.fillRect(0, 0, W, H); }
+          if (WXS.fl > 0) { ctx.globalAlpha = Math.min(0.6, WXS.fl * 2); ctx.fillStyle = "#eef4ff"; ctx.fillRect(0, 0, W, H); }
+          ctx.globalAlpha = 1;
+        });
+
+        // ===================== VOICE BOOST =====================
+        // say "boost" (or "سرعة", "hız", "vite", "rápido", "तेज़"...) to boost for 1.5 s; only where the browser has speech recognition,
+        // hidden elsewhere. The microphone is asked for only on the Settings tap, and listening runs only during matches.
+        const SRC = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const VO = { r: null, on: false, dead: false, last: 0 };
+        const VO_W = ["boost", "go", "fast", "turbo", "speed", "سرعة", "سرع", "اسرع", "أسرع", "تيربو", "يلا", "hız", "hızlan", "hizlan", "git", "vite", "rapide", "accélère", "rápido", "rapido", "acelera", "corre", "तेज़", "तेज", "बूस्ट", "चलो"];
+        const VO_L = { ar: "ar-SA", en: "en-US", tr: "tr-TR", fr: "fr-FR", es: "es-ES", hi: "hi-IN" };
+        { const r = $("nfvoR"); if (r) r.classList.toggle("x-hide", !SRC); }
+        function voStart(fromTap) {
+          return new Promise((res) => {
+            if (!SRC || VO.dead) return res(false);
+            if (VO.on) return res(true);
+            let done = false; const fin = (v) => { if (!done) { done = true; res(v); } };
+            try {
+              const r = VO.r || new SRC(); VO.r = r; r.lang = VO_L[LANG] || "en-US"; r.continuous = true; r.interimResults = true;
+              r.onstart = () => { VO.on = true; fin(true); };
+              r.onresult = (e) => {
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                  const t = String(e.results[i][0].transcript || "").toLowerCase();
+                  if (VO_W.some((w) => t.includes(w)) && performance.now() - VO.last > 800) { VO.last = performance.now(); if (state === "play" && player && player.alive) { NFS.vb = 1.5; vib(10); } }
+                }
+              };
+              r.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed" || e.error === "audio-capture") { VO.dead = e.error !== "audio-capture" ? true : VO.dead; NX.set.vo = 0; nfPaintSet(); commit(); toast(_t("nfVoNo")); } fin(false); };
+              r.onend = () => { VO.on = false; if (NX.set.vo && state === "play" && !VO.dead) { try { r.start(); } catch (e) {} } };
+              r.start(); setTimeout(() => fin(VO.on), 4000);
+            } catch (e) { fin(false); }
+          });
+        }
+        function voStop() { try { if (VO.r && VO.on) VO.r.stop(); } catch (e) {} VO.on = false; }
+        NFSET.vo = async (v) => { if (!v) { voStop(); return true; } const ok = await voStart(true); if (!ok) { toast(_t("nfVoNo")); return false; } toast(_t("nfVoOk")); voStop(); return true; };
+        NFH.pre.push(() => { if (SRC && NX.set.vo) voStart(false); });
+        NFH.home.push(voStop);
+        NFH.over.push(() => { voStop(); return ""; });
+        NFH.hud.push(() => (SRC && NX.set.vo && VO.on ? (NFS.vb > 0 ? "🎙️⚡" : "🎙️") : ""));
+
+        // ===================== PHOTO SKIN =====================
+        // your own photo as the pattern on your snake: picked with the system photo picker (on iPhone it offers the camera too);
+        // kept on this device only (ss-ph:<account>, a 96×96 JPEG), so it is not inside save codes
+        const phKey = () => "ss-ph:" + cur;
+        function phBuild(url) {
+          return new Promise((res) => {
+            if (!url) { PHOTO.spr = null; PHOTO.url = ""; return res(false); }
+            const im = new Image();
+            im.onload = () => {
+              const spr = [[0, 0], [32, 0], [0, 32], [32, 32]].map(([ox, oy], k) => {
+                const c = document.createElement("canvas"); c.width = c.height = 48; const g = c.getContext("2d");
+                g.save(); g.beginPath(); g.arc(24, 24, 23, 0, 6.283); g.clip(); g.drawImage(im, ox, oy, 64, 64, 0, 0, 48, 48); g.restore();
+                const sh = g.createRadialGradient(17, 15, 3, 24, 24, 24); sh.addColorStop(0, "rgba(255,255,255,.35)"); sh.addColorStop(0.55, "rgba(255,255,255,0)"); sh.addColorStop(1, "rgba(0,0,0,.45)");
+                g.fillStyle = sh; g.beginPath(); g.arc(24, 24, 23, 0, 6.283); g.fill(); return c;
+              });
+              PHOTO.spr = spr; PHOTO.url = url; res(true);
+            };
+            im.onerror = () => { PHOTO.spr = null; res(false); };
+            im.src = url;
+          });
+        }
+        NFH.load.push(() => { const u = cur ? KV.get(phKey()) : null; phBuild(u && u.startsWith("data:image/") ? u : ""); if (!u && NX.eq.sk === "photo") NX.eq.sk = ""; });
+        NFG.nfphoto = () => {
+          const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
+          inp.onchange = () => {
+            const f = inp.files && inp.files[0]; if (!f) return;
+            const url = URL.createObjectURL(f), im = new Image();
+            im.onload = () => {
+              const c = document.createElement("canvas"); c.width = c.height = 96; const g = c.getContext("2d"), s = Math.min(im.width, im.height);
+              g.drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 96, 96); URL.revokeObjectURL(url);
+              const d = c.toDataURL("image/jpeg", 0.82);
+              if (!KV.set(phKey(), d)) toast(_t("stFull"));
+              phBuild(d).then(() => { NX.eq.sk = "photo"; commit(); toast("📷 " + _t("nfPhOk")); if (!$("nfshop").classList.contains("x-hide")) paintShop2(); });
+            };
+            im.onerror = () => { URL.revokeObjectURL(url); toast(_t("nfPhBad")); };
+            im.src = url;
+          };
+          inp.click();
+        };
+        NFG.nfphdel = () => { KV.del(phKey()); PHOTO.spr = null; PHOTO.url = ""; if (NX.eq.sk === "photo") NX.eq.sk = ""; commit(); paintShop2(); };
+        NFSHX.sk = () => {
+          const has = !!PHOTO.spr, eqd = NX.eq.sk === "photo";
+          return `<div class="x-it${has ? " own" : ""}">${has ? `<img class="nf-ph" alt="" src="${PHOTO.url}">` : "<i>📷</i>"}<b>${esc(_t("nfPhT"))}<small>${esc(_t("nfPhD"))}</small></b>` +
+            `<button data-go="nfphoto">${esc(_t(has ? "nfPhNew" : "nfPhPick"))}</button>` +
+            (has ? `<button data-go="nfeq" data-id="photo" class="${eqd ? "eq" : ""}">${esc(_t(eqd ? "equipped" : "equip"))}</button><button data-go="nfphdel" aria-label="${esc(_t("nfPhDel"))}">🗑️</button>` : "") + `</div>`;
+        };
+        NFCARDS.push(() => {
+          const a = NX.ai; if (!a.n) return nfCard("👿", _t("nfRivalN"), _t("nfRivalD0") + " · " + _t(NX.set.rv ? "on" : "off"), "");
+          return nfCard("👿", _t("nfRivalN"), _t("nfRivalD", { n: a.n, l: Math.round(a.l * 100), b: Math.round(a.b * 100), w: Math.round(a.w * 100), k: a.k }) + " · " + _t(NX.set.rv ? "on" : "off"), "");
+        });
         NFR = true; nfPaintSet(); for (const f of NFH.load) f();
         // ================= END NEW FEATURES =================
         requestAnimationFrame(loop);
