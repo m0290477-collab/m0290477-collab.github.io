@@ -6658,7 +6658,7 @@
           NFS.gr = []; NFS.grT = 0; NFS.gh = null;
           if (!cur || !ghOk() || !NX.set.gh) return;
           try { const o = JSON.parse(KV.get(ghKey()) || "null"); if (o && Array.isArray(o.p) && o.p.length >= 24 && Number.isInteger(o.l)) NFS.gh = o; } catch (e) {}
-          if (NFS.gh) setTimeout(() => { if (state === "play") xBan("👻 " + _t("nfGhostGo", { n: NFS.gh.l })); }, 3400);
+          const g0 = NFS.gh; if (g0) setTimeout(() => { if (state === "play" && NFS.gh === g0) xBan("👻 " + _t("nfGhostGo", { n: g0.l })); }, 3400);
         });
         NFH.upd.push((dt) => {
           if (state !== "play" || !player || !player.alive || !ghOk()) return;
