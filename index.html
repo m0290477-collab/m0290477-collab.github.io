@@ -75,6 +75,9 @@
       .x-q .x-btn { min-height: 44px; font-size: 15px; }
       .x-rev .x-rvc { font: 600 40px/1 "Geist Mono", monospace; color: #e3c46e; }
       .x-rev .x-btn:disabled { opacity: .5; }
+      .x-chal, .x-ov p.x-chal { margin: 4px 0; padding: 8px 12px; border-radius: 10px; background: rgba(227, 196, 110, .14); border: 1px solid rgba(227, 196, 110, .45); color: #e3c46e !important; font-weight: 600; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+      .x-ov p.x-chg { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #9fe7b5 !important; }
+      .x-ov p.x-chg.lose { color: #ffb38a !important; }
       .x-ngo, .x-ov p.x-ngo { margin: 2px 0 4px; font-size: 15px; font-weight: 600; color: #e3c46e !important; }
       .x-lvp { width: 100%; height: 8px; border-radius: 4px; background: rgba(230, 225, 210, .12); overflow: hidden; }
       .x-lvp i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #c9a54a, #e3c46e); transition: width .6s ease-out; }
@@ -617,9 +620,11 @@
         <div class="x-col x-left">
         <p class="x-tag" data-i18n="tag">سوبر سنيك · البوابة</p>
         <h1 class="x-logo" dir="ltr">SUPER<br />SNAKE</h1>
+        <p class="x-chal x-hide" id="chal" role="status" dir="auto"></p>
         <button class="x-btn x-main x-play" data-go="mplay"><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor" /></svg><span data-i18n="play">العب</span></button>
         <div class="x-seg x-segw x-mode" data-k="mode" style="width:100%"><button data-v="n" data-i18n="mNormal">عادي</button><button data-v="t" data-i18n="mTeams">فرق</button><button data-v="s" data-i18n="mSurv">البقاء</button><button data-v="r" data-i18n="mRanked">مصنّف</button><button data-v="d" data-i18n="mDaily">تحدي اليوم</button><button data-v="p" data-i18n="mPriv">مباراة خاصة</button><button data-v="l" data-i18n="league">الدوري</button></div>
         <p class="x-note" id="mdi" aria-live="polite"></p>
+        <button class="x-lnk" data-go="maps" id="mapq"></button>
         <input class="x-name x-hide" id="room" maxlength="8" placeholder="كود الغرفة (اختياري)" data-i18n-ph="roomPh" autocomplete="off" aria-label="كود الغرفة" data-i18n-al="roomPh" />
         <div class="x-col x-hide" id="tml" style="width:100%;gap:8px;align-items:stretch">
           <div class="x-seg" data-k="tf" style="width:100%"><button data-v="1" data-i18n="tf1">فردي</button><button data-v="2" data-i18n="tf2">ثنائي</button><button data-v="3" data-i18n="tf3">فرقة ثلاثية</button></div>
@@ -793,10 +798,12 @@
           <div><b id="fb">0</b><span data-i18n="best">أفضل نتيجة</span></div>
         </div>
         <p class="x-ngo" id="ngo"></p>
+        <p class="x-chg x-hide" id="chg" dir="auto"></p>
         <p id="earn"></p>
         <div class="x-lvp" aria-hidden="true"><i id="lvpb"></i></div><small class="x-lvt" id="lvpt"></small>
         <div id="tmr" class="x-hide"></div>
         <button class="x-btn x-main" data-go="again" data-i18n="again">العب مرة ثانية</button>
+        <button class="x-btn x-sub" data-go="share" id="shb">📤 <span data-i18n="share">شارك وتحدّى</span></button>
         <button class="x-btn x-sub" data-go="home" data-i18n="mainMenu">القائمة الرئيسية</button>
       </div></div>
       <div class="x-ov x-hide" id="maps"><div class="x-box">
@@ -1132,6 +1139,21 @@
         won: ["ربحت", "You won", "Kazandın", "Gagné :", "Ganaste", "आप जीते"],
         selected: ["مختارة ✓", "Selected ✓", "Seçili ✓", "Choisie ✓", "Elegido ✓", "चुना ✓"],
         select: ["اختيار", "Select", "Seç", "Choisir", "Elegir", "चुनें"],
+        map5: ["غابة", "Forest", "Orman", "Forêt", "Bosque", "जंगल"], mapd5: ["أشجار وصخور، ساحة كبيرة", "Trees and rocks, a big arena", "Ağaçlar ve kayalar, büyük arena", "Arbres et rochers, grande arène", "Árboles y rocas, arena grande", "पेड़ और चट्टानें, बड़ा मैदान"],
+        map6: ["سايبر", "Cyber", "Siber", "Cyber", "Ciber", "साइबर"], mapd6: ["حواجز نيون، لا تلمسها", "Neon barriers, don't touch them", "Neon bariyerler, dokunma", "Barrières néon, ne les touche pas", "Barreras de neón, no las toques", "नियॉन दीवारें, इन्हें मत छुओ"],
+        mapL: ["الخريطة", "Map", "Harita", "Carte", "Mapa", "मैप"],
+        share: ["شارك وتحدّى", "Share & challenge", "Paylaş ve meydan oku", "Partager et défier", "Compartir y retar", "शेयर करें और चुनौती दें"],
+        shTxt: ["جبت {n} نقطة في سوبر سنيك! تقدر تغلبني؟", "I scored {n} in Super Snake! Can you beat me?", "Super Snake'te {n} puan yaptım! Beni geçebilir misin?", "J'ai fait {n} points à Super Snake ! Tu peux me battre ?", "¡Hice {n} puntos en Super Snake! ¿Puedes superarme?", "मैंने Super Snake में {n} अंक बनाए! क्या आप मुझे हरा सकते हैं?"],
+        shCopied: ["انسخ الرابط، أرسله لأصحابك", "Link copied, send it to your friends", "Bağlantı kopyalandı, arkadaşlarına gönder", "Lien copié, envoie-le à tes amis", "Enlace copiado, envíalo a tus amigos", "लिंक कॉपी हुआ, दोस्तों को भेजें"],
+        shSaved: ["انحفظت صورة النتيجة", "Score image saved", "Skor görseli kaydedildi", "Image du score enregistrée", "Imagen de la puntuación guardada", "स्कोर की तस्वीर सेव हुई"],
+        shFail: ["ما قدرنا نشارك من هذا المتصفح", "Sharing isn't available in this browser", "Bu tarayıcıda paylaşım yok", "Partage indisponible sur ce navigateur", "No se puede compartir en este navegador", "इस ब्राउज़र में शेयर नहीं हो सकता"],
+        shScore: ["النتيجة", "SCORE", "SKOR", "SCORE", "PUNTOS", "स्कोर"],
+        shBeat: ["تقدر تغلبني؟", "Can you beat me?", "Beni geçebilir misin?", "Tu peux me battre ?", "¿Puedes superarme?", "क्या आप मुझे हरा सकते हैं?"],
+        chBan: ["{x} يتحدّاك تتجاوز {n}!", "{x} challenges you to beat {n}!", "{x} seni {n} puanı geçmeye davet ediyor!", "{x} te défie de battre {n} !", "¡{x} te reta a superar {n}!", "{x} आपको {n} पार करने की चुनौती देता है!"],
+        chFriend: ["صديقك", "A friend", "Bir arkadaşın", "Un ami", "Un amigo", "एक दोस्त"],
+        chWin: ["🎉 غلبت تحدي {x} ({n})!", "🎉 You beat {x}'s challenge ({n})!", "🎉 {x} meydan okumasını geçtin ({n})!", "🎉 Tu as battu le défi de {x} ({n}) !", "🎉 ¡Superaste el reto de {x} ({n})!", "🎉 आपने {x} की चुनौती ({n}) जीत ली!"],
+        chLose: ["تحدي {x}: {n} · باقي لك {d}", "{x}'s challenge: {n} · {d} more to go", "{x} meydan okuması: {n} · {d} kaldı", "Défi de {x} : {n} · encore {d}", "Reto de {x}: {n} · faltan {d}", "{x} की चुनौती: {n} · {d} और चाहिए"],
+        ngoNear1: ["باقي نقطة وحدة بس وتكسر رقمك القياسي!", "Only 1 more point to beat your best!", "Rekorunu kırmana sadece 1 puan kaldı!", "Plus qu'1 point pour battre ton record !", "¡Solo 1 punto más para superar tu récord!", "अपना सर्वश्रेष्ठ तोड़ने के लिए बस 1 अंक और!"],
         map0: ["نيون", "Neon", "Neon", "Néon", "Neón", "नियॉन"], mapd0: ["الساحة الأصلية", "The original arena", "Orijinal arena", "L'arène d'origine", "La arena original", "मूल मैदान"],
         map1: ["صحراء", "Desert", "Çöl", "Désert", "Desierto", "रेगिस्तान"], mapd1: ["رمال وصبّار، لا تلمسه", "Sand and cactus, don't touch it", "Kum ve kaktüs, dokunma", "Sable et cactus, n'y touche pas", "Arena y cactus, no lo toques", "रेत और कैक्टस, छूना मत"],
         map2: ["جليد", "Ice", "Buz", "Glace", "Hielo", "बर्फ़"], mapd2: ["أرض زلقة، اللف أبطأ", "Slippery ground, slower turns", "Kaygan zemin, dönüş yavaş", "Sol glissant, virages lents", "Suelo resbaladizo, giros lentos", "फिसलन, धीमा मोड़"],
@@ -1498,7 +1520,7 @@
         }
         resize(); // window resize is handled once by orient(), which calls resize()
 
-        const A = 3000, FOOD_MIN = 455, BASE = 170; // normal food density cut ~35% (was 700); death drops are extra
+        let A = 3000; const A0 = 3000, AMX = 4500, FOOD_MIN0 = 455, BASE = 170; const fMin = () => Math.round(FOOD_MIN0 * (A / A0) * (A / A0)); // A: current arena side (Classic, Forest, Cyber are 1.5x) // normal food density cut ~35% (was 700); death drops are extra
         // bot names in every language (ar, en, tr, fr, es, hi); bn(i) gives name i in the current language
         const BN = [["صقر", "Falcon", "Şahin", "Faucon", "Halcón", "बाज़"], ["نمر", "Tiger", "Kaplan", "Tigre", "Tigre", "बाघ"], ["ليث", "Lion", "Aslan", "Lion", "León", "शेर"],
           ["برق", "Bolt", "Şimşek", "Éclair", "Rayo", "बिजली"], ["ريح", "Wind", "Rüzgar", "Vent", "Viento", "हवा"], ["شهاب", "Meteor", "Meteor", "Météore", "Meteoro", "उल्का"],
@@ -1921,7 +1943,7 @@
         let snakes = [], food = [], player = null, state = "menu", best = 0, time = 0, skin = 0, back = "menu";
         const cam = { x: A / 2, y: A / 2, s: 1, t: 0.95, vx: 0, vy: 0, vs: 0, vt: 0 };
         // SPATIAL GRID: uniform buckets, rebuilt each frame (food, snake heads, snake segments)
-        const GC = 120, GN = Math.ceil(A / GC), gi = (v) => (v < 0 ? 0 : v >= A ? GN - 1 : (v / GC) | 0);
+        const GC = 120, GN = Math.ceil(AMX / GC), gi = (v) => (v < 0 ? 0 : v >= AMX ? GN - 1 : (v / GC) | 0);
         const mkGrid = () => Array.from({ length: GN * GN }, () => []);
         const FG = mkGrid(), HG = mkGrid(), SG = mkGrid();
         let frameN = 0, maxR = 12;
@@ -1952,20 +1974,50 @@
           { e: "❄️", bg: "#0c2236", floor: "#cfe9f7", grid: "rgba(60,130,190,.25)", wf: "rgba(120,180,220,.9)", wc: "230,250,255", fog: "20,50,80", turn: 0.7 },
           { e: "🪐", bg: "#000", floor: "#03030a", grid: "rgba(140,120,255,.07)", wf: "rgba(40,20,90,.9)", wc: "170,120,255", fog: "0,0,8", turn: 1, ob: "planet", stars: 1 },
           { e: "🌋", bg: "#140503", floor: "#231a17", grid: "rgba(255,90,30,.08)", wf: "rgba(60,20,10,.95)", wc: "255,110,30", fog: "20,6,3", turn: 1, ob: "lava" },
+          { e: "🌲", bg: "#07140a", floor: "#2e5427", grid: "rgba(12,40,10,.22)", wf: "rgba(52,36,18,.95)", wc: "170,230,120", fog: "8,26,10", turn: 1, ob: "forest", sz: 1.5, dots: "rgba(80,130,50,.55)" },
+          { e: "💠", bg: "#04010c", floor: "#0a0720", grid: "rgba(0,240,255,.12)", g2: "rgba(255,40,200,.28)", wf: "rgba(28,0,58,.92)", wc: "255,40,200", fog: "12,0,34", turn: 1, ob: "cyber", sz: 1.5 },
         ];
+        MAPS[0].sz = 1.5; // Classic (Neon) arena is 1.5x too
         const TE = ["🥉", "🥈", "🥇", "💠", "💎"]; // league tier emblems; names are I18N tier0..4
         const L = { tier: 0, tro: 0, on: false, round: 0, t: 0 };
         let mapI = 0, mapSel = 0, obs = [];
-        const STARS = Array.from({ length: 700 }, () => ({ x: R() * A, y: R() * A, s: 1 + R() * 2 }));
+        const STARS = Array.from({ length: 700 }, () => ({ x: R() * A0, y: R() * A0, s: 1 + R() * 2 }));
+        // distance test against an obstacle: circles by centre; boxes (o.w, o.h half sizes) by their edge, offset by o.r so "oD(o,x,y) < o.r + m" means "within m"
+        function oD(o, x, y) {
+          if (!o.w) return Math.hypot(o.x - x, o.y - y);
+          return Math.hypot(Math.max(Math.abs(x - o.x) - o.w, 0), Math.max(Math.abs(y - o.y) - o.h, 0)) + o.r;
+        }
         function setMap(i) {
-          mapI = i; obs = []; const t = MAPS[i].ob;
-          for (let k = 0; t && obs.length < 15 && k < 500; k++) {
+          mapI = i; obs = []; const t = MAPS[i].ob, ak = MAPS[i].sz || 1, ar = ak * ak;
+          A = Math.round(A0 * ak);
+          if (t === "forest") { // clusters of trees and rocks, overlapping so there are no deadly gaps inside a cluster
+            const NC = Math.round(8 * ar);
+            for (let k = 0, nc = 0; nc < NC && k < 800; k++) {
+              const cx = rnd(320, A - 320), cy = rnd(320, A - 320);
+              if (obs.some((o) => Math.hypot(o.x - cx, o.y - cy) < o.r + 300)) continue;
+              nc++; const m = 2 + ((R() * 3) | 0), a0 = R() * 6.283;
+              for (let j = 0; j < m; j++) {
+                const tree = j === 0 || R() < 0.55, r = tree ? rnd(30, 44) : rnd(20, 30), d = j ? (38 + r) * 0.8 : 0, a = a0 + (j * 6.283) / Math.max(1, m - 1);
+                obs.push({ t: "forest", k: tree ? "tree" : "rock", x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d, r, c: tree ? ["#5cc455", "#6bd062", "#52b84e"][(R() * 3) | 0] : "#7c7f78" });
+              }
+            }
+          } else if (t === "cyber") { // neon barrier blocks: squares and bars
+            const NB = Math.round(12 * ar);
+            for (let k = 0; obs.length < NB && k < 800; k++) {
+              const q = R(); let w, h;
+              if (q < 0.35) w = h = rnd(36, 50); else if (q < 0.68) { w = rnd(110, 160); h = 22; } else { w = 22; h = rnd(110, 160); }
+              const x = rnd(300, A - 300), y = rnd(300, A - 300), r = Math.hypot(w, h);
+              if (!obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + r + 150)) obs.push({ t: "cyber", x, y, w, h, r, c: ["0,240,255", "255,40,200", "170,90,255"][obs.length % 3] });
+            }
+          } else for (let k = 0; t && obs.length < 15 && k < 500; k++) {
             const r = t === "cactus" ? rnd(26, 38) : t === "planet" ? rnd(40, 80) : rnd(50, 90), x = rnd(250, A - 250), y = rnd(250, A - 250);
-            if (!obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + r + 160))
+            if (!obs.some((o) => oD(o, x, y) < o.r + r + 160))
               obs.push({ t, x, y, r, c: ["#c0703a", "#4f7fd9", "#b58ad6", "#d9b45a", "#5ab8a8"][obs.length % 5], ring: R() < 0.4 });
           }
           obs.sort((a, b) => a.y - b.y);
-          food = food.filter((f) => !obs.some((o) => Math.hypot(o.x - f.x, o.y - f.y) < o.r + 8));
+          food = food.filter((f) => f.x < A - 20 && f.y < A - 20 && !obs.some((o) => oD(o, f.x, f.y) < o.r + 8));
+          if (food.length > fMin() * 1.2) food.length = Math.round(fMin() * 1.2);
+          syncBots();
           for (const s of snakes) if (s.bot) Object.assign(s, makeSnake(s.name, s.skin, true));
         }
         const ptr = { x: 0, y: 0, active: false };
@@ -2195,14 +2247,14 @@
           if (T.tier === 2) { poly(g, [[54, 2], [56, 8], [62, 10], [56, 12], [54, 18], [52, 12], [46, 10], [52, 8]], "#fff"); }
         }
         function addFood(x, y, v, c, k) {
-          if (obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + 8)) return;
+          if (obs.some((o) => oD(o, x, y) < o.r + 8)) return;
           food.push({ x: clamp(x, 20, A - 20), y: clamp(y, 20, A - 20), v: k ? FT[k].v : v || rnd(0.3, 1), k, a: R() * 6.28,
             c: c || `hsl(${((R() * 36) | 0) * 10},100%,65%)`, ph: R() * 6.28 });
         }
         function makeSnake(name, skin, bot) {
           let x, y, t = 0;
           do { x = rnd(300, A - 300); y = rnd(300, A - 300); t++; }
-          while (t < 40 && (obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + 200) || snakes.some((s) => s.alive && s.seg.some((p, i) => i % 3 === 0 && Math.hypot(p.x - x, p.y - y) < 350))));
+          while (t < 40 && (obs.some((o) => oD(o, x, y) < o.r + 200) || snakes.some((s) => s.alive && s.seg.some((p, i) => i % 3 === 0 && Math.hypot(p.x - x, p.y - y) < 350))));
           const a = R() * 6.28, seg = [];
           for (let i = 0; i < 20; i++) seg.push({ x: x - Math.cos(a) * i * 6, y: y - Math.sin(a) * i * 6 });
           return { name, skin, bot, seg, len: 20, a, ta: a, r: 11, boost: false, alive: true, think: 0, respawn: 0, drop: 0, kills: 0, evo: 0, dna: 0, cd: 0, slow: 0, ghost: 0 };
@@ -2223,7 +2275,7 @@
           else { s.respawn = 2; if (player && player.alive && Math.hypot(s.seg[0].x - player.seg[0].x, s.seg[0].y - player.seg[0].y) < 600) pendImp = true; }
         }
         function syncBots() {
-          const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || Math.max(2, (L.on ? 8 + L.round * 4 : MD === "p" ? PB : S.bots) + (state === "play" ? AD.bAdd : 0));
+          const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || Math.max(2, (L.on ? 8 + L.round * 4 : Math.round((MD === "p" ? PB : S.bots) * A / A0)) + (state === "play" ? AD.bAdd : 0));
           while (bots.length < nb) {
             const b = makeSnake(bn(bots.length), botSkin(), true);
             b.ni = bots.length; b.len = rnd(20, 70); snakes.push(b); bots.push(b);
@@ -2236,10 +2288,10 @@
         const EVO = [{}, { ab: 1, cd: 4 }, { ab: 1, cd: 7 }, { ab: 1, cd: 12 }, { ab: 1, cd: 6 }];
         const EVO_LV = [1, 2, 5, 10, 20]; // player level needed for each form
         function evoCap(s) { if (s !== player) return 4; const lv = level(); let c = 0; while (c < 4 && lv >= EVO_LV[c + 1]) c++; return c; }
-        const NEED = 5, DNA_N = Math.round((A / 400) * (A / 400));
+        const NEED = 5, dnaN = () => Math.round((A / 400) * (A / 400));
         function spawnDna(x, y) {
           x = x === undefined ? rnd(80, A - 80) : clamp(x, 40, A - 40); y = y === undefined ? rnd(80, A - 80) : clamp(y, 40, A - 40);
-          if (!obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + 20)) dna.push({ x, y, ph: R() * 6.28 });
+          if (!obs.some((o) => oD(o, x, y) < o.r + 20)) dna.push({ x, y, ph: R() * 6.28 });
         }
         function evoDrop(s) {
           const h = s.seg[0], n = Math.min(10, (s.evo || 0) * 2 + (s.dna || 0));
@@ -2290,7 +2342,7 @@
         }
         function credit(o, s) { const was = s.alive; kill(s); if (was && !s.alive) { o.kills++; if (o === player) sKill(); } }
         function evoUpdate(dt) {
-          while (dna.length < DNA_N) spawnDna();
+          while (dna.length < dnaN()) spawnDna();
           if (player && player.alive && (keys.e || keys["ث"])) { keys.e = keys["ث"] = false; useAb(player); }
           for (const p of parts) if (p.vx) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.96; p.vy *= 0.96; }
           for (const s of snakes) {
@@ -2487,8 +2539,8 @@
             }
           }
           for (const o of obs) {
-            const dx = o.x - h.x, dy = o.y - h.y;
-            if (Math.hypot(dx, dy) > o.r + b.r + 170) continue;
+            const dx = (o.w ? clamp(h.x, o.x - o.w, o.x + o.w) : o.x) - h.x, dy = (o.w ? clamp(h.y, o.y - o.h, o.y + o.h) : o.y) - h.y;
+            if (oD(o, h.x, h.y) > o.r + b.r + 170) continue;
             const da = angDiff(Math.atan2(dy, dx), b.a);
             if (Math.abs(da) < 1.5) { b.ta = b.a - Math.sign(da || 1) * 1.9; b.think = 0.1; return; }
           }
@@ -2514,7 +2566,7 @@
         let pups = [], rips = [], floats = [], xpwH = null, xN = 0, rainA = 0, rainOn = 0, rainNext = 150, bossT = 0, xPl = null, pwT = 0, pwCd = 0, cN = 0, cT = -9, cF = null;
         function xPup() {
           for (let k = 0; k < 20; k++) { const x = rnd(150, A - 150), y = rnd(150, A - 150);
-            if (!obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + 40)) { pups.push({ x, y, t: PW[(R() * 4) | 0], ph: R() * 6.28 }); return; } }
+            if (!obs.some((o) => oD(o, x, y) < o.r + 40)) { pups.push({ x, y, t: PW[(R() * 4) | 0], ph: R() * 6.28 }); return; } }
         }
         function xCombo(w) {
           if (!player || !player.alive) return;
@@ -2595,7 +2647,7 @@
           const ks = ["rat", "rat", "frog", "frog", "egg", "bug", "bug", "fruit", "fruit"].concat(ponds.length ? ["fish", "fish", "fish"] : []);
           const k = ks[(R() * ks.length) | 0], pd = k === "fish" ? ponds[(R() * ponds.length) | 0] : null, a = R() * 6.28, d = pd ? R() * pd.r * 0.7 : 0;
           const x = pd ? pd.x + Math.cos(a) * d : rnd(80, A - 80), y = pd ? pd.y + Math.sin(a) * d : rnd(80, A - 80);
-          if (!pd && (obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + 24) || ponds.some((p) => Math.hypot(p.x - x, p.y - y) < p.r))) return;
+          if (!pd && (obs.some((o) => oD(o, x, y) < o.r + 24) || ponds.some((p) => Math.hypot(p.x - x, p.y - y) < p.r))) return;
           prey.push({ k, x, y, a: R() * 6.28, ph: R() * 6.28, z: 0, vz: 0, hv: 0, hop: rnd(0.5, 2), pd, fr: R() < 0.5 });
         }
         function preyUpdate(dt) {
@@ -2637,7 +2689,7 @@
             }
             if (!sp) continue;
             const x = q.x + Math.cos(q.a) * sp * dt, y = q.y + Math.sin(q.a) * sp * dt;
-            if (x < 30 || y < 30 || x > A - 30 || y > A - 30 || obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + 12) || (q.k !== "fish" && q.k !== "bug" && ponds.some((p) => Math.hypot(p.x - x, p.y - y) < p.r * 0.95))) q.a += Math.PI * 0.75;
+            if (x < 30 || y < 30 || x > A - 30 || y > A - 30 || obs.some((o) => oD(o, x, y) < o.r + 12) || (q.k !== "fish" && q.k !== "bug" && ponds.some((p) => Math.hypot(p.x - x, p.y - y) < p.r * 0.95))) q.a += Math.PI * 0.75;
             else { q.x = x; q.y = y; }
           }
         }
@@ -2753,7 +2805,7 @@
             const h = b.seg[0], m = 320;
             if (h.x < m || h.y < m || h.x > A - m || h.y > A - m) b.ta = Math.atan2(A / 2 - h.y, A / 2 - h.x);
             else if (player && player.alive) { const p = player.seg[0]; b.ta = Math.atan2(p.y + Math.sin(player.a) * 120 - h.y, p.x + Math.cos(player.a) * 120 - h.x); }
-            for (const o of obs) if (Math.hypot(o.x - h.x, o.y - h.y) < o.r + b.r + 140) b.ta = Math.atan2(h.y - o.y, h.x - o.x);
+            for (const o of obs) if (oD(o, h.x, h.y) < o.r + b.r + 140) b.ta = Math.atan2(h.y - (o.w ? clamp(h.y, o.y - o.h, o.y + o.h) : o.y), h.x - (o.w ? clamp(h.x, o.x - o.w, o.x + o.w) : o.x));
           }
           if ((pwT -= dt) <= 0) {
             pwT = 0.2; const pl = player && player.alive ? player : null;
@@ -2860,7 +2912,7 @@
             const flee = nx || ny;
             if (flee) f.a += clamp(angDiff(Math.atan2(ny, nx), f.a), -5 * dt, 5 * dt); else f.a += rnd(-2, 2) * dt;
             const sp = (flee ? 60 : 18) * dt, x = f.x + Math.cos(f.a) * sp, y = f.y + Math.sin(f.a) * sp;
-            if (x < 30 || y < 30 || x > A - 30 || y > A - 30 || obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + 12)) f.a += Math.PI * 0.75;
+            if (x < 30 || y < 30 || x > A - 30 || y > A - 30 || obs.some((o) => oD(o, x, y) < o.r + 12)) f.a += Math.PI * 0.75;
             else { f.x = x; f.y = y; }
           }
           gSnakes();
@@ -2868,7 +2920,7 @@
             if (!s.alive) continue;
             const h = s.seg[0];
             if (h.x < s.r * 0.5 || h.y < s.r * 0.5 || h.x > A - s.r * 0.5 || h.y > A - s.r * 0.5) { kill(s); continue; }
-            if (obs.some((o) => Math.hypot(o.x - h.x, o.y - h.y) < o.r + s.r * 0.5)) { kill(s); if (!s.alive) continue; }
+            if (obs.some((o) => oD(o, h.x, h.y) < o.r + s.r * 0.5)) { kill(s); if (!s.alive) continue; }
             if (s.pg > 0) continue;
             let hit = null;
             gCells(SG, h.x, h.y, (s.r + maxR) * 0.72, (c) => { for (let j = 0; j < c.length; j += 2) {
@@ -2881,7 +2933,7 @@
           }
           evoUpdate(dt); xUpdate(dt); preyUpdate(dt); adUpdate(dt); modeTick();
           if (pendImp) { pendImp = false; if (killT !== time) sImpact(0.45); }
-          while (food.length < FOOD_MIN * (state === "play" ? AD.food : 1)) addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood());
+          while (food.length < fMin() * (state === "play" ? AD.food : 1)) addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood());
           if (food.length > 2200) food.splice(0, food.length - 2200);
         }
 
@@ -3202,7 +3254,7 @@
             cam.s = clamp(cam.s, 0.38, 1.7); cam.t = clamp(cam.t, 0.7, 1.45);
           }
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          const M = MAPS[mapI]; ctx.fillStyle = M.bg; ctx.fillRect(0, 0, W, H);
+          const M = MAPS[mapI], ak0 = A / A0; ctx.fillStyle = M.bg; ctx.fillRect(0, 0, W, H);
           ST = Math.sin(cam.t); CT = Math.cos(cam.t);
           F = D * cam.s; CX = W / 2; CY = H * (0.5 + 0.12 * (1.45 - cam.t) / 0.75);
           if (shk) { CX += (Math.random() * 2 - 1) * shk; CY += (Math.random() * 2 - 1) * shk; }
@@ -3229,9 +3281,19 @@
             for (let x = Math.ceil(fx0 / G) * G; x <= fx1; x += G) { pr(x, fy0, 0); ctx.moveTo(PX, PY); pr(x, fy1, 0); ctx.lineTo(PX, PY); }
             for (let y = Math.ceil(fy0 / G) * G; y <= fy1; y += G) { pr(fx0, y, 0); ctx.moveTo(PX, PY); pr(fx1, y, 0); ctx.lineTo(PX, PY); }
             ctx.stroke();
+            if (M.g2) { // cyber: brighter major grid lines
+              ctx.strokeStyle = M.g2; ctx.lineWidth = 1.5; ctx.beginPath(); const G2 = 300;
+              for (let x = Math.ceil(fx0 / G2) * G2; x <= fx1; x += G2) { pr(x, fy0, 0); ctx.moveTo(PX, PY); pr(x, fy1, 0); ctx.lineTo(PX, PY); }
+              for (let y = Math.ceil(fy0 / G2) * G2; y <= fy1; y += G2) { pr(fx0, y, 0); ctx.moveTo(PX, PY); pr(fx1, y, 0); ctx.lineTo(PX, PY); }
+              ctx.stroke();
+            }
+            if (M.dots) { // forest: grass tufts
+              ctx.fillStyle = M.dots;
+              for (const s of STARS) { const x = s.x * ak0, y = s.y * ak0; if (vis(x, y)) { pr(x, y, 0); ctx.fillRect(PX, PY, (3 + s.s * 2) * PK, (2 + s.s) * PK); } }
+            }
             if (M.stars) {
               ctx.fillStyle = "rgba(255,255,255,.8)";
-              for (const s of STARS) if (vis(s.x, s.y)) { pr(s.x, s.y, 0); ctx.fillRect(PX, PY, s.s * PK, s.s * PK); }
+              for (const s of STARS) if (s.x < A && s.y < A && vis(s.x, s.y)) { pr(s.x, s.y, 0); ctx.fillRect(PX, PY, s.s * PK, s.s * PK); }
             }
             for (const o of obs) {
               if (o.t !== "lava" || !vis(o.x, o.y, o.r)) continue;
@@ -3320,8 +3382,23 @@
           ctx.globalAlpha = 1;
 
           const ball3 = (x, y, z, r, col) => { pr(x, y, z); const d = r * PK; ctx.drawImage(sphere(col), PX - d, PY - d, d * 2, d * 2); };
+          const box = (o) => { // a neon barrier block: back, sides, front, then lid (painter's order for a convex box)
+            const x0 = o.x - o.w, x1 = o.x + o.w, y0 = o.y - o.h, y1 = o.y + o.h, z = 46;
+            const face = (pts, fill, a) => {
+              ctx.beginPath(); pts.forEach((p, i) => { pr(p[0], p[1], p[2]); ctx[i ? "lineTo" : "moveTo"](PX, PY); }); ctx.closePath();
+              ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = `rgba(${o.c},${a})`; ctx.lineWidth = 2; ctx.stroke();
+            };
+            pr(o.x, o.y, 0); const gw = (o.w + 34) * 1.5 * PK, gh = (o.h + 34) * 1.5 * PK * ST;
+            ctx.globalAlpha = 0.3; ctx.drawImage(disc(`rgb(${o.c})`), PX - gw, PY - gh, gw * 2, gh * 2); ctx.globalAlpha = 1;
+            face([[x0, y0, 0], [x1, y0, 0], [x1, y0, z], [x0, y0, z]], "#120a2a", 0.5);
+            face([[x0, y0, 0], [x0, y1, 0], [x0, y1, z], [x0, y0, z]], "#160d33", 0.6);
+            face([[x1, y0, 0], [x1, y1, 0], [x1, y1, z], [x1, y0, z]], "#160d33", 0.6);
+            face([[x0, y1, 0], [x1, y1, 0], [x1, y1, z], [x0, y1, z]], "#1b1040", 0.9);
+            face([[x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z]], `rgba(${o.c},${0.55 + 0.15 * Math.sin(time * 3 + o.x)})`, 1);
+          };
           const drawOb = (o) => {
             if (!vis(o.x, o.y, o.r * 2)) return;
+            if (o.w) { box(o); return; }
             pr(o.x, o.y, 0); const sw = o.r * 2.6 * PK;
             ctx.globalAlpha = 0.45; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); ctx.globalAlpha = 1;
             if (o.t === "cactus") {
@@ -3330,6 +3407,16 @@
               for (const sd of [-1, 1]) {
                 ball3(o.x + sd * o.r * 0.45, o.y, o.r * (sd > 0 ? 1.1 : 1.5), tr * 0.65, "#2f9e44");
                 for (let z = o.r * (sd > 0 ? 1.1 : 1.5); z < o.r * (sd > 0 ? 2.1 : 2.5); z += tr * 0.4) ball3(o.x + sd * o.r * 0.8, o.y, z, tr * 0.65, "#38b350");
+              }
+            } else if (o.t === "forest") {
+              if (o.k === "tree") {
+                for (let z = o.r * 0.15; z < o.r * 0.9; z += o.r * 0.25) ball3(o.x, o.y, z, o.r * 0.26, "#6b4423");
+                ball3(o.x, o.y, o.r * 1.35, o.r * 0.95, o.c);
+                ball3(o.x - o.r * 0.3, o.y + o.r * 0.12, o.r * 1.95, o.r * 0.68, o.c);
+                ball3(o.x + o.r * 0.18, o.y - o.r * 0.08, o.r * 2.45, o.r * 0.48, "#92e07c");
+              } else {
+                ball3(o.x, o.y, o.r * 0.5, o.r * 0.9, o.c);
+                ball3(o.x + o.r * 0.35, o.y + o.r * 0.2, o.r * 0.35, o.r * 0.55, "#8f928a");
               }
             } else {
               ball3(o.x, o.y, o.r * 1.2, o.r, o.c);
@@ -3445,7 +3532,7 @@
               g.fillStyle = "rgba(10,14,30,.65)"; g.strokeStyle = "rgba(255,42,58,.7)"; g.lineWidth = 1.5;
               g.save(); g.beginPath(); g.rect(0, 0, m, m); g.fill(); g.stroke(); g.clip();
               g.fillStyle = "rgba(255,255,255,.22)";
-              for (const o of obs) { g.beginPath(); g.arc(o.x * k, o.y * k, Math.max(1.5, o.r * k), 0, 6.283); g.fill(); }
+              for (const o of obs) { if (o.w) { g.fillRect((o.x - o.w) * k, (o.y - o.h) * k, Math.max(1.5, 2 * o.w * k), Math.max(1.5, 2 * o.h * k)); continue; } g.beginPath(); g.arc(o.x * k, o.y * k, Math.max(1.5, o.r * k), 0, 6.283); g.fill(); }
               for (const sn of snakes) {
                 if (!sn.alive || sn === player) continue;
                 const hd = sn.seg[0];
@@ -3827,7 +3914,7 @@
           if (state !== "play") for (const s of snakes) if (s.bot && s.ni !== undefined && s.tm === undefined && !s.ad) s.name = bn(s.ni); // bot names follow the language
           profile(); evoKey = ""; lbT = 0; const on = (id) => !$(id).classList.contains("x-hide");
           [...$("skins").children].forEach((b, i) => b.setAttribute("aria-label", SKINS[i].n)); $("skn").textContent = SKINS[skin].n; stNote();
-          if (on("shop")) { paintShop(); paintPts(); paintTx(); } if (on("maps")) paintMaps(); if (on("league")) paintLeague(); if (on("achs")) paintAch(); if (on("inbox")) paintInb(); if (on("chat")) paintChat(); if (on("adm")) admPaint();
+          paintMode(); if (on("shop")) { paintShop(); paintPts(); paintTx(); } if (on("maps")) paintMaps(); if (on("league")) paintLeague(); if (on("achs")) paintAch(); if (on("inbox")) paintInb(); if (on("chat")) paintChat(); if (on("adm")) admPaint();
         }
         // achievements screen: titles to equip first, then every achievement with its progress bar and claim button
         function paintAch() {
@@ -3890,6 +3977,7 @@
             let h = 7; for (const c of ROOM) h = (h * 31 + c.charCodeAt(0)) >>> 0;
             const ok = MAPS.map((_, i) => i).filter((i) => !mapLock(i)); setMap(ok[h % ok.length]); PB = [5, 10, 20][(h >>> 4) % 3];
           }
+          if (A !== Math.round(A0 * (MAPS[mapI].sz || 1))) setMap(mapI);
           snakes = snakes.filter((s) => s.bot); adStart();
           if (MD === "d") { AD.mod = Object.keys(AD_MODS)[today() % 4]; adMod(); }
           TN = MD === "t" ? tCnt() * S.tf - 1 : 0; syncBots(); tSetup();
@@ -3951,11 +4039,61 @@
           const h = player.seg[0]; cam.x = h.x; cam.y = h.y; cam.vx = cam.vy = 0;
           burst(h.x, h.y, 24, 45); beep(523, 0.12, "triangle", 0.05, 1046); vib(30); xBan(_t("revGo"));
         }
+        // SHARE: a 1080x1080 score card, built when the match ends so the tap can call navigator.share right away (iOS needs the user gesture)
+        let SHR = null;
+        function shareURL() { return "https://billke.com/?c=" + SHR.l + (SHR.nm ? "&n=" + encodeURIComponent(SHR.nm) : ""); }
+        function shareCard() {
+          if (!SHR) return; const S2 = SHR, N = 1080, c = document.createElement("canvas"); c.width = c.height = N; const g = c.getContext("2d");
+          const bg = g.createLinearGradient(0, 0, N, N); bg.addColorStop(0, "#0b1030"); bg.addColorStop(1, "#1a0610"); g.fillStyle = bg; g.fillRect(0, 0, N, N);
+          g.strokeStyle = "rgba(70,110,255,.16)"; g.lineWidth = 2; g.beginPath();
+          for (let x = 0; x <= N; x += 60) { g.moveTo(x, 0); g.lineTo(x, N); g.moveTo(0, x); g.lineTo(N, x); } g.stroke();
+          g.strokeStyle = "rgba(255,42,58,.85)"; g.lineWidth = 10; g.strokeRect(24, 24, N - 48, N - 48);
+          // the player's snake in its skin colours, curving under the score
+          for (let i = 44; i >= 0; i--) {
+            const t = i / 44, x = 160 + t * 760, y = 760 + Math.sin(t * 9) * 60, r = i === 0 ? 40 : 34 - t * 10;
+            let col = "#39ff14"; try { col = segColor(S2.sk, i) || col; } catch (e) {}
+            g.fillStyle = "rgba(0,0,0,.45)"; g.beginPath(); g.arc(x + 6, y + 8, r, 0, 6.283); g.fill();
+            g.fillStyle = col; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
+            g.fillStyle = "rgba(255,255,255,.18)"; g.beginPath(); g.arc(x - r * 0.3, y - r * 0.35, r * 0.4, 0, 6.283); g.fill();
+            if (i === 0) { g.fillStyle = "#fff"; for (const s of [-1, 1]) { g.beginPath(); g.arc(x - 6, y + s * 15, 10, 0, 6.283); g.fill(); } g.fillStyle = "#000"; for (const s of [-1, 1]) { g.beginPath(); g.arc(x - 9, y + s * 15, 5, 0, 6.283); g.fill(); } }
+          }
+          const ff = '"Geist Mono", ui-monospace, "Segoe UI", Tahoma, sans-serif';
+          g.textAlign = "center"; g.textBaseline = "alphabetic";
+          g.fillStyle = "#39ff14"; g.font = `800 92px ${ff}`; g.fillText("SUPER SNAKE", N / 2, 150);
+          g.fillStyle = "#e8f0ff"; g.font = `600 44px ${ff}`; if (S2.nm) g.fillText(S2.nm, N / 2, 225);
+          g.fillStyle = "#b9c6e6"; g.font = `600 40px ${ff}`; g.fillText(_t("shScore"), N / 2, 320);
+          g.fillStyle = "#e3c46e"; g.font = `800 190px ${ff}`; g.fillText(String(S2.l), N / 2, 490);
+          const st = [[_t("length"), S2.l], [_t("kills"), S2.k], [_t("lvl"), S2.lv], [_t("mapL"), _t("map" + S2.map)]];
+          st.forEach(([k, v], i) => {
+            const x = 150 + i * 260, y = 560; g.fillStyle = "rgba(255,255,255,.08)"; g.fillRect(x - 115, y, 230, 110);
+            g.fillStyle = "#e8f0ff"; g.font = `700 ${String(v).length > 7 ? 30 : 44}px ${ff}`; g.fillText(String(v), x, y + 55);
+            g.fillStyle = "#b9c6e6"; g.font = `500 24px ${ff}`; g.fillText(String(k).slice(0, 16), x, y + 92);
+          });
+          g.fillStyle = "#e8f0ff"; g.font = `700 46px ${ff}`; g.fillText(_t("shBeat"), N / 2, 935);
+          g.fillStyle = "#ff5a6a"; g.font = `600 34px ${ff}`; g.fillText("billke.com", N / 2, 995);
+          S2.url = shareURL(); S2.cv = c;
+          try { c.toBlob((b) => { if (b && SHR === S2) { try { S2.file = new File([b], "super-snake-" + S2.l + ".png", { type: "image/png" }); } catch (e) { S2.blob = b; } S2.blob = b; } }, "image/png"); } catch (e) {}
+        }
+        async function shareGo() {
+          if (!SHR) return; if (!SHR.url) shareCard();
+          const S2 = SHR, url = S2.url, text = _t("shTxt", { n: S2.l }), title = "Super Snake";
+          if (S2.file && navigator.canShare && navigator.share) {
+            let ok = false; try { ok = navigator.canShare({ files: [S2.file] }); } catch (e) {}
+            if (ok) { try { await navigator.share({ files: [S2.file], title, text: text + " " + url }); return; } catch (e) { if (e && e.name === "AbortError") return; } }
+          }
+          if (navigator.share) { try { await navigator.share({ title, text, url }); return; } catch (e) { if (e && e.name === "AbortError") return; } }
+          let copied = false; try { await navigator.clipboard.writeText(text + " " + url); copied = true; } catch (e) {}
+          let saved = false; try { if (S2.blob || S2.cv) { const a = document.createElement("a"); a.download = "super-snake-" + S2.l + ".png"; a.href = S2.blob ? URL.createObjectURL(S2.blob) : S2.cv.toDataURL("image/png"); document.body.appendChild(a); a.click(); a.remove(); if (S2.blob) setTimeout(() => URL.revokeObjectURL(a.href), 4000); saved = true; } } catch (e) {}
+          toast(copied ? _t("shCopied") : saved ? _t("shSaved") : _t("shFail"));
+        }
         function gameOver() {
           closeExit(); revHide(); state = "over"; AD.deaths = time - AD.t0 < 60 ? AD.deaths + 1 : Math.max(0, AD.deaths - 1);
           const l = Math.floor(player.len), pb = best;
           best = Math.max(best, l);
-          $("ngo").textContent = l > pb ? _t("ngoBest") : _t("ngoNear", { n: pb - l + 1 });
+          $("ngo").textContent = l > pb ? _t("ngoBest") : pb - l + 1 === 1 ? _t("ngoNear1") : _t("ngoNear", { n: pb - l + 1 });
+          { const cg = $("chg"); cg.classList.toggle("x-hide", !CH); cg.classList.toggle("lose", !!CH && l <= CH.s);
+            if (CH) cg.textContent = l > CH.s ? _t("chWin", { x: chName(), n: CH.s }) : _t("chLose", { x: chName(), n: CH.s, d: CH.s - l + 1 }); }
+          SHR = { l, k: player.kills, nm: String(player.name || "").replace(CTRL0g, "").slice(0, 20), sk: player.skin, map: mapI, file: null, url: "" };
           $("fl").textContent = l; $("fk").textContent = player.kills; $("fb").textContent = best;
           const r = MD === "p" ? 0 : DF().r, xp = Math.round((l + player.kills * 20) * r * CFG.xm), co = Math.round((Math.floor(l / 10) + player.kills * 5) * r * CFG.cm), lv = level();
           tmRes = modeEnd(l);
@@ -3963,6 +4101,7 @@
           let rw = 0; for (let n = lv + 1; n <= level(); n++) rw += lvReward(n); pay(rw, "lvl"); if (level() > lv) inbAdd(P, { id: "lv:" + level(), k: "lv", n: level() }); profile(); achNote();
           { const v = lvInfo(), mx = v.n >= LV_MAX; $("lvpb").style.width = (mx ? 100 : Math.round((100 * v.x) / v.need)) + "%";
             $("lvpt").textContent = mx ? _t("lvMax", { l: v.n }) : _t("lvNext", { l: v.n, x: v.need - v.x, n: v.n + 1 }); }
+          SHR.lv = level(); setTimeout(shareCard, 0);
           $("earn").textContent = `+${co} 🪙 · +${xp} ${_t("xp")}` + (level() > lv ? ` · ${_t("newLv")} ${level()}! 🎉 ${_t("lvRew")} +${rw} 🪙` : "") + (tmRes ? " · " + tmRes : "");
           release();
           setTimeout(() => { if (state === "over") { $("game").classList.add("x-hide");
@@ -4051,15 +4190,24 @@
           if (MD === "s" && !snakes.some((x) => x.bot && !x.ad && x.alive)) { player.inv = 1e9; sKill(); gameOver(); }
           else if (MD === "d" && P.dc !== today() && player.len >= dGoal()) { P.dc = today(); PST.dly++; pay(0, "daily", 5); profile(); xBan(_t("dGot")); beep(784, 0.3, "triangle", 0.06, 1568); }
         }
+        // CHALLENGE LINK: ?c=<score>&n=<name> (name stripped of control and markup characters, max 20; only ever set as textContent)
+        var CH = (() => { try {
+          const q = new URLSearchParams(location.search), c = Number(q.get("c"));
+          if (!Number.isInteger(c) || c < 1 || c > 1e6) return null;
+          return { s: c, n: String(q.get("n") || "").replace(CTRL0g, "").replace(/[<>&"'`\\/]/g, "").trim().slice(0, 20) };
+        } catch (e) { return null; } })();
+        const chName = () => (CH && CH.n) || _t("chFriend");
+        function paintChal() { const b = $("chal"); b.classList.toggle("x-hide", !CH); if (CH) b.textContent = "⚔️ " + _t("chBan", { x: chName(), n: CH.s }); }
         function paintMode() {
-          const m = S.mode;
+          const m = S.mode; paintChal();
+          $("mapq").textContent = `${MAPS[mapSel].e} ${_t("mapL")}: ${_t("map" + mapSel)}`;
           $("room").classList.toggle("x-hide", m !== "p");
           $("tml").classList.toggle("x-hide", m !== "t"); if (m === "t") paintTeam();
           $("mdi").textContent = m === "p" ? _t("privNote") : m === "d" ? (P.dc === today() ? _t("dDone") : _t("dGoal", { n: dGoal() })) : m === "r" ? `${TE[rtTier(P.rt)]} ${_t("tier" + rtTier(P.rt))} · ${_t("rating")} ${P.rt}` : "";
         }
 
-        syncBots(); genFood();
-        while (food.length < FOOD_MIN) addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood());
+        setMap(mapI); genFood(); // applies the arena size of the starting map
+        while (food.length < fMin()) addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood());
 
         const skinsEl = $("skins");
         SKINS.forEach((s, i) => {
@@ -4092,6 +4240,7 @@
           const g = b.dataset.go;
           if (!cur && !["dologin", "doreg", "reg", "import", "back"].includes(g)) { if (state !== "play") show("login"); return; }
           if (g === "play" || g === "again") start();
+          else if (g === "share") shareGo();
           else if (g === "chsend" || g === "chdel" || g === "chblk") chGo(g);
           else if (g === "exit") askExit();
           else if (g === "exitN") closeExit();
@@ -5156,7 +5305,7 @@
         }
         $("mapl").addEventListener("click", (e) => {
           const b = e.target.closest("button[data-m]"); if (!b || b.disabled || mapLock(+b.dataset.m)) return;
-          mapSel = +b.dataset.m; setMap(mapSel); paintMaps(); beep(620, 0.08, "triangle", 0.05, 900); commit();
+          mapSel = +b.dataset.m; setMap(mapSel); paintMaps(); paintMode(); beep(620, 0.08, "triangle", 0.05, 900); commit();
         });
         function paintLeague() {
           $("lgi").textContent = `${_t("rank")}: ${TE[L.tier]} ${_t("tier" + L.tier)} · ${L.tro} 🏆`;
