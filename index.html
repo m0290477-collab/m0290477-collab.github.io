@@ -567,6 +567,49 @@
       @media (max-height: 360px) { .tu-card { grid-template-columns: 170px 1fr; padding: 12px 16px; gap: 14px; } .tu-vis { width: 170px; height: 124px; } .tu-txt h3 { font-size: 19px; } .tu-txt p { font-size: 14px; } }
       @media (max-width: 520px) { .tu-card { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
       @media (prefers-reduced-motion: reduce) { .tu-sn, .tu-or, .tu-fg, .tu-pl, .tu-bm { animation: none; } .tu-sn { stroke-dasharray: none; } }
+      /* ===== NEW FEATURES ===== */
+      .nf-h { top: auto; bottom: calc(var(--x-sb) + 6px); left: 50%; transform: translateX(-50%); padding: 3px 12px; font-size: 13px; font-weight: 600; color: #fff6c2;
+        white-space: nowrap; max-width: calc(100% - 2 * var(--x-sx) - 260px); overflow: hidden; text-overflow: ellipsis; opacity: .85; border-radius: var(--r-pill); }
+      .nf-rw, .nf-emb { position: fixed; width: 48px; height: 48px; border-radius: 50%; border: 2px solid #9fd3ff; background: rgba(8, 24, 44, .72); color: #fff;
+        font-size: 20px; padding: 0; touch-action: none; opacity: .7; overflow: hidden; }
+      .nf-rw { bottom: calc(var(--x-sb) + 20px); }
+      .nf-emb { bottom: calc(var(--x-sb) + 76px); border-color: #ffd84a; }
+      body.x-r .nf-rw, body.x-r .nf-emb { right: calc(var(--x-sr) + 86px); }
+      body.x-l .nf-rw, body.x-l .nf-emb { left: calc(var(--x-sl) + 86px); }
+      .nf-rw .x-ring { position: absolute; inset: 2px; border-radius: 50%; background: conic-gradient(rgba(5, 6, 13, .78) var(--p, 0%), transparent 0); pointer-events: none; }
+      .nf-rw b { position: relative; z-index: 1; }
+      .nf-emw { position: fixed; bottom: calc(var(--x-sb) + 130px); display: flex; gap: 6px; padding: 6px; border-radius: var(--r-pill); background: rgba(10, 14, 30, .85);
+        border: 1px solid rgba(255, 216, 74, .4); }
+      body.x-r .nf-emw { right: calc(var(--x-sr) + 60px); }
+      body.x-l .nf-emw { left: calc(var(--x-sl) + 60px); }
+      .nf-emw button { width: 42px; height: 42px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .08); font-size: 22px; padding: 0; }
+      .nf-row .x-btn { min-height: 46px; font-size: 15px; }
+      .nf-card b small { white-space: normal; }
+      .nf-wx { margin: 0; font-size: 13px; color: #9fd3ff !important; }
+      .x-box.nf-one { display: flex !important; flex-direction: column; max-width: 620px; }
+      .nf-tabs { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; justify-content: center; }
+      .nf-tabs button { min-height: 40px; padding: 0 12px; border-radius: var(--r-pill); border: 1px solid rgba(0, 229, 255, .35); background: rgba(10, 14, 30, .8); color: #b9c6e6; font: inherit; font-size: 14px; }
+      .nf-tabs button.on { background: #06222c; color: #fff; border-color: #00e5ff; }
+      .nf-bal { font-weight: 600; }
+      .nf-pbar { width: 100%; height: 10px; border-radius: 5px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+      .nf-pbar i { display: block; height: 100%; background: linear-gradient(90deg, #c9a54a, #ffe27a); }
+      .nf-track { display: flex; gap: 8px; width: 100%; overflow-x: auto; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
+      .nf-tier { flex: none; width: 92px; display: flex; flex-direction: column; gap: 6px; align-items: stretch; text-align: center; }
+      .nf-tier > b { font-size: 12px; color: #c9a54a; }
+      .nf-tier.cur > b { color: #fff; }
+      .nf-rw2 { min-height: 74px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(10, 14, 30, .8); display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 2px; font-size: 22px; padding: 4px; position: relative; color: #fff; font-family: inherit; }
+      .nf-rw2 small { font-size: 11px; color: #b9c6e6; line-height: 1.2; }
+      .nf-rw2.prem { border-color: rgba(255, 216, 74, .5); background: rgba(40, 30, 6, .75); }
+      .nf-rw2.ok { box-shadow: 0 0 0 2px #39ff14 inset; cursor: pointer; }
+      .nf-rw2.got { opacity: .45; }
+      .nf-rw2.lock::after { content: "🔒"; position: absolute; top: 2px; inset-inline-end: 4px; font-size: 12px; }
+      .nf-ms { width: 100%; display: grid; gap: 6px; }
+      .nf-ed { display: grid; gap: 10px; width: 100%; }
+      .nf-edc { width: 100%; aspect-ratio: 1; max-height: 70vh; border-radius: 12px; border: 1px solid rgba(0, 229, 255, .35); background: #070a16; touch-action: none; }
+      .nf-code { box-sizing: border-box; width: 100%; min-height: 60px; padding: 8px; border-radius: 10px; font: 12px "Geist Mono", monospace; background: rgba(10, 14, 30, .8); color: #cfe; border: 1px solid rgba(0, 229, 255, .3); }
+      .nf-ph { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid #ffd84a; }
+      @media (orientation: landscape) and (min-width: 600px) { .nf-ed { grid-template-columns: minmax(0, 1fr) 260px; align-items: start; } .nf-edc { max-height: 72vh; } }
     </style>
   </head>
   <body>
@@ -605,6 +648,10 @@
           <button class="x-btn x-main" id="revy" data-go="revY"></button>
           <button class="x-btn x-sub" data-go="revN" data-i18n="revNo">لا، شكراً</button>
         </div>
+        <div class="x-hud nf-h x-hide" id="nfh" aria-live="off"></div>
+        <button class="nf-rw x-hide" id="nfrw" data-go="nfrw" aria-label="Rewind" data-i18n-al="nfRw"><span class="x-ring" id="nfrwr"></span><b>⏪</b></button>
+        <button class="nf-emb x-hide" id="nfemb" data-go="nfem" aria-label="Emote" data-i18n-al="nfEmote">😀</button>
+        <div class="nf-emw x-hide" id="nfemw"></div>
         <div class="x-ctl x-joy x-hide" id="joy"><div class="x-knob" id="knob"></div></div>
         <div class="x-ctl x-turn x-hide" id="turn">
           <button data-d="-1" aria-label="لف يسارًا" data-i18n-al="tl">&#9664;&#xFE0E;</button><button data-d="1" aria-label="لف يمينًا" data-i18n-al="tr">&#9654;&#xFE0E;</button>
@@ -625,6 +672,9 @@
         <div class="x-seg x-segw x-mode" data-k="mode" style="width:100%"><button data-v="n" data-i18n="mNormal">عادي</button><button data-v="t" data-i18n="mTeams">فرق</button><button data-v="s" data-i18n="mSurv">البقاء</button><button data-v="r" data-i18n="mRanked">مصنّف</button><button data-v="d" data-i18n="mDaily">تحدي اليوم</button><button data-v="p" data-i18n="mPriv">مباراة خاصة</button><button data-v="l" data-i18n="league">الدوري</button></div>
         <p class="x-note" id="mdi" aria-live="polite"></p>
         <button class="x-lnk" data-go="maps" id="mapq"></button>
+        <div class="x-row nf-row"><button class="x-btn x-sub" data-go="nfmodes">🎮 <span data-i18n="nfModes">Modes+</span></button></div>
+        <p class="x-note nf-wx x-hide" id="nfwx"></p>
+        <p class="x-chal x-hide" id="nfmapb" role="status" dir="auto"></p>
         <input class="x-name x-hide" id="room" maxlength="8" placeholder="كود الغرفة (اختياري)" data-i18n-ph="roomPh" autocomplete="off" aria-label="كود الغرفة" data-i18n-al="roomPh" />
         <div class="x-col x-hide" id="tml" style="width:100%;gap:8px;align-items:stretch">
           <div class="x-seg" data-k="tf" style="width:100%"><button data-v="1" data-i18n="tf1">فردي</button><button data-v="2" data-i18n="tf2">ثنائي</button><button data-v="3" data-i18n="tf3">فرقة ثلاثية</button></div>
@@ -747,7 +797,7 @@
       <div class="x-ov x-hide" id="set"><div class="x-box">
         <h2 class="x-cy" data-i18n="settings">الإعدادات</h2>
         <div class="x-set"><p data-i18n="ctrl">طريقة التحكم</p><div class="x-seg" data-k="ctrl">
-          <button data-v="follow" data-i18n="follow">اتبع الإصبع</button><button data-v="joy" data-i18n="joy">عصا تحكم</button><button data-v="btns" data-i18n="btns">أزرار الاتجاه</button></div></div>
+          <button data-v="follow" data-i18n="follow">اتبع الإصبع</button><button data-v="joy" data-i18n="joy">عصا تحكم</button><button data-v="btns" data-i18n="btns">أزرار الاتجاه</button><button data-v="tilt" data-i18n="nfTilt">Tilt</button></div></div>
         <div class="x-set"><p data-i18n="side">مكان زر التسريع</p><div class="x-seg" data-k="side">
           <button data-v="right" data-i18n="right">يمين</button><button data-v="left" data-i18n="left">يسار</button></div></div>
         <div class="x-set"><p data-i18n="bots">عدد الخصوم</p><div class="x-seg" data-k="bots">
@@ -766,7 +816,7 @@
           <button data-v="auto" data-i18n="auto">تلقائي</button><button data-v="near" data-i18n="near">قريبة</button><button data-v="far" data-i18n="far">بعيدة</button><button data-v="top" data-i18n="top">من فوق</button><button data-v="cine" data-i18n="cine">سينمائية</button></div></div>
         <div class="x-set"><p data-i18n="zoom">التقريب</p><input class="x-zoom" id="zoom" type="range" min="0.6" max="1.6" step="0.05" value="1" aria-label="التقريب" data-i18n-al="zoom" /></div>
         <div class="x-set"><p data-i18n="quality">الجودة</p><div class="x-seg" data-k="q">
-          <button data-v="x" data-i18n="qx">فائقة</button><button data-v="u" data-i18n="uhigh">عالية جدا</button><button data-v="h" data-i18n="high">عالية</button><button data-v="m" data-i18n="mid">متوسطة</button></div></div>
+          <button data-v="x" data-i18n="qx">فائقة</button><button data-v="u" data-i18n="uhigh">عالية جدا</button><button data-v="h" data-i18n="high">عالية</button><button data-v="m" data-i18n="mid">متوسطة</button><button data-v="l" data-i18n="nfLow">Low</button></div></div>
         <div class="x-set"><p data-i18n="fpsC">عداد الإطارات FPS</p><div class="x-seg" data-k="fps">
           <button data-v="1" data-i18n="showW">إظهار</button><button data-v="0" data-i18n="hideW">إخفاء</button></div></div>
         <a class="x-btn x-sub" href="privacy.html" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none" data-i18n="privacy">سياسة الخصوصية</a>
@@ -799,12 +849,18 @@
         </div>
         <p class="x-ngo" id="ngo"></p>
         <p class="x-chg x-hide" id="chg" dir="auto"></p>
+        <p class="x-chg x-hide" id="nfo" dir="auto"></p>
         <p id="earn"></p>
         <div class="x-lvp" aria-hidden="true"><i id="lvpb"></i></div><small class="x-lvt" id="lvpt"></small>
         <div id="tmr" class="x-hide"></div>
         <button class="x-btn x-main" data-go="again" data-i18n="again">العب مرة ثانية</button>
         <button class="x-btn x-sub" data-go="share" id="shb">📤 <span data-i18n="share">شارك وتحدّى</span></button>
         <button class="x-btn x-sub" data-go="home" data-i18n="mainMenu">القائمة الرئيسية</button>
+      </div></div>
+      <div class="x-ov x-hide" id="nfmodes"><div class="x-box nf-one">
+        <h2 class="x-cy" data-i18n="nfModesT">Extra modes</h2>
+        <div class="x-shop" id="nfml"></div>
+        <button class="x-btn x-sub" data-go="back" data-i18n="back">رجوع</button>
       </div></div>
       <div class="x-ov x-hide" id="maps"><div class="x-box">
         <h2 class="x-cy" data-i18n="maps">الخرايط</h2>
@@ -1482,6 +1538,60 @@
         lvMax: ["المستوى {l} · أعلى مستوى", "Level {l} · max level", "Seviye {l} · en yüksek seviye", "Niveau {l} · niveau max", "Nivel {l} · nivel máximo", "स्तर {l} · अधिकतम स्तर"],
         flMore: ["عرض المزيد ({n} متبقٍ)", "Show more ({n} left)", "Daha fazla göster ({n} kaldı)", "Afficher plus ({n} restants)", "Mostrar más ({n} restantes)", "और दिखाएँ ({n} बाकी)"],
       };
+      const NF_I18N = {
+        nfModes: ["أوضاع+", "Modes+", "Modlar+", "Modes+", "Modos+", "मोड+"],
+        nfModesT: ["أوضاع إضافية", "Extra modes", "Ekstra modlar", "Modes en plus", "Modos extra", "अतिरिक्त मोड"],
+        nfDietR: ["لهيب", "Blaze", "Alev", "Brasier", "Llamarada", "ज्वाला"],
+        nfDietB: ["صقيع", "Frost", "Ayaz", "Givre", "Escarcha", "पाला"],
+        nfDietG: ["سُم", "Venom", "Zehir", "Venin", "Veneno", "विष"],
+        nfDietOn: ["تحوّلت: {x}!", "{x} form!", "{x} formu!", "Forme {x} !", "¡Forma {x}!", "{x} रूप!"],
+        nfMyst: ["لغز اليوم", "Daily mystery", "Günün gizemi", "Mystère du jour", "Misterio del día", "आज का रहस्य"],
+        nfMy_giant: ["أكل عملاق", "Giant food", "Dev yem", "Nourriture géante", "Comida gigante", "विशाल खाना"],
+        nfMy_speed: ["سرعة جنونية", "Turbo speed", "Turbo hız", "Vitesse turbo", "Velocidad turbo", "टर्बो रफ़्तार"],
+        nfMy_tiny: ["ثعابين صغيرة", "Tiny snakes", "Minik yılanlar", "Mini serpents", "Serpientes diminutas", "छोटे साँप"],
+        nfMy_night: ["ليل دامس", "Pitch black night", "Zifiri gece", "Nuit noire", "Noche cerrada", "घना अँधेरा"],
+        nfMy_magnet: ["مغناطيس للجميع", "Magnets for all", "Herkese mıknatıs", "Aimants pour tous", "Imanes para todos", "सबके लिए चुंबक"],
+        nfMy_free: ["تسريع مجاني", "Free boost", "Bedava hızlanma", "Boost gratuit", "Turbo gratis", "मुफ़्त बूस्ट"],
+        nfMy_rainbow: ["قوس قزح", "Rainbow diet", "Gökkuşağı diyeti", "Régime arc-en-ciel", "Dieta arcoíris", "इंद्रधनुष डाइट"],
+        nfMy_beat: ["حمّى الإيقاع", "Beat fever", "Ritim ateşi", "Fièvre du rythme", "Fiebre del ritmo", "बीट बुखार"],
+        nfMy_swarm: ["سرب ثعابين", "Snake swarm", "Yılan sürüsü", "Essaim de serpents", "Enjambre de serpientes", "साँपों का झुंड"],
+        nfMy_big: ["بداية عملاقة", "Giant start", "Dev başlangıç", "Départ géant", "Inicio gigante", "विशाल शुरुआत"],
+        nfMy_d_giant: ["الأكل كبير ويعطي ضعف", "Food is huge and worth double", "Yemler kocaman ve iki kat değerli", "La nourriture est énorme et vaut double", "La comida es enorme y vale el doble", "खाना बड़ा और दोगुना"],
+        nfMy_d_speed: ["الكل أسرع بكثير", "Everyone is much faster", "Herkes çok daha hızlı", "Tout le monde va bien plus vite", "Todos van mucho más rápido", "सब बहुत तेज़"],
+        nfMy_d_tiny: ["كل الثعابين نحيفة", "All snakes are thin", "Tüm yılanlar ince", "Tous les serpents sont fins", "Todas las serpientes son delgadas", "सब साँप पतले"],
+        nfMy_d_night: ["ما تشوف إلا اللي يلمع", "You only see what glows", "Sadece parlayanı görürsün", "Tu ne vois que ce qui brille", "Solo ves lo que brilla", "सिर्फ़ चमकती चीज़ें दिखती हैं"],
+        nfMy_d_magnet: ["كل الثعابين تسحب الأكل", "Every snake pulls food in", "Her yılan yemi çeker", "Chaque serpent attire la nourriture", "Cada serpiente atrae la comida", "हर साँप खाना खींचता है"],
+        nfMy_d_free: ["التسريع ما ينقص طولك", "Boosting costs no length", "Hızlanmak boy götürmez", "Le boost ne coûte rien", "El turbo no cuesta longitud", "बूस्ट से लंबाई नहीं घटती"],
+        nfMy_d_rainbow: ["الألوان تحوّلك ٣ مرات أسرع", "Colours evolve you 3x faster", "Renkler 3 kat hızlı dönüştürür", "Les couleurs te transforment 3x plus vite", "Los colores te transforman 3 veces más rápido", "रंग 3 गुना तेज़ बदलते हैं"],
+        nfMy_d_beat: ["نافذة الإيقاع أوسع والمكافأة ضعف", "Wider beat window, double bonus", "Daha geniş ritim, çift bonus", "Fenêtre de rythme large, bonus double", "Ventana de ritmo amplia, bonus doble", "चौड़ी बीट, दोगुना बोनस"],
+        nfMy_d_swarm: ["خصوم أكثر بكثير", "Many more rivals", "Çok daha fazla rakip", "Beaucoup plus de rivaux", "Muchos más rivales", "बहुत ज़्यादा विरोधी"],
+        nfMy_d_big: ["تبدأ بطول ٨٠", "You start at length 80", "80 boyla başlarsın", "Tu commences à 80", "Empiezas con longitud 80", "80 लंबाई से शुरू"],
+        nfMyRew: ["مكافأة اللغز +{n} 🪙", "Mystery reward +{n} 🪙", "Gizem ödülü +{n} 🪙", "Récompense mystère +{n} 🪙", "Premio misterio +{n} 🪙", "रहस्य इनाम +{n} 🪙"],
+        nfMyRewT: ["أول مباراة اليوم: +{n} 🪙", "First match today: +{n} 🪙", "Bugünkü ilk maç: +{n} 🪙", "Premier match du jour : +{n} 🪙", "Primera partida de hoy: +{n} 🪙", "आज का पहला मैच: +{n} 🪙"],
+        nfMyDone: ["أخذت مكافأة اليوم", "Today's reward claimed", "Bugünün ödülü alındı", "Récompense du jour reçue", "Premio de hoy recibido", "आज का इनाम मिल गया"],
+        nfTilt: ["إمالة", "Tilt", "Eğme", "Inclinaison", "Inclinar", "झुकाव"],
+        nfTiltNo: ["الإمالة غير متاحة، رجعنا لاتبع الإصبع", "Tilt isn't available, back to finger control", "Eğme kullanılamıyor, parmak kontrolüne dönüldü", "Inclinaison indisponible, retour au doigt", "Inclinar no disponible, vuelve el dedo", "झुकाव उपलब्ध नहीं, उंगली नियंत्रण पर वापस"],
+        nfTiltOk: ["ميّل الجوال يمين ويسار للتوجيه", "Tilt the phone left and right to steer", "Yönlendirmek için telefonu sağa sola eğ", "Incline le téléphone pour diriger", "Inclina el móvil para girar", "मोड़ने के लिए फ़ोन को झुकाएँ"],
+        nfTiltNone: ["ما وصلتنا قراءات الإمالة، استخدم إصبعك", "No tilt readings, use your finger", "Eğme verisi yok, parmağını kullan", "Pas de données d'inclinaison, utilise ton doigt", "Sin datos de inclinación, usa el dedo", "झुकाव डेटा नहीं, उंगली इस्तेमाल करें"],
+        nfLow: ["منخفضة", "Low", "Düşük", "Basse", "Baja", "कम"],
+        nfLmFound: ["سرّ مكتشف", "Secret found", "Sır bulundu", "Secret trouvé", "Secreto encontrado", "रहस्य मिला"],
+        nfLmT: ["الأسرار المكتشفة", "Secrets found", "Bulunan sırlar", "Secrets trouvés", "Secretos encontrados", "मिले रहस्य"],
+        nfLmD: ["٣ معالم مخفية في كل من الكلاسيكي والغابة والسايبر. المسها!", "3 hidden landmarks each in Classic, Forest and Cyber. Touch them!", "Klasik, Orman ve Siber'de 3'er gizli simge. Dokun!", "3 monuments cachés dans Classique, Forêt et Cyber. Touche-les !", "3 lugares ocultos en Clásico, Bosque y Ciber. ¡Tócalos!", "क्लासिक, जंगल और साइबर में 3-3 छिपे स्थल। छुएँ!"],
+        nfLm0a: ["برج النيون", "Neon Tower", "Neon Kule", "Tour néon", "Torre de neón", "नियॉन टावर"],
+        nfLm0b: ["الكريستالة", "The Crystal", "Kristal", "Le Cristal", "El Cristal", "क्रिस्टल"],
+        nfLm0c: ["البوابة الدوّارة", "Spiral Portal", "Sarmal Geçit", "Portail spirale", "Portal espiral", "सर्पिल द्वार"],
+        nfLm5a: ["الشجرة العتيقة", "Elder Tree", "Yaşlı Ağaç", "Arbre ancien", "Árbol anciano", "प्राचीन पेड़"],
+        nfLm5b: ["حلقة الجنيات", "Fairy Ring", "Peri Halkası", "Cercle des fées", "Anillo de hadas", "परियों का घेरा"],
+        nfLm5c: ["الحجر القديم", "Ancient Stone", "Kadim Taş", "Pierre ancienne", "Piedra antigua", "प्राचीन पत्थर"],
+        nfLm6a: ["نواة البيانات", "Data Core", "Veri Çekirdeği", "Noyau de données", "Núcleo de datos", "डेटा कोर"],
+        nfLm6b: ["محطة الإرسال", "Relay Station", "Röle İstasyonu", "Station relais", "Estación repetidora", "रिले स्टेशन"],
+        nfLm6c: ["العين الساهرة", "Watching Eye", "Gözcü Göz", "Œil qui veille", "Ojo vigilante", "निगरानी आँख"],
+        tx_myst: ["لغز اليوم", "Daily mystery", "Günün gizemi", "Mystère du jour", "Misterio del día", "आज का रहस्य"],
+        tx_lm: ["سرّ مكتشف", "Secret found", "Sır bulundu", "Secret trouvé", "Secreto encontrado", "रहस्य मिला"],
+        nfRw: ["ارجع ٣ ثواني", "Rewind 3 seconds", "3 saniye geri sar", "Rembobiner 3 secondes", "Rebobinar 3 segundos", "3 सेकंड पीछे"],
+        nfEmote: ["تعبير", "Emote", "İfade", "Émote", "Gesto", "इमोट"],
+      };
+      Object.assign(I18N, NF_I18N);
       let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
       function t(k, o) {
         const r = I18N[k]; let s = r ? r[I18N_L.indexOf(LANG)] || r[0] : k;
@@ -1506,8 +1616,8 @@
         const $ = (id) => document.getElementById(id);
         let W, H, dpr, Q = "h";
         // quality levels, low to high: DPR cap, particle cap, rain drops, prey count
-        const QS = ["m", "h", "u", "x"], QN = { m: "mid", h: "high", u: "uhigh", x: "qx" };
-        const QCFG = { m: { dpr: 1.5, parts: 90, rain: 50, prey: 22 }, h: { dpr: 2, parts: 150, rain: 100, prey: 32 },
+        const QS = ["l", "m", "h", "u", "x"], QN = { l: "nfLow", m: "mid", h: "high", u: "uhigh", x: "qx" };
+        const QCFG = { l: { dpr: 1, parts: 50, rain: 25, prey: 14 }, m: { dpr: 1.5, parts: 90, rain: 50, prey: 22 }, h: { dpr: 2, parts: 150, rain: 100, prey: 32 },
           u: { dpr: 2, parts: 150, rain: 140, prey: 40 }, x: { dpr: 3, parts: 150, rain: 160, prey: 45 } };
         let QL = 1, QC = QCFG.h;
         function resize() {
@@ -1760,7 +1870,7 @@
         // team colors [marker, skin] (yours first), invited friend keys, bot count of a running team match, lobby tab
         const TC = [["🔵", 1], ["🔴", 4], ["🟡", 3], ["🟣", 2]];
         let TI = [], TN = 0, tTab = "l";
-        const TXK = ["boss", "gold", "gift", "match", "lvl", "buy", "chest", "wheel", "mis", "league", "daily", "team", "surv", "rank", "gx", "pack", "ach", "fgift", "tp", "rev"];
+        const TXK = ["boss", "gold", "gift", "match", "lvl", "buy", "chest", "wheel", "mis", "league", "daily", "team", "surv", "rank", "gx", "pack", "ach", "fgift", "tp", "rev", "myst", "lm", "rp", "shop2", "crate", "story", "word"];
         const RT_T = [0, 1100, 1300, 1500, 1800], rtTier = (r) => RT_T.filter((x) => r >= x).length - 1;
         // every coin or gem change goes through pay(), which keeps the last 40 in the transaction log (P.tx: [unix s, reason, amount, "c"|"g"])
         function pay(c, w, g) {
@@ -2105,7 +2215,7 @@
           if (want !== MUS.mode) { MUS.mode = want; MUS.g.gain.cancelScheduledValues(now); MUS.g.gain.setTargetAtTime(want === "m" ? 0.09 : want ? 0.06 : 0.0001, now, want ? 0.4 : 0.05); MUS.next = 0; }
           if (!want) return;
           const sd = 60 / (want === "m" ? 112 : 84) / 2;
-          if (MUS.next < now - 0.1) MUS.next = now + 0.05; // first start, or back from a pause
+          if (MUS.next < now - 0.1) { MUS.next = now + 0.05; MUS.at = MUS.next; MUS.as = MUS.step; } // first start, or back from a pause (at/as: beat clock anchor)
           while (MUS.next < now + 0.25) { musStep(a, MUS.step++, MUS.next, sd); MUS.next += sd; }
         }
         // the AudioContext may only start inside a user gesture on iOS: every tap/key (cheap once it runs) creates or resumes it for the music
@@ -2116,7 +2226,7 @@
         function shake(a) { shk = Math.max(shk, RMO ? a * 0.35 : a); }
         // a tiny burst in the food's own colour when the player eats (throttled with the eat sound)
         function eatFx(f) {
-          const T = f.k && FT[f.k], c = (T && T.glow) || f.c || "#fff", n = Q === "m" ? 3 : 5;
+          const T = f.k && FT[f.k], c = (T && T.glow) || f.c || "#fff", n = QL <= 1 ? 3 : 5;
           for (let i = 0; i < n; i++) { const a = R() * 6.28, v = rnd(40, 110);
             parts.push({ x: f.x, y: f.y, z: rnd(4, 12), vx: Math.cos(a) * v, vy: Math.sin(a) * v, vz: rnd(20, 60), l: rnd(0.25, 0.45), c }); }
         }
@@ -2271,11 +2381,11 @@
             const p = s.seg[i];
             addFood(p.x + rnd(-8, 8), p.y + rnd(-8, 8), rnd(0.8, 1.6), segColor(s.skin, i));
           }
-          if (s === player) { sDeath(); shake(11); if (revOk()) revOpen(); else gameOver(); }
+          if (s === player) { sDeath(); shake(11); nfDeath(s); if (revOk()) revOpen(); else gameOver(); }
           else { s.respawn = 2; if (player && player.alive && Math.hypot(s.seg[0].x - player.seg[0].x, s.seg[0].y - player.seg[0].y) < 600) pendImp = true; }
         }
         function syncBots() {
-          const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || Math.max(2, (L.on ? 8 + L.round * 4 : Math.round((MD === "p" ? PB : S.bots) * A / A0)) + (state === "play" ? AD.bAdd : 0));
+          const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || nfBotN() || Math.max(2, (L.on ? 8 + L.round * 4 : Math.round((MD === "p" ? PB : S.bots) * A / A0)) + (state === "play" ? AD.bAdd : 0));
           while (bots.length < nb) {
             const b = makeSnake(bn(bots.length), botSkin(), true);
             b.ni = bots.length; b.len = rnd(20, 70); snakes.push(b); bots.push(b);
@@ -2298,7 +2408,7 @@
           for (let i = 0; i < n; i++) spawnDna(h.x + rnd(-70, 70), h.y + rnd(-70, 70));
         }
         function burst(x, y, n, hue) {
-          n = Math.round(n * (QL >= 2 ? 1.6 : Q === "m" ? 0.6 : 1));
+          n = Math.round(n * (QL >= 3 ? 1.6 : QL <= 1 ? 0.6 : 1));
           for (let i = 0; i < n; i++) { const a = R() * 6.28, v = rnd(60, 220);
             parts.push({ x, y, z: rnd(8, 30), vx: Math.cos(a) * v, vy: Math.sin(a) * v, vz: rnd(20, 90), l: rnd(0.6, 1.1), fire: true,
               c: `hsl(${hue + ((R() * 4) | 0) * 15},100%,${R() < 0.4 ? 85 : 60}%)` }); }
@@ -2776,8 +2886,9 @@
         function xUpdate(dt) {
           xN = AD.mod === "night" && state === "play" ? 1 : clamp(-Math.cos((time * Math.PI) / 60) * 1.4 - 0.2, 0, 1);
           if (rainOn > 0) rainOn -= dt; else if ((rainNext -= dt) <= 0) { rainOn = 30; rainNext = rnd(120, 240); }
+          nfWx(dt);
           rainA = clamp(rainA + (rainOn > 0 ? dt : -dt) * 0.5, 0, 1);
-          if (rainA > 0 && Q !== "m") for (let k = 0; k < 3; k++) if (R() < rainA) rips.push({ x: cam.x + rnd(-700, 700), y: cam.y + rnd(-500, 400), l: 0.8 });
+          if (rainA > 0 && QL > 1) for (let k = 0; k < 3; k++) if (R() < rainA) rips.push({ x: cam.x + rnd(-700, 700), y: cam.y + rnd(-500, 400), l: 0.8 });
           for (let i = rips.length - 1; i >= 0; i--) if ((rips[i].l -= dt) <= 0) rips.splice(i, 1);
           if (rips.length > QC.rain) rips.splice(0, rips.length - QC.rain); // ripples scale with quality
           for (let i = floats.length - 1; i >= 0; i--) if ((floats[i].l -= dt) <= 0) floats.splice(i, 1);
@@ -2869,15 +2980,16 @@
             if (turn) player.ta = player.a + turn * 1.2;
             else if (S.ctrl === "joy") { if (joy.on && joy.m > 10) player.ta = joy.a; }
             else if (S.ctrl === "btns") player.ta = player.a;
+            else if (S.ctrl === "tilt" && nfTiltSteer()) { /* steered by tilt */ }
             else if (ptr.active) { const w = unpr(ptr.x, ptr.y), ph = player.seg[0]; player.ta = Math.atan2(w.y - ph.y, w.x - ph.x); }
-            player.boost = boostOn || mouseBoost || !!keys[" "] || !!keys.ArrowUp;
+            player.boost = boostOn || mouseBoost || !!keys[" "] || !!keys.ArrowUp || nfVB();
           }
           for (const s of snakes) {
             if (!s.alive) {
               if (s.bot && !(MD === "s" && state === "play") && (s.respawn -= dt) <= 0) Object.assign(s, makeSnake(s.name, s.tm !== undefined ? s.skin : botSkin(), true));
               continue;
             }
-            if (s.bot) think(s, dt);
+            if (s.bot) { think(s, dt); if (s.rv) nfRival(s, dt); }
             moveSnake(s, dt);
             if (s.inv > 0) s.inv -= dt;
             if (s.trail && R() < 0.7) {
@@ -2897,7 +3009,7 @@
               const dx = h.x - f.x, dy = h.y - f.y, d = dx * dx + dy * dy;
               if (d < er * er) {
                 s.len += f.v * 0.6 * AD.fv; f.dead = 1; ate = true;
-                if (s === player) { M.eat++; xCombo(1); const T = f.k && FT[f.k]; if (T && T.tier) xBan(`${fNm(T)} +${T.v}`); }
+                if (s === player) { M.eat++; xCombo(1); nfEat(f); const T = f.k && FT[f.k]; if (T && T.tier) xBan(`${fNm(T)} +${T.v}`); }
                 if (s === player && time - eatT > 0.08) { eatT = time; sEat(); eatFx(f); }
               }
               else if (d < pull * pull) { const k = mg ? Math.min(0.18, 900 / d + 0.04) : 0.18; f.x += dx * k; f.y += dy * k; }
@@ -2931,7 +3043,7 @@
             } });
             if (hit) credit(hit, s); // a kill counts only when the snake really dies (not on a shield or while invulnerable)
           }
-          evoUpdate(dt); xUpdate(dt); preyUpdate(dt); adUpdate(dt); modeTick();
+          evoUpdate(dt); xUpdate(dt); preyUpdate(dt); adUpdate(dt); modeTick(); nfUpdate(dt);
           if (pendImp) { pendImp = false; if (killT !== time) sImpact(0.45); }
           while (food.length < fMin() * (state === "play" ? AD.food : 1)) addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood());
           if (food.length > 2200) food.splice(0, food.length - 2200);
@@ -3249,7 +3361,7 @@
             else if (m === "near") zs *= 1.3; else if (m === "far") zs *= 0.7; else if (m === "top") tl = 1.45; else if (m === "cine") { tl = 0.72; zs *= 1.1; }
             zs = clamp(zs, 0.38, 1.7);
             if (Math.hypot(h.x - cam.x, h.y - cam.y) > 900) { cam.x = h.x; cam.y = h.y; cam.vx = cam.vy = 0; }
-            damp(cam, "x", "vx", h.x, 0.14, dt); damp(cam, "y", "vy", h.y, 0.14, dt);
+            damp(cam, "x", "vx", h.x + nfLead(focus, 0), 0.14, dt); damp(cam, "y", "vy", h.y + nfLead(focus, 1), 0.14, dt);
             damp(cam, "s", "vs", zs, 0.7, dt); damp(cam, "t", "vt", tl, 0.6, dt);
             cam.s = clamp(cam.s, 0.38, 1.7); cam.t = clamp(cam.t, 0.7, 1.45);
           }
@@ -3303,7 +3415,7 @@
             if (vy0 <= 0) wall(fx0, 0, fx1, 0);
             if (vx0 <= 0) wall(0, fy0, 0, fy1);
             if (vx1 >= A) wall(A, fy0, A, fy1);
-            preyPonds(vis);
+            preyPonds(vis); nfDrawFloor(vis);
           }
 
           for (const f of food) {
@@ -3314,18 +3426,18 @@
             ctx.globalAlpha = 0.35; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); ctx.globalAlpha = 1;
             pr(f.x, f.y, z);
             if (T) {
-              if (T.glow && Q !== "m") { ctx.globalAlpha = 0.18 + 0.12 * Math.sin(time * 4 + f.ph); const g2 = r * 4 * PK; ctx.drawImage(orb(T.glow), PX - g2 / 2, PY - g2 / 2, g2, g2); ctx.globalAlpha = 1; }
-              const s2 = r * 2.3 * PK * (T.real ? 1 + 0.05 * Math.sin(time * 4 + f.ph) : 1); ctx.save(); ctx.translate(PX, PY);
+              if (T.glow && QL > 1) { ctx.globalAlpha = 0.18 + 0.12 * Math.sin(time * 4 + f.ph); const g2 = r * 4 * PK; ctx.drawImage(orb(T.glow), PX - g2 / 2, PY - g2 / 2, g2, g2); ctx.globalAlpha = 1; }
+              const s2 = r * 2.3 * PK * (T.real ? 1 + 0.05 * Math.sin(time * 4 + f.ph) : 1) * (1 + 0.12 * nfBeatK()); ctx.save(); ctx.translate(PX, PY);
               if (f.k === "mouse" || T.rot) ctx.rotate(Math.atan2(Math.sin(f.a) * ST, Math.cos(f.a)));
               else if (T.spin) ctx.scale(0.45 + 0.55 * Math.abs(Math.cos(time * 2 + f.ph)), 1);
               ctx.drawImage(foodSpr(f.k), -s2 / 2, -s2 / 2, s2, s2); ctx.restore();
               continue;
             }
-            const s2 = r * 4 * PK * (1 + 0.06 * Math.sin(time * 4 + f.ph)); // glossy orb, slight pulse
+            const s2 = r * 4 * PK * (1 + 0.06 * Math.sin(time * 4 + f.ph) + 0.2 * nfBeatK()); // glossy orb, slight pulse + the music beat
             ctx.drawImage(pearl(f.c), PX - s2 / 2, PY - s2 / 2, s2, s2);
           }
 
-          preyDraw(vis); evoDraw0(vis); xDraw0(vis);
+          preyDraw(vis); evoDraw0(vis); xDraw0(vis); nfDrawWorld(vis);
           // whole-snake cull: skip snakes that cannot reach the view; long or far snakes draw every other segment
           const vcx = (vx0 + vx1) / 2, vcy = (vy0 + vy1) / 2, vR = Math.hypot(vx1 - vx0, vy1 - vy0) / 2;
           const order = snakes.filter((s) => {
@@ -3440,6 +3552,7 @@
               pr(px, py, r); const wd = r * 1.9 * PK, ln = wd * (sn.st > 1 ? 1.05 : 0.85);
               ctx.setTransform(dpr * c, dpr * s, -dpr * s, dpr * c, dpr * PX, dpr * PY);
               ctx.drawImage(bodySz(sn.frz > 0 ? "#8fd8ff" : bodyKey(sn.skin, i), i % 4 < sn.st ? 1 : 0, wd * dpr), -ln * 0.5, -wd * 0.5, ln, wd);
+              if (sn.ovs) { ctx.globalAlpha = ga * sn.ova; ctx.drawImage(sn.ovs[i % sn.ovs.length], -ln * 0.5, -wd * 0.5, ln, wd); ctx.globalAlpha = ga; }
             }
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             band(sn, 1, 0.4, 0.44, 0.55, "#000", 0.2 * ga); // darker belly edge, away from the light
@@ -3464,6 +3577,7 @@
             pr(h.x, h.y, r); const sa = Math.atan2(fy - PY, fx - PX), hw = r * 3 * PK;
             if (bo) { ctx.globalAlpha = 0.22 * ga; const gd = r * 2.1 * PK; ctx.drawImage(disc(hc), PX - gd, PY - gd, gd * 2, gd * 2); ctx.globalAlpha = ga; }
             ctx.save(); ctx.translate(PX, PY); ctx.rotate(sa); ctx.drawImage(headSpr(hc), -hw * 0.45, -hw * 0.37, hw, hw * 0.74); ctx.restore();
+            nfHead(sn, h, r); ctx.globalAlpha = ga;
             if (sn === player && P.dv.e && avReady()) { // drawn avatar as a round emblem on the crown of the head, behind the eyes
               pr(h.x - ca * r * 0.3, h.y - sa0 * r * 0.3, r * 1.3); const ar = r * 0.55 * PK;
               ctx.save(); ctx.beginPath(); ctx.arc(PX, PY, ar, 0, 6.283); ctx.clip(); ctx.drawImage(avImg, PX - ar, PY - ar, ar * 2, ar * 2); ctx.restore();
@@ -3511,6 +3625,7 @@
               ctx.fillText(sn.name, PX + 10, ny0);
               ctx.save(); ctx.beginPath(); ctx.arc(ax + 2, ay, 9, 0, 6.283); ctx.clip(); ctx.drawImage(avImg, ax - 7, ay - 9, 18, 18); ctx.restore();
             } else ctx.fillText(sn.name, PX, ny0);
+            nfTag(PX, ny0, sn);
           }
 
           ctx.globalAlpha = 1;
@@ -3518,7 +3633,7 @@
           if (hasFloor && vy1 >= A) wall(fx0, A, fx1, A);
           evoDraw1(vis); xDraw1(); adDraw();
 
-          ctx.drawImage(sky(M), 0, 0, W, CY); xDraw2(vis);
+          ctx.drawImage(sky(M), 0, 0, W, CY); xDraw2(vis); nfDrawTop(vis);
 
           if (S.map && lbS && player && state === "play") {
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -3610,7 +3725,7 @@
           if (html !== lbH) { lbH = html; $("lb").innerHTML = html; } // touch the DOM only on change
         }
 
-        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt"];
+        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes"];
         // MANDATORY ACCOUNT: with nobody logged in, only the login and create-account screens can show
         function authView(imp, quiet) {
           $("logv").classList.toggle("x-hide", !!imp); $("impv").classList.toggle("x-hide", !imp);
@@ -3914,7 +4029,7 @@
           if (state !== "play") for (const s of snakes) if (s.bot && s.ni !== undefined && s.tm === undefined && !s.ad) s.name = bn(s.ni); // bot names follow the language
           profile(); evoKey = ""; lbT = 0; const on = (id) => !$(id).classList.contains("x-hide");
           [...$("skins").children].forEach((b, i) => b.setAttribute("aria-label", SKINS[i].n)); $("skn").textContent = SKINS[skin].n; stNote();
-          paintMode(); if (on("shop")) { paintShop(); paintPts(); paintTx(); } if (on("maps")) paintMaps(); if (on("league")) paintLeague(); if (on("achs")) paintAch(); if (on("inbox")) paintInb(); if (on("chat")) paintChat(); if (on("adm")) admPaint();
+          nfRelang(); paintMode(); if (on("shop")) { paintShop(); paintPts(); paintTx(); } if (on("maps")) paintMaps(); if (on("league")) paintLeague(); if (on("achs")) paintAch(); if (on("inbox")) paintInb(); if (on("chat")) paintChat(); if (on("adm")) admPaint();
         }
         // achievements screen: titles to equip first, then every achievement with its progress bar and claim button
         function paintAch() {
@@ -3971,12 +4086,13 @@
           if (CFG.mt && !isStaff()) { L.on = false; if (state !== "menu") home(); else show("mnt"); return; } // maintenance: admin only
           if (!KV.get("ss-tut")) { tuOpen(); return; } // first match ever: the 4-card tutorial runs first
           beep(660, 0.12, "triangle", 0.05, 990);
-          MD = L.on ? "l" : S.mode; tmRes = "";
+          MD = L.on ? "l" : nfMode() ? "n" : S.mode; tmRes = "";
           if (MD === "p") { // the room code seeds the map and bot count, so the same code gives the same match
             ROOM = ($("room").value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "") || Math.random().toString(36).slice(2, 8)).toUpperCase().slice(0, 8);
             let h = 7; for (const c of ROOM) h = (h * 31 + c.charCodeAt(0)) >>> 0;
             const ok = MAPS.map((_, i) => i).filter((i) => !mapLock(i)); setMap(ok[h % ok.length]); PB = [5, 10, 20][(h >>> 4) % 3];
           }
+          if (!L.on && MD !== "p") nfPreStart();
           if (A !== Math.round(A0 * (MAPS[mapI].sz || 1))) setMap(mapI);
           snakes = snakes.filter((s) => s.bot); adStart();
           if (MD === "d") { AD.mod = Object.keys(AD_MODS)[today() % 4]; adMod(); }
@@ -3991,6 +4107,7 @@
           if (player.big) player.len = 60;
           cam.x = player.seg[0].x; cam.y = player.seg[0].y; cam.vx = cam.vy = cam.vs = cam.vt = 0;
           release(); applySettings(); lbS = S.mini ? 0 : 1; lbT = 0; rvUsed = false; revHide();
+          nfStart();
           state = "play"; last = performance.now(); aqReset(3);
           show(null); $("game").classList.remove("x-hide");
         }
@@ -4005,7 +4122,7 @@
         }
         function toggleMute() { S.sound = S.sound ? 0 : 1; applySettings(); }
         function home() {
-          closeExit(); revHide(); state = "menu"; release(); L.on = false; MD = "n"; TN = 0; tSetup(); paintMode();
+          nfHome(); closeExit(); revHide(); state = "menu"; release(); L.on = false; MD = "n"; TN = 0; tSetup(); paintMode();
           if (pendRem) { pendRem = false; setTimeout(() => toast(_t("saveRem")), 300); }
           snakes = snakes.filter((s) => s.bot && !s.ad); player = null; AD.mod = ""; adMod(); AD.fog = null;
           if (mapI !== mapSel) setMap(mapSel);
@@ -4015,7 +4132,7 @@
         // game over. Price in coins grows with the run: 50 + 10 per 100 length, max 150. Comes back at a safe spot with its length and 3 s invulnerability
         let rvUsed = false, rvOn = false, rvT = 0, rvL = 0, rvC = 50;
         const revCost = (l) => clamp(50 + 10 * Math.floor(l / 100), 50, 150);
-        function revOk() { return !rvUsed && !L.on && ["n", "d", "p"].includes(MD) && state === "play" && !!cur && Math.floor(player.len) >= 25; }
+        function revOk() { return !rvUsed && !L.on && !nfNoRev() && ["n", "d", "p"].includes(MD) && state === "play" && !!cur && Math.floor(player.len) >= 25; }
         function revHide() { rvOn = false; $("rev").classList.add("x-hide"); }
         function revOpen() {
           rvUsed = true; rvOn = true; rvT = 5; rvL = Math.floor(player.len); rvC = revCost(rvL); closeExit();
@@ -4103,6 +4220,7 @@
             $("lvpt").textContent = mx ? _t("lvMax", { l: v.n }) : _t("lvNext", { l: v.n, x: v.need - v.x, n: v.n + 1 }); }
           SHR.lv = level(); setTimeout(shareCard, 0);
           $("earn").textContent = `+${co} 🪙 · +${xp} ${_t("xp")}` + (level() > lv ? ` · ${_t("newLv")} ${level()}! 🎉 ${_t("lvRew")} +${rw} 🪙` : "") + (tmRes ? " · " + tmRes : "");
+          nfOver(l);
           release();
           setTimeout(() => { if (state === "over") { $("game").classList.add("x-hide");
             if (L.on) lgShow(snakes.filter((s) => s.alive).sort((a, b) => b.len - a.len), -1, false); else show("over"); } }, 700);
@@ -4317,7 +4435,7 @@
 
         // ACCOUNTS: everything a player owns or sets (progress, unlocks, coins, league, settings, colours, map, skin) lives in the
         // account's snapshot. commit() writes the live state into it on every change; enter() re-applies it on login.
-        const snap = () => JSON.parse(JSON.stringify({ P, M, L: { tier: L.tier, tro: L.tro }, PST, best, skin, S, cc: SKINS[CUST].c, map: mapSel }));
+        const snap = () => JSON.parse(JSON.stringify({ P, M, L: { tier: L.tier, tro: L.tro }, PST, best, skin, S, cc: SKINS[CUST].c, map: mapSel, X: NX }));
         const DEF = snap(); // what a guest gets
         function commit() {
           if (!cur || loading || !ACC[cur]) return;
@@ -4349,6 +4467,7 @@
             skin = Number.isInteger(d.skin) && SKINS[d.skin] && (!SKINS[d.skin].p || P.own["s" + d.skin]) ? d.skin : 0; if (!AV.includes(P.av)) P.av = AV[0]; av = P.av;
             if (typeof P.name !== "string") P.name = "";
             S.tf = 2; S.music = 1; if (d.S) for (const k in S) if (k in d.S) S[k] = d.S[k];
+            nfLoad(d.X);
             if (Array.isArray(d.cc) && d.cc.length === 2 && d.cc.every((c) => /^#[0-9a-f]{6}$/i.test(c))) { SKINS[CUST].c = d.cc.slice(0, 2); $("cc1").value = d.cc[0]; $("cc2").value = d.cc[1]; skinsEl.children[CUST].style.background = swatch(SKINS[CUST]); }
             mapSel = Number.isInteger(d.map) && MAPS[d.map] ? d.map : 0; if (state === "menu" && mapI !== mapSel) setMap(mapSel);
             lbS = S.mini ? 0 : 1; aqReset(4);
@@ -4644,8 +4763,8 @@
         const isInt = (v, a, b) => Number.isInteger(v) && v >= a && v <= b;
         const isObj = (o) => !!o && typeof o === "object" && !Array.isArray(o);
         const keysIn = (o, ref) => Object.keys(o).every((k) => Object.prototype.hasOwnProperty.call(ref, k));
-        const SV = { lang: I18N_L, ctrl: ["follow", "joy", "btns"], side: ["right", "left"], bots: [5, 10, 20], speed: [0.75, 1, 1.3], sound: [0, 1], music: [0, 1], map: [0, 1],
-          cam: ["auto", "near", "far", "top", "cine"], q: ["x", "u", "h", "m"], fps: [0, 1], mini: [0, 1], mode: ["n", "l", "t", "s", "r", "d", "p"], diff: [0, 1, 2, 3, 4], tf: [1, 2, 3] };
+        const SV = { lang: I18N_L, ctrl: ["follow", "joy", "btns", "tilt"], side: ["right", "left"], bots: [5, 10, 20], speed: [0.75, 1, 1.3], sound: [0, 1], music: [0, 1], map: [0, 1],
+          cam: ["auto", "near", "far", "top", "cine"], q: ["x", "u", "h", "m", "l"], fps: [0, 1], mini: [0, 1], mode: ["n", "l", "t", "s", "r", "d", "p"], diff: [0, 1, 2, 3, 4], tf: [1, 2, 3] };
         function lvOf(xp) { let n = 1, x = xp, need = xpNeed(1); while (n < LV_MAX && x >= need) { x -= need; n++; need = xpNeed(n); } return n; }
         function validSave(a, d) {
           try {
@@ -4759,6 +4878,7 @@
             if (!isInt(d.map, 0, MAPS.length - 1)) return false;
             const q = MAP_REQ[d.map];
             if (q && !((q.lv && lv >= q.lv) || (q.tier !== undefined && l.tier >= q.tier))) return false;
+            if (d.X !== undefined && !nfValidX(d.X)) return false; // new-features block (optional, so older codes still import)
             return true;
           } catch (e) { return false; }
         }
@@ -5521,7 +5641,7 @@
           AQ.b.push([AQ.n, AQ.t]); AQ.n = AQ.t = 0; if (AQ.b.length > 4) AQ.b.shift();
           if (AQ.b.length < 4) return;
           let n = 0, s = 0; for (const [bn, bt] of AQ.b) { n += bn; s += bt; }
-          if (n / s >= 45 || QL <= 0) return;
+          if (n / s >= 45 || QL <= 1) return;
           S.q = QS[QL - 1]; applySettings(); aqReset(6);
           if (!AQ.told) { AQ.told = true; toast(_t("aqDown", { x: _t(QN[S.q]) })); }
         }
@@ -5538,6 +5658,459 @@
           drawSkPv();
           requestAnimationFrame(loop);
         }
+
+        // ================= NEW FEATURES (NF) =================
+        // Everything below is additive. Hooks in the main game call the nf* functions; each feature registers handlers in NFH.
+        // NX: per-account extra progress (saved with the account and in save codes as d.X, optional so older codes still import).
+        var NFR = false, NX, NFS = { t: 0 }, NFM = { m: "", st: 0, cm: null };
+        var NFH = { upd: [], floor: [], world: [], top: [], start: [], pre: [], over: [], eat: [], death: [], head: [], tag: [], home: [], relang: [], hud: [], load: [], wx: [] };
+        function nfDefX() {
+          return { v: 1, own: {}, eq: { sk: "", tr: "", de: "", fr: "", em: [] }, rp: { s: -1, xp: 0, pr: 0, cf: [], cp: [] }, ai: { n: 0, l: 0.5, b: 0.2, w: 0.2, k: 0 },
+            cp: 0, cs: {}, lm: {}, my: -1, wd: 0, ms: { d: -1, m: 0, e: 0, k: 0, c: [] }, set: { wx: 0, gh: 1, rv: 1, vo: 0 }, ed: [] };
+        }
+        function nfO(o) { return !!o && typeof o === "object" && !Array.isArray(o); }
+        function nfI(v, a, b) { return Number.isInteger(v) && v >= a && v <= b; }
+        function nfN(v, a, b) { return typeof v === "number" && isFinite(v) && v >= a && v <= b; }
+        const NF_ID = /^[a-z]{2}_[a-z0-9]{1,16}$/;
+        // sanitize: unknown or bad parts fall back to defaults, so a damaged copy never breaks the game
+        function nfFixX(x) {
+          const d = nfDefX(); if (!nfO(x)) return d;
+          if (nfO(x.own)) for (const k of Object.keys(x.own)) if (NF_ID.test(k) && x.own[k] === 1) d.own[k] = 1;
+          if (nfO(x.eq)) { for (const k of ["sk", "tr", "de", "fr"]) if (typeof x.eq[k] === "string" && (x.eq[k] === "" || x.eq[k] === "photo" || d.own[x.eq[k]])) d.eq[k] = x.eq[k];
+            if (Array.isArray(x.eq.em)) d.eq.em = x.eq.em.filter((k) => typeof k === "string" && d.own[k]).slice(0, 6); }
+          if (nfO(x.rp)) { const r = x.rp; if (nfI(r.s, -1, 9999)) d.rp.s = r.s; if (nfI(r.xp, 0, 1e6)) d.rp.xp = r.xp; d.rp.pr = r.pr === 1 ? 1 : 0;
+            for (const k of ["cf", "cp"]) if (Array.isArray(r[k])) d.rp[k] = [...new Set(r[k].filter((n) => nfI(n, 1, 50)))]; }
+          if (nfO(x.ai)) { for (const k of ["l", "b", "w"]) if (nfN(x.ai[k], 0, 1)) d.ai[k] = x.ai[k]; if (nfI(x.ai.n, 0, 1e6)) d.ai.n = x.ai.n; if (nfI(x.ai.k, 0, 1e6)) d.ai.k = x.ai.k; }
+          if (nfI(x.cp, 0, 99)) d.cp = x.cp;
+          if (nfO(x.cs)) for (const k of Object.keys(x.cs)) if (/^\d{1,2}$/.test(k) && nfI(x.cs[k], 1, 3)) d.cs[k] = x.cs[k];
+          if (nfO(x.lm)) for (const k of Object.keys(x.lm)) if (/^\d_\d$/.test(k) && x.lm[k] === 1) d.lm[k] = 1;
+          if (nfI(x.my, -1, 1e6)) d.my = x.my;
+          if (nfI(x.wd, 0, 1e7)) d.wd = x.wd;
+          if (nfO(x.ms)) { const m = x.ms; if (nfI(m.d, -1, 1e6)) d.ms.d = m.d; for (const k of ["m", "e", "k"]) if (nfI(m[k], 0, 1e6)) d.ms[k] = m[k];
+            if (Array.isArray(m.c)) d.ms.c = m.c.filter((n) => nfI(n, 0, 9)).slice(0, 9); }
+          if (nfO(x.set)) for (const k of Object.keys(d.set)) if (x.set[k] === 0 || x.set[k] === 1) d.set[k] = x.set[k];
+          if (Array.isArray(x.ed)) d.ed = x.ed.filter((m) => nfO(m) && typeof m.n === "string" && nfI(m.t, 0, 2) && Array.isArray(m.o) && m.o.length <= 80 &&
+            m.o.every((o) => Array.isArray(o) && o.length === 3 && nfI(o[0], 0, 3) && nfI(o[1], 0, 1000) && nfI(o[2], 0, 1000))).slice(0, 5).map((m) => ({ n: m.n.replace(CTRL0g, "").slice(0, 24), t: m.t, o: m.o.map((o) => o.slice()) }));
+          return d;
+        }
+        // save-code check: optional block, small, known keys only, and nothing the sanitizer would have to drop
+        function nfValidX(x) {
+          try {
+            if (!nfO(x)) return false; const j = JSON.stringify(x); if (j.length > 60000) return false;
+            const d = nfDefX(); if (!Object.keys(x).every((k) => k in d)) return false;
+            const f = nfFixX(x);
+            if (Object.keys(x.own || {}).length !== Object.keys(f.own).length) return false;
+            if (x.rp && (x.rp.xp !== undefined && x.rp.xp !== f.rp.xp)) return false;
+            if (x.ed && (!Array.isArray(x.ed) || x.ed.length !== f.ed.length)) return false;
+            return true;
+          } catch (e) { return false; }
+        }
+        function nfLoad(x) { NX = nfFixX(x); if (NFR) for (const f of NFH.load) f(); }
+        function nfMode() { return NFR ? NFM.m : ""; }
+        function nfNoRev() { return NFR && (NFM.m === "story"); }
+        function nfBeatK() { return NFR ? NB.env : 0; }
+        function nfVB() { return NFR && NFS.vb > 0; }
+        function nfLead(f, ax) { if (!NFR || !f || !f.alive) return 0; const k = Math.min(60, 20 + f.len * 0.05); return ax ? Math.sin(f.a) * k : Math.cos(f.a) * k; }
+        function nfTiltSteer() { if (!NFR || !TILT.on || !player) return false; player.ta = Math.abs(TILT.v) > 0.08 ? player.a + clamp(TILT.v, -1, 1) * 1.2 : player.a; return true; }
+        function nfUpdate(dt) {
+          if (!NFR) return;
+          if (state === "play") NFS.t += dt;
+          if (NFS.vb > 0) NFS.vb -= dt;
+          for (const f of NFH.upd) f(dt);
+          if ((NFS.ht = (NFS.ht || 0) - dt) <= 0) { NFS.ht = 0.2; nfHud(); }
+        }
+        function nfHud() {
+          const el = $("nfh"); if (!el) return;
+          const on = state === "play" && player;
+          const parts = on ? NFH.hud.map((f) => f()).filter(Boolean) : [];
+          const h = parts.join(" · ");
+          if (h !== NFS.hh) { NFS.hh = h; el.textContent = h; el.classList.toggle("x-hide", !h); }
+        }
+        function nfDrawFloor(vis) { if (NFR) for (const f of NFH.floor) f(vis); }
+        function nfDrawWorld(vis) { if (NFR) for (const f of NFH.world) f(vis); }
+        function nfDrawTop(vis) { if (NFR) { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); for (const f of NFH.top) f(vis); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"; } }
+        function nfHead(sn, h, r) { if (NFR) for (const f of NFH.head) f(sn, h, r); }
+        function nfTag(x, y, sn) { if (NFR) for (const f of NFH.tag) f(x, y, sn); }
+        function nfEat(f) { if (NFR) for (const g of NFH.eat) g(f); }
+        function nfDeath(s) { if (NFR) for (const g of NFH.death) g(s); }
+        function nfPreStart() { if (!NFR) return; for (const g of NFH.pre) g(); }
+        function nfStart() {
+          if (!NFR) return;
+          NFS = { t: 0, vb: 0, hh: null, ht: 0 };
+          for (const g of NFH.start) g();
+          nfHud();
+        }
+        function nfOver(l) {
+          if (!NFR) return; const lines = [];
+          for (const g of NFH.over) { const s = g(l); if (s) lines.push(s); }
+          const el = $("nfo"); if (el) { el.textContent = lines.join(" · "); el.classList.toggle("x-hide", !lines.length); }
+          commit();
+        }
+        function nfHome() { if (!NFR) return; NFM.m = ""; for (const g of NFH.home) g(); }
+        function nfRelang() { if (NFR) for (const g of NFH.relang) g(); }
+        function nfBotN() { return NFR ? NFS.botN || 0 : 0; }
+        function nfRival(s, dt) { if (NFR && RIV.fn) RIV.fn(s, dt); }
+        function nfWx(dt) { if (NFR && NFH.wx) for (const g of NFH.wx) g(dt); }
+        var TILT = { on: false, v: 0 }, NB = { env: 0 }, RIV = { fn: null }, WX = { fn: null };
+        if (!NX) NX = nfDefX();
+        const nfSeed = (s) => { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+        const nfRng = (seed) => { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+        const utcDay = () => Math.floor(Date.now() / 864e5);
+        // small DOM helper for the new screens
+        function nfEl(html) { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstChild; }
+        // season XP for the Royal Pass (defined in the pass module; safe no-op before it loads)
+        function nfSXP(n, why) { if (NFR && RP.add) RP.add(n, why); }
+        var RP = { add: null };
+        // one click router for every new button (data-go="nf...")
+        var NFG = {};
+        document.addEventListener("click", (e) => {
+          const b = e.target.closest("[data-go]"); if (!b) return; const g = b.dataset.go;
+          if (!g.startsWith("nf") || !NFG[g]) return;
+          if (!cur && state !== "play") return;
+          NFG[g](b, e);
+        });
+        // settings rows for the new on/off options (data-nk): stored in NX.set, not in S, so older save codes keep importing
+        function nfPaintSet() {
+          document.querySelectorAll(".x-seg[data-nk]").forEach((g) => g.querySelectorAll("button").forEach((b) => b.classList.toggle("on", String(NX.set[g.dataset.nk]) === b.dataset.v)));
+        }
+        var NFSET = {}; // per-key change handlers: NFSET[k](value, button) may return false to refuse
+        document.querySelectorAll(".x-seg[data-nk]").forEach((g) => g.addEventListener("click", async (e) => {
+          const b = e.target.closest("button"); if (!b) return; const k = g.dataset.nk, v = +b.dataset.v;
+          if (NFSET[k]) { const ok = await NFSET[k](v, b); if (ok === false) { nfPaintSet(); return; } }
+          NX.set[k] = v; nfPaintSet(); commit();
+        }));
+        NFH.load.push(nfPaintSet);
+
+        // ---------- MODES+ screen: a card per extra mode, registered by each feature ----------
+        var NFCARDS = [];
+        function paintModes() {
+          const el = $("nfml"); if (!el) return;
+          el.innerHTML = NFCARDS.map((c) => c()).filter(Boolean).join("");
+        }
+        NFG.nfmodes = () => { if (state === "play") return; back = "menu"; paintModes(); show("nfmodes"); };
+        NFG.nfplay = (b) => { NFM.m = b.dataset.m || ""; NFM.st = +(b.dataset.s || 0); start(); };
+        NFH.relang.push(() => { if (!$("nfmodes").classList.contains("x-hide")) paintModes(); });
+        const nfCard = (e, title, desc, btns) => `<div class="x-it nf-card"><i>${e}</i><b>${esc(title)}<small>${esc(desc)}</small></b>${btns || ""}</div>`;
+
+        // ---------- DIET EVOLUTION: the colour you eat most shapes your snake ----------
+        // red → Blaze (fire trail that burns other snakes), blue → Frost (ice trail that slows them), green → Venom (regenerates you, poison trail)
+        const DIET = [{ e: "🔥", c: "#ffa030", n: "nfDietR" }, { e: "❄️", c: "#5ad1ff", n: "nfDietB" }, { e: "☘️", c: "#72ff6a", n: "nfDietG" }];
+        let dPat = [];
+        function dietCol(f) {
+          const c = f.c; let h = -1;
+          if (typeof c === "string" && c.startsWith("hsl(")) h = parseFloat(c.slice(4));
+          else if (typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c)) {
+            const r = parseInt(c.slice(1, 3), 16) / 255, g = parseInt(c.slice(3, 5), 16) / 255, b = parseInt(c.slice(5, 7), 16) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+            if (d < 0.15) return -1; h = mx === r ? 60 * (((g - b) / d) % 6) : mx === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4); if (h < 0) h += 360;
+          }
+          if (!(h >= 0)) return -1;
+          return h < 25 || h >= 335 ? 0 : h >= 185 && h < 255 ? 1 : h >= 85 && h < 160 ? 2 : -1;
+        }
+        NFH.start.push(() => { NFS.dm = [0, 0, 0]; NFS.df = -1; NFS.dpt = 0; dPat = []; });
+        NFH.eat.push((f) => {
+          const ci = dietCol(f); if (ci < 0 || !NFS.dm) return;
+          const k = (f.k ? 9 : 3.2) * (NFS.my === "rainbow" ? 3 : 1);
+          NFS.dm[ci] = Math.min(100, NFS.dm[ci] + k);
+        });
+        NFH.upd.push((dt) => {
+          if (state !== "play" || !player || !player.alive || !NFS.dm) { if (dPat.length && state !== "play") dPat = []; return; }
+          const dm = NFS.dm; for (let i = 0; i < 3; i++) dm[i] = Math.max(0, dm[i] - dt * 2.2);
+          let best = 0; for (let i = 1; i < 3; i++) if (dm[i] > dm[best]) best = i;
+          if (NFS.df < 0 && dm[best] >= 60) { NFS.df = best; xBan(DIET[best].e + " " + _t("nfDietOn", { x: _t(DIET[best].n) })); beep(660, 0.2, "triangle", 0.05, 1320); }
+          else if (NFS.df >= 0 && dm[NFS.df] < 25) { NFS.df = -1; }
+          else if (NFS.df >= 0 && best !== NFS.df && dm[best] >= 60 && dm[best] > dm[NFS.df] + 20) { NFS.df = best; xBan(DIET[best].e + " " + _t("nfDietOn", { x: _t(DIET[best].n) })); }
+          const df = NFS.df;
+          if (df >= 0) {
+            if (df === 2) player.len += dt * 1.2; // venom: slow regeneration
+            if ((NFS.dpt -= dt) <= 0) {
+              NFS.dpt = 0.1; const t = player.seg[Math.min(player.seg.length - 1, 6)];
+              dPat.push({ x: t.x, y: t.y, k: df, l: 3, r: 26 + player.r * 0.8 });
+              const cap = QL <= 0 ? 35 : 80; if (dPat.length > cap) dPat.splice(0, dPat.length - cap);
+              if (QL >= 1 && R() < 0.6) { const h = player.seg[0]; parts.push({ x: h.x + rnd(-8, 8), y: h.y + rnd(-8, 8), z: player.r, l: 0.6, vz: df === 0 ? 50 : 15, c: df === 0 ? `hsl(${((R() * 4) | 0) * 10 + 10},100%,60%)` : df === 1 ? "#d8f6ff" : "#9bff8f", fire: df === 0 }); }
+            }
+          }
+          for (let i = dPat.length - 1; i >= 0; i--) if ((dPat[i].l -= dt) <= 0) dPat.splice(i, 1);
+          if (!dPat.length) return;
+          for (const s of snakes) {
+            if (s === player || !s.alive || s.inv > 0 || s.pg > 0) continue;
+            const h = s.seg[0];
+            for (const p of dPat) {
+              const dx = h.x - p.x, dy = h.y - p.y, rr = p.r + s.r * 0.5; if (dx * dx + dy * dy > rr * rr) continue;
+              if (p.k === 1) s.slow = Math.max(s.slow || 0, 0.5);
+              else { s.len -= dt * (s.boss ? 2 : p.k === 0 ? 9 : 4); if (p.k === 0 && R() < 0.3) parts.push({ x: h.x, y: h.y, z: s.r, l: 0.5, vz: 60, c: "#ff7a2a", fire: true }); }
+              if (s.len < 14) { if (p.k === 0 && !s.boss) credit(player, s); else s.len = 14; }
+              break;
+            }
+          }
+        });
+        NFH.floor.push((vis) => {
+          if (!dPat.length) return;
+          ctx.globalCompositeOperation = "lighter";
+          for (const p of dPat) {
+            if (!vis(p.x, p.y)) continue;
+            pr(p.x, p.y, 0); const a = Math.min(1, p.l) * (p.k === 0 ? 0.75 + 0.25 * Math.sin(time * 20 + p.x) : 0.65), s = p.r * 2.6 * PK;
+            ctx.globalAlpha = a; ctx.drawImage(orb(DIET[p.k].c), PX - s / 2, PY - (s * ST) / 2, s, s * ST);
+          }
+          ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+        });
+        NFH.head.push((sn, h, r) => {
+          if (QL >= 2) { pr(h.x, h.y, r); const g = r * 4.2 * PK; ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.16; ctx.drawImage(orb(segColor(sn.skin, 0)), PX - g / 2, PY - g / 2, g, g); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; }
+          if (NFS.df >= 0 && sn === player) { pr(h.x, h.y, r); const g = r * (5 + Math.sin(time * 8)) * PK; ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.5; ctx.drawImage(orb(DIET[NFS.df].c), PX - g / 2, PY - g / 2, g, g); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; }
+        });
+        NFH.hud.push(() => {
+          if (!NFS.dm) return "";
+          if (NFS.df >= 0) return DIET[NFS.df].e + " " + _t(DIET[NFS.df].n);
+          let b = 0; for (let i = 1; i < 3; i++) if (NFS.dm[i] > NFS.dm[b]) b = i;
+          return NFS.dm[b] >= 15 ? DIET[b].e + Math.round((NFS.dm[b] / 60) * 100 > 100 ? 100 : (NFS.dm[b] / 60) * 100) + "%" : "";
+        });
+
+        // ---------- BEAT EATING: food pulses to the music; eating on the beat builds a multiplier ----------
+        const BEAT = 60 / 112;
+        function beatPh() {
+          if (AC && MUS.mode === "m" && MUS.at) { const x = ((AC.currentTime - (AC.outputLatency || 0) - MUS.at) / (BEAT / 2) + MUS.as) / 2; return ((x % 1) + 1) % 1; }
+          return (((time / BEAT) % 1) + 1) % 1;
+        }
+        NB.n = 0; NB.ph = 0;
+        NFH.upd.push(() => {
+          const ph = beatPh(); if (ph < NB.ph - 0.5) NB.n++; NB.ph = ph;
+          NB.env = Math.exp(-ph * 7) + (ph > 0.9 ? (ph - 0.9) * 2 : 0);
+        });
+        NFH.start.push(() => { NFS.bc = 0; NFS.bt = -9; NFS.bm = 1; });
+        NFH.eat.push((f) => {
+          const ph = NB.ph, wide = NFS.my === "beat", on = ph < (wide ? 0.32 : 0.24) || ph > (wide ? 0.8 : 0.86);
+          if (NFS.t - NFS.bt > 1.8) NFS.bc = 0;
+          if (!on) return;
+          NFS.bt = NFS.t; NFS.bc++;
+          const m = 1 + Math.min(4, Math.floor(NFS.bc / 4)) * (wide ? 2 : 1);
+          if (m > 1) player.len += f.v * 0.6 * AD.fv * (m - 1) * 0.5;
+          if (m > NFS.bm) { const h = player.seg[0]; floats.push({ x: h.x, y: h.y, t: "♪ x" + m, l: 1.2 }); beep(880 + m * 110, 0.08, "sine", 0.04, 1760); }
+          NFS.bm = m;
+          if (QL >= 1) { const h = player.seg[0]; parts.push({ x: h.x, y: h.y, z: player.r * 1.5, l: 0.35, vz: 30, c: "#fff6a8" }); }
+        });
+        NFH.upd.push(() => { if (NFS.bm > 1 && NFS.t - NFS.bt > 1.8) { NFS.bm = 1; NFS.bc = 0; } });
+        NFH.hud.push(() => (NFS.bc >= 2 ? `♪ ${NFS.bm > 1 ? "x" + NFS.bm : NFS.bc}` : ""));
+
+        // ---------- DAILY MYSTERY: one random rule a day, the same for everyone (seeded by the UTC date) ----------
+        const MYST = [{ k: "giant", e: "🍉", ad: { fs: 1.8, fv: 2 } }, { k: "speed", e: "⚡", ad: { spd: 1.45 } }, { k: "tiny", e: "🐜", ad: { sr: 0.65 } }, { k: "night", e: "🌑" },
+          { k: "magnet", e: "🧲" }, { k: "free", e: "🚀" }, { k: "rainbow", e: "🌈" }, { k: "beat", e: "🎵" }, { k: "swarm", e: "🐍" }, { k: "big", e: "🦖" }];
+        const mystToday = () => MYST[nfSeed("ss-myst-" + utcDay()) % MYST.length];
+        const mystName = (r) => _t("nfMy_" + r.k);
+        NFH.start.push(() => {
+          NFS.my = ""; if (NFM.m !== "myst") return;
+          const r = mystToday(); NFS.my = r.k; Object.assign(AD, r.ad || {});
+          if (r.k === "magnet") for (const s of snakes) s.mag = 1;
+          if (r.k === "big") player.len = Math.max(player.len, 80);
+          if (r.k === "swarm") { NFS.botN = Math.round(S.bots * A / A0 * 1.6); syncBots(); }
+          setTimeout(() => { if (state === "play" && NFS.my) xBan(`❓ ${_t("nfMyst")}: ${r.e} ${mystName(r)}`); }, 1800);
+        });
+        NFH.wx.push(() => { if (NFS.my === "night" && state === "play") xN = 1; });
+        NFH.upd.push((dt) => { if (NFS.my === "free" && player && player.alive && player.boost && player.len > 12 && !(player.spd > 0)) player.len += dt * 3; });
+        NFH.hud.push(() => (NFS.my ? MYST.find((r) => r.k === NFS.my).e : ""));
+        NFH.over.push(() => {
+          if (NFM.m !== "myst") return "";
+          if (NX.my === utcDay()) return "";
+          NX.my = utcDay(); pay(50, "myst"); nfSXP(100, "myst"); profile();
+          return "❓ " + _t("nfMyRew", { n: 50 });
+        });
+        NFH.home.push(() => { NFS.botN = 0; });
+        NFCARDS.push(() => {
+          const r = mystToday(), done = NX.my === utcDay();
+          return nfCard("❓", _t("nfMyst") + ": " + r.e + " " + mystName(r), _t("nfMy_d_" + r.k) + " · " + (done ? _t("nfMyDone") : _t("nfMyRewT", { n: 50 })),
+            `<button data-go="nfplay" data-m="myst">${esc(_t("play"))}</button>`);
+        });
+
+        // ---------- TILT CONTROL: steer by tilting the phone (iOS asks permission on the tap that picks it) ----------
+        const TILT_OK = typeof window.DeviceOrientationEvent !== "undefined";
+        TILT.b0 = null; TILT.seen = 0;
+        function tiltListen() {
+          if (TILT.l) return;
+          TILT.l = (e) => {
+            if (e.beta == null && e.gamma == null) return;
+            const ang = screen.orientation && typeof screen.orientation.angle === "number" ? screen.orientation.angle : typeof window.orientation === "number" ? window.orientation : 90;
+            let v = ang === 90 ? e.beta : ang === -90 || ang === 270 ? -e.beta : e.gamma;
+            if (!isFinite(v)) return;
+            if (TILT.b0 === null) TILT.b0 = v;
+            TILT.v = clamp((v - TILT.b0) / 22, -1.3, 1.3); TILT.on = true; TILT.seen = performance.now();
+          };
+          addEventListener("deviceorientation", TILT.l);
+        }
+        async function tiltAsk() { // must run inside the tap
+          if (!TILT_OK) return false;
+          try {
+            if (typeof DeviceOrientationEvent.requestPermission === "function") { const r = await DeviceOrientationEvent.requestPermission(); if (r !== "granted") return false; }
+            tiltListen(); return true;
+          } catch (e) { return false; }
+        }
+        const tb = document.querySelector('.x-seg[data-k="ctrl"] button[data-v="tilt"]');
+        if (tb) {
+          tb.classList.toggle("x-hide", !TILT_OK);
+          tb.addEventListener("click", async () => {
+            const ok = await tiltAsk();
+            if (!ok) { toast(_t("nfTiltNo")); S.ctrl = "follow"; applySettings(); }
+            else toast(_t("nfTiltOk"));
+          });
+        }
+        NFH.pre.push(() => { if (S.ctrl === "tilt") { TILT.b0 = null; tiltAsk().then((ok) => { if (!ok) toast(_t("nfTiltNo")); }); } });
+        NFH.upd.push(() => { if (TILT.on && performance.now() - TILT.seen > 1500) TILT.on = false; });
+        NFH.start.push(() => { if (S.ctrl === "tilt") setTimeout(() => { if (state === "play" && S.ctrl === "tilt" && !TILT.on) toast(_t("nfTiltNone")); }, 2500); });
+        function nfTiltOk() { return NFR && TILT.on; }
+
+        // ---------- LIVING MAPS: animated backgrounds per map, ambient particles, secrets to discover ----------
+        // Budget: everything here scales with the quality setting (Low turns the ambient layer off) and uses cached sprites only.
+        const VQ = () => [0, 0.5, 1, 1.2, 1.3][QL] || 1; // amount of ambient detail per quality level (l, m, h, u, x)
+        let vAmb = [], vScr = [], vRing = [], vMap = -1, vBeatN = 0, vGl = 0, vGlT = 8, vFl = 0;
+        const vSpr = {};
+        function vRay() { // soft vertical light shaft
+          if (vSpr.ray) return vSpr.ray; const c = document.createElement("canvas"); c.width = 64; c.height = 256; const g = c.getContext("2d");
+          const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, "rgba(255,250,210,.55)"); gr.addColorStop(1, "rgba(255,250,210,0)");
+          const gx = g.createLinearGradient(0, 0, 64, 0); gx.addColorStop(0, "rgba(0,0,0,1)"); gx.addColorStop(0.5, "rgba(0,0,0,0)"); gx.addColorStop(1, "rgba(0,0,0,1)");
+          g.fillStyle = gr; g.fillRect(0, 0, 64, 256); g.globalCompositeOperation = "destination-out"; g.fillStyle = gx; g.fillRect(0, 0, 64, 256); return (vSpr.ray = c);
+        }
+        function vVig(col) { // edge vignette, one per colour
+          const k = "v" + col; if (vSpr[k]) return vSpr[k]; const c = document.createElement("canvas"); c.width = c.height = 256; const g = c.getContext("2d");
+          const gr = g.createRadialGradient(128, 128, 70, 128, 128, 182); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, col);
+          g.fillStyle = gr; g.fillRect(0, 0, 256, 256); return (vSpr[k] = c);
+        }
+        function vScan() { if (vSpr.scan) return vSpr.scan; const c = document.createElement("canvas"); c.width = 4; c.height = 4; const g = c.getContext("2d"); g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(0, 0, 4, 1); return (vSpr.scan = ctx.createPattern(c, "repeat")); }
+        function vLeaf(col) {
+          const k = "l" + col; if (vSpr[k]) return vSpr[k]; const c = document.createElement("canvas"); c.width = 24; c.height = 14; const g = c.getContext("2d");
+          g.fillStyle = col; g.beginPath(); g.ellipse(12, 7, 11, 5, 0, 0, 6.283); g.fill(); g.strokeStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.moveTo(2, 7); g.lineTo(22, 7); g.stroke(); return (vSpr[k] = c);
+        }
+        function vReset() {
+          vMap = mapI; vAmb = []; vScr = []; vRing = [];
+          const q = VQ(), m = mapI;
+          const nA = Math.round((m === 5 ? 34 : m === 6 ? 22 : m === 0 ? 26 : 16) * q), nS = Math.round((m === 5 ? 14 : m === 0 ? 9 : m === 6 ? 0 : 26) * q);
+          for (let i = 0; i < nA; i++) vAmb.push({ x: cam.x + rnd(-900, 900), y: cam.y + rnd(-700, 700), z: rnd(15, 90), p: R() * 6.28, v: rnd(0.4, 1) });
+          for (let i = 0; i < nS; i++) vScr.push({ x: R(), y: R(), p: R() * 6.28, v: rnd(0.4, 1), s: rnd(0.6, 1.4) });
+        }
+        NFH.upd.push((dt) => {
+          if (vMap !== mapI || (QL <= 0 && vAmb.length) || (QL > 0 && !vAmb.length && vScr.length === 0 && mapI !== 6)) vReset();
+          for (const a of vAmb) {
+            a.p += dt * a.v; a.x += Math.cos(a.p * 0.7) * 12 * dt; a.y += Math.sin(a.p * 0.9) * 10 * dt;
+            if (mapI === 6) { a.z += 30 * dt * a.v; if (a.z > 160) a.z = 5; }
+            if (Math.abs(a.x - cam.x) > 1000 || Math.abs(a.y - cam.y) > 800) { a.x = cam.x + rnd(-900, 900); a.y = cam.y + rnd(-700, 700); }
+          }
+          for (const s of vScr) {
+            s.p += dt * s.v;
+            if (mapI === 5) { s.y += dt * 0.05 * s.v; s.x += Math.sin(s.p) * dt * 0.03; }
+            else if (mapI === 2) { s.y += dt * 0.08 * s.v; s.x += Math.sin(s.p) * dt * 0.02; } // ice: snow
+            else if (mapI === 4) { s.y -= dt * 0.06 * s.v; s.x += Math.sin(s.p * 2) * dt * 0.02; } // volcano: embers rise
+            else if (mapI === 1) { s.x += dt * 0.09 * s.v; s.y += Math.sin(s.p) * dt * 0.01; } // desert: blowing dust
+            else { s.x += dt * 0.004 * s.v; s.y += Math.sin(s.p * 0.5) * dt * 0.004; }
+            if (s.y > 1.05) s.y = -0.05; if (s.y < -0.05) s.y = 1.05; if (s.x > 1.05) s.x = -0.05; if (s.x < -0.05) s.x = 1.05;
+          }
+          if (mapI === 6 && QL > 0 && NB.n !== vBeatN) { // cyber: a neon ring on the floor on every beat
+            vBeatN = NB.n; const G = 300;
+            vRing.push({ x: Math.round((cam.x + rnd(-700, 700)) / G) * G, y: Math.round((cam.y + rnd(-500, 500)) / G) * G, l: 0, c: ["0,240,255", "255,40,200", "170,90,255"][NB.n % 3] });
+            if (vRing.length > 6) vRing.shift();
+          }
+          for (let i = vRing.length - 1; i >= 0; i--) if ((vRing[i].l += dt / 0.9) >= 1) vRing.splice(i, 1);
+          if (mapI === 6 && QL >= 2) { if ((vGlT -= dt) <= 0) { vGl = 0.16; vGlT = rnd(6, 12); } if (vGl > 0) vGl -= dt; }
+        });
+        // floor layer: neon rings (cyber), soft light pools (forest), sparkles (classic)
+        NFH.floor.push((vis) => {
+          if (QL <= 0) return;
+          if (mapI === 6 && vRing.length) {
+            ctx.lineWidth = 3;
+            for (const r of vRing) { if (!vis(r.x, r.y, 300)) continue; pr(r.x, r.y, 0); const k = (30 + r.l * 260) * PK; ctx.strokeStyle = `rgba(${r.c},${0.6 * (1 - r.l)})`; ctx.beginPath(); ctx.ellipse(PX, PY, k, k * ST, 0, 0, 6.283); ctx.stroke(); }
+          }
+          if (mapI === 0) { // classic: twinkling neon specks on the floor
+            ctx.globalCompositeOperation = "lighter";
+            for (const a of vAmb) { if (!vis(a.x, a.y)) continue; pr(a.x, a.y, 0); const tw = 0.5 + 0.5 * Math.sin(a.p * 3); ctx.globalAlpha = 0.25 + 0.35 * tw; const s = (10 + tw * 14) * PK; ctx.drawImage(orb(a.v > 0.7 ? "#ff3cc8" : "#3cf0ff"), PX - s / 2, PY - s / 2, s, s); }
+            ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+          }
+        });
+        // world layer: fireflies (forest), rising data bits (cyber), secrets
+        NFH.world.push((vis) => {
+          if (QL > 0 && (mapI === 5 || mapI === 6)) {
+            ctx.globalCompositeOperation = "lighter";
+            const night = 0.45 + 0.55 * xN;
+            for (const a of vAmb) {
+              if (!vis(a.x, a.y)) continue; pr(a.x, a.y, a.z);
+              if (mapI === 5) { const bl = Math.max(0, Math.sin(a.p * 2.3)); ctx.globalAlpha = bl * night; const s = 22 * PK; ctx.drawImage(orb("#e4ff7a"), PX - s / 2, PY - s / 2, s, s); }
+              else { ctx.globalAlpha = 0.5 * (1 - a.z / 160); ctx.fillStyle = a.v > 0.7 ? "#ff3cc8" : "#36f0ff"; const s = 4 * PK + 1; ctx.fillRect(PX - s / 2, PY - s / 2, s, s); }
+            }
+            ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+          }
+          lmDraw(vis);
+        });
+        // screen layer: light rays and leaves (forest), scanlines + glitch (cyber), bokeh + vignette (classic), weather-like drift on the other maps
+        NFH.top.push(() => {
+          if (QL <= 0) return;
+          const m = mapI;
+          if (m === 5) {
+            const day = 1 - xN;
+            if (day > 0.05) { ctx.globalCompositeOperation = "lighter"; const ry = vRay();
+              for (let i = 0; i < 3; i++) { const x = W * (0.2 + i * 0.3) + Math.sin(time * 0.15 + i) * 40; ctx.save(); ctx.translate(x, -20); ctx.rotate(0.35); ctx.globalAlpha = day * (0.18 + 0.08 * Math.sin(time * 0.4 + i * 2)); ctx.drawImage(ry, -W * 0.06, 0, W * 0.12, H * 1.2); ctx.restore(); }
+              ctx.globalCompositeOperation = "source-over"; }
+            for (const s of vScr) { ctx.save(); ctx.translate(s.x * W, s.y * H); ctx.rotate(Math.sin(s.p * 1.6) * 1.2); ctx.globalAlpha = 0.8; const lf = vLeaf(s.v > 0.7 ? "#d7b13c" : "#6fbf4a"); ctx.drawImage(lf, -12 * s.s, -7 * s.s, 24 * s.s, 14 * s.s); ctx.restore(); }
+          } else if (m === 6) {
+            ctx.globalAlpha = 0.1; ctx.fillStyle = vScan(); ctx.fillRect(0, 0, W, H);
+            ctx.globalAlpha = 0.07 * NB.env; ctx.fillStyle = "#ff28c8"; ctx.fillRect(0, 0, W, H);
+            if (vGl > 0) { const sh = cv.height / H; for (let i = 0; i < 3; i++) { const y = R() * H, h = rnd(4, 18), dx = rnd(-18, 18); ctx.globalAlpha = 0.85; ctx.drawImage(cv, 0, y * sh, cv.width, h * sh, dx, y, W, h); } ctx.globalAlpha = 0.18; ctx.fillStyle = R() < 0.5 ? "#00f0ff" : "#ff28c8"; ctx.fillRect(0, R() * H, W, rnd(2, 6)); }
+          } else if (m === 0) {
+            ctx.globalCompositeOperation = "lighter";
+            for (const s of vScr) { const x = (s.x * W - cam.x * 0.02 * s.v) % W, y = s.y * H; ctx.globalAlpha = 0.07 + 0.04 * Math.sin(s.p * 2); const d = 120 * s.s; ctx.drawImage(orb(s.v > 0.7 ? "#ff2bd6" : "#00e5ff"), (x + W) % W - d / 2, y - d / 2, d, d); }
+            ctx.globalCompositeOperation = "source-over";
+          } else if (vScr.length) {
+            const col = m === 2 ? "#ffffff" : m === 4 ? "#ff8a3a" : m === 1 ? "rgba(225,190,120,.9)" : "#d9d4ff";
+            ctx.fillStyle = col;
+            for (const s of vScr) { ctx.globalAlpha = m === 3 ? 0.3 + 0.3 * Math.sin(s.p * 4) : 0.6; const d = (m === 2 ? 3 : 2) * s.s; ctx.fillRect(s.x * W, s.y * H, d, d); }
+          }
+          if (m === 0 || m === 6 || m === 5) { ctx.globalAlpha = m === 5 ? 0.55 : 0.45; ctx.drawImage(vVig(m === 5 ? "rgba(2,14,4,.9)" : m === 6 ? "rgba(10,0,30,.9)" : "rgba(30,0,20,.85)"), -W * 0.1, -H * 0.1, W * 1.2, H * 1.2); }
+          ctx.globalAlpha = 1;
+        });
+
+        // SECRETS: three hidden landmarks per map (Classic, Forest, Cyber), found by touching them; the spot is the same every match
+        const LMD = { 0: [["🗼", "nfLm0a"], ["💎", "nfLm0b"], ["🌀", "nfLm0c"]], 5: [["🌳", "nfLm5a"], ["🍄", "nfLm5b"], ["🗿", "nfLm5c"]], 6: [["💾", "nfLm6a"], ["🛰️", "nfLm6b"], ["👁️", "nfLm6c"]] };
+        let LMP = [];
+        function lmSetup() {
+          LMP = []; const d = LMD[mapI]; if (!d || NFM.m === "custom" || NFM.m === "story") return;
+          const rg = nfRng(nfSeed("ss-lm-" + mapI));
+          d.forEach((v, k) => { const x = 450 + rg() * (A - 900), y = 450 + rg() * (A - 900); LMP.push({ x, y, k, e: v[0], n: v[1], key: mapI + "_" + k }); });
+          obs = obs.filter((o) => !LMP.some((l) => oD(o, l.x, l.y) < o.r + 220));
+          food = food.filter((f) => !LMP.some((l) => Math.hypot(f.x - l.x, f.y - l.y) < 60));
+        }
+        NFH.pre.push(() => { NFS.lmPending = 1; });
+        NFH.start.push(() => { lmSetup(); });
+        NFH.home.push(() => { LMP = []; });
+        NFH.upd.push(() => {
+          if (state !== "play" || !player || !player.alive || !LMP.length) return;
+          const h = player.seg[0];
+          for (const l of LMP) {
+            if (NX.lm[l.key] || Math.hypot(h.x - l.x, h.y - l.y) > 100 + player.r) continue;
+            NX.lm[l.key] = 1; pay(40, "lm"); nfSXP(50, "lm");
+            const got = LMP.filter((q) => NX.lm[q.key]).length;
+            if (got === LMP.length) pay(0, "lm", 1);
+            burst(l.x, l.y, 30, 45); shake(4); vib([20, 30, 20]); beep(988, 0.3, "triangle", 0.06, 1976);
+            xBan(`${l.e} ${_t("nfLmFound")}: ${_t(l.n)} (${got}/${LMP.length})` + (got === LMP.length ? " +1 💎" : ""));
+            profile(); commit();
+          }
+        });
+        function lmDraw(vis) {
+          if (!LMP.length || state !== "play") return;
+          const ph = player && player.alive ? player.seg[0] : cam;
+          for (const l of LMP) {
+            if (!vis(l.x, l.y, 200)) continue;
+            const found = !!NX.lm[l.key], dist = Math.hypot(ph.x - l.x, ph.y - l.y);
+            if (!found && dist > 750) continue;
+            const a = found ? 1 : clamp((750 - dist) / 400, 0, 1);
+            ctx.globalCompositeOperation = "lighter";
+            pr(l.x, l.y, 0); const k = (90 + 10 * Math.sin(time * 2)) * PK;
+            ctx.globalAlpha = 0.5 * a; ctx.strokeStyle = found ? "#ffd84a" : "#bfa8ff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(PX, PY, k, k * ST, 0, 0, 6.283); ctx.stroke();
+            ctx.globalAlpha = 0.35 * a; const g = 260 * PK; ctx.drawImage(orb(found ? "#ffd84a" : "#9f7bff"), PX - g / 2, PY - (g * ST) / 2, g, g * ST);
+            if (QL >= 1) { const ry = vRay(); pr(l.x, l.y, 0); const by = PY; pr(l.x, l.y, 240); ctx.globalAlpha = 0.4 * a; ctx.save(); ctx.translate(PX, by); ctx.scale(1, -1); ctx.drawImage(ry, -30 * PK, 0, 60 * PK, by - PY); ctx.restore(); }
+            ctx.globalCompositeOperation = "source-over";
+            ctx.globalAlpha = a; pr(l.x, l.y, 70 + 10 * Math.sin(time * 2 + l.k)); emo(found ? l.e : "❔", PX, PY, Math.max(14, 40 * PK));
+            ctx.globalAlpha = 1;
+          }
+        }
+        NFCARDS.push(() => {
+          const all = Object.keys(LMD).length * 3, got = Object.keys(NX.lm).length;
+          return nfCard("🗺️", _t("nfLmT") + ` ${got}/${all}`, _t("nfLmD"), "");
+        });
+        NFR = true; nfPaintSet(); for (const f of NFH.load) f();
+        // ================= END NEW FEATURES =================
         requestAnimationFrame(loop);
       })();
     </script>
