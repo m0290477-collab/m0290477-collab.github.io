@@ -568,15 +568,15 @@
       @media (max-width: 520px) { .tu-card { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
       @media (prefers-reduced-motion: reduce) { .tu-sn, .tu-or, .tu-fg, .tu-pl, .tu-bm { animation: none; } .tu-sn { stroke-dasharray: none; } }
       /* ---------- ABILITY CLUSTER (glossy buttons around Boost) ---------- */
-      .ab2 { position: fixed; width: 46px; height: 46px; bottom: calc(var(--x-sb) + var(--oy) - 23px); border-radius: 50%; border: 0; padding: 0; color: var(--c); z-index: 4;
+      .ab2 { position: fixed; width: var(--bs, 46px); height: var(--bs, 46px); bottom: calc(var(--x-sb) + var(--oy) - var(--bs, 46px) / 2); border-radius: 50%; border: 0; padding: 0; color: var(--c); z-index: 4;
         background: radial-gradient(circle at 50% 22%, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 42%), radial-gradient(circle at 50% 62%, var(--c2), #060914 78%);
         box-shadow: 0 4px 12px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .4), inset 0 -3px 7px rgba(0, 0, 0, .45); touch-action: manipulation;
         transition: transform .12s ease, box-shadow .25s ease; -webkit-tap-highlight-color: transparent; overflow: visible; }
-      body.x-r .ab2 { right: calc(var(--x-sr) + var(--ox) - 23px); }
-      body.x-l .ab2 { left: calc(var(--x-sl) + var(--ox) - 23px); }
-      .ab2.ab-em { width: 40px; height: 40px; bottom: calc(var(--x-sb) + var(--oy) - 20px); }
-      body.x-r .ab2.ab-em { right: calc(var(--x-sr) + var(--ox) - 20px); }
-      body.x-l .ab2.ab-em { left: calc(var(--x-sl) + var(--ox) - 20px); }
+      body.x-r .ab2 { right: calc(var(--x-sr) + var(--ox) - var(--bs, 46px) / 2); }
+      body.x-l .ab2 { left: calc(var(--x-sl) + var(--ox) - var(--bs, 46px) / 2); }
+      .ab2.ab-em { width: var(--bs, 40px); height: var(--bs, 40px); bottom: calc(var(--x-sb) + var(--oy) - var(--bs, 40px) / 2); }
+      body.x-r .ab2.ab-em { right: calc(var(--x-sr) + var(--ox) - var(--bs, 40px) / 2); }
+      body.x-l .ab2.ab-em { left: calc(var(--x-sl) + var(--ox) - var(--bs, 40px) / 2); }
       .ab2 .ab-i { position: absolute; left: 50%; top: 50%; width: 24px; height: 24px; transform: translate(-50%, -50%); filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .7)); pointer-events: none; transition: opacity .2s; }
       .ab2 .ab-r { position: absolute; left: -2px; top: -2px; width: calc(100% + 4px); height: calc(100% + 4px); transform: rotate(-90deg); pointer-events: none; overflow: visible; }
       .ab-r circle { fill: none; stroke-width: 3; }
@@ -595,9 +595,9 @@
       @keyframes abFire { 0% { transform: scale(.82); } 55% { transform: scale(1.14); box-shadow: 0 0 0 12px rgba(255, 255, 255, 0), 0 0 26px var(--c); } 100% { transform: scale(1); } }
       @keyframes abAct { from { box-shadow: 0 0 8px var(--c), inset 0 1px 0 rgba(255, 255, 255, .4); } to { box-shadow: 0 0 22px var(--c), 0 0 0 3px var(--c), inset 0 1px 0 rgba(255, 255, 255, .4); } }
       @keyframes abNope { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-      .nf-emw { padding: 0; border: 0; background: none; width: 0; height: 0; gap: 0; bottom: calc(var(--x-sb) + 96px); z-index: 6; }
-      body.x-r .nf-emw { right: calc(var(--x-sr) + 92px); }
-      body.x-l .nf-emw { left: calc(var(--x-sl) + 92px); }
+      .nf-emw { padding: 0; border: 0; background: none; width: 0; height: 0; gap: 0; bottom: calc(var(--x-sb) + var(--ey, 96px)); z-index: 6; }
+      body.x-r .nf-emw { right: calc(var(--x-sr) + var(--ex, 92px)); }
+      body.x-l .nf-emw { left: calc(var(--x-sl) + var(--ex, 92px)); }
       .nf-emw::before { content: ""; position: absolute; left: -132px; top: -132px; width: 264px; height: 264px; border-radius: 50%; pointer-events: none;
         background: radial-gradient(circle, rgba(10, 14, 30, 0) 22%, rgba(10, 14, 30, .78) 30%, rgba(10, 14, 30, .78) 58%, rgba(10, 14, 30, 0) 62%); animation: emIn .22s ease-out; }
       .nf-emw button { position: absolute; left: 0; top: 0; width: 42px; height: 42px; margin: -21px 0 0 -21px; border-radius: 50%; border: 1.5px solid rgba(255, 216, 74, .55); padding: 0; font-size: 22px;
@@ -608,6 +608,139 @@
       @keyframes emPop { from { transform: translate(0, 0) scale(.2); opacity: 0; } to { transform: translate(var(--x), var(--y)) scale(1); opacity: 1; } }
       @keyframes emIn { from { transform: scale(.4); opacity: 0; } }
       @keyframes emBob { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-3px) rotate(6deg) scale(1.08); } }
+      .x-fps { top: max(2px, env(safe-area-inset-top)) !important; bottom: auto !important; left: 50% !important; transform: translateX(-50%); font-size: 10px !important; opacity: .45 !important; }
+      /* ================= PREMIUM UI PASS (legendary look, short-landscape safe) ================= */
+      :root { --ux-g1: #fff3c4; --ux-g2: #e9c160; --ux-g3: #b07a1c; --ux-g4: #5e3f0c; --ux-gold: conic-gradient(from 210deg, #fff3c4, #d9a63a, #6b4710, #f5d37c, #a8751f, #fff3c4); }
+      /* --- ability buttons: gold metal bezel, deep glass core, coloured glow --- */
+      .ab2 { border: 2.5px solid transparent !important;
+        background: radial-gradient(circle at 50% 16%, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 38%) padding-box,
+          radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--c) 40%, transparent), transparent 62%) padding-box,
+          radial-gradient(circle at 50% 60%, var(--c2), #04060d 82%) padding-box, var(--ux-gold) border-box !important;
+        box-shadow: 0 5px 14px rgba(0, 0, 0, .6), 0 0 0 1px rgba(40, 24, 0, .85), inset 0 -4px 8px rgba(0, 0, 0, .55), inset 0 2px 2px rgba(255, 255, 255, .25) !important; }
+      .ab2 .ab-i { width: 56%; height: 56%; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c) 70%, transparent)) drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); }
+      .ab2 .ab-r { left: -5px; top: -5px; width: calc(100% + 10px); height: calc(100% + 10px); }
+      .ab2.rdy { box-shadow: 0 5px 14px rgba(0, 0, 0, .6), 0 0 0 1px rgba(40, 24, 0, .85), 0 0 16px color-mix(in srgb, var(--c) 75%, transparent), inset 0 -4px 8px rgba(0, 0, 0, .55) !important; }
+      .ab2.lk { filter: saturate(.35) brightness(.85); }
+      .ab2.lk::after { bottom: -9px; background: linear-gradient(180deg, #2a1d05, #120c02); border: 1px solid #c9922e; color: #ffe6a0; }
+      .ab2 .cs { font-size: 14px; }
+      /* --- player card: never lets the pills cover the name --- */
+      .x-chip#chip, #pcard { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 12px; }
+      .x-chip .px-pc { min-width: 0; overflow: hidden; }
+      .x-chip .px-pc b, .x-chip .px-pc small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .x-chip .px-pills { position: static !important; display: flex; flex-direction: column; gap: 5px; }
+      .x-chip .px-pill { min-width: 0; white-space: nowrap; padding: 4px 10px; font-variant-numeric: tabular-nums; }
+      .px-av { box-shadow: 0 0 0 2px #2a1c04, 0 0 0 4px #e9c160, 0 0 18px rgba(255, 200, 80, .35); }
+      #pcard { min-height: 76px; padding: 10px 12px; border-radius: 18px !important; border: 1px solid rgba(255, 220, 130, .35) !important;
+        background: linear-gradient(135deg, rgba(60, 48, 20, .55), rgba(16, 19, 18, .8) 45%, rgba(40, 20, 70, .5)) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 10px 24px rgba(0, 0, 0, .35); }
+      .x-btn.x-sub[data-go="nfshop"] { border: 1px solid rgba(233, 193, 96, .55) !important; background: radial-gradient(80% 120% at 50% 0%, rgba(255, 90, 208, .22), transparent 70%), linear-gradient(180deg, rgba(44, 30, 50, .92), rgba(12, 10, 16, .92)) !important; color: #ffe6a0 !important; font-weight: 800; }
+      /* --- player ID row: a compact gold chip, its own line, no overlap --- */
+      .x-pid { justify-content: flex-start !important; width: auto !important; align-self: flex-start; gap: 8px !important; margin: 2px 0 !important; padding: 3px 4px 3px 12px; min-height: 0;
+        border-radius: 999px; background: linear-gradient(180deg, rgba(255, 216, 110, .1), rgba(0, 0, 0, .25)); border: 1px solid rgba(233, 193, 96, .35); font-size: 12px !important; position: relative; z-index: 1; }
+      [dir="rtl"] .x-pid { padding: 3px 12px 3px 4px; }
+      .x-pid.x-hide { display: none !important; }
+      .x-pid bdi { font-size: 14px !important; letter-spacing: .04em; }
+      .x-pid .x-btn { min-height: 28px !important; height: 28px; padding: 0 12px !important; border-radius: 999px !important; font-size: 12px !important; line-height: 1; width: auto !important; flex: none;
+        background: linear-gradient(180deg, #fff1a8, #d9a032) !important; color: #2a1600 !important; border: 0 !important; font-weight: 800; box-shadow: 0 2px 0 #7a5410; }
+      /* --- account stat cards --- */
+      #pst { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; width: 100%; }
+      #pst > div { position: relative; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 9px 4px 8px; border-radius: 14px; overflow: hidden;
+        background: radial-gradient(90% 60% at 50% 0%, rgba(255, 216, 110, .2), transparent 70%), linear-gradient(180deg, rgba(40, 34, 20, .92), rgba(12, 11, 8, .92));
+        border: 1px solid rgba(233, 193, 96, .38); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 5px 14px rgba(0, 0, 0, .4); }
+      #pst > div::before { content: "🎮"; font-size: 18px; line-height: 1.1; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .6)); }
+      #pst > div:nth-child(2)::before { content: "📏"; } #pst > div:nth-child(3)::before { content: "⚔️"; } #pst > div:nth-child(4)::before { content: "🏆"; } #pst > div:nth-child(5)::before { content: "🏅"; }
+      #pst > div::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, .1) 50%, transparent 60%); pointer-events: none; }
+      #pst b { font-size: 20px !important; line-height: 1.15; font-weight: 900; font-variant-numeric: tabular-nums; background: linear-gradient(180deg, #fff7d6, #e9b84a 60%, #b07a1c); -webkit-background-clip: text; background-clip: text; color: transparent; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+      #pst span { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #cbbf9c; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      /* --- lobby icon tiles (Shop / Maps / Settings / Account) --- */
+      #menu .x-ltabs { gap: 8px !important; }
+      #menu .x-ltabs button { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px !important; min-height: 66px !important; padding: 6px 3px !important;
+        border-radius: 16px !important; border: 1px solid rgba(233, 193, 96, .42) !important;
+        background: radial-gradient(70% 55% at 50% 22%, rgba(255, 216, 110, .22), transparent 70%), linear-gradient(180deg, rgba(44, 38, 24, .95), rgba(10, 10, 8, .95)) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), inset 0 -2px 6px rgba(0, 0, 0, .5), 0 5px 12px rgba(0, 0, 0, .45); }
+      #menu .x-ltabs button::after { content: ""; position: absolute; inset: -30% -60%; background: linear-gradient(105deg, transparent 42%, rgba(255, 240, 190, .16) 50%, transparent 58%); transform: translateX(-55%); animation: uxShine 6s ease-in-out infinite; pointer-events: none; }
+      #menu .x-ltabs button:nth-child(2)::after { animation-delay: .4s; } #menu .x-ltabs button:nth-child(3)::after { animation-delay: .8s; } #menu .x-ltabs button:nth-child(4)::after { animation-delay: 1.2s; }
+      #menu .x-ltabs .x-ii { width: 34px !important; height: 34px !important; flex: none; border-radius: 9px; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .55)); }
+      #menu .x-ltabs button span { display: block; max-width: 100%; font-size: 11.5px; font-weight: 800; letter-spacing: .02em; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f6e7bd; text-shadow: 0 1px 2px #000; }
+      #menu .x-ltabs button:active { transform: scale(.96); }
+      @keyframes uxShine { 0%, 72% { transform: translateX(-55%); } 100% { transform: translateX(55%); } }
+      /* --- skin colour swatches: scrolling gem row with fade edges, gold ring + check on the chosen one --- */
+      #skins { --sw: 40px; }
+      #menu .x-glass .x-skins, #skins { display: flex !important; gap: 8px !important; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none; padding: 5px 14px 6px 4px !important; margin: 0 !important;
+        -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 22px), transparent); }
+      [dir="rtl"] #skins { -webkit-mask-image: linear-gradient(270deg, transparent 0, #000 8px, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(270deg, transparent 0, #000 8px, #000 calc(100% - 22px), transparent); padding: 5px 4px 6px 14px !important; }
+      #skins::-webkit-scrollbar { display: none; }
+      #skins button { position: relative; flex: none !important; width: var(--sw) !important; height: var(--sw) !important; border-radius: 50% !important; scroll-snap-align: start; border: 0 !important;
+        box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .35), inset 0 3px 4px rgba(255, 255, 255, .35), inset 0 -4px 6px rgba(0, 0, 0, .35), 0 0 0 1.5px rgba(255, 255, 255, .14), 0 3px 6px rgba(0, 0, 0, .5) !important; transition: transform .15s ease; }
+      #skins button.on { transform: scale(1.06); box-shadow: inset 0 3px 4px rgba(255, 255, 255, .35), inset 0 -4px 6px rgba(0, 0, 0, .35), 0 0 0 2px #1a1203, 0 0 0 4px #f0c45a, 0 0 14px rgba(255, 200, 80, .6) !important; }
+      #skins button.on::after { content: "✓"; position: absolute; right: -4px; bottom: -4px; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font: 900 10px/1 system-ui, sans-serif;
+        color: #2a1600; background: linear-gradient(180deg, #fff1a8, #d9a032); box-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+      .x-cust { gap: 8px !important; padding: 4px 6px 4px 12px; border-radius: 999px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(233, 193, 96, .28); }
+      .x-cust input[type="color"] { width: 30px !important; height: 30px !important; border-radius: 50%; overflow: hidden; -webkit-appearance: none; appearance: none; padding: 0; border: 0;
+        box-shadow: 0 0 0 2px #1a1203, 0 0 0 3.5px #e9c160, 0 2px 5px rgba(0, 0, 0, .5); }
+      .x-cust input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; } .x-cust input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 50%; }
+      .x-cust input[type="color"]::-moz-color-swatch { border: 0; border-radius: 50%; }
+      /* --- shop tabs (Items / Rewards / Transactions) and the skin preview card --- */
+      #tabs { gap: 4px !important; padding: 4px; border-radius: 16px; background: rgba(0, 0, 0, .35); border: 1px solid rgba(233, 193, 96, .3); }
+      #tabs button { border-radius: 12px !important; border: 0 !important; background: transparent !important; color: #d9cfb2 !important; font-weight: 700; min-height: 40px !important; }
+      #tabs button.on { background: linear-gradient(180deg, #fff1a8, #d9a032) !important; color: #2a1600 !important; box-shadow: 0 2px 0 #7a5410, 0 0 14px rgba(255, 200, 60, .3); }
+      .x-skpv { border-radius: 18px !important; border: 1px solid rgba(233, 193, 96, .4) !important; background: radial-gradient(70% 90% at 25% 50%, rgba(255, 216, 110, .12), transparent 70%), linear-gradient(180deg, rgba(36, 32, 22, .92), rgba(10, 10, 8, .92)) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 6px 18px rgba(0, 0, 0, .45); }
+      .x-skpv > div { min-width: 0; }
+      .x-skpv > div > bdi { font-size: 17px; font-weight: 800; color: #fff; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .x-skpv button { white-space: nowrap; min-width: 0 !important; max-width: 100%; padding: 0 16px !important; min-height: 40px !important; border-radius: 12px !important; font-weight: 800;
+        background: linear-gradient(180deg, #fff1a8, #d9a032) !important; color: #2a1600 !important; border: 0 !important; box-shadow: 0 2px 0 #7a5410; }
+      .x-skpv button.eq { background: linear-gradient(180deg, rgba(60, 200, 130, .25), rgba(20, 60, 40, .6)) !important; color: #b6ffd2 !important; box-shadow: inset 0 0 0 1.5px #4ee08a, 0 0 12px rgba(78, 224, 138, .3) !important; }
+      .x-skpv button:disabled { background: rgba(255, 255, 255, .08) !important; color: #b9b39c !important; box-shadow: none !important; }
+      .x-it.own > button.eq, #items .x-it button.eq { background: linear-gradient(180deg, rgba(60, 200, 130, .25), rgba(20, 60, 40, .6)) !important; color: #b6ffd2 !important; box-shadow: inset 0 0 0 1.5px #4ee08a !important; }
+      /* --- Royal Shop: tabs + owned / equipped cards --- */
+      .px-tabs2 { padding: 4px; border-radius: 16px; background: rgba(0, 0, 0, .35); border: 1px solid rgba(233, 193, 96, .28); }
+      .px-tabs2 button { border: 0 !important; background: transparent !important; color: #d9cfb2 !important; min-height: 38px !important; font-weight: 800; }
+      .px-tabs2 button.on { background: linear-gradient(180deg, #fff1a8, #d9a032) !important; color: #2a1600 !important; box-shadow: 0 2px 0 #7a5410, 0 0 14px rgba(255, 200, 60, .3) !important; }
+      .px-card.own { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 55%, transparent), 0 6px 16px rgba(0, 0, 0, .4); }
+      .px-card.eqd { box-shadow: inset 0 0 0 2px #4ee08a, 0 0 18px rgba(78, 224, 138, .28), 0 6px 16px rgba(0, 0, 0, .4) !important; }
+      .px-card .px-bt button { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .px-card .px-bt button.eq { background: linear-gradient(180deg, rgba(60, 200, 130, .3), rgba(20, 60, 40, .7)) !important; color: #c8ffe0 !important; border: 1px solid #4ee08a !important; box-shadow: 0 0 10px rgba(78, 224, 138, .3) !important; }
+      .px-card .px-bt button.eq::before { content: "✓ "; }
+      .px-badge.own { background: linear-gradient(180deg, #4ee08a, #1c8a4e) !important; color: #002a12 !important; }
+      /* --- Royal Pass reward tiles: crafted coin / gem art with rarity frames --- */
+      .px-rw { background: radial-gradient(85% 65% at 50% 32%, color-mix(in srgb, var(--rc, #d7c9a0) 30%, transparent), transparent 72%), linear-gradient(180deg, #1d1a12, #0b0a07) !important;
+        border: 1px solid color-mix(in srgb, var(--rc, #d7c9a0) 70%, #000) !important;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 0 3px color-mix(in srgb, var(--rc, #d7c9a0) 22%, transparent), inset 0 1px 0 rgba(255, 255, 255, .12), 0 4px 10px rgba(0, 0, 0, .45); }
+      .px-rw::selection { background: none; }
+      .px-rw .px-ri { top: 10px !important; font-size: 30px; }
+      .px-rw.ok .px-ri { top: 18px !important; }
+      .px-rw .px-ri svg { width: 44px; height: 44px; display: inline-block; vertical-align: top; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .55)); }
+      .px-rw small { font-size: 11px !important; color: #fff3cf !important; text-shadow: 0 1px 2px #000; }
+      .px-rw.r1 .px-ri svg, .px-rw.r2 .px-ri svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--rc) 60%, transparent)) drop-shadow(0 4px 5px rgba(0, 0, 0, .55)); }
+      .px-rw.r3, .px-rw.leg { border-color: #ffe9a8 !important; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 0 3px rgba(255, 216, 110, .35), 0 0 16px rgba(255, 200, 70, .35) !important; }
+      .px-rw.r3::before, .px-rw.leg:not(.ok)::before { content: ""; position: absolute; inset: 0; background: linear-gradient(120deg, transparent 40%, rgba(255, 245, 200, .22) 50%, transparent 60%); transform: translateX(-70%); animation: uxShine 4.5s ease-in-out infinite; pointer-events: none; }
+      .px-rw.got { opacity: .78 !important; }
+      .px-rw.got::after { content: "✓" !important; inset: auto 5px auto auto !important; top: 5px !important; width: 18px; height: 18px; border-radius: 50%; display: grid !important; place-items: center; font-size: 11px !important;
+        color: #002a12 !important; background: linear-gradient(180deg, #7cff9e, #1c8a4e) !important; text-shadow: none !important; box-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+      [dir="rtl"] .px-rw.got::after { inset: auto auto auto 5px !important; top: 5px !important; }
+      .px-rw.lock::after { top: 5px !important; font-size: 11px !important; opacity: .9; }
+      /* --- language picker --- */
+      .x-langpop { width: 268px !important; padding: 10px; box-sizing: border-box; border-radius: 18px !important; overflow: visible !important;
+        background: radial-gradient(90% 60% at 50% 0%, rgba(255, 216, 110, .14), transparent 70%), rgba(14, 13, 10, .96); border: 1px solid rgba(233, 193, 96, .5);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, .65), inset 0 1px 0 rgba(255, 255, 255, .1) !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); animation: uxPop .18s ease-out; }
+      .x-langpop::before { content: ""; position: absolute; top: -7px; inset-inline-end: 18px; width: 12px; height: 12px; transform: rotate(45deg); background: #1b1810; border-left: 1px solid rgba(233, 193, 96, .5); border-top: 1px solid rgba(233, 193, 96, .5); }
+      .x-langpop .x-seg { display: grid !important; grid-template-columns: 1fr 1fr; gap: 6px !important; padding: 0 !important; background: none !important; border: 0 !important; }
+      .x-langpop .x-segw button { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 40px; padding: 0 10px !important; border-radius: 12px !important; text-align: start;
+        background: rgba(255, 255, 255, .05) !important; border: 1px solid rgba(255, 255, 255, .08) !important; color: #efe6cb !important; font-weight: 700 !important; font-size: 14px; }
+      .x-langpop .x-segw button::after { content: attr(data-v); font: 800 9px/1 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; padding: 3px 5px; border-radius: 6px; background: rgba(255, 255, 255, .1); color: #c9bd96; }
+      .x-langpop .x-segw button.on { background: linear-gradient(180deg, rgba(255, 216, 110, .26), rgba(120, 80, 10, .35)) !important; border-color: #e9c160 !important; color: #fff3c4 !important; }
+      .x-langpop .x-segw button.on::after { background: linear-gradient(180deg, #fff1a8, #d9a032); color: #2a1600; }
+      body.x-short .x-langpop { width: 268px !important; }
+      body.x-short .x-langpop .x-segw button { flex-basis: auto !important; min-height: 36px; }
+      @keyframes uxPop { from { transform: translateY(-6px) scale(.97); opacity: 0; } }
+      /* --- short landscape (Safari with toolbars) --- */
+      @media (max-height: 360px) {
+        #pst > div { padding: 6px 3px; } #pst > div::before { font-size: 15px; } #pst b { font-size: 17px !important; }
+        #menu .x-ltabs button { min-height: 56px !important; } #menu .x-ltabs .x-ii { width: 28px !important; height: 28px !important; }
+        #skins { --sw: 36px; }
+        .px-rw .px-ri svg { width: 38px; height: 38px; }
+      }
+      @media (prefers-reduced-motion: reduce) { #menu .x-ltabs button::after, .px-rw.r3::before, .px-rw.leg::before, .x-langpop { animation: none; } }
       @media (prefers-reduced-motion: reduce) { .ab2.fire, .ab2.act, .ab2.nope, .nf-emw button, .nf-emw button span, .nf-emw::before { animation: none; } }
       .x-ban { text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 2px #000, 0 0 10px #39ff14; }
       /* ================= PREMIUM PASS (px): portal, Royal Pass, Royal Shop, HUD, game over ================= */
@@ -3890,6 +4023,13 @@
           const g = c.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(bodySpr(col, v), 0, 0, n, n);
           ZS.set(key, c); return c;
         }
+        let SHC_K = "", SHC_V = "rgb(0,0,0)";
+        function shCol() { // the floor colour, darkened (keeps its hue), so the shadow reads as shade on that floor and not as a grey band
+          const f = String(MAPS[mapI] && MAPS[mapI].floor || "#000"); if (f === SHC_K) return SHC_V; SHC_K = f;
+          let r = 0, g = 0, b = 0; const m = /^#([0-9a-f]{6})$/i.exec(f);
+          if (m) { const n = parseInt(m[1], 16); r = n >> 16; g = (n >> 8) & 255; b = n & 255; } else { const q = f.match(/\d+(\.\d+)?/g); if (q && q.length >= 3) [r, g, b] = q.slice(0, 3).map(Number); }
+          SHC_V = `rgb(${(r * 0.28) | 0},${(g * 0.3) | 0},${(b * 0.34) | 0})`; return SHC_V;
+        }
         const SHADOW = (() => {
           const c = mk(64), g = c.getContext("2d"), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
           gr.addColorStop(0, "rgba(0,0,0,.6)"); gr.addColorStop(0.55, "rgba(0,0,0,.3)"); gr.addColorStop(1, "rgba(0,0,0,0)");
@@ -4073,12 +4213,10 @@
               ctx.stroke();
             }
           };
-          for (const sn of order) { // soft ground shadow, cast to the bottom-right (light from the top-left)
-            band(sn, 0, 0.5, 0.55, 2.4, "#000", 0.1);
-            band(sn, 0, 0.45, 0.5, 1.6, "#000", 0.16);
-            const h0 = sn.seg[0]; pr(h0.x + Math.cos(sn.a) * sn.r * 0.6, h0.y + Math.sin(sn.a) * sn.r * 0.6, 0);
-            const sw = sn.r * 3.4 * PK; ctx.globalAlpha = 0.32;
-            ctx.drawImage(SHADOW, PX + sn.r * 0.45 * PK - sw / 2, PY + sn.r * 0.5 * PK - (sw * ST) / 2, sw, sw * ST);
+          if (QL > 0) { // soft contact shadow: about body width, 3 px down-right, floor-tinted, feathered by stacked low-alpha strokes (no shadowBlur)
+            const shc = shCol(); ctx.save(); ctx.translate(3, 3);
+            for (const sn of order) { band(sn, 0, 0, 0, 2.2, shc, 0.05); band(sn, 0, 0, 0, 1.8, shc, 0.06); if (QL >= 2) band(sn, 0, 0, 0, 1.35, shc, 0.07); }
+            ctx.restore();
           }
           ctx.globalAlpha = 1;
           for (const p of parts) {
@@ -6811,7 +6949,7 @@
           if (k === "p") return RP_PI[t] ? { i: RP_PI[t] } : t % 2 ? { c: 150 } : { g: 3 };
           return RP_FI[t] ? { i: RP_FI[t] } : t % 10 === 0 ? { g: 5 } : { c: 50 + t * 2 };
         }
-        const rwIco = (w) => (w.i ? ITEMS[w.i].e : w.g ? "💎" : "🪙");
+        const rwIco = (w) => (w.i ? ITEMS[w.i].e : w.g ? uxGem(w.g) : uxCoin(w.c));
         const rwLbl = (w) => (w.i ? itName(w.i) : w.g ? "+" + w.g : "+" + w.c);
         RP.add = (n, why) => {
           if (!cur || !(n > 0)) return; rpEnsure();
@@ -6984,7 +7122,7 @@
         NFG.nfem = () => {
           if (state !== "play") return; const w = $("nfemw"), open = w.classList.contains("x-hide");
           if (open) { const em = ["👋", "😀", ...NX.eq.em.filter((k) => ENT.has(k)).map((k) => ITEMS[k].e)].slice(0, 8), n = em.length, mir = document.body.classList.contains("x-l") ? -1 : 1, a0 = 80, a1 = n > 5 ? 230 : 200;
-            w.innerHTML = em.map((e, i) => { const a = ((a0 + ((a1 - a0) * i) / Math.max(1, n - 1)) * Math.PI) / 180, x = Math.round(Math.cos(a) * 100 * mir), y = Math.round(-Math.sin(a) * 100);
+            w.innerHTML = em.map((e, i) => { const a = ((a0 + ((a1 - a0) * i) / Math.max(1, n - 1)) * Math.PI) / 180, x = Math.round(Math.cos(a) * EMR * mir), y = Math.round(-Math.sin(a) * EMR);
               return `<button data-go="nfemo" data-e="${e}" aria-label="${e}" style="--x:${x}px;--y:${y}px;--d:${i * 35}ms"><span>${e}</span></button>`; }).join(""); vib(8); }
           w.classList.toggle("x-hide");
         };
@@ -7599,7 +7737,7 @@
             const bf = Math.round(clamp((player.len - 12) / 88, 0, 1) * 100) + "%"; if (bf !== hud.bf) { hud.bf = bf; $("boost").style.setProperty("--bf", bf); }
           }
           $("lbx").classList.remove("x-lb0");
-          const all = snakes.filter((s) => s.alive).sort((a, b) => b.len - a.len), top = all.slice(0, lbS === 2 ? 10 : 5);
+          const all = snakes.filter((s) => s.alive).sort((a, b) => b.len - a.len), xs = document.body.classList.contains("x-vshort"), top = all.slice(0, xs ? 3 : lbS === 2 && (window.visualViewport ? visualViewport.height : innerHeight) >= 430 ? 10 : 5);
           const row = (s, i) => `<li class="${s === player ? "me" : ""}"><i>${i < 3 ? PX_MED[i] : i + 1}</i><em>${s.tm === undefined ? "" : TC[s.tm][0] + " "}${esc(s.name)}</em><span dir="ltr">${Math.floor(s.len)}</span></li>`;
           let html = top.map(row).join("");
           if (player && player.alive && !top.includes(player)) html += `<li class="sep" aria-hidden="true">···</li>` + row(player, all.indexOf(player));
@@ -7647,13 +7785,13 @@
         NFH.relang.push(() => { for (const k in pxH) delete pxH[k]; if (pxVis("menu")) pxLobby(); });
 
         // ---------- ROYAL PASS: pro battle-pass layout ----------
-        const pxRc = (w) => (w.i ? RARC[ITEMS[w.i].r] : w.g ? "#5ad1ff" : "#d7c9a0");
+        const pxRr = (w) => (w.i ? ITEMS[w.i].r : w.g ? (w.g >= 5 ? 3 : 2) : w.c >= 100 ? 1 : 0), pxRc = (w) => RARC[pxRr(w)];
         const pxTierOf = (id) => { for (const k in RP_PI) if (RP_PI[k] === id) return { t: +k, p: 1 }; for (const k in RP_FI) if (RP_FI[k] === id) return { t: +k, p: 0 }; return null; };
         paintPass = function () {
           rpEnsure(); msEnsure();
           const t = rpTier(), mx = t >= RP_TIERS, xpIn = mx ? RP_XP : NX.rp.xp - t * RP_XP, pr = !!NX.rp.pr, el = $("nfpb");
           const cell = (i, w, k, ok, got, lock) => { const r = w.i ? ITEMS[w.i].r : -1;
-            return `<button type="button" class="px-rw${k === "p" ? " prem" : ""}${ok ? " ok" : ""}${got ? " got" : ""}${lock ? " lock" : ""}${r >= 3 ? " leg" : ""}" style="--rc:${pxRc(w)}" data-go="nfclaim" data-t="${i}" data-k="${k}" data-claim="${esc(_t("pxClaim"))}" ${ok ? "" : "disabled"} aria-label="${esc(rwLbl(w))}">` +
+            return `<button type="button" class="px-rw r${pxRr(w)}${k === "p" ? " prem" : ""}${ok ? " ok" : ""}${got ? " got" : ""}${lock ? " lock" : ""}${r >= 3 ? " leg" : ""}" style="--rc:${pxRc(w)}" data-go="nfclaim" data-t="${i}" data-k="${k}" data-claim="${esc(_t("pxClaim"))}" ${ok ? "" : "disabled"} aria-label="${esc(rwLbl(w))}">` +
               `<span class="px-ri" aria-hidden="true">${rwIco(w)}</span>${r >= 0 ? `<span class="px-rr">${esc(_t(RAR[r]))}</span>` : ""}<small>${esc(rwLbl(w))}</small></button>`; };
           let cols = "";
           for (let i = 1; i <= RP_TIERS; i++) {
@@ -7694,7 +7832,7 @@
           else btn = `<button class="buy" data-go="nfbuy" data-id="${id}" ${WALLET.can(it.pc, it.pg) ? "" : "disabled"}><bdi dir="ltr">${priceTxt(it)}</bdi></button>`;
           const badge = own ? `<span class="px-badge own">✓ ${esc(_t("pxOwned"))}</span>` : it.ex ? `<span class="px-badge">👑 ${esc(ti && ti.p ? _t("pxPremOnly") : _t("nfPass"))}</span>` : "";
           const pv = cat === "sk" || cat === "tr" || cat === "de" ? `<canvas data-pv="${id}" aria-hidden="true"></canvas>` : `<span class="px-e" aria-hidden="true">${it.e}</span>`;
-          return `<div class="px-card r${it.r}" style="--rc:${RARC[it.r]}">${badge}<div class="px-pv">${pv}</div><b>${it.e} ${esc(itName(id))}</b><span class="px-r">${esc(_t(RAR[it.r]))}</span><div class="px-bt">${btn}</div></div>`;
+          return `<div class="px-card r${it.r}${own ? " own" : ""}${eqd ? " eqd" : ""}" style="--rc:${RARC[it.r]}">${badge}<div class="px-pv">${pv}</div><b>${it.e} ${esc(itName(id))}</b><span class="px-r">${esc(_t(RAR[it.r]))}</span><div class="px-bt">${btn}</div></div>`;
         }
         paintShop2 = function () {
           const el = $("nfsb"), cat = SH2.cat;
@@ -7751,7 +7889,7 @@
               else { g.globalCompositeOperation = "lighter"; const s = id === "tr_comet" ? 26 : 18; g.drawImage(orb(c2[j % 2]), x - s / 2, y - s / 2, s, s); g.globalCompositeOperation = "source-over"; } }
             g.globalAlpha = 1;
           }
-          g.globalAlpha = 0.35; for (let i = n - 1; i >= 0; i -= 2) g.drawImage(SHADOW, X(i) - rr(i) * 1.3, Y(i) - rr(i) * 0.4 + rr(i) * 0.9, rr(i) * 2.6, rr(i) * 1.2); g.globalAlpha = 1;
+          g.globalAlpha = 0.16; for (let i = n - 1; i >= 0; i -= 2) g.drawImage(SHADOW, X(i) - rr(i) * 1.05 + 2, Y(i) - rr(i) * 0.45 + 3, rr(i) * 2.1, rr(i) * 0.9); g.globalAlpha = 1;
           for (let i = n - 1; i >= 0; i--) { const r = rr(i), x = X(i), y = Y(i);
             if (spr && spr.length) g.drawImage(spr[i % spr.length], x - r, y - r, r * 2, r * 2); else g.drawImage(sphere(base ? segColor(skin, i) : "#888"), x - r, y - r, r * 2, r * 2); }
           const r0 = R0 * 1.25, hx = X(0) + R0 * 0.4, hy = Y(0);
@@ -7866,6 +8004,42 @@
             tg.forEach(([id]) => { $(id).textContent = "0"; });
             setTimeout(() => { const t0 = performance.now(); const step = (ts) => { const k = Math.min(1, (ts - t0) / 900), e = 1 - Math.pow(1 - k, 3); tg.forEach(([id, v]) => { $(id).textContent = String(Math.round(v * e)); }); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }, 720);
           }; }
+        // ===================== HUD FIT: ability cluster + leaderboard on short viewports =====================
+        // Safari landscape with toolbars leaves ~300-340 px of height. The ability buttons sit in two short rows strictly beside
+        // Boost (row 1 level with Boost, row 2 just above), sized from the visual viewport (40-46 px) and never above ~55% of the
+        // height; the evolution ability button keeps the spot straight above Boost. Below 380 px the leaderboard shows top 3 + own row.
+        var EMR = 100;
+        (function abFit() {
+          const R1 = ["nfrw", "ab-mag", "ab-sh"], R2 = ["ab-ph", "nfemb"];
+          function fit() {
+            const vv = window.visualViewport, h = Math.round(vv && vv.height ? vv.height : innerHeight);
+            const bs = clamp(Math.round(h * 0.13), 40, 46), g = h < 340 ? 6 : 8, bx = 43, by = 47, br = 35;
+            const x0 = bx + br + g + bs / 2, y2 = Math.min(by + bs + g, Math.max(by, h * 0.55 - 12 - bs / 2 - 12));
+            const put = (id, i, oy, sz) => { const el = $(id); if (!el) return; el.style.setProperty("--ox", Math.round(x0 + i * (bs + g)) + "px"); el.style.setProperty("--oy", Math.round(oy) + "px"); el.style.setProperty("--bs", sz + "px"); };
+            R1.forEach((id, i) => put(id, i, by, bs));
+            put("ab-ph", 0, y2, bs); put("nfemb", 1, y2, bs - 4);
+            const w = $("nfemw"); if (w) { w.style.setProperty("--ex", Math.round(x0 + bs + g) + "px"); w.style.setProperty("--ey", Math.round(y2) + "px"); }
+            EMR = h < 380 ? 74 : 100;
+            document.body.classList.toggle("x-vshort", h < 380);
+          }
+          fit();
+          addEventListener("resize", fit); addEventListener("orientationchange", () => setTimeout(fit, 250));
+          if (window.visualViewport) visualViewport.addEventListener("resize", fit);
+          NFH.start.push(fit);
+        })();
+        // ===================== PREMIUM REWARD ART (Royal Pass tiles): crafted coin stacks and faceted gems instead of plain emoji =====================
+        function uxCoin(n) {
+          const k = n >= 120 ? 3 : n >= 60 ? 2 : 1, ys = [30, 22, 14].slice(0, k);
+          const coin = (x, y) => `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="3.2" rx="13" ry="5.2" fill="#6b4306"/><rect x="-13" y="-1" width="26" height="4.2" fill="url(#uxCs)"/><ellipse cx="0" cy="-1" rx="13" ry="5.2" fill="url(#uxCf)" stroke="#fff3c4" stroke-width=".8"/><ellipse cx="0" cy="-1" rx="8.6" ry="3.2" fill="none" stroke="#a8701a" stroke-width="1.1"/><path d="M0 -3.4l.9 1.6 1.8.2-1.3 1.1.4 1.7-1.8-.9-1.8.9.4-1.7-1.3-1.1 1.8-.2z" fill="#fff6d0"/></g>`;
+          return `<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="uxCf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".45" stop-color="#f2c650"/><stop offset="1" stop-color="#b37a16"/></linearGradient><linearGradient id="uxCs" x1="0" x2="1"><stop offset="0" stop-color="#8a5a0c"/><stop offset=".5" stop-color="#e8b23e"/><stop offset="1" stop-color="#7a4c08"/></linearGradient></defs>` +
+            ys.map((y, i) => coin(24 + (i % 2 ? 2 : -1), y)).join("") + `<circle cx="34" cy="${ys[ys.length - 1] - 6}" r="1.6" fill="#fff"/><path d="M34 ${ys[ys.length - 1] - 11}v10M29 ${ys[ys.length - 1] - 6}h10" stroke="#fff" stroke-width=".8" opacity=".8"/></svg>`;
+        }
+        function uxGem(n) {
+          const big = n >= 5;
+          return `<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="uxG1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6fbff"/><stop offset=".5" stop-color="#5ad1ff"/><stop offset="1" stop-color="#1546b8"/></linearGradient><linearGradient id="uxG2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9f0ff"/><stop offset="1" stop-color="#2a6be0"/></linearGradient><radialGradient id="uxG3"><stop offset="0" stop-color="rgba(120,220,255,.65)"/><stop offset="1" stop-color="rgba(120,220,255,0)"/></radialGradient></defs>` +
+            `<circle cx="24" cy="25" r="${big ? 22 : 17}" fill="url(#uxG3)"/><path d="M12 18l6-8h12l6 8-12 22z" fill="url(#uxG1)" stroke="#e9fbff" stroke-width=".9" stroke-linejoin="round"/><path d="M12 18h24M18 10l-2 8 8 22 8-22-2-8M16 18l8-8 8 8" fill="none" stroke="#dff8ff" stroke-width=".7" opacity=".85"/><path d="M18 10h12l-6 8z" fill="url(#uxG2)" opacity=".9"/><path d="M14.5 17.5l4-5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>` +
+            (big ? `<path d="M38 9l1 3 3 1-3 1-1 3-1-3-3-1 3-1z M9 31l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" fill="#fff"/>` : "") + `</svg>`;
+        }
         NFR = true; nfPaintSet(); for (const f of NFH.load) f();
         // ================= END NEW FEATURES =================
         requestAnimationFrame(loop);
