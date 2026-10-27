@@ -672,7 +672,7 @@
         <div class="x-seg x-segw x-mode" data-k="mode" style="width:100%"><button data-v="n" data-i18n="mNormal">عادي</button><button data-v="t" data-i18n="mTeams">فرق</button><button data-v="s" data-i18n="mSurv">البقاء</button><button data-v="r" data-i18n="mRanked">مصنّف</button><button data-v="d" data-i18n="mDaily">تحدي اليوم</button><button data-v="p" data-i18n="mPriv">مباراة خاصة</button><button data-v="l" data-i18n="league">الدوري</button></div>
         <p class="x-note" id="mdi" aria-live="polite"></p>
         <button class="x-lnk" data-go="maps" id="mapq"></button>
-        <div class="x-row nf-row"><button class="x-btn x-sub" data-go="nfmodes">🎮 <span data-i18n="nfModes">Modes+</span></button></div>
+        <div class="x-row nf-row"><button class="x-btn x-sub" data-go="nfmodes">🎮 <span data-i18n="nfModes">Modes+</span></button><button class="x-btn x-sub" data-go="nfpass">👑 <span data-i18n="nfPass">Royal Pass</span></button></div>
         <p class="x-note nf-wx x-hide" id="nfwx"></p>
         <p class="x-chal x-hide" id="nfmapb" role="status" dir="auto"></p>
         <input class="x-name x-hide" id="room" maxlength="8" placeholder="كود الغرفة (اختياري)" data-i18n-ph="roomPh" autocomplete="off" aria-label="كود الغرفة" data-i18n-al="roomPh" />
@@ -787,6 +787,7 @@
       <div class="x-ov x-hide" id="shop"><div class="x-box">
         <h2 class="x-cy" data-i18n="shop">المتجر</h2>
         <p><span data-i18n="balance">رصيدك:</span> <span id="coins">0</span> 🪙 · <span id="gems">0</span> 💎</p>
+        <button class="x-btn x-sub" data-go="nfshop">✨ <span data-i18n="nfShop">Royal Shop</span></button>
         <div class="x-tabs" id="tabs"><button data-t="items" class="on" data-i18n="items">العناصر</button><button data-t="pts" data-i18n="ptsShop">متجر النقاط</button><button data-t="txl" data-i18n="txLog">سجل المعاملات</button></div>
         <div class="x-shop" id="items"></div>
         <div class="x-shop x-hide" id="pts"></div>
@@ -819,6 +820,8 @@
           <button data-v="x" data-i18n="qx">فائقة</button><button data-v="u" data-i18n="uhigh">عالية جدا</button><button data-v="h" data-i18n="high">عالية</button><button data-v="m" data-i18n="mid">متوسطة</button><button data-v="l" data-i18n="nfLow">Low</button></div></div>
         <div class="x-set"><p data-i18n="fpsC">عداد الإطارات FPS</p><div class="x-seg" data-k="fps">
           <button data-v="1" data-i18n="showW">إظهار</button><button data-v="0" data-i18n="hideW">إخفاء</button></div></div>
+        <div class="x-set"><p data-i18n="nfGhostS">nfGhostS</p><div class="x-seg" data-nk="gh">
+          <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
         <a class="x-btn x-sub" href="privacy.html" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none" data-i18n="privacy">سياسة الخصوصية</a>
         <button class="x-btn" data-go="back" data-i18n="back">رجوع</button>
       </div></div>
@@ -862,6 +865,8 @@
         <div class="x-shop" id="nfml"></div>
         <button class="x-btn x-sub" data-go="back" data-i18n="back">رجوع</button>
       </div></div>
+      <div class="x-ov x-hide" id="nfpass"><div class="x-box nf-one" id="nfpb"></div></div>
+      <div class="x-ov x-hide" id="nfshop"><div class="x-box nf-one" id="nfsb"></div></div>
       <div class="x-ov x-hide" id="maps"><div class="x-box">
         <h2 class="x-cy" data-i18n="maps">الخرايط</h2>
         <div class="x-shop" id="mapl"></div>
@@ -1590,6 +1595,97 @@
         tx_lm: ["سرّ مكتشف", "Secret found", "Sır bulundu", "Secret trouvé", "Secreto encontrado", "रहस्य मिला"],
         nfRw: ["ارجع ٣ ثواني", "Rewind 3 seconds", "3 saniye geri sar", "Rembobiner 3 secondes", "Rebobinar 3 segundos", "3 सेकंड पीछे"],
         nfEmote: ["تعبير", "Emote", "İfade", "Émote", "Gesto", "इमोट"],
+        nfPass: ["رويال باس", "Royal Pass", "Royal Pass", "Royal Pass", "Royal Pass", "रॉयल पास"],
+        nfShop: ["المتجر الملكي", "Royal Shop", "Kraliyet Mağazası", "Boutique royale", "Tienda real", "रॉयल शॉप"],
+        nfGhostS: ["سباق الشبح", "Ghost race", "Hayalet yarışı", "Course fantôme", "Carrera fantasma", "भूत रेस"],
+        nfGhostT: ["سباق الشبح", "Ghost race", "Hayalet yarışı", "Course fantôme", "Carrera fantasma", "भूत रेस"],
+        nfGhostD: ["تسابق أفضل جولة لك على نفس الخريطة (كلاسيكي)", "Race your own best run on the same map (Classic)", "Aynı haritadaki en iyi koşunla yarış (Klasik)", "Affronte ta meilleure partie sur la même carte (Classique)", "Compite contra tu mejor partida en el mismo mapa (Clásico)", "उसी मैप पर अपने सबसे अच्छे रन से रेस (क्लासिक)"],
+        nfGhostGo: ["شبحك يبي يوصل {n}!", "Your ghost is going for {n}!", "Hayaletin {n} için yarışıyor!", "Ton fantôme vise {n} !", "¡Tu fantasma va a por {n}!", "आपका भूत {n} तक जा रहा है!"],
+        nfGhostNew: ["رقم شبح جديد!", "New ghost record!", "Yeni hayalet rekoru!", "Nouveau record fantôme !", "¡Nuevo récord fantasma!", "नया भूत रिकॉर्ड!"],
+        nfR0: ["عادي", "Common", "Sıradan", "Commun", "Común", "सामान्य"],
+        nfR1: ["نادر", "Rare", "Nadir", "Rare", "Raro", "दुर्लभ"],
+        nfR2: ["ملحمي", "Epic", "Destansı", "Épique", "Épico", "महाकाव्य"],
+        nfR3: ["أسطوري", "Legendary", "Efsanevi", "Légendaire", "Legendario", "पौराणिक"],
+        nfCsk: ["أشكال", "Skins", "Görünümler", "Skins", "Aspectos", "स्किन"],
+        nfCtr: ["أثر", "Trails", "İzler", "Traînées", "Estelas", "ट्रेल"],
+        nfCde: ["مؤثرات الخسارة", "Death effects", "Ölüm efektleri", "Effets de mort", "Efectos de muerte", "मौत इफ़ेक्ट"],
+        nfCem: ["تعابير", "Emotes", "İfadeler", "Émotes", "Gestos", "इमोट"],
+        nfCfr: ["إطارات الاسم", "Name frames", "İsim çerçeveleri", "Cadres de nom", "Marcos de nombre", "नाम फ़्रेम"],
+        nfCcr: ["صناديق وعروض", "Crates & bundles", "Sandıklar ve paketler", "Caisses et packs", "Cajas y paquetes", "क्रेट और बंडल"],
+        nfCrD1: ["عنصر عشوائي عادي أو نادر", "A random common or rare item", "Rastgele sıradan veya nadir eşya", "Un objet commun ou rare au hasard", "Un objeto común o raro al azar", "एक रैंडम सामान्य या दुर्लभ आइटम"],
+        nfCrD3: ["عنصر عشوائي، حتى الأسطوري", "A random item, up to legendary", "Rastgele eşya, efsaneviye kadar", "Un objet au hasard, jusqu'au légendaire", "Un objeto al azar, hasta legendario", "रैंडम आइटम, पौराणिक तक"],
+        nfAllOwned: ["عندك كل شي، رجعنا لك عملات", "you own everything, coins back", "hepsine sahipsin, jeton iadesi", "tu as tout, pièces rendues", "lo tienes todo, monedas devueltas", "सब आपके पास है, सिक्के वापस"],
+        nfRpUp: ["المستوى {n} في الرويال باس!", "Royal Pass tier {n}!", "Royal Pass seviye {n}!", "Royal Pass palier {n} !", "¡Royal Pass nivel {n}!", "रॉयल पास टियर {n}!"],
+        nfSxp: ["نقاط الموسم", "season XP", "sezon XP", "XP de saison", "XP de temporada", "सीज़न XP"],
+        nfMisDone: ["مهمة مكتملة!", "mission done!", "görev tamam!", "mission réussie !", "¡misión cumplida!", "मिशन पूरा!"],
+        nfLeftD: ["باقي {d} يوم و{h} ساعة", "{d}d {h}h left", "{d}g {h}s kaldı", "encore {d} j {h} h", "quedan {d} d {h} h", "{d} दिन {h} घंटे बाकी"],
+        nfLeftH: ["باقي {h} ساعة و{m} دقيقة", "{h}h {m}m left", "{h}s {m}d kaldı", "encore {h} h {m} min", "quedan {h} h {m} min", "{h} घंटे {m} मिनट बाकी"],
+        nfSeason0: ["الثعبان النيوني", "Neon Serpent", "Neon Yılan", "Serpent néon", "Serpiente de neón", "नियॉन सर्प"],
+        nfSeason1: ["ملوك الغابة", "Jungle Kings", "Orman Kralları", "Rois de la jungle", "Reyes de la jungla", "जंगल के राजा"],
+        nfSeason2: ["عاصفة السايبر", "Cyber Storm", "Siber Fırtına", "Tempête cyber", "Tormenta ciber", "साइबर तूफ़ान"],
+        nfSeason3: ["الأنياب المتجمدة", "Frozen Fangs", "Donmuş Dişler", "Crocs gelés", "Colmillos helados", "जमे हुए दाँत"],
+        nfSeasonN: ["الموسم {n}", "Season {n}", "Sezon {n}", "Saison {n}", "Temporada {n}", "सीज़न {n}"],
+        nfTier: ["المستوى {t}/{n}", "Tier {t}/{n}", "Seviye {t}/{n}", "Palier {t}/{n}", "Nivel {t}/{n}", "टियर {t}/{n}"],
+        nfPremOn: ["المسار المميز مفعّل", "Premium track active", "Premium yol aktif", "Parcours premium actif", "Pista premium activa", "प्रीमियम ट्रैक चालू"],
+        nfPremBuy: ["افتح المسار المميز · {n} 💎", "Unlock premium track · {n} 💎", "Premium yolu aç · {n} 💎", "Débloquer le premium · {n} 💎", "Desbloquear premium · {n} 💎", "प्रीमियम ट्रैक खोलें · {n} 💎"],
+        nfClaimAll: ["استلم الكل", "Claim all", "Hepsini al", "Tout récupérer", "Reclamar todo", "सब लें"],
+        nfMisT: ["مهام اليوم", "Daily missions", "Günlük görevler", "Missions du jour", "Misiones diarias", "आज के मिशन"],
+        nfMism: ["العب {n} مباريات", "Play {n} matches", "{n} maç oyna", "Joue {n} matchs", "Juega {n} partidas", "{n} मैच खेलें"],
+        nfMise: ["كُل {n} حبة", "Eat {n} food", "{n} yem ye", "Mange {n} aliments", "Come {n} comidas", "{n} खाना खाएँ"],
+        nfMisk: ["اقتل {n} ثعابين", "Get {n} kills", "{n} yılan avla", "Élimine {n} serpents", "Elimina {n} serpientes", "{n} किल करें"],
+        nfNoMoney: ["كل شي هنا بعملات وجواهر اللعبة فقط. ما في دفع بفلوس حقيقية.", "Everything here uses in-game coins and gems only. No real-money payments.", "Buradaki her şey yalnızca oyun içi jeton ve mücevherle. Gerçek para yok.", "Tout ici se paie en pièces et gemmes du jeu. Aucun paiement réel.", "Todo aquí se paga con monedas y gemas del juego. Sin dinero real.", "यहाँ सब कुछ सिर्फ़ गेम के सिक्कों और रत्नों से। असली पैसे नहीं।"],
+        nfNoGems: ["تحتاج {n} 💎", "You need {n} 💎", "{n} 💎 gerekli", "Il te faut {n} 💎", "Necesitas {n} 💎", "{n} 💎 चाहिए"],
+        nfFunds: ["رصيدك ما يكفي", "Not enough balance", "Bakiye yetersiz", "Solde insuffisant", "Saldo insuficiente", "बैलेंस कम है"],
+        nfErr: ["صار خطأ، جرّب مرة ثانية", "Something went wrong, try again", "Bir sorun oluştu, tekrar dene", "Un problème est survenu, réessaie", "Algo salió mal, inténtalo de nuevo", "कुछ गड़बड़ हुई, फिर से कोशिश करें"],
+        nfEmHint: ["اختر حتى ٦ تعابير لزر 😀 أثناء اللعب", "Pick up to 6 emotes for the 😀 button in matches", "Maçlarda 😀 düğmesi için 6 ifade seç", "Choisis jusqu'à 6 émotes pour le bouton 😀", "Elige hasta 6 gestos para el botón 😀", "मैच में 😀 बटन के लिए 6 इमोट चुनें"],
+        nfOnW: ["في القائمة ✓", "In wheel ✓", "Listede ✓", "Dans la roue ✓", "En la rueda ✓", "पहिये में ✓"],
+        nfAddW: ["أضف", "Add", "Ekle", "Ajouter", "Añadir", "जोड़ें"],
+        nfPassOnly: ["الباس فقط", "Pass only", "Sadece Pass", "Pass seul.", "Solo Pass", "सिर्फ़ पास"],
+        nfI_rs_toxic: ["سام", "Toxic", "Zehirli", "Toxique", "Tóxico", "ज़हरीला"],
+        nfI_rs_frost: ["جليدي", "Frostbite", "Buz Isırığı", "Engelure", "Congelado", "हिमदंश"],
+        nfI_rs_neon: ["حلقات نيون", "Neon Rings", "Neon Halkalar", "Anneaux néon", "Anillos de neón", "नियॉन रिंग"],
+        nfI_rs_lava: ["حمم", "Lava Crust", "Lav Kabuğu", "Croûte de lave", "Costra de lava", "लावा परत"],
+        nfI_rs_rainbow: ["قوس قزح", "Rainbow", "Gökkuşağı", "Arc-en-ciel", "Arcoíris", "इंद्रधनुष"],
+        nfI_rs_gold: ["الذهب الخالص", "Pure Gold", "Saf Altın", "Or pur", "Oro puro", "शुद्ध सोना"],
+        nfI_rs_galaxy: ["المجرة", "Galaxy", "Galaksi", "Galaxie", "Galaxia", "आकाशगंगा"],
+        nfI_rs_royal: ["الملك", "The Royal", "Kraliyet", "Le Royal", "El Real", "शाही"],
+        nfI_tr_bubbles: ["فقاعات", "Bubbles", "Baloncuklar", "Bulles", "Burbujas", "बुलबुले"],
+        nfI_tr_hearts: ["قلوب", "Hearts", "Kalpler", "Cœurs", "Corazones", "दिल"],
+        nfI_tr_stars: ["نجوم", "Stars", "Yıldızlar", "Étoiles", "Estrellas", "तारे"],
+        nfI_tr_petals: ["بتلات", "Petals", "Taç yaprakları", "Pétales", "Pétalos", "पंखुड़ियाँ"],
+        nfI_tr_pixel: ["بكسل", "Pixels", "Pikseller", "Pixels", "Píxeles", "पिक्सेल"],
+        nfI_tr_bolt: ["برق", "Lightning", "Şimşek", "Éclair", "Relámpago", "बिजली"],
+        nfI_tr_comet: ["مذنّب", "Comet", "Kuyruklu yıldız", "Comète", "Cometa", "धूमकेतु"],
+        nfI_tr_royal: ["الغبار الملكي", "Royal Dust", "Kraliyet Tozu", "Poussière royale", "Polvo real", "शाही धूल"],
+        nfI_de_confetti: ["قصاصات", "Confetti", "Konfeti", "Confettis", "Confeti", "कंफ़ेटी"],
+        nfI_de_fw: ["ألعاب نارية", "Fireworks", "Havai fişek", "Feu d'artifice", "Fuegos artificiales", "आतिशबाज़ी"],
+        nfI_de_pixel: ["تفكك بكسل", "Pixel Burst", "Piksel Patlaması", "Explosion pixel", "Estallido de píxeles", "पिक्सेल धमाका"],
+        nfI_de_shock: ["موجة صدمة", "Shockwave", "Şok Dalgası", "Onde de choc", "Onda expansiva", "शॉकवेव"],
+        nfI_de_galaxy: ["سقوط نجوم", "Star Fall", "Yıldız Yağmuru", "Pluie d'étoiles", "Lluvia de estrellas", "तारों की बारिश"],
+        nfI_de_royal: ["الوداع الملكي", "Royal Farewell", "Kraliyet Vedası", "Adieu royal", "Despedida real", "शाही विदाई"],
+        nfI_em_laugh: ["ضحك", "Laugh", "Kahkaha", "Rire", "Risa", "हँसी"],
+        nfI_em_cool: ["رايق", "Cool", "Havalı", "Cool", "Genial", "कूल"],
+        nfI_em_angry: ["معصّب", "Angry", "Kızgın", "En colère", "Enfadado", "गुस्सा"],
+        nfI_em_love: ["حب", "Love", "Aşk", "Amour", "Amor", "प्यार"],
+        nfI_em_skull: ["جمجمة", "Skull", "Kafatası", "Crâne", "Calavera", "खोपड़ी"],
+        nfI_em_fire: ["نار", "Fire", "Ateş", "Feu", "Fuego", "आग"],
+        nfI_em_gg: ["لعب حلو", "GG", "İyi oyun", "Bien joué", "Buen juego", "बढ़िया खेल"],
+        nfI_em_crown: ["التاج", "Crown", "Taç", "Couronne", "Corona", "ताज"],
+        nfI_em_dragon: ["تنين", "Dragon", "Ejderha", "Dragon", "Dragón", "ड्रैगन"],
+        nfI_fr_neon: ["إطار نيون", "Neon frame", "Neon çerçeve", "Cadre néon", "Marco neón", "नियॉन फ़्रेम"],
+        nfI_fr_fire: ["إطار ناري", "Fire frame", "Ateş çerçeve", "Cadre de feu", "Marco de fuego", "आग फ़्रेम"],
+        nfI_fr_ice: ["إطار ثلجي", "Ice frame", "Buz çerçeve", "Cadre de glace", "Marco de hielo", "बर्फ़ फ़्रेम"],
+        nfI_fr_gold: ["إطار ذهبي", "Gold frame", "Altın çerçeve", "Cadre doré", "Marco dorado", "सुनहरा फ़्रेम"],
+        nfI_fr_leaf: ["إطار الأوراق", "Leaf frame", "Yaprak çerçeve", "Cadre feuilles", "Marco de hojas", "पत्ती फ़्रेम"],
+        nfI_fr_royal: ["الإطار الملكي", "Royal frame", "Kraliyet çerçeve", "Cadre royal", "Marco real", "शाही फ़्रेम"],
+        nfI_fr_galaxy: ["إطار المجرة", "Galaxy frame", "Galaksi çerçeve", "Cadre galaxie", "Marco galaxia", "आकाशगंगा फ़्रेम"],
+        nfI_bn_starter: ["حزمة البداية", "Starter bundle", "Başlangıç paketi", "Pack débutant", "Paquete inicial", "स्टार्टर बंडल"],
+        nfI_bn_elem: ["حزمة العناصر", "Elements bundle", "Elementler paketi", "Pack éléments", "Paquete elementos", "तत्व बंडल"],
+        nfI_cr_lucky: ["صندوق الحظ", "Lucky crate", "Şans sandığı", "Caisse chance", "Caja de la suerte", "लकी क्रेट"],
+        nfI_cr_royal: ["الصندوق الملكي", "Royal crate", "Kraliyet sandığı", "Caisse royale", "Caja real", "रॉयल क्रेट"],
+        tx_rp: ["رويال باس", "Royal Pass", "Royal Pass", "Royal Pass", "Royal Pass", "रॉयल पास"],
+        tx_shop2: ["المتجر الملكي", "Royal Shop", "Kraliyet Mağazası", "Boutique royale", "Tienda real", "रॉयल शॉप"],
+        tx_crate: ["صندوق", "Crate", "Sandık", "Caisse", "Caja", "क्रेट"],
       };
       Object.assign(I18N, NF_I18N);
       let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
@@ -3725,7 +3821,7 @@
           if (html !== lbH) { lbH = html; $("lb").innerHTML = html; } // touch the DOM only on change
         }
 
-        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes"];
+        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop"];
         // MANDATORY ACCOUNT: with nobody logged in, only the login and create-account screens can show
         function authView(imp, quiet) {
           $("logv").classList.toggle("x-hide", !!imp); $("impv").classList.toggle("x-hide", !imp);
@@ -6109,6 +6205,376 @@
           const all = Object.keys(LMD).length * 3, got = Object.keys(NX.lm).length;
           return nfCard("🗺️", _t("nfLmT") + ` ${got}/${all}`, _t("nfLmD"), "");
         });
+
+        // ===================== WALLET + ENTITLEMENTS =====================
+        // The ONLY code that reads or changes balances and unlocks for the Royal Pass and the Royal Shop. No real money anywhere.
+        // Today: src "local" — balances are P.coins / P.gems on this device (through pay(), so the transaction log stays right), unlocks are NX.own.
+        // Later (server = single source of truth): set WALLET.src = "server" and implement WALLET.rpc(fn, args) as a call to the backend
+        // (Supabase RPCs such as buy_shop_item, claim_pass_tier, unlock_pass_premium, open_crate, get_wallet). In that mode every action below
+        // only REQUESTS the change and applies exactly what the server returns ({ coins, gems, entitlements: [ids], pass: { xp, premium, claimed_free, claimed_premium } })
+        // through WALLET.apply(); the client never decides a purchase result. Apple IAP later: StoreKit receipt → server (verify-purchase)
+        // → server credits gems / entitlements → client calls WALLET.sync(). Entitlement ids match the item ids below (e.g. "rs_gold") and
+        // "royal_pass_premium:S<n>" for the premium track.
+        var WALLET = {
+          src: "local",
+          bal() { return { c: P.coins, g: P.gems }; },
+          can(pc, pg) { const b = this.bal(); return b.c >= (pc || 0) && b.g >= (pg || 0); },
+          async rpc(fn, args) { throw new Error("server wallet not connected: " + fn); },
+          apply(r) {
+            if (!r || typeof r !== "object") return;
+            if (Number.isInteger(r.coins) && r.coins >= 0) P.coins = r.coins;
+            if (Number.isInteger(r.gems) && r.gems >= 0) P.gems = r.gems;
+            if (Array.isArray(r.entitlements)) { NX.own = {}; for (const id of r.entitlements) if (NF_ID.test(id) && ITEMS[id]) NX.own[id] = 1; }
+            if (r.pass && typeof r.pass === "object") { const q = r.pass; if (Number.isInteger(q.xp)) NX.rp.xp = q.xp; NX.rp.pr = q.premium ? 1 : 0;
+              if (Array.isArray(q.claimed_free)) NX.rp.cf = q.claimed_free.slice(); if (Array.isArray(q.claimed_premium)) NX.rp.cp = q.claimed_premium.slice(); }
+            profile(); commit();
+          },
+          async sync() { if (this.src === "server") this.apply(await this.rpc("get_wallet", {})); },
+          // local mode helpers (never used in server mode)
+          _debit(pc, pg, why) { if (!this.can(pc, pg)) return false; pay(-(pc || 0), why, -(pg || 0)); return true; },
+          async buy(id) {
+            const it = ITEMS[id]; if (!it || it.ex || ENT.has(id)) return { ok: false, err: "na" };
+            if (this.src === "server") { try { this.apply(await this.rpc("buy_shop_item", { p_item_id: id })); return { ok: true }; } catch (e) { return { ok: false, err: "net" }; } }
+            if (!this._debit(it.pc, it.pg, "shop2")) return { ok: false, err: "funds" };
+            ENT.grant(id); profile(); commit(); return { ok: true };
+          },
+          async bundle(bid) {
+            const b = BUNDLES.find((x) => x.id === bid); if (!b || b.items.every((i) => ENT.has(i))) return { ok: false, err: "na" };
+            if (this.src === "server") { try { this.apply(await this.rpc("buy_shop_item", { p_item_id: bid })); return { ok: true }; } catch (e) { return { ok: false, err: "net" }; } }
+            if (!this._debit(b.pc, b.pg, "shop2")) return { ok: false, err: "funds" };
+            b.items.forEach((i) => ENT.grant(i)); profile(); commit(); return { ok: true };
+          },
+          async crate(cid) {
+            const c = CRATES.find((x) => x.id === cid); if (!c) return { ok: false, err: "na" };
+            if (this.src === "server") { try { const r = await this.rpc("open_crate", { p_crate: cid }); this.apply(r); return { ok: true, item: r && r.item, refund: r && r.refund }; } catch (e) { return { ok: false, err: "net" }; } }
+            if (!this._debit(c.pc, c.pg, "crate")) return { ok: false, err: "funds" };
+            const pool = Object.keys(ITEMS).filter((k) => !ITEMS[k].ex && !ENT.has(k) && ITEMS[k].r <= c.mx);
+            if (!pool.length) { pay(c.ref, "crate"); profile(); commit(); return { ok: true, refund: c.ref }; }
+            const wt = (k) => [50, 30, 15, 5][ITEMS[k].r]; let tot = pool.reduce((a, k) => a + wt(k), 0), x = R() * tot, pick = pool[0];
+            for (const k of pool) { x -= wt(k); if (x <= 0) { pick = k; break; } }
+            ENT.grant(pick); profile(); commit(); return { ok: true, item: pick };
+          },
+          async premium() {
+            if (NX.rp.pr) return { ok: false, err: "na" };
+            if (this.src === "server") { try { this.apply(await this.rpc("unlock_pass_premium", { p_season: rpSid() })); return { ok: true }; } catch (e) { return { ok: false, err: "net" }; } }
+            if (!this._debit(0, RP_PREM, "rp")) return { ok: false, err: "funds" };
+            NX.rp.pr = 1; profile(); commit(); return { ok: true };
+          },
+          async claim(tier, track) {
+            if (this.src === "server") { try { this.apply(await this.rpc("claim_pass_tier", { p_season: rpSid(), p_tier: tier, p_track: track === "p" ? "premium" : "free" })); return { ok: true }; } catch (e) { return { ok: false, err: "net" }; } }
+            const L2 = track === "p" ? NX.rp.cp : NX.rp.cf;
+            if (tier > rpTier() || L2.includes(tier) || (track === "p" && !NX.rp.pr)) return { ok: false, err: "na" };
+            const rw = rpRew(tier, track); L2.push(tier);
+            if (rw.i && !ENT.has(rw.i)) ENT.grant(rw.i); else if (rw.i) pay(200, "rp");
+            if (rw.c) pay(rw.c, "rp"); if (rw.g) pay(0, "rp", rw.g);
+            profile(); commit(); return { ok: true, rw };
+          },
+        };
+        var ENT = {
+          has(id) { return id === "photo" || !!NX.own[id]; },
+          grant(id) { if (ITEMS[id]) NX.own[id] = 1; },
+          owned(cat) { return Object.keys(ITEMS).filter((k) => ITEMS[k].c === cat && this.has(k)); },
+        };
+        // ===================== CATALOG =====================
+        // c: category (sk Royal skins, tr trails, de death effects, em emotes, fr name frames); r: rarity 0 common .. 3 legendary;
+        // pc / pg: price in coins / gems; ex: "pass" = only from the Royal Pass
+        const ITEMS = {
+          rs_toxic: { c: "sk", e: "🧪", r: 1, pc: 1200 }, rs_frost: { c: "sk", e: "🧊", r: 1, pc: 1500 }, rs_neon: { c: "sk", e: "💡", r: 2, pc: 2000 },
+          rs_lava: { c: "sk", e: "🌋", r: 2, pc: 2500 }, rs_rainbow: { c: "sk", e: "🌈", r: 2, pg: 40 }, rs_gold: { c: "sk", e: "🏆", r: 3, pg: 60 },
+          rs_galaxy: { c: "sk", e: "🌌", r: 3, ex: "pass" }, rs_royal: { c: "sk", e: "👑", r: 3, ex: "pass" },
+          tr_bubbles: { c: "tr", e: "🫧", r: 0, pc: 500 }, tr_hearts: { c: "tr", e: "💖", r: 0, pc: 600 }, tr_stars: { c: "tr", e: "⭐", r: 1, pc: 800 },
+          tr_petals: { c: "tr", e: "🌸", r: 1, pc: 900 }, tr_pixel: { c: "tr", e: "🟪", r: 1, pc: 1100 }, tr_bolt: { c: "tr", e: "⚡", r: 2, pc: 1500 },
+          tr_comet: { c: "tr", e: "☄️", r: 3, ex: "pass" }, tr_royal: { c: "tr", e: "💫", r: 3, ex: "pass" },
+          de_confetti: { c: "de", e: "🎊", r: 0, pc: 700 }, de_fw: { c: "de", e: "🎆", r: 1, pc: 900 }, de_pixel: { c: "de", e: "👾", r: 1, pc: 1100 },
+          de_shock: { c: "de", e: "💥", r: 2, pg: 30 }, de_galaxy: { c: "de", e: "🌠", r: 3, ex: "pass" }, de_royal: { c: "de", e: "🎇", r: 3, ex: "pass" },
+          em_laugh: { c: "em", e: "😂", r: 0, pc: 300 }, em_cool: { c: "em", e: "😎", r: 0, pc: 300 }, em_angry: { c: "em", e: "😡", r: 0, pc: 300 },
+          em_love: { c: "em", e: "😍", r: 0, pc: 400 }, em_skull: { c: "em", e: "💀", r: 1, pc: 500 }, em_fire: { c: "em", e: "🔥", r: 1, pc: 500 },
+          em_gg: { c: "em", e: "🤝", r: 1, ex: "pass" }, em_crown: { c: "em", e: "👑", r: 3, ex: "pass" }, em_dragon: { c: "em", e: "🐉", r: 3, ex: "pass" },
+          fr_neon: { c: "fr", e: "💠", r: 1, pc: 800 }, fr_fire: { c: "fr", e: "🔥", r: 1, pc: 1200 }, fr_ice: { c: "fr", e: "❄️", r: 1, pc: 1200 },
+          fr_gold: { c: "fr", e: "🥇", r: 2, pg: 50 }, fr_leaf: { c: "fr", e: "🍃", r: 1, ex: "pass" }, fr_royal: { c: "fr", e: "👑", r: 3, ex: "pass" }, fr_galaxy: { c: "fr", e: "🌌", r: 3, ex: "pass" },
+        };
+        const BUNDLES = [{ id: "bn_starter", e: "🎁", items: ["tr_hearts", "em_cool", "fr_neon"], pc: 1300 }, { id: "bn_elem", e: "🧰", items: ["rs_frost", "rs_lava", "de_fw"], pc: 4000 }];
+        const CRATES = [{ id: "cr_lucky", e: "📦", pc: 1000, mx: 1, ref: 300 }, { id: "cr_royal", e: "🎁", pg: 25, mx: 3, ref: 300 }];
+        const RAR = ["nfR0", "nfR1", "nfR2", "nfR3"], RARC = ["#b9c6e6", "#5ad1ff", "#c77dff", "#ffd84a"];
+        const itName = (id) => _t("nfI_" + id);
+
+        // ===================== ROYAL PASS =====================
+        // seasons are 6 weeks from 26 Oct 2026 (UTC); 50 tiers × 100 season XP; free track for all, premium track for RP_PREM gems
+        const RP_T0 = Date.UTC(2026, 9, 26), RP_LEN = 42 * 864e5, RP_TIERS = 50, RP_XP = 100, RP_PREM = 300;
+        const rpNo = () => Math.max(0, Math.floor((Date.now() - RP_T0) / RP_LEN));
+        const rpSid = () => "S" + (rpNo() + 1);
+        const rpEnd = () => RP_T0 + (rpNo() + 1) * RP_LEN;
+        function rpEnsure() { const n = rpNo(); if (NX.rp.s !== n) NX.rp = { s: n, xp: 0, pr: 0, cf: [], cp: [] }; }
+        const rpTier = () => Math.min(RP_TIERS, Math.floor(NX.rp.xp / RP_XP));
+        const RP_FI = { 5: "em_gg", 15: "fr_leaf", 25: "tr_bubbles", 35: "de_confetti", 45: "rs_toxic" };
+        const RP_PI = { 1: "em_crown", 10: "fr_royal", 15: "de_royal", 20: "tr_comet", 25: "rs_galaxy", 30: "tr_royal", 35: "de_galaxy", 40: "fr_galaxy", 45: "em_dragon", 50: "rs_royal" };
+        function rpRew(t, k) {
+          if (k === "p") return RP_PI[t] ? { i: RP_PI[t] } : t % 2 ? { c: 150 } : { g: 3 };
+          return RP_FI[t] ? { i: RP_FI[t] } : t % 10 === 0 ? { g: 5 } : { c: 50 + t * 2 };
+        }
+        const rwIco = (w) => (w.i ? ITEMS[w.i].e : w.g ? "💎" : "🪙");
+        const rwLbl = (w) => (w.i ? itName(w.i) : w.g ? "+" + w.g : "+" + w.c);
+        RP.add = (n, why) => {
+          if (!cur || !(n > 0)) return; rpEnsure();
+          const t0 = rpTier(); NX.rp.xp = Math.min(RP_TIERS * RP_XP + 1e5, NX.rp.xp + Math.round(n)); const t1 = rpTier();
+          if (t1 > t0) { const m = "👑 " + _t("nfRpUp", { n: t1 }); if (state === "play") xBan(m); else setTimeout(() => toast(m), 900); }
+          commit();
+        };
+        // daily missions (count up during matches, rewarded automatically with season XP)
+        const MIS2 = [{ k: "m", g: 3, x: 100 }, { k: "e", g: 300, x: 100 }, { k: "k", g: 5, x: 150 }];
+        function msEnsure() { const d = today(); if (NX.ms.d !== d) NX.ms = { d, m: 0, e: 0, k: 0, c: [] }; }
+        NFH.start.push(() => { NFS.ate = 0; });
+        NFH.eat.push(() => { NFS.ate = (NFS.ate || 0) + 1; });
+        NFH.over.push((l) => {
+          if (!cur) return "";
+          rpEnsure(); msEnsure();
+          const sx = clamp(10 + Math.floor(l / 8) + player.kills * 8, 10, 150);
+          NX.ms.m++; NX.ms.e += NFS.ate || 0; NX.ms.k += player.kills;
+          let bonus = 0; MIS2.forEach((m, i) => { if (!NX.ms.c.includes(i) && NX.ms[m.k] >= m.g) { NX.ms.c.push(i); bonus += m.x; } });
+          RP.add(sx + bonus, "match");
+          return "👑 +" + (sx + bonus) + " " + _t("nfSxp") + (bonus ? " (" + _t("nfMisDone") + ")" : "");
+        });
+        function fmtLeft(ms) { const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4); return d ? _t("nfLeftD", { d, h }) : _t("nfLeftH", { h, m }); }
+        function paintPass() {
+          rpEnsure(); msEnsure();
+          const t = rpTier(), xpIn = t >= RP_TIERS ? RP_XP : NX.rp.xp - t * RP_XP, el = $("nfpb");
+          let tr = "";
+          for (let i = 1; i <= RP_TIERS; i++) {
+            const f = rpRew(i, "f"), p = rpRew(i, "p"), fOk = i <= t && !NX.rp.cf.includes(i), pOk = i <= t && NX.rp.pr && !NX.rp.cp.includes(i);
+            const cell = (w, k, ok, got, lock) => `<button class="nf-rw2${k === "p" ? " prem" : ""}${ok ? " ok" : ""}${got ? " got" : ""}${lock ? " lock" : ""}" data-go="nfclaim" data-t="${i}" data-k="${k}" ${ok ? "" : "disabled"} aria-label="${esc(rwLbl(w))}">${rwIco(w)}<small>${esc(rwLbl(w))}</small></button>`;
+            tr += `<div class="nf-tier${i === t + 1 ? " cur" : ""}"><b>${i}</b>${cell(f, "f", fOk, NX.rp.cf.includes(i), false)}${cell(p, "p", pOk, NX.rp.cp.includes(i), !NX.rp.pr)}</div>`;
+          }
+          const ms = MIS2.map((m, i) => `<div class="x-it${NX.ms.c.includes(i) ? " own" : ""}"><i>${["🎮", "🍎", "⚔️"][i]}</i><b>${esc(_t("nfMis" + m.k, { n: m.g }))}<small>${Math.min(NX.ms[m.k], m.g)}/${m.g}</small></b><span>+${m.x} XP</span></div>`).join("");
+          const anyClaim = [...Array(t)].some((_, j) => !NX.rp.cf.includes(j + 1) || (NX.rp.pr && !NX.rp.cp.includes(j + 1)));
+          el.innerHTML = `<h2 class="x-cy">👑 ${esc(_t("nfPass"))}</h2>
+            <p><b>${esc(_t("nfSeason" + (rpNo() % 4)))}</b> · ${esc(_t("nfSeasonN", { n: rpNo() + 1 }))} · ⏳ ${esc(fmtLeft(rpEnd() - Date.now()))}</p>
+            <p>${esc(_t("nfTier", { t, n: RP_TIERS }))} · ${t >= RP_TIERS ? "MAX" : xpIn + "/" + RP_XP + " XP"}</p>
+            <div class="nf-pbar"><i style="width:${Math.round((100 * xpIn) / RP_XP)}%"></i></div>
+            <p class="nf-bal">${P.coins} 🪙 · ${P.gems} 💎</p>
+            ${NX.rp.pr ? `<p class="x-note">✅ ${esc(_t("nfPremOn"))}</p>` : `<button class="x-btn x-main" data-go="nfprem">👑 ${esc(_t("nfPremBuy", { n: RP_PREM }))}</button>`}
+            ${anyClaim ? `<button class="x-btn" data-go="nfclaimall">🎁 ${esc(_t("nfClaimAll"))}</button>` : ""}
+            <div class="nf-track" id="nftr">${tr}</div>
+            <p class="x-sh">📋 ${esc(_t("nfMisT"))}</p><div class="nf-ms">${ms}</div>
+            <p class="x-note">${esc(_t("nfNoMoney"))}</p>
+            <button class="x-btn x-sub" data-go="nfshop">✨ ${esc(_t("nfShop"))}</button>
+            <button class="x-btn x-sub" data-go="nfback" data-to="menu">${esc(_t("back"))}</button>`;
+          const trk = $("nftr"), cu = trk.querySelector(".cur"); if (cu) trk.scrollLeft = Math.max(0, cu.offsetLeft - trk.clientWidth / 2);
+        }
+        NFG.nfpass = () => { if (state === "play") return; paintPass(); show("nfpass"); };
+        NFG.nfprem = async () => { const r = await WALLET.premium(); if (!r.ok) toast(r.err === "funds" ? _t("nfNoGems", { n: RP_PREM }) : _t("nfErr")); else { toast("👑 " + _t("nfPremOn")); beep(784, 0.3, "triangle", 0.06, 1568); } paintPass(); };
+        NFG.nfclaim = async (b) => { const r = await WALLET.claim(+b.dataset.t, b.dataset.k); if (r.ok) { toast("🎁 " + rwLbl(r.rw || {})); beep(988, 0.15, "triangle", 0.05, 1480); } paintPass(); };
+        NFG.nfclaimall = async () => { const t = rpTier(); let n = 0; for (let i = 1; i <= t; i++) { for (const k of ["f", "p"]) { const r = await WALLET.claim(i, k); if (r.ok) n++; } } if (n) toast("🎁 × " + n); paintPass(); };
+        NFG.nfback = (b) => { const to = b.dataset.to || "menu"; back = "menu"; if (to === "nfpass") paintPass(); show(to); };
+        NFH.relang.push(() => { if (!$("nfpass").classList.contains("x-hide")) paintPass(); if (!$("nfshop").classList.contains("x-hide")) paintShop2(); });
+        NFH.load.push(() => { rpEnsure(); });
+
+        // ===================== ROYAL SHOP =====================
+        let SH2 = { cat: "sk", from: "menu" };
+        const CATS = [["sk", "🐍", "nfCsk"], ["tr", "✨", "nfCtr"], ["de", "💥", "nfCde"], ["em", "😀", "nfCem"], ["fr", "🖼️", "nfCfr"], ["cr", "🎁", "nfCcr"]];
+        var NFSHX = {}; // extra rows per category (photo skin adds one to "sk")
+        function priceTxt(it) { return it.pg ? it.pg + " 💎" : it.pc + " 🪙"; }
+        function paintShop2() {
+          const el = $("nfsb"), cat = SH2.cat;
+          let rows = "";
+          if (cat === "cr") {
+            rows += CRATES.map((c) => `<div class="x-it"><i>${c.e}</i><b>${esc(_t("nfI_" + c.id))}<small>${esc(_t("nfCrD" + c.mx))}</small></b><button data-go="nfcrate" data-id="${c.id}">${priceTxt(c)}</button></div>`).join("");
+            rows += BUNDLES.map((b) => { const all = b.items.every((i) => ENT.has(i)); return `<div class="x-it${all ? " own" : ""}"><i>${b.e}</i><b>${esc(_t("nfI_" + b.id))}<small>${b.items.map((i) => ITEMS[i].e + " " + esc(itName(i))).join(" · ")}</small></b><button data-go="nfbundle" data-id="${b.id}" ${all ? "disabled" : ""}>${all ? "✓" : priceTxt(b)}</button></div>`; }).join("");
+          } else {
+            if (NFSHX[cat]) rows += NFSHX[cat]();
+            if (cat === "em") rows += `<p class="x-note">${esc(_t("nfEmHint"))}</p>`;
+            for (const id of Object.keys(ITEMS)) {
+              const it = ITEMS[id]; if (it.c !== cat) continue;
+              const own = ENT.has(id), eqd = cat === "em" ? NX.eq.em.includes(id) : NX.eq[cat] === id;
+              let btn;
+              if (own) btn = `<button data-go="nfeq" data-id="${id}" class="${eqd ? "eq" : ""}">${esc(_t(eqd ? (cat === "em" ? "nfOnW" : "equipped") : cat === "em" ? "nfAddW" : "equip"))}</button>`;
+              else if (it.ex) btn = `<button disabled>👑 ${esc(_t("nfPassOnly"))}</button>`;
+              else btn = `<button data-go="nfbuy" data-id="${id}" ${WALLET.can(it.pc, it.pg) ? "" : "disabled"}>${priceTxt(it)}</button>`;
+              rows += `<div class="x-it${own ? " own" : ""}"><i>${it.e}</i><b>${esc(itName(id))}<small style="color:${RARC[it.r]}">${esc(_t(RAR[it.r]))}</small></b>${btn}</div>`;
+            }
+          }
+          el.innerHTML = `<h2 class="x-cy">✨ ${esc(_t("nfShop"))}</h2>
+            <p class="nf-bal">${P.coins} 🪙 · ${P.gems} 💎</p>
+            <div class="nf-tabs">${CATS.map(([k, e, n]) => `<button data-go="nfcat" data-c="${k}" class="${k === cat ? "on" : ""}">${e} ${esc(_t(n))}</button>`).join("")}</div>
+            <div class="x-shop">${rows}</div>
+            <p class="x-note">${esc(_t("nfNoMoney"))}</p>
+            <button class="x-btn x-sub" data-go="nfback" data-to="${SH2.from}">${esc(_t("back"))}</button>`;
+        }
+        NFG.nfshop = () => { if (state === "play") return; SH2.from = !$("nfpass").classList.contains("x-hide") ? "nfpass" : !$("shop").classList.contains("x-hide") ? "shop" : "menu"; paintShop2(); show("nfshop"); };
+        NFG.nfcat = (b) => { SH2.cat = b.dataset.c; paintShop2(); };
+        NFG.nfbuy = async (b) => { const r = await WALLET.buy(b.dataset.id); if (r.ok) { toast("✅ " + itName(b.dataset.id)); beep(784, 0.15, "triangle", 0.05, 1175); nfEquip(b.dataset.id); } else toast(r.err === "funds" ? _t("nfFunds") : _t("nfErr")); paintShop2(); };
+        NFG.nfbundle = async (b) => { const r = await WALLET.bundle(b.dataset.id); toast(r.ok ? "✅ " + _t("nfI_" + b.dataset.id) : r.err === "funds" ? _t("nfFunds") : _t("nfErr")); paintShop2(); };
+        NFG.nfcrate = async (b) => {
+          const r = await WALLET.crate(b.dataset.id);
+          if (!r.ok) toast(r.err === "funds" ? _t("nfFunds") : _t("nfErr"));
+          else if (r.item) { toast("🎁 " + ITEMS[r.item].e + " " + itName(r.item) + " · " + _t(RAR[ITEMS[r.item].r])); burstUI(); }
+          else toast("🎁 +" + r.refund + " 🪙 (" + _t("nfAllOwned") + ")");
+          paintShop2();
+        };
+        function burstUI() { beep(660, 0.12, "triangle", 0.05, 990); setTimeout(() => beep(990, 0.2, "triangle", 0.05, 1480), 120); vib([15, 30, 15]); }
+        function nfEquip(id) {
+          const it = ITEMS[id]; if (!it && id !== "photo") return;
+          const cat = it ? it.c : "sk";
+          if (cat === "em") { const a = NX.eq.em, i = a.indexOf(id); if (i >= 0) a.splice(i, 1); else { a.push(id); if (a.length > 6) a.shift(); } }
+          else NX.eq[cat] = NX.eq[cat] === id ? "" : id;
+          commit();
+        }
+        NFG.nfeq = (b) => { nfEquip(b.dataset.id); paintShop2(); };
+
+        // ---------- cosmetics in the match ----------
+        // Royal skins: a patterned sprite laid over every body segment (sn.ovs / sn.ova, drawn by the body loop)
+        const OVS = {};
+        function ovsFor(id) {
+          if (OVS[id]) return OVS[id];
+          const mkD = (fn) => { const c = document.createElement("canvas"); c.width = c.height = 48; const g = c.getContext("2d"); g.save(); g.beginPath(); g.arc(24, 24, 23, 0, 6.283); g.clip(); fn(g); g.restore();
+            const sh = g.createRadialGradient(17, 15, 3, 24, 24, 24); sh.addColorStop(0, "rgba(255,255,255,.45)"); sh.addColorStop(0.5, "rgba(255,255,255,0)"); sh.addColorStop(1, "rgba(0,0,0,.35)"); g.fillStyle = sh; g.beginPath(); g.arc(24, 24, 23, 0, 6.283); g.fill(); return c; };
+          const fill = (g, a, b) => { const gr = g.createLinearGradient(0, 0, 48, 48); gr.addColorStop(0, a); gr.addColorStop(1, b); g.fillStyle = gr; g.fillRect(0, 0, 48, 48); };
+          const dots = (g, col, n, rr, seed) => { const rg = nfRng(seed); g.fillStyle = col; for (let i = 0; i < n; i++) { g.beginPath(); g.arc(rg() * 48, rg() * 48, rr * (0.5 + rg()), 0, 6.283); g.fill(); } };
+          let a;
+          if (id === "rs_gold") a = [0, 1].map((k) => mkD((g) => { fill(g, "#fff1a8", "#b8860b"); if (k) dots(g, "rgba(255,255,255,.9)", 3, 1.6, 7); }));
+          else if (id === "rs_frost") a = [0, 1].map((k) => mkD((g) => { fill(g, "#e8fbff", "#5ab8e8"); g.strokeStyle = "rgba(255,255,255,.85)"; g.lineWidth = 1.5; for (let i = 0; i < 3; i++) { g.beginPath(); const an = i * 1.05 + k * 0.5; g.moveTo(24 - Math.cos(an) * 20, 24 - Math.sin(an) * 20); g.lineTo(24 + Math.cos(an) * 20, 24 + Math.sin(an) * 20); g.stroke(); } }));
+          else if (id === "rs_lava") a = [0, 1, 2].map((k) => mkD((g) => { fill(g, "#3a0a04", "#1a0402"); g.strokeStyle = "#ff7a1a"; g.lineWidth = 2.5; const rg = nfRng(11 + k); g.beginPath(); let x = rg() * 48, y = 0; g.moveTo(x, y); for (let i = 0; i < 5; i++) { x += (rg() - 0.5) * 20; y += 10; g.lineTo(x, y); } g.stroke(); }));
+          else if (id === "rs_toxic") a = [0, 1].map((k) => mkD((g) => { fill(g, "#9bff4a", "#2f8a16"); dots(g, "rgba(20,60,10,.7)", 5, 4, 21 + k); }));
+          else if (id === "rs_neon") a = [0, 1].map((k) => mkD((g) => { g.fillStyle = "#0a0518"; g.fillRect(0, 0, 48, 48); g.strokeStyle = k ? "#ff2bd6" : "#00f0ff"; g.lineWidth = 4; g.beginPath(); g.arc(24, 24, 15, 0, 6.283); g.stroke(); }));
+          else if (id === "rs_rainbow") a = [...Array(8)].map((_, k) => mkD((g) => fill(g, `hsl(${k * 45},100%,65%)`, `hsl(${k * 45 + 30},100%,45%)`)));
+          else if (id === "rs_galaxy") a = [0, 1, 2, 3].map((k) => mkD((g) => { fill(g, "#2a0f5a", "#05020f"); dots(g, "#fff", 6, 0.9, 31 + k); dots(g, "rgba(255,120,240,.5)", 2, 4, 41 + k); }));
+          else if (id === "rs_royal") a = [0, 1].map((k) => mkD((g) => { fill(g, k ? "#ffe27a" : "#6a1fb8", k ? "#b8860b" : "#2a0a5a"); if (!k) dots(g, "rgba(255,215,90,.8)", 2, 2, 51); }));
+          else if (id === "photo") return PHOTO.spr || null;
+          return (OVS[id] = a);
+        }
+        function nfDress(s) { // apply the equipped look to the player's snake
+          const id = NX.eq.sk; s.ovs = id ? ovsFor(id) : null; s.ova = id === "photo" ? 0.95 : 0.82; if (!s.ovs) s.ovs = null;
+        }
+        var PHOTO = { spr: null };
+        NFH.start.push(() => { nfDress(player); NFS.emo = null; tP = []; NFS.tpt = 0; $("nfemb").classList.remove("x-hide"); $("nfemw").classList.add("x-hide"); });
+        NFH.home.push(() => { $("nfemb").classList.add("x-hide"); $("nfemw").classList.add("x-hide"); $("nfrw").classList.add("x-hide"); });
+        // trails (own particle list so the game's particle cap is untouched)
+        let tP = [];
+        const TRC = { tr_bubbles: ["#bfefff", "#e9fbff"], tr_hearts: ["#ff4f8b", "#ff9ec0"], tr_stars: ["#ffe14a", "#fff6b0"], tr_petals: ["#ffb7d5", "#ffd9e8"], tr_pixel: ["#b45cff", "#36f0ff"], tr_bolt: ["#9fe8ff", "#ffffff"], tr_comet: ["#ff9a3a", "#ffe9a8"], tr_royal: ["#ffd84a", "#b46bff"] };
+        NFH.upd.push((dt) => {
+          for (let i = tP.length - 1; i >= 0; i--) { const p = tP[i]; p.l -= dt; p.z += p.vz * dt; p.x += (p.vx || 0) * dt; p.y += (p.vy || 0) * dt; if (p.l <= 0) tP.splice(i, 1); }
+          if (state !== "play" || !player || !player.alive || QL <= 0) return;
+          const tr = NX.eq.tr; if (!tr || !TRC[tr]) return;
+          if ((NFS.tpt -= dt) > 0) return; NFS.tpt = QL <= 1 ? 0.14 : 0.08;
+          const t = player.seg[Math.min(player.seg.length - 1, 5 + ((R() * 8) | 0))], c = TRC[tr];
+          tP.push({ x: t.x + rnd(-8, 8), y: t.y + rnd(-8, 8), z: player.r * 0.8, vz: tr === "tr_bubbles" ? 40 : tr === "tr_comet" ? 5 : 18, l: tr === "tr_comet" ? 0.7 : 1.1, c: c[(R() * 2) | 0], k: tr, s: rnd(0.7, 1.3) });
+          if (tP.length > 120) tP.splice(0, tP.length - 120);
+        });
+        NFH.world.push((vis) => {
+          if (!tP.length) return;
+          for (const p of tP) {
+            if (!vis(p.x, p.y)) continue; pr(p.x, p.y, p.z); const a = Math.min(1, p.l * 1.5);
+            if (p.k === "tr_hearts" || p.k === "tr_stars" || p.k === "tr_petals") { ctx.globalAlpha = a; emo(p.k === "tr_hearts" ? "💖" : p.k === "tr_stars" ? "⭐" : "🌸", PX, PY, Math.max(6, 14 * PK * p.s)); }
+            else if (p.k === "tr_pixel") { ctx.globalAlpha = a; ctx.fillStyle = p.c; const d = 7 * PK * p.s; ctx.fillRect(PX - d / 2, PY - d / 2, d, d); }
+            else if (p.k === "tr_bubbles") { ctx.globalAlpha = a * 0.8; ctx.strokeStyle = p.c; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(PX, PY, 6 * PK * p.s, 0, 6.283); ctx.stroke(); }
+            else { ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = a; const d = (p.k === "tr_comet" ? 34 : 22) * PK * p.s; ctx.drawImage(orb(p.c), PX - d / 2, PY - d / 2, d, d); ctx.globalCompositeOperation = "source-over"; }
+          }
+          ctx.globalAlpha = 1;
+        });
+        // death effects
+        NFH.death.push((s) => {
+          const de = NX.eq.de; if (!de || s !== player) return;
+          const n = QL <= 0 ? 20 : QL <= 1 ? 40 : 70, pts = s.seg.filter((_, i) => i % Math.max(1, Math.floor(s.seg.length / 12)) === 0);
+          const cols = { de_confetti: ["#ff4f8b", "#ffe14a", "#36f0ff", "#7cff9e"], de_fw: ["#ffd84a", "#ff5a7a", "#9fe8ff"], de_pixel: ["#b45cff", "#36f0ff", "#ff2bd6"], de_shock: ["#ffffff", "#9fe8ff"], de_galaxy: ["#b46bff", "#ffffff", "#ff7ae0"], de_royal: ["#ffd84a", "#b46bff", "#ffffff"] }[de] || ["#fff"];
+          for (let i = 0; i < n; i++) {
+            const p0 = de === "de_fw" || de === "de_shock" ? s.seg[0] : pts[i % pts.length], a = R() * 6.28, v = rnd(80, de === "de_shock" ? 520 : 300);
+            tP.push({ x: p0.x, y: p0.y, z: rnd(10, 40), vx: Math.cos(a) * v, vy: Math.sin(a) * v, vz: rnd(40, 160), l: rnd(0.8, 1.6), c: cols[i % cols.length], k: de === "de_pixel" ? "tr_pixel" : de === "de_confetti" ? "tr_pixel" : "tr_bolt", s: rnd(0.8, 1.6) });
+          }
+          shake(6);
+        });
+        // emotes: a bubble over your head for 2.5 s
+        NFG.nfem = () => {
+          if (state !== "play") return; const w = $("nfemw"), open = w.classList.contains("x-hide");
+          if (open) { const em = ["👋", "😀", ...NX.eq.em.filter((k) => ENT.has(k)).map((k) => ITEMS[k].e)]; w.innerHTML = em.map((e) => `<button data-go="nfemo" data-e="${e}" aria-label="${e}">${e}</button>`).join(""); }
+          w.classList.toggle("x-hide");
+        };
+        NFG.nfemo = (b) => { if (state !== "play" || !player) return; NFS.emo = { e: b.dataset.e, t: 2.5 }; $("nfemw").classList.add("x-hide"); beep(740, 0.08, "sine", 0.04, 990); if (RIV.onEmote) RIV.onEmote(); };
+        NFH.upd.push((dt) => { if (NFS.emo && (NFS.emo.t -= dt) <= 0) NFS.emo = null; });
+        NFH.head.push((sn, h, r) => {
+          if (sn !== player || !NFS.emo) return;
+          const a = Math.min(1, NFS.emo.t * 2); pr(h.x, h.y, r * 4.5 + 30); const d = Math.max(18, 30 * PK);
+          ctx.globalAlpha = a * 0.85; ctx.drawImage(disc("rgba(255,255,255,.92)"), PX - d, PY - d, d * 2, d * 2); ctx.globalAlpha = a; emo(NFS.emo.e, PX, PY, d * 0.95); ctx.globalAlpha = 1;
+        });
+        // name frames around your name tag
+        const FRC = { fr_neon: ["#00e5ff", "💠"], fr_fire: ["#ff7a1a", "🔥"], fr_ice: ["#9fe8ff", "❄️"], fr_gold: ["#ffd84a", "🥇"], fr_leaf: ["#7cff6a", "🍃"], fr_royal: ["#c77dff", "👑"], fr_galaxy: ["#b46bff", "🌌"] };
+        NFH.tag.push((x, y, sn) => {
+          const f = FRC[NX.eq.fr]; if (!f) return;
+          const w = ctx.measureText(sn.name).width + 20 + (avReady() ? 22 : 0), hh = 20, x0 = x - w / 2 + (avReady() ? 0 : 0), y0 = y - 15;
+          ctx.strokeStyle = f[0]; ctx.lineWidth = 2; ctx.globalAlpha = 0.9; ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(x0, y0, w, hh, 10); else ctx.rect(x0, y0, w, hh); ctx.stroke(); ctx.globalAlpha = 1;
+          emo(f[1], x0 + w, y0 + 2, 10);
+        });
+
+        // ===================== REWIND (3 seconds back, 40 s cooldown) =====================
+        const RW_CD = 40, rwOk = (any) => !L.on && ["n", "d", "p"].includes(MD) && (any || state === "play");
+        let rwB = [];
+        NFH.start.push(() => { rwB = []; NFS.rwCd = 8; NFS.rwT = 0; NFS.rwFx = 0; $("nfrw").classList.toggle("x-hide", !rwOk(1)); });
+        NFH.upd.push((dt) => {
+          if (NFS.rwFx > 0) NFS.rwFx -= dt;
+          if (state !== "play" || !player || !player.alive || !rwOk()) return;
+          if (NFS.rwCd > 0) NFS.rwCd -= dt;
+          if ((NFS.rwT -= dt) <= 0) {
+            NFS.rwT = 0.1; const n = Math.min(player.seg.length, 700), a = new Float32Array(n * 2);
+            for (let i = 0; i < n; i++) { a[i * 2] = player.seg[i].x; a[i * 2 + 1] = player.seg[i].y; }
+            rwB.push({ a, len: player.len, an: player.a }); if (rwB.length > 31) rwB.shift();
+          }
+          if (keys.r || keys["ق"]) { keys.r = keys["ق"] = false; NFG.nfrw(); }
+          const b = $("nfrw"), p = NFS.rwCd > 0 ? Math.round((NFS.rwCd / RW_CD) * 100) : 0;
+          if (b._p !== p) { b._p = p; $("nfrwr").style.setProperty("--p", p + "%"); b.style.opacity = p ? "0.45" : "0.8"; }
+        });
+        NFG.nfrw = () => {
+          if (state !== "play" || !player || !player.alive || !rwOk()) return;
+          if (NFS.rwCd > 0 || rwB.length < 10) { beep(200, 0.08, "square", 0.03); return; }
+          const s = rwB[0], n = s.a.length / 2;
+          player.seg.length = 0; for (let i = 0; i < n; i++) player.seg.push({ x: s.a[i * 2], y: s.a[i * 2 + 1] });
+          player.len = s.len; player.a = player.ta = s.an; player.inv = Math.max(player.inv || 0, 1.2);
+          rwB = []; NFS.rwCd = RW_CD; NFS.rwFx = 0.5; NFS.rwN = (NFS.rwN || 0) + 1;
+          const h = player.seg[0]; cam.x = h.x; cam.y = h.y; cam.vx = cam.vy = 0; burst(h.x, h.y, 18, 200);
+          beep(900, 0.25, "sine", 0.05, 300); vib(20); xBan("⏪ " + _t("nfRw"));
+        };
+        NFH.top.push(() => {
+          if (!(NFS.rwFx > 0)) return; const a = NFS.rwFx / 0.5;
+          ctx.globalAlpha = 0.25 * a; ctx.fillStyle = "#3aa0ff"; ctx.fillRect(0, 0, W, H);
+          ctx.globalAlpha = 0.5 * a; ctx.fillStyle = "#fff"; for (let i = 0; i < 6; i++) ctx.fillRect(0, R() * H, W, 1.5); ctx.globalAlpha = 1;
+        });
+
+        // ===================== GHOST RACE: race your own best run on the same map =====================
+        // the best run per map is kept on this device only (ss-gh:<account>:<map>, sampled 4×/s, up to 10 minutes)
+        const GH_DT = 0.25, ghOk = () => !L.on && ["n", "d", "p"].includes(MD) && (NFM.m === "" || NFM.m === "myst" || NFM.m === "word");
+        const ghKey = () => "ss-gh:" + cur + ":" + mapI;
+        NFH.start.push(() => {
+          NFS.gr = []; NFS.grT = 0; NFS.gh = null;
+          if (!cur || !ghOk() || !NX.set.gh) return;
+          try { const o = JSON.parse(KV.get(ghKey()) || "null"); if (o && Array.isArray(o.p) && o.p.length >= 24 && Number.isInteger(o.l)) NFS.gh = o; } catch (e) {}
+          if (NFS.gh) setTimeout(() => { if (state === "play") xBan("👻 " + _t("nfGhostGo", { n: NFS.gh.l })); }, 3400);
+        });
+        NFH.upd.push((dt) => {
+          if (state !== "play" || !player || !player.alive || !ghOk()) return;
+          if ((NFS.grT -= dt) <= 0 && NFS.gr.length < 2400 * 3) { NFS.grT = GH_DT; const h = player.seg[0]; NFS.gr.push(Math.round(h.x), Math.round(h.y), Math.floor(player.len)); }
+        });
+        function ghAt() { const g = NFS.gh; if (!g) return null; const i = Math.floor(NFS.t / GH_DT); return i * 3 + 2 < g.p.length ? i : -1; }
+        NFH.world.push((vis) => {
+          const g = NFS.gh, i = ghAt(); if (!g || i === null || i < 0 || state !== "play") return;
+          for (let k = 12; k >= 0; k--) {
+            const j = i - k; if (j < 0) continue; const x = g.p[j * 3], y = g.p[j * 3 + 1], l = g.p[j * 3 + 2]; if (!vis(x, y)) continue;
+            const r = 8 + Math.sqrt(l) * 0.8; pr(x, y, r); const d = r * (k ? 1.6 : 2.2) * PK;
+            ctx.globalAlpha = k ? 0.18 * (1 - k / 13) : 0.45; ctx.drawImage(disc("#bfe6ff"), PX - d / 2, PY - d / 2, d, d);
+            if (!k) { ctx.globalAlpha = 0.8; ctx.fillStyle = "#e6f6ff"; ctx.font = "600 12px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("👻 " + l, PX, PY - d * 0.7); }
+          }
+          ctx.globalAlpha = 1;
+        });
+        NFH.hud.push(() => {
+          const g = NFS.gh; if (!g || !player) return ""; const i = ghAt();
+          if (i < 0) return Math.floor(player.len) > g.l ? "👻 ✓" : "👻 " + g.l;
+          const d = Math.floor(player.len) - g.p[i * 3 + 2]; return "👻 " + (d >= 0 ? "+" : "−") + Math.abs(d);
+        });
+        NFH.over.push((l) => {
+          if (!cur || !ghOk() || NFS.gr.length < 24) return "";
+          let old = 0; try { const o = JSON.parse(KV.get(ghKey()) || "null"); old = o && Number.isInteger(o.l) ? o.l : 0; } catch (e) {}
+          if (l <= old) return "";
+          KV.set(ghKey(), JSON.stringify({ l, p: NFS.gr }));
+          return "👻 " + _t("nfGhostNew");
+        });
+        NFCARDS.push(() => nfCard("👻", _t("nfGhostT"), _t("nfGhostD") + " · " + _t(NX.set.gh ? "on" : "off"), ""));
         NFR = true; nfPaintSet(); for (const f of NFH.load) f();
         // ================= END NEW FEATURES =================
         requestAnimationFrame(loop);
