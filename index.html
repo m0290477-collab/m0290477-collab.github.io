@@ -73,6 +73,12 @@
         border-radius: var(--r-m); background: rgba(16, 19, 18, .92); border-color: rgba(201, 165, 74, .6); }
       .x-q p { margin: 0; font-size: 15px; line-height: 1.5; color: #e9e6dd; }
       .x-q .x-btn { min-height: 44px; font-size: 15px; }
+      .x-rev .x-rvc { font: 600 40px/1 "Geist Mono", monospace; color: #e3c46e; }
+      .x-rev .x-btn:disabled { opacity: .5; }
+      .x-ngo, .x-ov p.x-ngo { margin: 2px 0 4px; font-size: 15px; font-weight: 600; color: #e3c46e !important; }
+      .x-lvp { width: 100%; height: 8px; border-radius: 4px; background: rgba(230, 225, 210, .12); overflow: hidden; }
+      .x-lvp i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #c9a54a, #e3c46e); transition: width .6s ease-out; }
+      .x-lvt { display: block; margin: 4px 0 6px; font-size: 12px; color: #b9c6e6; }
       .x-code { box-sizing: border-box; width: 100%; min-height: 88px; padding: 10px 12px; resize: vertical; border-radius: var(--r-s);
         border: 1px solid rgba(230, 225, 210, .14); background: rgba(16, 19, 18, .62); color: #e9e6dd; font: 16px/1.45 "Geist Mono", monospace;
         word-break: break-all; direction: ltr; text-align: left; outline: none; -webkit-user-select: text; user-select: text; }
@@ -590,6 +596,12 @@
           <p id="xqt" data-i18n="exitQ">تطلع من المباراة؟ اللعبة ما توقف، وخروجك ينحسب خسارة.</p>
           <div class="x-row"><button class="x-btn x-sub" id="xqn" data-go="exitN" data-i18n="exitNo">كمّل اللعب</button><button class="x-btn" data-go="exitY" data-i18n="exitYes">اخرج</button></div>
         </div>
+        <div class="x-hud x-q x-rev x-hide" id="rev" role="alertdialog" aria-modal="false" aria-labelledby="revt">
+          <p id="revt" data-i18n="revQ">فرصة ثانية؟</p>
+          <b class="x-rvc" id="revc" aria-live="polite">5</b>
+          <button class="x-btn x-main" id="revy" data-go="revY"></button>
+          <button class="x-btn x-sub" data-go="revN" data-i18n="revNo">لا، شكراً</button>
+        </div>
         <div class="x-ctl x-joy x-hide" id="joy"><div class="x-knob" id="knob"></div></div>
         <div class="x-ctl x-turn x-hide" id="turn">
           <button data-d="-1" aria-label="لف يسارًا" data-i18n-al="tl">&#9664;&#xFE0E;</button><button data-d="1" aria-label="لف يمينًا" data-i18n-al="tr">&#9654;&#xFE0E;</button>
@@ -739,6 +751,8 @@
           <button data-v="0.75" data-i18n="slow">بطيئة</button><button data-v="1" data-i18n="normal">عادية</button><button data-v="1.3" data-i18n="fast">سريعة</button></div></div>
         <div class="x-set"><p data-i18n="sound">الصوت</p><div class="x-seg" data-k="sound">
           <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
+        <div class="x-set"><p data-i18n="music">الموسيقى</p><div class="x-seg" data-k="music">
+          <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
         <div class="x-set"><p data-i18n="minimap">الخريطة المصغرة</p><div class="x-seg" data-k="map">
           <button data-v="1" data-i18n="showW">إظهار</button><button data-v="0" data-i18n="hideW">إخفاء</button></div></div>
         <div class="x-set"><p data-i18n="minHud">واجهة بسيطة</p><div class="x-seg" data-k="mini">
@@ -778,7 +792,9 @@
           <div><b id="fk">0</b><span data-i18n="kills">القتلى</span></div>
           <div><b id="fb">0</b><span data-i18n="best">أفضل نتيجة</span></div>
         </div>
+        <p class="x-ngo" id="ngo"></p>
         <p id="earn"></p>
+        <div class="x-lvp" aria-hidden="true"><i id="lvpb"></i></div><small class="x-lvt" id="lvpt"></small>
         <div id="tmr" class="x-hide"></div>
         <button class="x-btn x-main" data-go="again" data-i18n="again">العب مرة ثانية</button>
         <button class="x-btn x-sub" data-go="home" data-i18n="mainMenu">القائمة الرئيسية</button>
@@ -1431,6 +1447,17 @@
         skFlags: ["الأعلام", "Flags", "Bayraklar", "Drapeaux", "Banderas", "झंडे"],
         flSearch: ["ابحث عن دولة أو رمزها", "Search a country or code", "Ülke veya kod ara", "Chercher un pays ou un code", "Buscar país o código", "देश या कोड खोजें"],
         flNote: ["مرتبة أبجدياً · {p} 🪙 لكل علم", "Sorted A–Z · {p} 🪙 each", "A–Z sıralı · tanesi {p} 🪙", "Triés de A à Z · {p} 🪙 chacun", "Orden A–Z · {p} 🪙 cada una", "A–Z क्रम · हर एक {p} 🪙"],
+        music: ["الموسيقى", "Music", "Müzik", "Musique", "Música", "संगीत"],
+        revQ: ["فرصة ثانية؟ كمّل من نفس المكان بطولك", "Second chance? Keep your length and continue", "İkinci şans? Uzunluğunu koru ve devam et", "Seconde chance ? Garde ta longueur et continue", "¿Segunda oportunidad? Conserva tu longitud y sigue", "दूसरा मौका? अपनी लंबाई रखें और जारी रखें"],
+        revY: ["إحياء · {c} 🪙", "Revive · {c} 🪙", "Canlan · {c} 🪙", "Revivre · {c} 🪙", "Revivir · {c} 🪙", "फिर जिएँ · {c} 🪙"],
+        revLow: ["ما عندك عملات كافية ({c} 🪙)", "Not enough coins ({c} 🪙)", "Yeterli jeton yok ({c} 🪙)", "Pas assez de pièces ({c} 🪙)", "No tienes monedas suficientes ({c} 🪙)", "पर्याप्त सिक्के नहीं ({c} 🪙)"],
+        revNo: ["لا، شكراً", "No thanks", "Hayır, teşekkürler", "Non merci", "No, gracias", "नहीं, धन्यवाद"],
+        revGo: ["رجعت! حماية لـ 3 ثواني", "Back in! 3 seconds of protection", "Geri döndün! 3 saniye koruma", "De retour ! 3 secondes de protection", "¡De vuelta! 3 segundos de protección", "वापसी! 3 सेकंड की सुरक्षा"],
+        tx_rev: ["فرصة ثانية", "Revive", "Canlanma", "Revivre", "Revivir", "दूसरा मौका"],
+        ngoBest: ["🏆 رقم قياسي جديد!", "🏆 New best!", "🏆 Yeni rekor!", "🏆 Nouveau record !", "🏆 ¡Nuevo récord!", "🏆 नया सर्वश्रेष्ठ!"],
+        ngoNear: ["باقي {n} نقطة بس وتكسر رقمك القياسي!", "Only {n} more points to beat your best!", "Rekorunu kırmana sadece {n} puan kaldı!", "Plus que {n} points pour battre ton record !", "¡Solo {n} puntos más para superar tu récord!", "अपना सर्वश्रेष्ठ तोड़ने के लिए बस {n} अंक और!"],
+        lvNext: ["المستوى {l} · باقي {x} XP للمستوى {n}", "Level {l} · {x} XP to level {n}", "Seviye {l} · seviye {n} için {x} XP", "Niveau {l} · {x} XP avant le niveau {n}", "Nivel {l} · {x} XP para el nivel {n}", "स्तर {l} · स्तर {n} तक {x} XP"],
+        lvMax: ["المستوى {l} · أعلى مستوى", "Level {l} · max level", "Seviye {l} · en yüksek seviye", "Niveau {l} · niveau max", "Nivel {l} · nivel máximo", "स्तर {l} · अधिकतम स्तर"],
         flMore: ["عرض المزيد ({n} متبقٍ)", "Show more ({n} left)", "Daha fazla göster ({n} kaldı)", "Afficher plus ({n} restants)", "Mostrar más ({n} restantes)", "और दिखाएँ ({n} बाकी)"],
       };
       let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
@@ -1711,7 +1738,7 @@
         // team colors [marker, skin] (yours first), invited friend keys, bot count of a running team match, lobby tab
         const TC = [["🔵", 1], ["🔴", 4], ["🟡", 3], ["🟣", 2]];
         let TI = [], TN = 0, tTab = "l";
-        const TXK = ["boss", "gold", "gift", "match", "lvl", "buy", "chest", "wheel", "mis", "league", "daily", "team", "surv", "rank", "gx", "pack", "ach", "fgift", "tp"];
+        const TXK = ["boss", "gold", "gift", "match", "lvl", "buy", "chest", "wheel", "mis", "league", "daily", "team", "surv", "rank", "gx", "pack", "ach", "fgift", "tp", "rev"];
         const RT_T = [0, 1100, 1300, 1500, 1800], rtTier = (r) => RT_T.filter((x) => r >= x).length - 1;
         // every coin or gem change goes through pay(), which keeps the last 40 in the transaction log (P.tx: [unix s, reason, amount, "c"|"g"])
         function pay(c, w, g) {
@@ -1791,7 +1818,7 @@
           achR = n;
         }
         let parts = [], dna = [], fxs = [], decoys = [], evoKey = "";
-        const S = { lang: LANG, ctrl: "follow", side: "right", bots: 10, speed: 1, sound: 1, map: 1, cam: "auto", zoom: 1, q: "h", fps: 0, mini: 1, mode: "n", diff: 1, tf: 2 };
+        const S = { lang: LANG, ctrl: "follow", side: "right", bots: 10, speed: 1, sound: 1, music: 1, map: 1, cam: "auto", zoom: 1, q: "h", fps: 0, mini: 1, mode: "n", diff: 1, tf: 2 };
         // low-end devices (2 GB or 2 cores) start on Medium: fewer particles, rain and prey; auto-quality still steps down further if needed
         { const nv = navigator; if ((nv.deviceMemory && nv.deviceMemory <= 2) || (nv.hardwareConcurrency && nv.hardwareConcurrency <= 2)) S.q = "m"; }
         // DIFFICULTY: a = bot hunting chance, s = bot reaction speed, r = XP and coin multiplier; d4 (Legends) needs level 30
@@ -1993,6 +2020,54 @@
           if (!S.sound) return null;
           try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); return AC; } catch (e) { return null; }
         }
+        // MUSIC: a light procedural loop (WebAudio only, no files). Plays only while Sound and Music are both on, and only once a tap or
+        // key has created/resumed the AudioContext (iOS Safari). Match: Am-F-C-G at 112 bpm with bass, arpeggio and soft drums; lobby: slow pad
+        const MUS = { g: null, nb: null, next: 0, step: 0, mode: "" };
+        const MCH = [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]], ARP = [[0, 1, 2, 4, 3, 2, 1, 2], [0, 2, 4, 2, 5, 4, 2, 1], [3, -1, 2, 1, 0, -1, 1, 2]];
+        function musN(a, m, t, d, type, vol, atk) {
+          const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.setValueAtTime(hz(m), t);
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (atk || 0.015)); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+          o.connect(g); g.connect(MUS.g); o.start(t); o.stop(t + d + 0.05);
+        }
+        function musStep(a, i, t, sd) {
+          const pos = i % 8, ch = MCH[Math.floor(i / 8) % 4], nt = (k) => ch[k % 3] + 12 * Math.floor(k / 3);
+          if (MUS.mode === "m") {
+            if (pos === 0 || pos === 4) { musN(a, ch[0] - 12, t, sd * 1.8, "triangle", 0.5); const o = a.createOscillator(), g = a.createGain();
+              o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12); g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+              o.connect(g); g.connect(MUS.g); o.start(t); o.stop(t + 0.16); }
+            if (pos === 6) musN(a, ch[0], t, sd * 0.8, "triangle", 0.25);
+            const k = ARP[Math.floor(i / 32) % 3][pos]; if (k >= 0) musN(a, nt(k) + 12, t, sd * 0.9, "sine", 0.2);
+            if (pos % 2 && MUS.nb) { const s = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain(); s.buffer = MUS.nb; fl.type = "highpass"; fl.frequency.value = 6000;
+              g.gain.setValueAtTime(0.12, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); s.connect(fl); fl.connect(g); g.connect(MUS.g); s.start(t); s.stop(t + 0.06); }
+          } else {
+            if (pos === 0) for (const m of ch) musN(a, m, t, sd * 8, "triangle", 0.12, 0.4);
+            if (pos === 0 || pos === 3 || pos === 6) musN(a, nt(ARP[0][(i / 8 + pos) % 8 | 0]) + 12, t, sd * 2.5, "sine", 0.12, 0.02);
+          }
+        }
+        function musTick() {
+          const a = AC; if (!a) return;
+          const want = S.sound && S.music && a.state === "running" ? (state === "play" ? "m" : "l") : "";
+          if (!MUS.g) { MUS.g = a.createGain(); MUS.g.gain.value = 0.0001; MUS.g.connect(a.destination);
+            const n = Math.ceil(a.sampleRate * 0.06), b = a.createBuffer(1, n, a.sampleRate), c = b.getChannelData(0); for (let i = 0; i < n; i++) c[i] = Math.random() * 2 - 1; MUS.nb = b; }
+          const now = a.currentTime;
+          if (want !== MUS.mode) { MUS.mode = want; MUS.g.gain.cancelScheduledValues(now); MUS.g.gain.setTargetAtTime(want === "m" ? 0.09 : want ? 0.06 : 0.0001, now, want ? 0.4 : 0.05); MUS.next = 0; }
+          if (!want) return;
+          const sd = 60 / (want === "m" ? 112 : 84) / 2;
+          if (MUS.next < now - 0.1) MUS.next = now + 0.05; // first start, or back from a pause
+          while (MUS.next < now + 0.25) { musStep(a, MUS.step++, MUS.next, sd); MUS.next += sd; }
+        }
+        // the AudioContext may only start inside a user gesture on iOS: every tap/key (cheap once it runs) creates or resumes it for the music
+        for (const ev of ["pointerdown", "touchend", "keydown"]) document.addEventListener(ev, () => { if (S.sound && S.music && (!AC || AC.state !== "running")) actx(); }, { passive: true, capture: true });
+        // SCREEN SHAKE: offsets the camera's projection centre for a moment (no canvas transform, so nothing is uncovered); calmer with reduced motion
+        let shk = 0;
+        const RMO = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+        function shake(a) { shk = Math.max(shk, RMO ? a * 0.35 : a); }
+        // a tiny burst in the food's own colour when the player eats (throttled with the eat sound)
+        function eatFx(f) {
+          const T = f.k && FT[f.k], c = (T && T.glow) || f.c || "#fff", n = Q === "m" ? 3 : 5;
+          for (let i = 0; i < n; i++) { const a = R() * 6.28, v = rnd(40, 110);
+            parts.push({ x: f.x, y: f.y, z: rnd(4, 12), vx: Math.cos(a) * v, vy: Math.sin(a) * v, vz: rnd(20, 60), l: rnd(0.25, 0.45), c }); }
+        }
         function pick(key, n) { let v; do v = (R() * n) | 0; while (n > 1 && v === lastS[key]); lastS[key] = v; return v; }
         function osc(a, f, d, type, vol, t0, f2, det) {
           const t = a.currentTime + (t0 || 0), o = a.createOscillator(), g = a.createGain();
@@ -2133,18 +2208,18 @@
           return { name, skin, bot, seg, len: 20, a, ta: a, r: 11, boost: false, alive: true, think: 0, respawn: 0, drop: 0, kills: 0, evo: 0, dna: 0, cd: 0, slow: 0, ghost: 0 };
         }
         function kill(s) {
-          if (s.inv > 0) return;
+          if (s.inv > 0 || (s === player && (rvOn || !s.alive))) return; // a dead player is never killed twice (no double game over)
           if (s.shield) {
             const h = s.seg[0]; s.shield = 0; s.inv = 2;
             h.x = clamp(h.x, s.r, A - s.r); h.y = clamp(h.y, s.r, A - s.r);
-            s.a = s.ta = Math.atan2(A / 2 - h.y, A / 2 - h.x); beep(300, 0.3, "square", 0.06, 900); return;
+            s.a = s.ta = Math.atan2(A / 2 - h.y, A / 2 - h.x); beep(300, 0.3, "square", 0.06, 900); if (s === player) { shake(5); vib(25); } return;
           }
           s.alive = false; evoDrop(s); if (s.boss) xBossDie(s);
           for (let i = 0; i < s.seg.length; i += 2) {
             const p = s.seg[i];
             addFood(p.x + rnd(-8, 8), p.y + rnd(-8, 8), rnd(0.8, 1.6), segColor(s.skin, i));
           }
-          if (s === player) { sDeath(); gameOver(); }
+          if (s === player) { sDeath(); shake(11); if (revOk()) revOpen(); else gameOver(); }
           else { s.respawn = 2; if (player && player.alive && Math.hypot(s.seg[0].x - player.seg[0].x, s.seg[0].y - player.seg[0].y) < 600) pendImp = true; }
         }
         function syncBots() {
@@ -2447,12 +2522,13 @@
           if (cN < 2) return;
           player.len += Math.min(cN, 20) * 0.15 * w;
           xBan(_t("combo") + cN + "!");
+          if (cN === 5 || cN % 10 === 0) { shake(cN >= 10 ? 5 : 3); vib(15, 0.4); }
         }
         function xBan(m) { const b = $("ban"); b.textContent = m; b.classList.remove("on"); void b.offsetWidth; b.classList.add("on"); }
         function xBossDie(s) {
           const h = s.seg[0];
           for (let i = 0; i < 90; i++) { const a = R() * 6.28, d = rnd(0, 170); addFood(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d, rnd(1.5, 3), `hsl(${40 + ((R() * 3) | 0) * 5},100%,60%)`); }
-          burst(h.x, h.y, 40, 45);
+          burst(h.x, h.y, 40, 45); shake(9); vib([30, 30, 60]);
           if (player && player.alive) { pay(100, "boss"); profile(); xBan(_t("bossDie")); }
         }
         // AI DIRECTOR (المخرج الذكي): reads the player's skill every 30s, tunes bots and food, and stages surprise events
@@ -2731,6 +2807,9 @@
 
         function update(dt) {
           time += dt; frameN++; gFood();
+          if (shk) shk = shk < 0.3 ? 0 : shk * Math.exp(-dt * 9);
+          if (rvOn) revTick(dt);
+          musTick();
           if (L.on && state === "play" && player && (L.t -= dt) <= 0) lgEnd();
           if (player && player.alive) {
             const tKey = (keys.ArrowRight || keys.d ? 1 : 0) - (keys.ArrowLeft || keys.a ? 1 : 0);
@@ -2767,7 +2846,7 @@
               if (d < er * er) {
                 s.len += f.v * 0.6 * AD.fv; f.dead = 1; ate = true;
                 if (s === player) { M.eat++; xCombo(1); const T = f.k && FT[f.k]; if (T && T.tier) xBan(`${fNm(T)} +${T.v}`); }
-                if (s === player && time - eatT > 0.08) { eatT = time; sEat(); }
+                if (s === player && time - eatT > 0.08) { eatT = time; sEat(); eatFx(f); }
               }
               else if (d < pull * pull) { const k = mg ? Math.min(0.18, 900 / d + 0.04) : 0.18; f.x += dx * k; f.y += dy * k; }
             } });
@@ -3126,6 +3205,7 @@
           const M = MAPS[mapI]; ctx.fillStyle = M.bg; ctx.fillRect(0, 0, W, H);
           ST = Math.sin(cam.t); CT = Math.cos(cam.t);
           F = D * cam.s; CX = W / 2; CY = H * (0.5 + 0.12 * (1.45 - cam.t) / 0.75);
+          if (shk) { CX += (Math.random() * 2 - 1) * shk; CY += (Math.random() * 2 - 1) * shk; }
           const c0 = unpr(0, 0), c1 = unpr(W, 0), c2 = unpr(0, H), c3 = unpr(W, H);
           const vx0 = Math.min(c0.x, c2.x) - 60, vx1 = Math.max(c1.x, c3.x) + 60;
           const vy0 = c0.y - 60, vy1 = c2.y + 120;
@@ -3822,7 +3902,7 @@
           for (const b of BOOSTS) if (P.bst[b.id] > 0) { P.bst[b.id]--; player[b.id] = 1; }
           if (player.big) player.len = 60;
           cam.x = player.seg[0].x; cam.y = player.seg[0].y; cam.vx = cam.vy = cam.vs = cam.vt = 0;
-          release(); applySettings(); lbS = S.mini ? 0 : 1; lbT = 0;
+          release(); applySettings(); lbS = S.mini ? 0 : 1; lbT = 0; rvUsed = false; revHide();
           state = "play"; last = performance.now(); aqReset(3);
           show(null); $("game").classList.remove("x-hide");
         }
@@ -3833,25 +3913,56 @@
         function forfeit() {
           closeExit();
           if (state !== "play" || !player || !player.alive) return;
-          player.inv = 0; player.shield = 0; kill(player);
+          player.inv = 0; player.shield = 0; rvUsed = true; kill(player);
         }
         function toggleMute() { S.sound = S.sound ? 0 : 1; applySettings(); }
         function home() {
-          closeExit(); state = "menu"; release(); L.on = false; MD = "n"; TN = 0; tSetup(); paintMode();
+          closeExit(); revHide(); state = "menu"; release(); L.on = false; MD = "n"; TN = 0; tSetup(); paintMode();
           if (pendRem) { pendRem = false; setTimeout(() => toast(_t("saveRem")), 300); }
           snakes = snakes.filter((s) => s.bot && !s.ad); player = null; AD.mod = ""; adMod(); AD.fog = null;
           if (mapI !== mapSel) setMap(mapSel);
           $("game").classList.add("x-hide"); show("menu");
         }
+        // REVIVE (second chance): once a match in Classic, Daily and Private rooms (not league, team, survival or ranked); 5 s to accept, then the normal
+        // game over. Price in coins grows with the run: 50 + 10 per 100 length, max 150. Comes back at a safe spot with its length and 3 s invulnerability
+        let rvUsed = false, rvOn = false, rvT = 0, rvL = 0, rvC = 50;
+        const revCost = (l) => clamp(50 + 10 * Math.floor(l / 100), 50, 150);
+        function revOk() { return !rvUsed && !L.on && ["n", "d", "p"].includes(MD) && state === "play" && !!cur && Math.floor(player.len) >= 25; }
+        function revHide() { rvOn = false; $("rev").classList.add("x-hide"); }
+        function revOpen() {
+          rvUsed = true; rvOn = true; rvT = 5; rvL = Math.floor(player.len); rvC = revCost(rvL); closeExit();
+          const ok = P.coins >= rvC, b = $("revy");
+          b.textContent = _t(ok ? "revY" : "revLow", { c: rvC }); b.disabled = !ok;
+          $("revc").textContent = "5"; $("rev").classList.remove("x-hide");
+          setTimeout(() => { if (rvOn) (ok ? b : $("rev").querySelector('[data-go="revN"]')).focus({ preventScroll: true }); }, 50);
+        }
+        function revTick(dt) {
+          if (state !== "play") { revHide(); return; }
+          const s0 = Math.ceil(rvT); rvT -= dt; const s1 = Math.max(0, Math.ceil(rvT));
+          if (s1 !== s0) { $("revc").textContent = s1; if (s1 > 0) beep(520, 0.06, "sine", 0.03); }
+          if (rvT <= 0) revNo();
+        }
+        function revNo() { if (!rvOn) return; revHide(); gameOver(); }
+        function revYes() {
+          if (!rvOn || state !== "play" || P.coins < rvC) return;
+          revHide(); pay(-rvC, "rev"); profile();
+          const k = player.kills, ev = player.evo, dn = player.dna;
+          Object.assign(player, makeSnake(player.name, player.skin, false), { len: rvL, kills: k, evo: ev, dna: dn, inv: 3, shield: 0, boost: false });
+          const h = player.seg[0]; cam.x = h.x; cam.y = h.y; cam.vx = cam.vy = 0;
+          burst(h.x, h.y, 24, 45); beep(523, 0.12, "triangle", 0.05, 1046); vib(30); xBan(_t("revGo"));
+        }
         function gameOver() {
-          closeExit(); state = "over"; AD.deaths = time - AD.t0 < 60 ? AD.deaths + 1 : Math.max(0, AD.deaths - 1);
-          const l = Math.floor(player.len);
+          closeExit(); revHide(); state = "over"; AD.deaths = time - AD.t0 < 60 ? AD.deaths + 1 : Math.max(0, AD.deaths - 1);
+          const l = Math.floor(player.len), pb = best;
           best = Math.max(best, l);
+          $("ngo").textContent = l > pb ? _t("ngoBest") : _t("ngoNear", { n: pb - l + 1 });
           $("fl").textContent = l; $("fk").textContent = player.kills; $("fb").textContent = best;
           const r = MD === "p" ? 0 : DF().r, xp = Math.round((l + player.kills * 20) * r * CFG.xm), co = Math.round((Math.floor(l / 10) + player.kills * 5) * r * CFG.cm), lv = level();
           tmRes = modeEnd(l);
           P.xp += xp; pay(co, "match"); M.kill += player.kills; M.games++; PST.games++; PST.kills += player.kills; PST.mk = Math.max(PST.mk, player.kills);
           let rw = 0; for (let n = lv + 1; n <= level(); n++) rw += lvReward(n); pay(rw, "lvl"); if (level() > lv) inbAdd(P, { id: "lv:" + level(), k: "lv", n: level() }); profile(); achNote();
+          { const v = lvInfo(), mx = v.n >= LV_MAX; $("lvpb").style.width = (mx ? 100 : Math.round((100 * v.x) / v.need)) + "%";
+            $("lvpt").textContent = mx ? _t("lvMax", { l: v.n }) : _t("lvNext", { l: v.n, x: v.need - v.x, n: v.n + 1 }); }
           $("earn").textContent = `+${co} 🪙 · +${xp} ${_t("xp")}` + (level() > lv ? ` · ${_t("newLv")} ${level()}! 🎉 ${_t("lvRew")} +${rw} 🪙` : "") + (tmRes ? " · " + tmRes : "");
           release();
           setTimeout(() => { if (state === "over") { $("game").classList.add("x-hide");
@@ -3985,6 +4096,8 @@
           else if (g === "exit") askExit();
           else if (g === "exitN") closeExit();
           else if (g === "exitY") forfeit();
+          else if (g === "revY") revYes();
+          else if (g === "revN") revNo();
           else if (g === "mute") toggleMute();
           else if (g === "gift") claimGift();
           else if (g === "set") { if (state === "play") return; back = "menu"; show("set"); }
@@ -4086,7 +4199,7 @@
             if (isObj(P.own)) { for (const k of Object.keys(P.own)) if (k[0] === "s" && !(/^\d+$/.test(k.slice(1)) && SKINS[+k.slice(1)] && SKINS[+k.slice(1)].p)) delete P.own[k]; } else P.own = {};
             skin = Number.isInteger(d.skin) && SKINS[d.skin] && (!SKINS[d.skin].p || P.own["s" + d.skin]) ? d.skin : 0; if (!AV.includes(P.av)) P.av = AV[0]; av = P.av;
             if (typeof P.name !== "string") P.name = "";
-            S.tf = 2; if (d.S) for (const k in S) if (k in d.S) S[k] = d.S[k];
+            S.tf = 2; S.music = 1; if (d.S) for (const k in S) if (k in d.S) S[k] = d.S[k];
             if (Array.isArray(d.cc) && d.cc.length === 2 && d.cc.every((c) => /^#[0-9a-f]{6}$/i.test(c))) { SKINS[CUST].c = d.cc.slice(0, 2); $("cc1").value = d.cc[0]; $("cc2").value = d.cc[1]; skinsEl.children[CUST].style.background = swatch(SKINS[CUST]); }
             mapSel = Number.isInteger(d.map) && MAPS[d.map] ? d.map : 0; if (state === "menu" && mapI !== mapSel) setMap(mapSel);
             lbS = S.mini ? 0 : 1; aqReset(4);
@@ -4382,7 +4495,7 @@
         const isInt = (v, a, b) => Number.isInteger(v) && v >= a && v <= b;
         const isObj = (o) => !!o && typeof o === "object" && !Array.isArray(o);
         const keysIn = (o, ref) => Object.keys(o).every((k) => Object.prototype.hasOwnProperty.call(ref, k));
-        const SV = { lang: I18N_L, ctrl: ["follow", "joy", "btns"], side: ["right", "left"], bots: [5, 10, 20], speed: [0.75, 1, 1.3], sound: [0, 1], map: [0, 1],
+        const SV = { lang: I18N_L, ctrl: ["follow", "joy", "btns"], side: ["right", "left"], bots: [5, 10, 20], speed: [0.75, 1, 1.3], sound: [0, 1], music: [0, 1], map: [0, 1],
           cam: ["auto", "near", "far", "top", "cine"], q: ["x", "u", "h", "m"], fps: [0, 1], mini: [0, 1], mode: ["n", "l", "t", "s", "r", "d", "p"], diff: [0, 1, 2, 3, 4], tf: [1, 2, 3] };
         function lvOf(xp) { let n = 1, x = xp, need = xpNeed(1); while (n < LV_MAX && x >= need) { x -= need; n++; need = xpNeed(n); } return n; }
         function validSave(a, d) {
@@ -4414,7 +4527,7 @@
             if (st.wins !== l.tro || st.wins * 3 > st.games || m.games > st.games || m.kill > st.kills) return false;
             if (!isInt(d.best, 0, 1e6) || ((p.xp > 0 || d.best > 0 || m.dragon) && st.games === 0)) return false;
             if (!isInt(d.skin, 0, SKINS.length - 1) || (SKINS[d.skin].p && !p.own["s" + d.skin])) return false;
-            for (const k in SV) if (!((k === "diff" || k === "tf") && d.S[k] === undefined) && !SV[k].includes(d.S[k])) return false;
+            for (const k in SV) if (!((k === "diff" || k === "tf" || k === "music") && d.S[k] === undefined) && !SV[k].includes(d.S[k])) return false;
             // team rating and team matches (optional, so older codes still import): a moved rating needs team matches behind it
             if ((p.tr !== undefined && !isInt(p.tr, 0, 1e5)) || (p.tg !== undefined && !isInt(p.tg, 0, st.games))) return false;
             if (p.tr !== undefined && p.tr !== 1000 && !p.tg) return false;
