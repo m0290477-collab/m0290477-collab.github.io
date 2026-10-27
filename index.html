@@ -1877,10 +1877,11 @@
         chWin: ["🎉 غلبت تحدي {x} ({n})!", "🎉 You beat {x}'s challenge ({n})!", "🎉 {x} meydan okumasını geçtin ({n})!", "🎉 Tu as battu le défi de {x} ({n}) !", "🎉 ¡Superaste el reto de {x} ({n})!", "🎉 आपने {x} की चुनौती ({n}) जीत ली!"],
         chLose: ["تحدي {x}: {n} · باقي لك {d}", "{x}'s challenge: {n} · {d} more to go", "{x} meydan okuması: {n} · {d} kaldı", "Défi de {x} : {n} · encore {d}", "Reto de {x}: {n} · faltan {d}", "{x} की चुनौती: {n} · {d} और चाहिए"],
         ngoNear1: ["باقي نقطة وحدة بس وتكسر رقمك القياسي!", "Only 1 more point to beat your best!", "Rekorunu kırmana sadece 1 puan kaldı!", "Plus qu'1 point pour battre ton record !", "¡Solo 1 punto más para superar tu récord!", "अपना सर्वश्रेष्ठ तोड़ने के लिए बस 1 अंक और!"],
+        map7: ["مدينة", "City", "Şehir", "Ville", "Ciudad", "शहर"], mapd7: ["شوارع وأبراج وأضواء نيون، لا تصطدم بالمباني", "Streets, towers and neon lights. Don't hit the buildings", "Sokaklar, kuleler ve neon ışıklar. Binalara çarpma", "Rues, tours et néons. Ne touche pas les immeubles", "Calles, torres y luces de neón. No choques con los edificios", "सड़कें, ऊँची इमारतें और नियॉन रोशनी। इमारतों से मत टकराओ"],
         map0: ["نيون", "Neon", "Neon", "Néon", "Neón", "नियॉन"], mapd0: ["الساحة الأصلية", "The original arena", "Orijinal arena", "L'arène d'origine", "La arena original", "मूल मैदान"],
         map1: ["صحراء", "Desert", "Çöl", "Désert", "Desierto", "रेगिस्तान"], mapd1: ["رمال وصبّار، لا تلمسه", "Sand and cactus, don't touch it", "Kum ve kaktüs, dokunma", "Sable et cactus, n'y touche pas", "Arena y cactus, no lo toques", "रेत और कैक्टस, छूना मत"],
         map2: ["جليد", "Ice", "Buz", "Glace", "Hielo", "बर्फ़"], mapd2: ["أرض زلقة، اللف أبطأ", "Slippery ground, slower turns", "Kaygan zemin, dönüş yavaş", "Sol glissant, virages lents", "Suelo resbaladizo, giros lentos", "फिसलन, धीमा मोड़"],
-        map3: ["فضاء", "Space", "Uzay", "Espace", "Espacio", "अंतरिक्ष"], mapd3: ["نجوم وكواكب تعترض طريقك", "Stars and planets in your way", "Yolunda yıldızlar ve gezegenler", "Étoiles et planètes en travers", "Estrellas y planetas en tu camino", "रास्ते में तारे और ग्रह"],
+        map3: ["فضاء", "Space", "Uzay", "Espace", "Espacio", "अंतरिक्ष"], mapd3: ["كواكب وأحزمة كويكبات وسُدُم، لا تلمس الكواكب", "Planets, asteroid belts and nebulae. Don't touch the planets", "Gezegenler, asteroit kuşakları ve bulutsular. Gezegenlere dokunma", "Planètes, ceintures d'astéroïdes et nébuleuses. Ne touche pas les planètes", "Planetas, cinturones de asteroides y nebulosas. No toques los planetas", "ग्रह, क्षुद्रग्रह पट्टियाँ और नीहारिकाएँ। ग्रहों को मत छुओ"],
         map4: ["بركان", "Volcano", "Volkan", "Volcan", "Volcán", "ज्वालामुखी"], mapd4: ["صخر داكن وبرك حمم", "Dark rock and lava pools", "Koyu kaya ve lav gölleri", "Roche sombre et lave", "Roca oscura y lava", "काली चट्टान और लावा"],
         leagueW: ["دوري", "League", "Lig", "Ligue", "Liga", "लीग"],
         or: ["أو", "or", "veya", "ou", "o", "या"],
@@ -2630,7 +2631,7 @@
         }
         resize(); // window resize is handled once by orient(), which calls resize()
 
-        let A = 3000; const A0 = 3000, AMX = 4500, FOOD_MIN0 = 455, BASE = 170; const fMin = () => Math.round(FOOD_MIN0 * (A / A0) * (A / A0)); // A: current arena side (Classic, Forest, Cyber are 1.5x) // normal food density cut ~35% (was 700); death drops are extra
+        let A = 3000; const A0 = 3000, AMX = 6600, FOOD_MIN0 = 455, BASE = 170; const fMin = () => Math.round(FOOD_MIN0 * (A / A0) * (A / A0)); // A: current arena side (Classic, Forest, Cyber are 1.5x) // normal food density cut ~35% (was 700); death drops are extra
         // bot names in every language (ar, en, tr, fr, es, hi); bn(i) gives name i in the current language
         const BN = [["صقر", "Falcon", "Şahin", "Faucon", "Halcón", "बाज़"], ["نمر", "Tiger", "Kaplan", "Tigre", "Tigre", "बाघ"], ["ليث", "Lion", "Aslan", "Lion", "León", "शेर"],
           ["برق", "Bolt", "Şimşek", "Éclair", "Rayo", "बिजली"], ["ريح", "Wind", "Rüzgar", "Vent", "Viento", "हवा"], ["شهاب", "Meteor", "Meteor", "Météore", "Meteoro", "उल्का"],
@@ -3081,7 +3082,7 @@
           o[v] = (o[v] - w * t) * e; o[k] = tgt + (c + t) * e;
         }
         const MAPS = [
-          // names and descriptions come from I18N (map0..4, mapd0..4)
+          // names and descriptions come from I18N (map0..7, mapd0..7)
           { e: "🌃", bg: "#1a0408", floor: "#070a16", grid: "rgba(70,110,255,.16)", wf: "rgba(90,10,24,.92)", wc: "255,42,58", fog: "9,12,30", turn: 1 },
           { e: "🌵", bg: "#3a2412", floor: "#d9b26f", grid: "rgba(120,80,30,.18)", wf: "rgba(140,90,45,.95)", wc: "255,190,110", fog: "60,40,20", turn: 1, ob: "cactus" },
           { e: "❄️", bg: "#0c2236", floor: "#cfe9f7", grid: "rgba(60,130,190,.25)", wf: "rgba(120,180,220,.9)", wc: "230,250,255", fog: "20,50,80", turn: 0.7 },
@@ -3089,23 +3090,462 @@
           { e: "🌋", bg: "#140503", floor: "#231a17", grid: "rgba(255,90,30,.08)", wf: "rgba(60,20,10,.95)", wc: "255,110,30", fog: "20,6,3", turn: 1, ob: "lava" },
           { e: "🌲", bg: "#07140a", floor: "#2e5427", grid: "rgba(12,40,10,.22)", wf: "rgba(52,36,18,.95)", wc: "170,230,120", fog: "8,26,10", turn: 1, ob: "forest", sz: 1.5, dots: "rgba(80,130,50,.55)" },
           { e: "💠", bg: "#04010c", floor: "#0a0720", grid: "rgba(0,240,255,.12)", g2: "rgba(255,40,200,.28)", wf: "rgba(28,0,58,.92)", wc: "255,40,200", fog: "12,0,34", turn: 1, ob: "cyber", sz: 1.5 },
+          { e: "🏙️", bg: "#0b0e18", floor: "#262b3a", grid: "rgba(255,255,255,.03)", wf: "rgba(28,32,46,.94)", wc: "255,196,110", fog: "12,16,30", turn: 1, ob: "city", sz: 2.2 },
         ];
-        MAPS[0].sz = 1.5; // Classic (Neon) arena is 1.5x too
+        // arena sides (x 3000): Classic, Forest, Cyber and City 6600; Desert, Ice, Space and Volcano 5550
+        MAPS[0].sz = MAPS[5].sz = MAPS[6].sz = MAPS[7].sz = 2.2; MAPS[1].sz = MAPS[2].sz = MAPS[3].sz = MAPS[4].sz = 1.85;
         const TE = ["🥉", "🥈", "🥇", "💠", "💎"]; // league tier emblems; names are I18N tier0..4
         const L = { tier: 0, tro: 0, on: false, round: 0, t: 0 };
         let mapI = 0, mapSel = 0, obs = [];
-        const STARS = Array.from({ length: 700 }, () => ({ x: R() * A0, y: R() * A0, s: 1 + R() * 2 }));
+        const STARS = Array.from({ length: 1600 }, () => ({ x: R() * A0, y: R() * A0, s: 1 + R() * 2 }));
         // distance test against an obstacle: circles by centre; boxes (o.w, o.h half sizes) by their edge, offset by o.r so "oD(o,x,y) < o.r + m" means "within m"
         function oD(o, x, y) {
           if (!o.w) return Math.hypot(o.x - x, o.y - y);
           return Math.hypot(Math.max(Math.abs(x - o.x) - o.w, 0), Math.max(Math.abs(y - o.y) - o.h, 0)) + o.r;
+        }
+        // ===================== MAPS v8: bigger arenas, the City map, Space polish, themed borders on every map =====================
+        // Budget: every decoration is a cached sprite or a few flat faces, culled to the screen; Low quality keeps only the first border row.
+        const MP = { back: [], front: [], deco: [], cars: [], roads: [], blocks: [], neb: [], bgs: [], cp: null, cpK: "", ss: null, ssT: 4, RW: 110, SW: 40 };
+        const MP_E = 460; // ground apron outside the walls, where the border decorations stand
+        const MPS = {}, MPSH = new Map(), MPAP = {};
+        function mpCv(w, h) { const c = document.createElement("canvas"); c.width = w; c.height = h; return [c, c.getContext("2d")]; }
+        function mpNight() { return typeof DN === "object" && DN ? DN.n : 1; }
+        function mpRng(seed) { let s = seed >>> 0 || 1; return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296); }
+        function mpShade(hex, f, n) { // facade colour: f = face brightness, dimmed toward a blue night tone
+          const nq = Math.round(n * 8), key = hex + f + "|" + nq; let v = MPSH.get(key); if (v) return v;
+          const q = parseInt(hex.slice(1), 16), r = q >> 16, g = (q >> 8) & 255, b = q & 255, t = nq / 8, k = f * (1 - 0.74 * t);
+          v = `rgb(${Math.min(255, Math.round(r * k + 8 * t))},${Math.min(255, Math.round(g * k + 12 * t))},${Math.min(255, Math.round(b * k + 30 * t))})`; MPSH.set(key, v); return v;
+        }
+        function mpSoft(col) { // soft round light, col as "r,g,b"
+          const k = "soft" + col; if (MPS[k]) return MPS[k]; const [c, g] = mpCv(128, 128), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+          gr.addColorStop(0, `rgba(${col},1)`); gr.addColorStop(0.35, `rgba(${col},.45)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return (MPS[k] = c);
+        }
+        // ---------- sprites, drawn once ----------
+        function mpSpr(key) {
+          let c = MPS[key]; if (c) return c; let g; const [k, p] = key.split(":");
+          const poly = (pts, f) => { g.beginPath(); pts.forEach((q, i) => g[i ? "lineTo" : "moveTo"](q[0], q[1])); g.closePath(); g.fillStyle = f; g.fill(); };
+          const lin = (x0, y0, x1, y1, st) => { const gr = g.createLinearGradient(x0, y0, x1, y1); st.forEach((s, i) => gr.addColorStop(i / (st.length - 1), s)); return gr; };
+          const rad = (x, y, r, a, b) => { const gr = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.08, x, y, r); gr.addColorStop(0, a); gr.addColorStop(1, b); return gr; };
+          const ball = (x, y, r, a, b) => { g.fillStyle = rad(x, y, r, a, b); g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill(); };
+          const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+          switch (k) {
+            case "pine": case "spine": { [c, g] = mpCv(96, 192); const sn = k === "spine";
+              g.fillStyle = "#5a3a1e"; g.fillRect(43, 150, 10, 42);
+              for (let i = 0; i < 4; i++) { const y0 = 4 + i * 36, w = 20 + i * 13;
+                poly([[48, y0], [48 + w, y0 + 60], [48 - w, y0 + 60]], lin(48 - w, 0, 48 + w, 0, sn ? ["#173a2d", "#2f6b54", "#12302a"] : ["#123a18", "#2f7a36", "#0f3014"]));
+                if (sn) poly([[48, y0], [48 + w * 0.62, y0 + 36], [48 + w * 0.2, y0 + 30], [48, y0 + 36], [48 - w * 0.25, y0 + 29], [48 - w * 0.62, y0 + 36]], "#eef8ff"); }
+              break; }
+            case "oak": { [c, g] = mpCv(160, 176); g.fillStyle = lin(72, 0, 88, 0, ["#4a2f16", "#6b4423", "#3e2712"]); g.fillRect(72, 108, 16, 68);
+              ball(50, 94, 40, "#64b852", "#1d5420"); ball(110, 92, 42, "#64b852", "#1d5420"); ball(80, 58, 52, "#7ccc62", "#22602a"); ball(80, 104, 34, "#4e9e44", "#1a4a1d"); break; }
+            case "rock": { [c, g] = mpCv(128, 80); poly([[6, 79], [18, 34], [50, 10], [92, 16], [118, 44], [125, 79]], lin(0, 0, 110, 90, ["#b0b3a8", "#74776e", "#41443d"]));
+              poly([[50, 10], [92, 16], [82, 42], [44, 38]], "rgba(255,255,255,.16)"); poly([[92, 16], [118, 44], [125, 79], [96, 79], [82, 42]], "rgba(0,0,0,.18)"); break; }
+            case "bush": { [c, g] = mpCv(128, 72); ball(34, 48, 24, "#6cc456", "#1f561f"); ball(94, 48, 24, "#6cc456", "#1f561f"); ball(64, 38, 32, "#7fd364", "#236025"); break; }
+            case "hedge": { [c, g] = mpCv(160, 48); rr(4, 6, 152, 42, 14); g.fillStyle = lin(0, 6, 0, 48, ["#5fae4c", "#2c6a2a", "#1c4a1c"]); g.fill();
+              g.fillStyle = "rgba(255,255,255,.08)"; for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(14 + i * 17, 14, 7, 0, 6.283); g.fill(); } break; }
+            case "cactus": { [c, g] = mpCv(96, 176);
+              const arm = (x, y, w, h) => { rr(x, y, w, h, Math.min(w, h) / 2); g.fillStyle = lin(x, 0, x + w, 0, ["#2a7a34", "#5cc468", "#1f6a2a"]); g.fill(); };
+              arm(12, 48, 18, 64); arm(12, 96, 36, 16); arm(66, 28, 18, 62); arm(46, 76, 38, 16); arm(36, 6, 24, 170);
+              g.strokeStyle = "rgba(0,60,10,.35)"; g.lineWidth = 1.5; g.beginPath(); for (const x of [42, 48, 54]) { g.moveTo(x, 14); g.lineTo(x, 172); } g.stroke(); break; }
+            case "dune": { [c, g] = mpCv(256, 64); g.beginPath(); g.moveTo(0, 64); g.bezierCurveTo(50, 40, 80, 6, 118, 6); g.bezierCurveTo(160, 6, 200, 44, 256, 64); g.closePath();
+              g.fillStyle = lin(0, 0, 256, 0, ["#e9c98a", "#f3d9a2", "#c99a58", "#b2843f"]); g.fill();
+              g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 2; g.beginPath(); g.moveTo(60, 38); g.quadraticCurveTo(110, 10, 150, 20); g.stroke(); break; }
+            case "column": { [c, g] = mpCv(64, 160); g.fillStyle = lin(14, 0, 50, 0, ["#a8865a", "#e6cc9c", "#b89668", "#8a6a40"]);
+              g.beginPath(); g.moveTo(14, 150); g.lineTo(14, 30); g.lineTo(22, 22); g.lineTo(30, 30); g.lineTo(38, 16); g.lineTo(44, 26); g.lineTo(50, 22); g.lineTo(50, 150); g.closePath(); g.fill();
+              g.strokeStyle = "rgba(90,60,30,.35)"; g.lineWidth = 2; g.beginPath(); for (const x of [22, 30, 38, 44]) { g.moveTo(x, 34); g.lineTo(x, 148); } g.stroke();
+              g.fillStyle = "#9c7a4c"; g.fillRect(6, 146, 52, 14); g.fillStyle = "#c9a878"; g.fillRect(6, 146, 52, 4); break; }
+            case "arch": { [c, g] = mpCv(192, 160); const st = lin(0, 0, 192, 0, ["#a07e52", "#e2c896", "#a88658"]);
+              g.fillStyle = st; g.fillRect(16, 52, 34, 108); g.fillRect(142, 70, 34, 90);
+              g.beginPath(); g.moveTo(16, 60); g.quadraticCurveTo(96, -20, 176, 60); g.lineTo(176, 78); g.lineTo(150, 70); g.quadraticCurveTo(96, 14, 50, 62); g.closePath(); g.fill();
+              g.fillStyle = "rgba(60,40,20,.25)"; g.fillRect(16, 52, 8, 108); g.fillRect(142, 70, 8, 90);
+              g.fillStyle = "#b8955f"; poly([[150, 160], [160, 146], [186, 152], [190, 160]], "#a07e52"); break; }
+            case "berg": { [c, g] = mpCv(192, 160); poly([[0, 160], [20, 92], [58, 44], [96, 6], [126, 50], [158, 28], [192, 160]], lin(0, 0, 192, 160, ["#ffffff", "#d8f0ff", "#8cc4e8"]));
+              poly([[96, 6], [126, 50], [104, 160], [70, 160], [58, 44]], "rgba(255,255,255,.35)"); poly([[126, 50], [158, 28], [192, 160], [104, 160]], "rgba(60,120,180,.25)");
+              poly([[0, 160], [20, 92], [58, 44], [70, 160]], "rgba(120,180,230,.18)"); break; }
+            case "snow": { [c, g] = mpCv(192, 64); g.beginPath(); g.moveTo(0, 64); g.bezierCurveTo(30, 20, 70, 8, 100, 12); g.bezierCurveTo(140, 16, 170, 34, 192, 64); g.closePath();
+              g.fillStyle = lin(0, 8, 0, 64, ["#ffffff", "#e6f4ff", "#a9d0ec"]); g.fill(); break; }
+            case "crys": { [c, g] = mpCv(128, 144);
+              for (const [x, w, h, a] of [[40, 16, 110, -0.25], [86, 14, 90, 0.3], [64, 20, 136, 0], [26, 10, 60, -0.5], [104, 10, 56, 0.55]]) {
+                g.save(); g.translate(x, 144); g.rotate(a); poly([[-w / 2, 0], [-w / 2, -h + w], [0, -h], [w / 2, -h + w], [w / 2, 0]], lin(-w / 2, 0, w / 2, 0, ["rgba(170,230,255,.95)", "rgba(240,252,255,.95)", "rgba(110,190,240,.95)"]));
+                g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = 1; g.beginPath(); g.moveTo(0, -h); g.lineTo(0, 0); g.stroke(); g.restore(); }
+              break; }
+            case "lrock": { [c, g] = mpCv(160, 120); poly([[4, 120], [14, 70], [40, 40], [62, 10], [88, 34], [112, 18], [140, 58], [156, 120]], lin(0, 0, 160, 120, ["#4a3a36", "#2a1e1b", "#120b09"]));
+              g.strokeStyle = "#ff7a1a"; g.lineWidth = 3; g.shadowColor = "#ff5a00"; g.shadowBlur = 10; g.beginPath();
+              g.moveTo(62, 22); g.lineTo(70, 54); g.lineTo(58, 80); g.lineTo(66, 118); g.moveTo(112, 30); g.lineTo(104, 70); g.lineTo(118, 100); g.moveTo(70, 54); g.lineTo(92, 64); g.stroke(); g.shadowBlur = 0; break; }
+            case "vent": { [c, g] = mpCv(128, 96); poly([[4, 96], [44, 26], [84, 26], [124, 96]], lin(0, 0, 128, 0, ["#2a1d19", "#4d3a33", "#1a110e"]));
+              g.fillStyle = rad(64, 28, 24, "#fff1a0", "rgba(255,90,0,0)"); g.fillRect(30, 4, 68, 48); g.fillStyle = "#ff8a1a"; g.beginPath(); g.ellipse(64, 27, 20, 5, 0, 0, 6.283); g.fill();
+              g.strokeStyle = "rgba(255,110,20,.85)"; g.lineWidth = 3; g.beginPath(); g.moveTo(52, 30); g.quadraticCurveTo(46, 60, 40, 92); g.stroke(); break; }
+            case "obsd": { [c, g] = mpCv(128, 160);
+              for (const [x, w, h] of [[30, 26, 110], [64, 34, 158], [98, 26, 96], [48, 18, 70], [84, 18, 76]]) { poly([[x - w / 2, 160], [x, 160 - h], [x + w / 2, 160]], lin(x - w / 2, 0, x + w / 2, 0, ["#1a1024", "#4a3a66", "#0b0710"])); }
+              g.strokeStyle = "rgba(255,120,40,.55)"; g.lineWidth = 2; g.beginPath(); g.moveTo(64, 30); g.lineTo(62, 150); g.stroke(); break; }
+            case "pyl": { [c, g] = mpCv(48, 256); const [a, b] = p.split("/");
+              g.fillStyle = lin(10, 0, 38, 0, ["#141826", "#3a4258", "#0c0e16"]); g.fillRect(14, 26, 20, 222); g.fillStyle = "#1c2030"; g.fillRect(6, 236, 36, 20);
+              g.shadowBlur = 10; for (const [x, col] of [[17, a], [31, b]]) { g.shadowColor = `rgb(${col})`; g.fillStyle = `rgb(${col})`; g.fillRect(x - 1.5, 34, 3, 200); }
+              g.shadowColor = `rgb(${a})`; g.shadowBlur = 16; g.fillStyle = "#fff"; g.beginPath(); g.arc(24, 16, 8, 0, 6.283); g.fill(); g.fillStyle = `rgba(${a},.9)`; g.beginPath(); g.arc(24, 16, 11, 0, 6.283); g.globalCompositeOperation = "destination-over"; g.fill(); g.globalCompositeOperation = "source-over"; g.shadowBlur = 0; break; }
+            case "ntw": { [c, g] = mpCv(96, 320); const [a, b] = p.split("/");
+              poly([[8, 320], [8, 70], [26, 70], [26, 30], [48, 6], [70, 30], [70, 50], [88, 50], [88, 320]], lin(0, 0, 96, 0, ["#0d0f1a", "#20263a", "#090a12"]));
+              const rg = mpRng(a.length * 31 + b.length);
+              for (let y = 80; y < 312; y += 12) for (let x = 14; x < 84; x += 10) if (rg() < 0.4) { g.fillStyle = rg() < 0.5 ? `rgba(${a},.85)` : `rgba(${b},.75)`; g.fillRect(x, y, 5, 6); }
+              g.shadowBlur = 8; g.lineWidth = 2; g.shadowColor = g.strokeStyle = `rgb(${a})`; g.beginPath(); g.moveTo(8, 320); g.lineTo(8, 70); g.lineTo(26, 70); g.lineTo(26, 30); g.lineTo(48, 6); g.stroke();
+              g.shadowColor = g.strokeStyle = `rgb(${b})`; g.beginPath(); g.moveTo(48, 6); g.lineTo(70, 30); g.lineTo(70, 50); g.lineTo(88, 50); g.lineTo(88, 320); g.stroke(); g.shadowBlur = 0; break; }
+            case "ast": { [c, g] = mpCv(128, 112); const rg = mpRng(+p * 97 + 5), pts = [];
+              for (let i = 0; i < 11; i++) { const a = (i / 11) * 6.283, r = 40 + rg() * 16; pts.push([64 + Math.cos(a) * r, 56 + Math.sin(a) * r * 0.85]); }
+              poly(pts, rad(64, 56, 60, ["#9a8f86", "#8a8f99", "#a08670"][+p % 3], "#2a2622"));
+              for (let i = 0; i < 5; i++) { const x = 34 + rg() * 60, y = 30 + rg() * 50, r = 4 + rg() * 8; g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill(); g.strokeStyle = "rgba(255,255,255,.18)"; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, r, 3.6, 5.4); g.stroke(); }
+              break; }
+            case "sat": { [c, g] = mpCv(192, 96);
+              for (const x0 of [4, 120]) { g.fillStyle = lin(0, 34, 0, 62, ["#3a6ad8", "#1a2e7a"]); g.fillRect(x0, 34, 68, 28); g.strokeStyle = "rgba(180,210,255,.55)"; g.lineWidth = 1; g.beginPath();
+                for (let x = x0; x <= x0 + 68; x += 11.3) { g.moveTo(x, 34); g.lineTo(x, 62); } g.moveTo(x0, 48); g.lineTo(x0 + 68, 48); g.stroke(); }
+              g.fillStyle = "#9aa3b5"; g.fillRect(72, 46, 48, 4); g.fillStyle = lin(80, 0, 112, 0, ["#b8862a", "#ffd76a", "#a87420"]); g.fillRect(80, 26, 32, 44);
+              g.strokeStyle = "#dfe6f2"; g.lineWidth = 2; g.beginPath(); g.moveTo(96, 26); g.lineTo(96, 8); g.stroke(); g.fillStyle = "#e8eef8"; g.beginPath(); g.ellipse(96, 10, 12, 5, 0, 0, 6.283); g.fill();
+              g.fillStyle = "#ff3a3a"; g.beginPath(); g.arc(96, 78, 3, 0, 6.283); g.fill(); break; }
+            case "station": { [c, g] = mpCv(384, 256);
+              for (const x0 of [6, 302]) { g.fillStyle = lin(0, 96, 0, 160, ["#3a6ad8", "#18286a"]); g.fillRect(x0, 104, 76, 48); g.strokeStyle = "rgba(170,200,255,.5)"; g.lineWidth = 1; g.beginPath();
+                for (let x = x0; x <= x0 + 76; x += 12.6) { g.moveTo(x, 104); g.lineTo(x, 152); } g.moveTo(x0, 128); g.lineTo(x0 + 76, 128); g.stroke(); }
+              g.fillStyle = "#8d96a8"; g.fillRect(82, 124, 220, 8);
+              g.lineWidth = 20; g.strokeStyle = lin(0, 40, 0, 216, ["#e6ebf4", "#8d96a8", "#4a5266"]); g.beginPath(); g.ellipse(192, 128, 104, 78, 0, 0, 6.283); g.stroke();
+              g.lineWidth = 6; g.strokeStyle = "#5a6276"; g.beginPath(); g.moveTo(192, 50); g.lineTo(192, 206); g.moveTo(88, 128); g.lineTo(296, 128); g.stroke();
+              g.fillStyle = rad(192, 128, 30, "#ffffff", "#6a7286"); g.beginPath(); g.arc(192, 128, 28, 0, 6.283); g.fill();
+              g.fillStyle = "#cfd6e4"; g.fillRect(180, 8, 24, 44); g.fillStyle = "#ffd76a"; for (let i = 0; i < 24; i++) { const a = (i / 24) * 6.283; g.fillRect(192 + Math.cos(a) * 104 - 2, 128 + Math.sin(a) * 78 - 2, 4, 4); }
+              break; }
+            case "lamp": { [c, g] = mpCv(48, 200); g.fillStyle = lin(20, 0, 28, 0, ["#2a2e38", "#6a7080", "#22252e"]); g.fillRect(22, 26, 4, 166); g.fillStyle = "#2a2e38"; g.fillRect(17, 186, 14, 14);
+              g.strokeStyle = "#3a3f4c"; g.lineWidth = 3; g.beginPath(); g.moveTo(24, 30); g.quadraticCurveTo(24, 16, 10, 18); g.moveTo(24, 30); g.quadraticCurveTo(24, 16, 38, 18); g.stroke();
+              g.fillStyle = "#3a3f4c"; rr(2, 15, 16, 7, 3); g.fill(); rr(30, 15, 16, 7, 3); g.fill(); g.fillStyle = "#fff4c8"; g.fillRect(4, 21, 12, 3); g.fillRect(32, 21, 12, 3); break; }
+            case "sign": { [c, g] = mpCv(256, 72); const T = MP_SIGN[+p % MP_SIGN.length];
+              rr(4, 4, 248, 64, 12); g.fillStyle = "rgba(8,8,18,.88)"; g.fill(); g.lineWidth = 3; g.shadowBlur = 12; g.shadowColor = g.strokeStyle = T[1]; g.stroke();
+              g.fillStyle = "#fff"; g.font = "800 38px system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(T[0], 128, 38);
+              g.shadowBlur = 0; g.globalCompositeOperation = "source-atop"; g.fillStyle = T[1]; g.globalAlpha = 0.55; g.fillRect(0, 0, 256, 72); break; }
+            case "win": { [c, g] = mpCv(512, 512); const nt = p === "n", rg = mpRng(nt ? 71 : 37);
+              for (let y = 4; y < 512; y += 20) for (let x = 3; x < 512; x += 16) {
+                if (nt) { const q = rg(); g.fillStyle = q < 0.08 ? "rgba(190,230,255,.92)" : q < 0.3 ? "rgba(255,210,120,.95)" : q < 0.44 ? "rgba(255,236,190,.9)" : "rgba(6,10,22,.72)"; g.fillRect(x, y, 10, 13); }
+                else { g.fillStyle = "rgba(70,100,135,.78)"; g.fillRect(x, y, 10, 13); g.fillStyle = rg() < 0.5 ? "rgba(225,240,255,.55)" : "rgba(180,210,240,.35)"; g.fillRect(x, y, 10, 5); }
+              }
+              break; }
+            case "rf": { [c, g] = mpCv(128, 128); const t = +p;
+              g.strokeStyle = "rgba(0,0,0,.35)"; g.lineWidth = 7; g.strokeRect(3.5, 3.5, 121, 121); g.strokeStyle = "rgba(255,255,255,.18)"; g.lineWidth = 1.5; g.strokeRect(7, 7, 114, 114);
+              if (t === 0) { for (const [x, y] of [[22, 24], [70, 30], [36, 74]]) { g.fillStyle = "#9aa1ad"; g.fillRect(x, y, 30, 24); g.fillStyle = "#4a505c"; g.beginPath(); g.arc(x + 15, y + 12, 8, 0, 6.283); g.fill(); g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(x + 2, y + 24, 30, 4); } g.fillStyle = "#6c7480"; g.beginPath(); g.arc(94, 92, 14, 0, 6.283); g.fill(); }
+              else if (t === 1) { g.strokeStyle = "rgba(255,255,255,.85)"; g.lineWidth = 5; g.beginPath(); g.arc(64, 64, 40, 0, 6.283); g.stroke(); g.fillStyle = "rgba(255,255,255,.9)"; g.font = "900 50px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("H", 64, 67);
+                g.fillStyle = "#ffd84a"; for (const [x, y] of [[14, 14], [114, 14], [14, 114], [114, 114]]) { g.beginPath(); g.arc(x, y, 4, 0, 6.283); g.fill(); } }
+              else if (t === 2) { g.fillStyle = "#5a9a48"; g.fillRect(14, 14, 100, 100); g.fillStyle = "#c9b98f"; g.fillRect(58, 14, 12, 100); g.fillRect(14, 58, 100, 12);
+                for (const [x, y] of [[34, 34], [94, 34], [34, 94], [94, 94]]) { g.fillStyle = rad(x, y, 14, "#8ad070", "#2c6a2a"); g.beginPath(); g.arc(x, y, 14, 0, 6.283); g.fill(); } }
+              else { for (let y = 16; y < 112; y += 24) for (let x = 14; x < 112; x += 34) { g.fillStyle = "#1f3a7a"; g.fillRect(x, y, 30, 20); g.strokeStyle = "rgba(160,200,255,.45)"; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, 29, 19); g.beginPath(); g.moveTo(x + 15, y); g.lineTo(x + 15, y + 20); g.stroke(); } }
+              break; }
+            case "planet": { [c, g] = mpCv(256, 256); const [ty, col] = p.split("/"), rg = mpRng(col.length * 13 + +ty * 7 + parseInt(col.slice(1), 16));
+              g.save(); g.beginPath(); g.arc(128, 128, 120, 0, 6.283); g.clip(); g.fillStyle = col; g.fillRect(0, 0, 256, 256);
+              if (ty === "0") { for (let y = 8; y < 256; y += 6 + rg() * 16) { g.fillStyle = rg() < 0.5 ? `rgba(255,255,255,${0.08 + rg() * 0.16})` : `rgba(0,0,0,${0.08 + rg() * 0.18})`; g.beginPath(); g.moveTo(0, y); for (let x = 0; x <= 256; x += 32) g.lineTo(x, y + Math.sin(x * 0.03 + y) * 4); g.lineTo(256, y + 10 + rg() * 10); g.lineTo(0, y + 10 + rg() * 10); g.fill(); }
+                g.fillStyle = "rgba(255,240,220,.35)"; g.beginPath(); g.ellipse(170, 150, 22, 12, 0, 0, 6.283); g.fill(); }
+              else if (ty === "1") { for (let i = 0; i < 22; i++) { const x = rg() * 256, y = rg() * 256, r = 5 + rg() * 20; g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill(); g.strokeStyle = "rgba(255,255,255,.2)"; g.lineWidth = 2; g.beginPath(); g.arc(x, y, r, 3.5, 5.5); g.stroke(); } }
+              else { g.fillStyle = "rgba(255,255,255,.75)"; g.beginPath(); g.ellipse(128, 14, 120, 34, 0, 0, 6.283); g.fill(); g.beginPath(); g.ellipse(128, 246, 110, 28, 0, 0, 6.283); g.fill();
+                g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 2; for (let i = 0; i < 9; i++) { g.beginPath(); let x = rg() * 256, y = 50 + rg() * 150; g.moveTo(x, y); for (let j = 0; j < 4; j++) { x += rg() * 40 - 20; y += rg() * 30 - 15; g.lineTo(x, y); } g.stroke(); } }
+              const sh = g.createRadialGradient(84, 78, 10, 128, 128, 128); sh.addColorStop(0, "rgba(255,255,255,.28)"); sh.addColorStop(0.45, "rgba(0,0,0,0)"); sh.addColorStop(0.85, "rgba(0,0,10,.55)"); sh.addColorStop(1, "rgba(0,0,10,.82)");
+              g.fillStyle = sh; g.fillRect(0, 0, 256, 256); g.restore();
+              g.strokeStyle = "rgba(200,220,255,.45)"; g.lineWidth = 3; g.beginPath(); g.arc(128, 128, 119, 3.3, 5.6); g.stroke(); break; }
+            default: [c, g] = mpCv(2, 2);
+          }
+          return (MPS[key] = c);
+        }
+        const MP_SIGN = [["HOTEL", "#ff3cac"], ["CAFÉ", "#3cf0ff"], ["24/7", "#ffe14a"], ["SNAKE", "#7dff6a"], ["مطعم", "#ff8a3c"], ["ARCADE", "#b48cff"], ["PIZZA", "#ff5a4a"], ["مقهى", "#3cf0ff"], ["SUSHI", "#ff6ad5"], ["CINEMA", "#ffd84a"], ["BAR", "#5ab0ff"], ["GYM", "#7dff6a"]];
+        const MP_PAL = ["#c9c3b8", "#a9b4c2", "#d6c4a2", "#8e9aab", "#b9a08a", "#7f8a99", "#c7b9c9", "#9fb3a8", "#d9d2c4", "#6f7c8f"];
+        const MP_CAR = ["#d8342c", "#2c6fd8", "#f2f2f2", "#1c1c22", "#f2c32c", "#2ca86a", "#8a8f99", "#e86a2c"];
+        // ---------- helpers ----------
+        function mpP(x, y, z) { pr(x, y, z); return [PX, PY]; }
+        function mpFace(a, b, c, d, fill) { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); }
+        function mpMap(img, sx, sy, sw, sh, P0, P1, P2) { // affine: source rect -> parallelogram with top-left P0, top-right P1, bottom-left P2
+          ctx.setTransform(dpr * (P1[0] - P0[0]) / sw, dpr * (P1[1] - P0[1]) / sw, dpr * (P2[0] - P0[0]) / sh, dpr * (P2[1] - P0[1]) / sh, dpr * P0[0], dpr * P0[1]);
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        function mpBB(img, x, y, w, h, z0) { // upright billboard standing on (x, y), or floating at z0; w, h in world units
+          pr(x, y, z0); const bx = PX, by = PY, k = PK; pr(x, y, z0 + h); const ty = PY, ww = w * k;
+          if (by - ty < 1) return; ctx.drawImage(img, bx - ww / 2, ty, ww, by - ty);
+        }
+        function mpQuadPath(x0, y0, x1, y1) { pr(x0, y0, 0); ctx.moveTo(PX, PY); pr(x1, y0, 0); ctx.lineTo(PX, PY); pr(x1, y1, 0); ctx.lineTo(PX, PY); pr(x0, y1, 0); ctx.lineTo(PX, PY); ctx.closePath(); }
+        // ---------- generation (called from setMap) ----------
+        function mpB(x, y, w, h, z) { // one city building (a solid box)
+          const tall = R() < 0.13;
+          obs.push({ t: "bld", x, y, w, h, r: Math.hypot(w, h), z: z || (tall ? rnd(215, 270) : rnd(80, 185)), pal: (R() * MP_PAL.length) | 0, rf: (R() * 4) | 0, sg: R() < 0.42 ? (R() * MP_SIGN.length) | 0 : -1,
+            tx: (R() * 200) | 0, ty: (R() * 200) | 0, av: tall });
+        }
+        function mpCity() {
+          const nB = 6, P = (A - 600) / nB, RW = MP.RW, SW = MP.SW; MP.roads = []; MP.blocks = []; MP.deco = []; MP.cars = [];
+          for (let i = 0; i <= nB; i++) MP.roads.push(300 + i * P);
+          const parks = new Set(); while (parks.size < 7) parks.add((R() * nB * nB) | 0);
+          for (let by = 0; by < nB; by++) for (let bx = 0; bx < nB; bx++) {
+            const X0 = MP.roads[bx] + RW + SW, X1 = MP.roads[bx + 1] - RW - SW, Y0 = MP.roads[by] + RW + SW, Y1 = MP.roads[by + 1] - RW - SW;
+            const b = { x0: X0, x1: X1, y0: Y0, y1: Y1, park: parks.has(by * nB + bx) }; MP.blocks.push(b);
+            const cx = (X0 + X1) / 2, cy = (Y0 + Y1) / 2, hw = (X1 - X0) / 4;
+            for (const [lx, ly] of [[X0 - 24, Y0 - 24], [X1 + 24, Y0 - 24], [X0 - 24, Y1 + 24], [X1 + 24, Y1 + 24], [cx, Y0 - 24], [cx, Y1 + 24], [X0 - 24, cy], [X1 + 24, cy]])
+              MP.deco.push({ dk: "lamp", x: lx, y: ly, r: 60 });
+            if (b.park) {
+              obs.push({ t: "fount", x: cx, y: cy, r: 46 });
+              for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) if (R() < 0.9)
+                obs.push({ t: "forest", k: "tree", x: cx + sx * hw * rnd(0.95, 1.3), y: cy + sy * hw * rnd(0.95, 1.3), r: rnd(28, 38), c: ["#3f9a46", "#4aa84c", "#358a3e"][(R() * 3) | 0] });
+              continue;
+            }
+            for (let ry = 0; ry < 2; ry++) {
+              const yC = Y0 + hw * (1 + 2 * ry);
+              if (R() < 0.22) { mpB(cx, yC, rnd(hw * 1.5, hw * 1.75), rnd(hw * 0.42, hw * 0.62)); continue; }
+              for (let rx = 0; rx < 2; rx++) if (R() < 0.8) mpB(X0 + hw * (1 + 2 * rx) + rnd(-12, 12), yC + rnd(-12, 12), rnd(hw * 0.42, hw * 0.62), rnd(hw * 0.42, hw * 0.62));
+            }
+          }
+          for (const hz of [0, 1]) for (const rd of MP.roads) for (const lane of [-1, 1]) for (let j = 0; j < 2; j++)
+            MP.cars.push({ dk: "car", hz, rd, lane, p: R() * A, v: rnd(70, 135), col: MP_CAR[(R() * MP_CAR.length) | 0], r: 50, x: 0, y: 0 });
+        }
+        function mpSpace() {
+          const pl = obs.filter((o) => o.t === "planet");
+          pl.forEach((o, i) => { o.pk = i % 3; });
+          pl.slice().sort((a, b) => b.r - a.r).slice(0, 3).forEach((o) => {
+            o.belt = []; const n = 30;
+            for (let i = 0; i < n; i++) o.belt.push({ a: R() * 6.283, rr: o.r * rnd(1.75, 2.35), z: o.r * 1.2 + rnd(-12, 12), s: rnd(4, 10), v: rnd(0.08, 0.16), sp: (R() * 3) | 0 });
+          });
+          const NC = ["150,60,255", "40,110,255", "255,70,200", "60,200,255"];
+          for (let i = 0; i < Math.round(10 * (A / 3000) * (A / 3000) / 3); i++) MP.neb.push({ x: rnd(0, A), y: rnd(0, A), r: rnd(420, 900), c: NC[i % NC.length] });
+          for (let i = 0; i < 220; i++) MP.bgs.push({ x: R(), y: R(), s: rnd(0.6, 2), p: R() * 6.283, d: rnd(0.2, 1) });
+        }
+        // border decorations: rows of themed objects outside the walls (row 0 nearest; Low quality draws row 0 only)
+        function mpBorder(m) {
+          const back = MP.back, front = MP.front, L0 = -MP_E * 0.75, L1 = A + MP_E * 0.75;
+          const put = (side, t, d, it) => {
+            it.x = side === 0 || side === 3 ? t : side === 1 ? -d : A + d; it.y = side === 1 || side === 2 ? t : side === 0 ? -d : A + d;
+            it.r = Math.max(it.w, it.h) + (it.z0 || 0); (side === 3 ? front : back).push(it);
+          };
+          const row = (d0, d1, g0, g1, pick, rw, bottom) => {
+            for (let side = 0; side < 4; side++) {
+              if (side === 3 && !bottom) continue;
+              const a = side === 1 || side === 2 ? 0 : L0, b = side === 1 || side === 2 ? A : L1;
+              for (let t = a + rnd(0, g1); t < b; t += rnd(g0, g1)) { const it = pick(side === 3, side); if (it) { it.row = rw; put(side, t, rnd(d0, d1), it); } }
+            }
+          };
+          const I = (k, h, wk, extra) => Object.assign({ k, h, w: h * wk }, extra || {});
+          const ch = (a) => a[(R() * a.length) | 0];
+          if (m === 0 || m === 6) {
+            const cs = m === 0 ? ["255,42,58", "70,110,255"] : ["0,240,255", "255,40,200"]; let n = 0;
+            row(36, 50, 250, 270, (bt) => { n++; return I("pyl:" + (n % 2 ? cs[0] + "/" + cs[1] : cs[1] + "/" + cs[0]), bt ? 60 : 130, bt ? 0.36 : 0.19, { glow: n % 2 ? cs[0] : cs[1] }); }, 0, true);
+            row(190, 400, 170, 300, () => { const h = rnd(190, 360); return I("ntw:" + (R() < 0.5 ? cs[0] + "/" + cs[1] : cs[1] + "/" + cs[0]), h, 0.3); }, 1, false);
+          } else if (m === 5) {
+            row(50, 120, 70, 115, (bt) => bt ? (R() < 0.55 ? I("bush", rnd(30, 42), 1.8) : I("rock", rnd(26, 40), 1.6)) : ch([I("pine", rnd(100, 150), 0.5), I("oak", rnd(100, 140), 0.9), I("bush", rnd(32, 44), 1.8), I("rock", rnd(30, 48), 1.6)]), 0, true);
+            row(150, 270, 70, 110, () => R() < 0.6 ? I("pine", rnd(120, 175), 0.5) : I("oak", rnd(110, 150), 0.9), 1, false);
+            row(290, 430, 80, 120, () => I("pine", rnd(140, 200), 0.5), 2, false);
+          } else if (m === 1) {
+            row(50, 140, 120, 220, (bt) => bt ? (R() < 0.5 ? I("rock", rnd(22, 36), 1.6) : I("dune", rnd(26, 36), 4)) : ch([I("cactus", rnd(80, 125), 0.55), I("cactus", rnd(70, 110), 0.55), I("rock", rnd(28, 46), 1.6), I("column", rnd(70, 120), 0.4)]), 0, true);
+            row(180, 320, 200, 320, () => ch([I("dune", rnd(44, 64), 4), I("arch", rnd(110, 145), 1.2), I("column", rnd(90, 140), 0.4), I("dune", rnd(40, 60), 4)]), 1, false);
+            row(330, 440, 240, 340, () => I("dune", rnd(55, 80), 4), 2, false);
+          } else if (m === 2) {
+            row(50, 140, 110, 180, (bt) => bt ? (R() < 0.6 ? I("snow", rnd(24, 36), 3) : I("crys", rnd(34, 46), 0.9)) : ch([I("crys", rnd(55, 95), 0.9), I("snow", rnd(28, 40), 3), I("spine", rnd(100, 145), 0.5)]), 0, true);
+            row(180, 330, 170, 260, () => R() < 0.6 ? I("berg", rnd(90, 150), 1.2) : I("spine", rnd(110, 160), 0.5), 1, false);
+            row(330, 440, 220, 320, () => I("berg", rnd(120, 190), 1.2), 2, false);
+          } else if (m === 4) {
+            row(50, 140, 120, 200, (bt) => bt ? I("lrock", rnd(28, 40), 1.33) : ch([I("lrock", rnd(45, 80), 1.33), I("vent", rnd(40, 60), 1.33, { glow: "255,120,20" }), I("obsd", rnd(60, 110), 0.8)]), 0, true);
+            row(180, 380, 160, 250, () => R() < 0.6 ? I("lrock", rnd(80, 130), 1.33) : I("obsd", rnd(100, 160), 0.8), 1, false);
+          } else if (m === 3) {
+            row(60, 170, 150, 250, (bt) => I("ast:" + ((R() * 3) | 0), bt ? rnd(16, 30) : rnd(28, 64), 1.15, { z0: bt ? rnd(8, 24) : rnd(20, 90), fl: 1, rot: rnd(-0.4, 0.4) }), 0, true);
+            row(220, 430, 320, 520, () => R() < 0.62 ? I("sat", rnd(40, 52), 2, { z0: rnd(60, 150), fl: 1, blink: 1 }) : I("ast:" + ((R() * 3) | 0), rnd(60, 110), 1.15, { z0: rnd(40, 120), fl: 1, rot: rnd(-0.25, 0.25) }), 1, false);
+            for (const [side, t] of [[0, A * 0.25], [0, A * 0.72], [1, A * 0.45], [2, A * 0.6]]) put(side, t, rnd(300, 380), I("station", 190, 1.5, { z0: 70, fl: 1, blink: 1, row: 0 }));
+          } else if (m === 7) {
+            row(34, 40, 290, 310, () => I("lamp", 112, 0.27, { lamp: 1 }), 0, true);
+            row(70, 90, 170, 230, (bt) => bt ? I("hedge", 26, 3.3) : null, 0, true);
+            for (let side = 0; side < 3; side++) { // skyline: tall boxes behind the far and side walls
+              const a = side ? -MP_E * 0.5 : L0, b = side ? A + MP_E * 0.5 : L1;
+              for (let t = a; t < b;) {
+                const w = rnd(60, 120), h = rnd(60, 130), d = 90 + h + rnd(0, 120); t += w;
+                const tall = R() < 0.25, it = { bx: 1, t: "bld", w: side ? h : w, h: side ? w : h, z: tall ? rnd(320, 470) : rnd(170, 320), pal: (R() * MP_PAL.length) | 0, rf: (R() * 4) | 0, sg: R() < 0.35 ? (R() * MP_SIGN.length) | 0 : -1, tx: (R() * 200) | 0, ty: (R() * 200) | 0, av: tall, row: 0 };
+                put(side, t, d, it); it.r = Math.max(it.w, it.h) * 1.5 + it.z; t += w + rnd(16, 60);
+              }
+            }
+          }
+          back.sort((a, b) => a.y - b.y); front.sort((a, b) => a.y - b.y);
+        }
+        function mpSetup(i) {
+          MP.back = []; MP.front = []; MP.neb = []; MP.bgs = [];
+          if (MAPS[i].ob !== "city") { MP.deco = []; MP.cars = []; MP.roads = []; MP.blocks = []; }
+          if (MAPS[i].ob === "planet") mpSpace();
+          mpBorder(i);
+        }
+        // ---------- city palette (day / golden hour / night by the local clock) ----------
+        const MP_CD = { floor: "#a7acb3", plaza: "#959ba3", road: "#40444c", dash: "rgba(255,255,255,.85)", curb: "rgba(255,255,255,.4)", grass: "#5d9b45", path: "#cdbd93", zebra: "rgba(255,255,255,.82)", water: "#5fb6e8" };
+        const MP_CG = { floor: "#b9a596", plaza: "#a8968a", road: "#4a3f3f", dash: "rgba(255,240,220,.8)", curb: "rgba(255,230,200,.4)", grass: "#6c8a3c", path: "#d2b088", zebra: "rgba(255,240,220,.75)", water: "#d68a6a" };
+        const MP_CN = { floor: "#262b3a", plaza: "#1e2230", road: "#11131a", dash: "rgba(255,255,255,.36)", curb: "rgba(140,170,255,.2)", grass: "#16301f", path: "#3a3b44", zebra: "rgba(255,255,255,.3)", water: "#17345a" };
+        function mpCP() {
+          const d = typeof DN === "object" && DN ? DN.d : 0, gq = typeof DN === "object" && DN ? DN.g : 0, n = mpNight(), key = [d, gq, n].map((v) => Math.round(v * 20)).join();
+          if (key === MP.cpK && MP.cp) return MP.cp; MP.cpK = key; const o = {};
+          for (const k in MP_CD) o[k] = dnMix([MP_CD[k], MP_CG[k], MP_CN[k]], [d, gq, n], MP_CD[k][0] === "#" ? "hex" : "rgba");
+          return (MP.cp = o);
+        }
+        function mpApron(M) {
+          if (mapI === 3) return null; const k = M.floor + M.bg; if (MPAP[k]) return MPAP[k];
+          return (MPAP[k] = dnMix([M.floor, M.bg], mapI === 0 || mapI === 6 ? [0.35, 0.65] : [0.62, 0.38], "hex"));
+        }
+        // ---------- drawing ----------
+        function mpBld(o) { // a city building: one visible side, the front with windows and an optional neon sign, the roof
+          const n = mpNight(), x0 = o.x - o.w, x1 = o.x + o.w, y0 = o.y - o.h, y1 = o.y + o.h, z = o.z, col = MP_PAL[o.pal];
+          let fa = 1; const pl = player && player.alive && state === "play" ? player.seg[0] : null;
+          if (pl && !o.bx && pl.x > x0 - 40 && pl.x < x1 + 40 && pl.y < y0 + 10 && pl.y > y0 - (z * CT) / Math.max(0.3, ST) - 50) fa = 0.32; // see-through when it hides you
+          if (QL > 0 && !o.bx) { pr(o.x, o.y + o.h * 0.4, 0); const sw = (Math.max(o.w, o.h) * 2.5 + z * 0.3) * PK; ctx.globalAlpha = 0.38; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); }
+          ctx.globalAlpha = fa;
+          const b00 = mpP(x0, y1, 0), b10 = mpP(x1, y1, 0), t00 = mpP(x0, y1, z), t10 = mpP(x1, y1, z), t01 = mpP(x0, y0, z), t11 = mpP(x1, y0, z);
+          const wd = 1 - n, wn = n, texD = mpSpr("win:d"), texN = mpSpr("win:n");
+          const win = (P0, P1, P2, sw, sh, a) => { sw = Math.min(500, sw); sh = Math.min(300, sh); if (sw < 2 || sh < 2) return; const sx = Math.min(o.tx, 512 - sw), sy = Math.min(o.ty, 512 - sh);
+            if (wd > 0.04) { ctx.globalAlpha = fa * a * wd; mpMap(texD, sx, sy, sw, sh, P0, P1, P2); } if (wn > 0.04) { ctx.globalAlpha = fa * a * wn; mpMap(texN, sx, sy, sw, sh, P0, P1, P2); } ctx.globalAlpha = fa; };
+          if (cam.x < x0 || cam.x > x1) {
+            const L = cam.x < x0, sx = L ? x0 : x1, s0 = mpP(sx, y0, 0), s1 = mpP(sx, y1, 0), u0 = L ? t01 : t11, u1 = L ? t00 : t10;
+            mpFace(s0, s1, u1, u0, mpShade(col, 0.72, n)); if (QL > 0) win(u0, u1, s0, o.h * 1.5, z * 0.75, 0.75);
+          }
+          mpFace(b00, b10, t10, t00, mpShade(col, 0.95, n)); win(t00, t10, b00, o.w * 1.5, z * 0.75, 1);
+          mpFace(t01, t11, t10, t00, mpShade(col, 1.12, n));
+          { const q = Math.min(o.w, o.h, 105) * 0.86; mpMap(mpSpr("rf:" + o.rf), 0, 0, 128, 128, mpP(o.x - q, o.y - q, z), mpP(o.x + q, o.y - q, z), mpP(o.x - q, o.y + q, z));
+            if (QL > 0) { const e = 7; ctx.strokeStyle = "rgba(0,0,0,.22)"; ctx.lineWidth = Math.max(1, 4 * PK); ctx.beginPath(); pr(x0 + e, y0 + e, z); ctx.moveTo(PX, PY); pr(x1 - e, y0 + e, z); ctx.lineTo(PX, PY); pr(x1 - e, y1 - e, z); ctx.lineTo(PX, PY); pr(x0 + e, y1 - e, z); ctx.lineTo(PX, PY); ctx.closePath(); ctx.stroke(); } }
+          ctx.strokeStyle = n > 0.5 ? "rgba(150,180,255,.22)" : "rgba(255,255,255,.28)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(t00[0], t00[1]); ctx.lineTo(t10[0], t10[1]); ctx.lineTo(t11[0], t11[1]); ctx.stroke();
+          if (o.sg >= 0) {
+            const sw = Math.min(o.w * 1.5, 150), sh = (sw * 72) / 256, zc = Math.min(z * 0.62, z - sh * 0.5 - 8), yy = y1 + 1.5;
+            const P0 = mpP(o.x - sw / 2, yy, zc + sh / 2), P1 = mpP(o.x + sw / 2, yy, zc + sh / 2), P2 = mpP(o.x - sw / 2, yy, zc - sh / 2);
+            ctx.globalAlpha = fa * (0.8 + 0.2 * n); mpMap(mpSpr("sign:" + o.sg), 0, 0, 256, 72, P0, P1, P2);
+            if (QL > 0 && n > 0.1) { const c = MP_SIGN[o.sg % MP_SIGN.length][1], q = parseInt(c.slice(1), 16), gw = sw * 1.5 * PK;
+              pr(o.x, yy, zc); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.45 * n * fa * (0.85 + 0.15 * Math.sin(time * 3 + o.x));
+              ctx.drawImage(mpSoft(`${q >> 16},${(q >> 8) & 255},${q & 255}`), PX - gw / 2, PY - gw * 0.3, gw, gw * 0.6); ctx.globalCompositeOperation = "source-over"; }
+          }
+          if (o.av && n > 0.15 && (time + o.x * 0.001) % 1.6 < 0.3) { pr(o.x, o.y, z + 8); const d = 22 * PK; ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = n; ctx.drawImage(mpSoft("255,40,40"), PX - d / 2, PY - d / 2, d, d); ctx.globalCompositeOperation = "source-over"; }
+          ctx.globalAlpha = 1;
+        }
+        function mpBox(x0, y0, x1, y1, z0, z1, cf, cs, ct) {
+          const f0 = mpP(x0, y1, z0), f1 = mpP(x1, y1, z0), f2 = mpP(x1, y1, z1), f3 = mpP(x0, y1, z1), t0 = mpP(x0, y0, z1), t1 = mpP(x1, y0, z1);
+          if (cam.x < x0) mpFace(mpP(x0, y0, z0), f0, f3, t0, cs); else if (cam.x > x1) mpFace(mpP(x1, y0, z0), f1, f2, t1, cs);
+          mpFace(f0, f1, f2, f3, cf); mpFace(t0, t1, f2, f3, ct);
+        }
+        function mpCar(c) {
+          const n = mpNight(), L = 31, Wd = 14, hx = c.hz ? L : Wd, hy = c.hz ? Wd : L, x = c.x, y = c.y;
+          if (QL > 0) { pr(x, y, 0); const sw = 80 * PK; ctx.globalAlpha = 0.35; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); ctx.globalAlpha = 1; }
+          mpBox(x - hx, y - hy, x + hx, y + hy, 3, 15, mpShade(c.col, 0.9, n * 0.8), mpShade(c.col, 0.7, n * 0.8), mpShade(c.col, 1.1, n * 0.8));
+          if (QL > 0) { const dx = c.hz ? -c.lane * 5 : 0, dy = c.hz ? 0 : -c.lane * 5, cx = c.hz ? 18 : 12, cy = c.hz ? 12 : 18;
+            mpBox(x + dx - cx, y + dy - cy, x + dx + cx, y + dy + cy, 15, 25, n > 0.5 ? "#2a3550" : "#8fb4d8", "#3a4660", mpShade(c.col, 1.05, n * 0.8)); }
+          if (n > 0.1) { const fx = c.hz ? c.lane * L : 0, fy = c.hz ? 0 : c.lane * L; ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = n;
+            for (const s of [-1, 1]) { const ox = c.hz ? 0 : s * 8, oy = c.hz ? s * 8 : 0;
+              pr(x + fx + ox, y + fy + oy, 9); let d = 16 * PK; ctx.drawImage(mpSoft("255,244,200"), PX - d / 2, PY - d / 2, d, d);
+              pr(x - fx + ox, y - fy + oy, 9); d = 12 * PK; ctx.drawImage(mpSoft("255,40,40"), PX - d / 2, PY - d / 2, d, d); }
+            if (QL > 0) { pr(x + fx * 2.6, y + fy * 2.6, 0); const d = 90 * PK; ctx.globalAlpha = 0.22 * n; ctx.drawImage(mpSoft("255,240,190"), PX - d / 2, PY - (d * ST) / 2, d, d * ST); }
+            ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; }
+        }
+        function mpFount(o) {
+          const n = mpNight(), C = mpCP(); pr(o.x, o.y, 0); const sw = o.r * 2.6 * PK; ctx.globalAlpha = 0.4; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); ctx.globalAlpha = 1;
+          const ell = (z, r, f) => { pr(o.x, o.y, z); ctx.beginPath(); ctx.ellipse(PX, PY, r * PK, r * PK * ST, 0, 0, 6.283); ctx.fillStyle = f; ctx.fill(); };
+          ell(0, o.r, mpShade("#8f8a80", 0.8, n)); ell(6, o.r, mpShade("#a9a398", 0.9, n)); ell(12, o.r, mpShade("#c9c2b4", 1, n)); ell(13, o.r * 0.84, C.water);
+          ell(14, o.r * 0.3, mpShade("#c9c2b4", 1, n)); ell(26, o.r * 0.16, mpShade("#d9d2c4", 1, n));
+          if (QL > 0) { ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.55 + 0.3 * n;
+            for (let i = 0; i < 10; i++) { const a = (i / 10) * 6.283 + time * 0.4, ph = (time * 0.9 + i * 0.37) % 1, rr = ph * o.r * 0.7, zz = 26 + Math.sin(ph * Math.PI) * 30;
+              pr(o.x + Math.cos(a) * rr, o.y + Math.sin(a) * rr, zz); const d = (8 - ph * 4) * PK; ctx.drawImage(mpSoft(n > 0.5 ? "120,190,255" : "200,235,255"), PX - d / 2, PY - d / 2, d, d); }
+            ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; }
+        }
+        function mpPlanet(o) {
+          pr(o.x, o.y, 0); const sw = o.r * 2.6 * PK; ctx.globalAlpha = 0.45; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); ctx.globalAlpha = 1;
+          const zc = o.r * 1.2; pr(o.x, o.y, zc); const cx = PX, cy = PY, rr = o.r * PK;
+          const belt = (front) => { if (!o.belt) return; const n = QL > 0 ? o.belt.length : 12;
+            for (let i = 0; i < n; i++) { const b = o.belt[i], a = b.a + time * b.v, s = Math.sin(a); if ((s >= 0) !== front) continue;
+              pr(o.x + Math.cos(a) * b.rr, o.y + s * b.rr, b.z); const d = b.s * 2.2 * PK; ctx.drawImage(mpSpr("ast:" + b.sp), PX - d / 2, PY - d * 0.44, d, d * 0.88); } };
+          const ring = (front) => { if (!o.ring) return; ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.3); ctx.beginPath(); ctx.ellipse(0, 0, rr * 1.75, rr * 0.5, 0, front ? 0 : Math.PI, front ? Math.PI : 2 * Math.PI);
+            ctx.strokeStyle = "rgba(255,230,190,.55)"; ctx.lineWidth = 5 * PK; ctx.stroke(); ctx.beginPath(); ctx.ellipse(0, 0, rr * 1.48, rr * 0.4, 0, front ? 0 : Math.PI, front ? Math.PI : 2 * Math.PI);
+            ctx.strokeStyle = "rgba(200,170,255,.35)"; ctx.lineWidth = 3 * PK; ctx.stroke(); ctx.restore(); };
+          belt(false); ring(false);
+          if (QL > 0) { const q = parseInt(o.c.slice(1), 16), d = rr * 3; ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.3; ctx.drawImage(mpSoft(`${q >> 16},${(q >> 8) & 255},${q & 255}`), cx - d / 2, cy - d / 2, d, d); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; }
+          ctx.drawImage(mpSpr("planet:" + (o.pk || 0) + "/" + o.c), cx - rr, cy - rr, rr * 2, rr * 2);
+          ring(true); belt(true);
+        }
+        function mpItem(it) { // one border decoration
+          if (it.bx) { mpBld(it); return; }
+          const s = mpSpr(it.k); let z0 = it.z0 || 0; if (it.fl) z0 += Math.sin(time * 0.6 + it.x * 0.01 + it.y * 0.013) * 8;
+          if (!it.fl && QL > 0 && it.row === 0) { pr(it.x, it.y, 0); const sw = it.w * 1.1 * PK; ctx.globalAlpha = 0.3; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); ctx.globalAlpha = 1; }
+          if (it.rot) { pr(it.x, it.y, z0 + it.h / 2); const w = it.w * PK, h = it.h * PK * 0.95; ctx.save(); ctx.translate(PX, PY); ctx.rotate(time * it.rot + it.x); ctx.drawImage(s, -w / 2, -h / 2, w, h); ctx.restore(); }
+          else mpBB(s, it.x, it.y, it.w, it.h, z0);
+          if (QL > 0 && (it.glow || it.lamp || it.blink)) {
+            const n = mpNight(); ctx.globalCompositeOperation = "lighter";
+            if (it.glow) { pr(it.x, it.y, z0 + it.h * (it.k === "vent" ? 0.75 : 0.94)); const d = (it.k === "vent" ? 70 : 46) * PK; ctx.globalAlpha = 0.45 + 0.25 * Math.sin(time * 2.4 + it.x * 0.01); ctx.drawImage(mpSoft(it.glow), PX - d / 2, PY - d / 2, d, d); }
+            if (it.lamp && n > 0.05) { pr(it.x, it.y, z0 + it.h * 0.88); const d = 70 * PK; ctx.globalAlpha = 0.75 * n; ctx.drawImage(mpSoft("255,214,140"), PX - d / 2, PY - d / 2, d, d); }
+            if (it.blink && (time + it.x * 0.003) % 2 < 0.25) { pr(it.x, it.y, z0 + it.h * 0.5); const d = 26 * PK; ctx.globalAlpha = 0.9; ctx.drawImage(mpSoft(it.k === "station" ? "120,255,140" : "255,60,60"), PX - d / 2, PY - d / 2, d, d); }
+            ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+          }
+        }
+        function mpObj(o) { // tall-list entries this module owns
+          if (o.t === "bld") mpBld(o); else if (o.dk === "car") mpCar(o); else if (o.dk === "lamp") mpItem(Object.assign(MP_LAMP, { x: o.x, y: o.y })); else if (o.t === "fount") mpFount(o); else if (o.t === "planet") mpPlanet(o);
+        }
+        const MP_LAMP = { k: "lamp", h: 112, w: 30, lamp: 1, row: 0, x: 0, y: 0 };
+        function mpTall(vis) { // obstacles plus the visible decorations, back to front
+          const out = obs.filter((o) => o.t !== "lava"); let add = false;
+          if (MP.deco.length) for (const d of MP.deco) if (vis(d.x, d.y, 120)) { out.push(d); add = true; }
+          if (MP.cars.length) { const Lt = A + 120;
+            for (const c of MP.cars) { const s = (((c.p + c.v * time * c.lane) % Lt) + Lt) % Lt - 60; if (s < 50 || s > A - 50) continue;
+              c.x = c.hz ? s : c.rd + c.lane * 52; c.y = c.hz ? c.rd + c.lane * 52 : s; if (vis(c.x, c.y, 60)) { out.push(c); add = true; } } }
+          if (add) out.sort((a, b) => a.y - b.y);
+          return out;
+        }
+        function mpStars() { // Space: a far star field and the odd shooting star behind the arena (screen space)
+          const n = QL > 0 ? MP.bgs.length : 90; ctx.fillStyle = "#fff";
+          for (let i = 0; i < n; i++) { const s = MP.bgs[i], x = (((s.x * W * 1.3 - cam.x * 0.02 * s.d) % W) + W) % W, y = (((s.y * H * 1.3 - cam.y * 0.012 * s.d) % H) + H) % H;
+            ctx.globalAlpha = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(time * 2 * s.d + s.p)); ctx.fillRect(x, y, s.s, s.s); }
+          ctx.globalAlpha = 1; if (QL < 1) return;
+          if (!MP.ss && (MP.ssT -= fdt) <= 0) { MP.ss = { x: rnd(0.1, 0.9) * W, y: rnd(0.02, 0.3) * H, a: rnd(2.5, 2.9), l: 0 }; MP.ssT = rnd(4, 10); }
+          if (MP.ss) { const s = MP.ss; s.l += fdt / 0.9; if (s.l >= 1) MP.ss = null; else { const d = s.l * W * 0.35, x = s.x + Math.cos(s.a) * d, y = s.y + Math.sin(s.a) * d * 0.4 + d * 0.15;
+            const gr = ctx.createLinearGradient(x, y, x - Math.cos(s.a) * 90, y - 30); gr.addColorStop(0, "rgba(255,255,255,.9)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.strokeStyle = gr; ctx.lineWidth = 2; ctx.globalAlpha = 1 - s.l; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - Math.cos(s.a) * 90, y - 30); ctx.stroke(); ctx.globalAlpha = 1; } }
+        }
+        function mpBack(vis, vx0, vx1, vy0, vy1, M) { // before the floor: far star field, the ground apron, the far and side border decorations
+          if (mapI === 3) mpStars();
+          const ap = mpApron(M);
+          if (ap) { const ex0 = Math.max(-MP_E, vx0), ex1 = Math.min(A + MP_E, vx1), ey0 = Math.max(-MP_E, vy0), ey1 = Math.min(A + MP_E, vy1);
+            if (ex0 < ex1 && ey0 < ey1) { ctx.beginPath(); mpQuadPath(ex0, ey0, ex1, ey1); ctx.fillStyle = ap; ctx.fill(); } }
+          for (const it of MP.back) if ((QL > 0 || it.row === 0) && vis(it.x, it.y, it.r)) mpItem(it);
+        }
+        function mpFront(vis) { for (const it of MP.front) if ((QL > 0 || it.row === 0) && vis(it.x, it.y, it.r)) mpItem(it); }
+        function mpFloor(vis, fx0, fx1, fy0, fy1) {
+          if (mapI === 3 && MP.neb.length && QL > 1) { // nebula clouds lying over the floor (at most 3 per frame)
+            ctx.globalCompositeOperation = "lighter"; let nn = 0;
+            for (const b of MP.neb) { if (nn >= 3 || !vis(b.x, b.y, b.r)) continue; nn++; pr(b.x, b.y, 0); const d = b.r * 2 * PK; ctx.globalAlpha = 0.16 * (0.85 + 0.15 * Math.sin(time * 0.3 + b.x)); ctx.drawImage(mpSoft(b.c), PX - d / 2, PY - (d * ST) / 2, d, d * ST); }
+            ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+          }
+          if (mapI !== 7 || !MP.roads.length) return;
+          const C = mpCP(), RW = MP.RW, SW = MP.SW, rs = MP.roads, n = mpNight();
+          ctx.fillStyle = C.plaza; ctx.beginPath(); let any = false;
+          for (const b of MP.blocks) if (!b.park && b.x1 > fx0 && b.x0 < fx1 && b.y1 > fy0 && b.y0 < fy1) { mpQuadPath(Math.max(b.x0, fx0), Math.max(b.y0, fy0), Math.min(b.x1, fx1), Math.min(b.y1, fy1)); any = true; }
+          if (any) ctx.fill();
+          ctx.fillStyle = C.grass; ctx.beginPath(); any = false;
+          for (const b of MP.blocks) if (b.park && b.x1 > fx0 && b.x0 < fx1 && b.y1 > fy0 && b.y0 < fy1) { mpQuadPath(Math.max(b.x0, fx0), Math.max(b.y0, fy0), Math.min(b.x1, fx1), Math.min(b.y1, fy1)); any = true; }
+          if (any) { ctx.fill(); ctx.fillStyle = C.path; ctx.beginPath();
+            for (const b of MP.blocks) if (b.park && b.x1 > fx0 && b.x0 < fx1 && b.y1 > fy0 && b.y0 < fy1) { const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2; mpQuadPath(cx - 16, Math.max(b.y0, fy0), cx + 16, Math.min(b.y1, fy1)); mpQuadPath(Math.max(b.x0, fx0), cy - 16, Math.min(b.x1, fx1), cy + 16); }
+            ctx.fill(); }
+          ctx.fillStyle = C.road; ctx.beginPath();
+          for (const r of rs) { if (r + RW > fx0 && r - RW < fx1) mpQuadPath(r - RW, fy0, r + RW, fy1); if (r + RW > fy0 && r - RW < fy1) mpQuadPath(fx0, r - RW, fx1, r + RW); }
+          ctx.fill();
+          ctx.strokeStyle = C.curb; ctx.lineWidth = Math.max(1, 2 * cam.s); ctx.beginPath();
+          const seg = (x0, y0, x1, y1) => { pr(x0, y0, 0); ctx.moveTo(PX, PY); pr(x1, y1, 0); ctx.lineTo(PX, PY); };
+          for (const r of rs) for (const s of [-RW, RW]) { if (r + s > fx0 && r + s < fx1) seg(r + s, fy0, r + s, fy1); if (r + s > fy0 && r + s < fy1) seg(fx0, r + s, fx1, r + s); }
+          ctx.stroke();
+          ctx.strokeStyle = C.dash; ctx.lineWidth = Math.max(1, 3 * cam.s); ctx.beginPath();
+          const near = (v) => rs.some((r) => Math.abs(v - r) < RW + 10);
+          for (const r of rs) {
+            if (r > fx0 && r < fx1) for (let y = Math.ceil(fy0 / 100) * 100; y < fy1; y += 100) if (!near(y) && !near(y + 50)) seg(r, y, r, y + 50);
+            if (r > fy0 && r < fy1) for (let x = Math.ceil(fx0 / 100) * 100; x < fx1; x += 100) if (!near(x) && !near(x + 50)) seg(x, r, x + 50, r);
+          }
+          ctx.stroke();
+          if (QL > 0) { ctx.fillStyle = C.zebra; ctx.beginPath(); let z = false;
+            for (const rx of rs) for (const ry of rs) { if (!vis(rx, ry, 250)) continue; z = true;
+              for (let k = -RW + 14; k < RW - 14; k += 26) { for (const s of [-1, 1]) { const e = s * (RW + 8); mpQuadPath(rx + k, ry + e - (s > 0 ? 0 : 26), rx + k + 13, ry + e + (s > 0 ? 26 : 0)); mpQuadPath(rx + e - (s > 0 ? 0 : 26), ry + k, rx + e + (s > 0 ? 26 : 0), ry + k + 13); } } }
+            if (z) ctx.fill(); }
+          if (QL > 0 && n > 0.05) { // warm pools of light under the street lamps
+            ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.3 * n; const sp = mpSoft("255,200,120");
+            for (const d of MP.deco) { if (!vis(d.x, d.y, 100)) continue; pr(d.x, d.y, 0); const s = 190 * PK; ctx.drawImage(sp, PX - s / 2, PY - (s * ST) / 2, s, s * ST); }
+            ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+          }
+        }
+        function mpField(x0, y0, x1, y1) { // Space: the wall is a shimmering force field
+          ctx.lineWidth = 2;
+          for (let k = 0; k < 3; k++) { const z = (time * 26 + k * (WALL / 3)) % WALL; ctx.strokeStyle = `rgba(140,200,255,${0.45 * (1 - z / WALL)})`; ctx.beginPath(); pr(x0, y0, z); ctx.moveTo(PX, PY); pr(x1, y1, z); ctx.lineTo(PX, PY); ctx.stroke(); }
+        }
+        function mpMini(g, k) { // minimap: city streets and parks
+          if (mapI !== 7 || !MP.roads.length) return; const RW = MP.RW;
+          g.fillStyle = "rgba(90,200,110,.28)"; for (const b of MP.blocks) if (b.park) g.fillRect(b.x0 * k, b.y0 * k, (b.x1 - b.x0) * k, (b.y1 - b.y0) * k);
+          g.fillStyle = "rgba(255,255,255,.1)"; for (const r of MP.roads) { g.fillRect((r - RW) * k, 0, 2 * RW * k, A * k); g.fillRect(0, (r - RW) * k, A * k, 2 * RW * k); }
         }
         function setMap(i) {
           mapI = i; obs = []; const t = MAPS[i].ob, ak = MAPS[i].sz || 1, ar = ak * ak;
           A = Math.round(A0 * ak);
           if (t === "forest") { // clusters of trees and rocks, overlapping so there are no deadly gaps inside a cluster
             const NC = Math.round(8 * ar);
-            for (let k = 0, nc = 0; nc < NC && k < 800; k++) {
+            for (let k = 0, nc = 0; nc < NC && k < 800 * ar; k++) {
               const cx = rnd(320, A - 320), cy = rnd(320, A - 320);
               if (obs.some((o) => Math.hypot(o.x - cx, o.y - cy) < o.r + 300)) continue;
               nc++; const m = 2 + ((R() * 3) | 0), a0 = R() * 6.283;
@@ -3116,18 +3556,18 @@
             }
           } else if (t === "cyber") { // neon barrier blocks: squares and bars
             const NB = Math.round(12 * ar);
-            for (let k = 0; obs.length < NB && k < 800; k++) {
+            for (let k = 0; obs.length < NB && k < 800 * ar; k++) {
               const q = R(); let w, h;
               if (q < 0.35) w = h = rnd(36, 50); else if (q < 0.68) { w = rnd(110, 160); h = 22; } else { w = 22; h = rnd(110, 160); }
               const x = rnd(300, A - 300), y = rnd(300, A - 300), r = Math.hypot(w, h);
               if (!obs.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + r + 150)) obs.push({ t: "cyber", x, y, w, h, r, c: ["0,240,255", "255,40,200", "170,90,255"][obs.length % 3] });
             }
-          } else for (let k = 0; t && obs.length < 15 && k < 500; k++) {
+          } else if (t === "city") mpCity(); else for (let k = 0, nO = Math.round(15 * ar); t && obs.length < nO && k < 500 * ar; k++) {
             const r = t === "cactus" ? rnd(26, 38) : t === "planet" ? rnd(40, 80) : rnd(50, 90), x = rnd(250, A - 250), y = rnd(250, A - 250);
             if (!obs.some((o) => oD(o, x, y) < o.r + r + 160))
               obs.push({ t, x, y, r, c: ["#c0703a", "#4f7fd9", "#b58ad6", "#d9b45a", "#5ab8a8"][obs.length % 5], ring: R() < 0.4 });
           }
-          obs.sort((a, b) => a.y - b.y);
+          mpSetup(i); obs.sort((a, b) => a.y - b.y);
           food = food.filter((f) => f.x < A - 20 && f.y < A - 20 && !obs.some((o) => oD(o, f.x, f.y) < o.r + 8));
           if (food.length > fMin() * 1.2) food.length = Math.round(fMin() * 1.2);
           syncBots();
@@ -3367,7 +3807,7 @@
         function makeSnake(name, skin, bot) {
           let x, y, t = 0;
           do { x = rnd(300, A - 300); y = rnd(300, A - 300); t++; }
-          while (t < 40 && (obs.some((o) => oD(o, x, y) < o.r + 200) || snakes.some((s) => s.alive && s.seg.some((p, i) => i % 3 === 0 && Math.hypot(p.x - x, p.y - y) < 350))));
+          while (t < 120 && (obs.some((o) => oD(o, x, y) < o.r + 200) || snakes.some((s) => s.alive && s.seg.some((p, i) => i % 3 === 0 && Math.hypot(p.x - x, p.y - y) < 350))));
           const a = R() * 6.28, seg = [];
           for (let i = 0; i < 20; i++) seg.push({ x: x - Math.cos(a) * i * 6, y: y - Math.sin(a) * i * 6 });
           return { name, skin, bot, seg, len: 20, a, ta: a, r: 11, boost: false, alive: true, think: 0, respawn: 0, drop: 0, kills: 0, evo: 0, dna: 0, cd: 0, slow: 0, ghost: 0 };
@@ -3388,7 +3828,7 @@
           else { s.respawn = 2; if (player && player.alive && Math.hypot(s.seg[0].x - player.seg[0].x, s.seg[0].y - player.seg[0].y) < 600) pendImp = true; }
         }
         function syncBots() {
-          const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || nfBotN() || Math.max(2, (L.on ? 8 + L.round * 4 : Math.round((MD === "p" ? PB : S.bots) * A / A0)) + (state === "play" ? AD.bAdd : 0));
+          const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || nfBotN() || Math.min(44, Math.max(2, (L.on ? Math.min(40, Math.round((8 + L.round * 4) * A / 4500)) : Math.min(40, Math.round((MD === "p" ? PB : S.bots) * A / A0 * 1.25))) + (state === "play" ? AD.bAdd : 0)));
           while (bots.length < nb) {
             const b = makeSnake(bn(bots.length), botSkin(), true);
             b.ni = bots.length; b.len = rnd(20, 70); snakes.push(b); bots.push(b);
@@ -3897,7 +4337,7 @@
           for (let i = floats.length - 1; i >= 0; i--) if ((floats[i].l -= dt) <= 0) floats.splice(i, 1);
           for (const s of snakes) for (const k of ["spd", "pg", "pm", "frz", "frzT"]) if (s[k] > 0) s[k] -= dt;
           if (xPl !== player) { xPl = player; bossT = 0; pups = []; while (pups.length < 6) xPup(); }
-          if (pups.length < 6 && (pwCd -= dt) <= 0) { pwCd = 12; xPup(); }
+          if (pups.length < Math.round(6 * A / 4500) && (pwCd -= dt) <= 0) { pwCd = 12; xPup(); }
           if (player && player.alive) {
             const h = player.seg[0];
             for (let i = pups.length - 1; i >= 0; i--) {
@@ -4082,6 +4522,7 @@
           ctx.beginPath(); ctx.moveTo(ux, uy); ctx.lineTo(tx, ty);
           ctx.strokeStyle = `rgba(${M.wc},.35)`; ctx.lineWidth = 10; ctx.stroke();
           ctx.strokeStyle = `rgb(${M.wc})`; ctx.lineWidth = 2.5; ctx.stroke();
+          if (mapI === 3) mpField(x0, y0, x1, y1);
         }
         // sprite caches are capped: the oldest sprite goes first, so many colours (the custom-colour picker, 120 skins) can't grow memory forever
         class XCap extends Map { constructor(n) { super(); this.n = n; } set(k, v) { if (this.size >= this.n && !this.has(k)) this.delete(this.keys().next().value); return super.set(k, v); } }
@@ -4392,6 +4833,7 @@
           };
           const fx0 = Math.max(0, vx0), fx1 = Math.min(A, vx1), fy0 = Math.max(0, vy0), fy1 = Math.min(A, vy1);
           const hasFloor = fx0 < fx1 && fy0 < fy1;
+          mpBack(vis, vx0, vx1, vy0, vy1, M);
 
           if (hasFloor) {
             ctx.beginPath();
@@ -4415,8 +4857,10 @@
             }
             if (M.stars) {
               ctx.fillStyle = "rgba(255,255,255,.8)";
-              for (const s of STARS) if (s.x < A && s.y < A && vis(s.x, s.y)) { pr(s.x, s.y, 0); ctx.fillRect(PX, PY, s.s * PK, s.s * PK); }
+              for (const s of STARS) { const x = s.x * ak0, y = s.y * ak0; if (vis(x, y)) { pr(x, y, 0); ctx.globalAlpha = 0.55 + 0.45 * Math.sin(time * (1 + s.s) + s.x); ctx.fillRect(PX, PY, s.s * PK, s.s * PK); } }
+              ctx.globalAlpha = 1;
             }
+            mpFloor(vis, fx0, fx1, fy0, fy1);
             for (const o of obs) {
               if (o.t !== "lava" || !vis(o.x, o.y, o.r)) continue;
               pr(o.x, o.y, 0); const rr = o.r * PK * 1.15;
@@ -4517,7 +4961,8 @@
             face([[x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z]], `rgba(${o.c},${0.55 + 0.15 * Math.sin(time * 3 + o.x)})`, 1);
           };
           const drawOb = (o) => {
-            if (!vis(o.x, o.y, o.r * 2)) return;
+            if (!vis(o.x, o.y, (o.r || 40) * 2 + (o.z || 0))) return;
+            if (o.dk || o.t === "bld" || o.t === "fount" || o.t === "planet") { mpObj(o); return; }
             if (o.w) { box(o); return; }
             pr(o.x, o.y, 0); const sw = o.r * 2.6 * PK;
             ctx.globalAlpha = 0.45; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); ctx.globalAlpha = 1;
@@ -4544,7 +4989,7 @@
                 ctx.beginPath(); ctx.ellipse(PX, PY, o.r * PK * 1.6, o.r * PK * 0.45, -0.3, 0, 6.283); ctx.stroke(); }
             }
           };
-          const tall = obs.filter((o) => o.t !== "lava"); let oi = 0;
+          const tall = mpTall(vis); let oi = 0;
           for (const sn of order) {
             while (oi < tall.length && tall[oi].y < sn.seg[0].y) drawOb(tall[oi++]);
             const n = sn.seg.length;
@@ -4639,6 +5084,7 @@
           ctx.globalAlpha = 1;
           while (oi < tall.length) drawOb(tall[oi++]);
           if (hasFloor && vy1 >= A) wall(fx0, A, fx1, A);
+          mpFront(vis);
           evoDraw1(vis); xDraw1(); adDraw();
 
           ctx.drawImage(sky(M), 0, 0, W, CY); xDraw2(vis); nfDrawTop(vis);
@@ -4654,7 +5100,7 @@
               const g = mmg; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, pm, pm); g.setTransform(dpr, 0, 0, dpr, 2 * dpr, 2 * dpr);
               g.fillStyle = "rgba(10,14,30,.65)"; g.strokeStyle = "rgba(255,42,58,.7)"; g.lineWidth = 1.5;
               g.save(); g.beginPath(); g.rect(0, 0, m, m); g.fill(); g.stroke(); g.clip();
-              g.fillStyle = "rgba(255,255,255,.22)";
+              mpMini(g, k); g.fillStyle = "rgba(255,255,255,.22)";
               for (const o of obs) { if (o.w) { g.fillRect((o.x - o.w) * k, (o.y - o.h) * k, Math.max(1.5, 2 * o.w * k), Math.max(1.5, 2 * o.h * k)); continue; } g.beginPath(); g.arc(o.x * k, o.y * k, Math.max(1.5, o.r * k), 0, 6.283); g.fill(); }
               for (const sn of snakes) {
                 if (!sn.alive || sn === player) continue;
@@ -4739,7 +5185,7 @@
           $("logv").classList.toggle("x-hide", !!imp); $("impv").classList.toggle("x-hide", !imp);
           $("login").scrollTop = 0; if (!quiet) $(imp ? "impv" : "logv").querySelector("h2").focus({ preventScroll: true });
         }
-        const show = (id) => { if (!cur && id !== "reg" && !(ON.guest && ["menu", "set", "how", "over", "maps", "league", "lgr", "onlb", "ongems"].includes(id))) id = "login"; if (id === "adm" && !isStaff()) id = "menu"; if (id === "menu" && cur && CFG.mt && !isStaff() && !(ON.st && ON.st.is_admin)) id = "mnt"; if (id === "menu" || id === "mnt") cfgPaint(); if (id === "login" && $("login").classList.contains("x-hide")) authView(0, 1); langClose(); OV.forEach((o) => $(o).classList.toggle("x-hide", o !== id)); };
+        const show = (id) => { if (!cur && id !== "reg" && !(ON.guest && (id == null || ["menu", "set", "how", "over", "maps", "league", "lgr", "onlb", "ongems"].includes(id)))) id = "login"; if (id === "adm" && !isStaff()) id = "menu"; if (id === "menu" && cur && CFG.mt && !isStaff() && !(ON.st && ON.st.is_admin)) id = "mnt"; if (id === "menu" || id === "mnt") cfgPaint(); if (id === "login" && $("login").classList.contains("x-hide")) authView(0, 1); langClose(); OV.forEach((o) => $(o).classList.toggle("x-hide", o !== id)); };
         function release() {
           boostOn = mouseBoost = false; tBtn = 0; joy.on = false; ptr.active = false;
           for (const k in keys) keys[k] = false;
@@ -6915,7 +7361,7 @@
           const r = mystToday(); NFS.my = r.k; Object.assign(AD, r.ad || {});
           if (r.k === "magnet") for (const s of snakes) s.mag = 1;
           if (r.k === "big") player.len = Math.max(player.len, 80);
-          if (r.k === "swarm") { NFS.botN = Math.round(S.bots * A / A0 * 1.6); syncBots(); }
+          if (r.k === "swarm") { NFS.botN = Math.min(48, Math.round(S.bots * A / A0 * 1.6)); syncBots(); }
           setTimeout(() => { if (state === "play" && NFS.my) xBan(`❓ ${_t("nfMyst")}: ${r.e} ${mystName(r)}`); }, 1800);
         });
         NFH.wx.push(() => { if (NFS.my === "night" && state === "play") xN = 1; });
@@ -6994,12 +7440,12 @@
         function vReset() {
           vMap = mapI; vAmb = []; vScr = []; vRing = [];
           const q = VQ(), m = mapI;
-          const nA = Math.round((m === 5 ? 34 : m === 6 ? 22 : m === 0 ? 26 : 16) * q), nS = Math.round((m === 5 ? 14 : m === 0 ? 9 : m === 6 ? 0 : 26) * q);
+          const nA = m === 7 ? 0 : Math.round((m === 5 ? 34 : m === 6 ? 22 : m === 0 ? 26 : 16) * q), nS = m === 7 ? 0 : Math.round((m === 5 ? 14 : m === 0 ? 9 : m === 6 ? 0 : 26) * q);
           for (let i = 0; i < nA; i++) vAmb.push({ x: cam.x + rnd(-900, 900), y: cam.y + rnd(-700, 700), z: rnd(15, 90), p: R() * 6.28, v: rnd(0.4, 1) });
           for (let i = 0; i < nS; i++) vScr.push({ x: R(), y: R(), p: R() * 6.28, v: rnd(0.4, 1), s: rnd(0.6, 1.4) });
         }
         NFH.upd.push((dt) => {
-          if (vMap !== mapI || (QL <= 0 && vAmb.length) || (QL > 0 && !vAmb.length && vScr.length === 0 && mapI !== 6)) vReset();
+          if (vMap !== mapI || (QL <= 0 && vAmb.length) || (QL > 0 && !vAmb.length && vScr.length === 0 && mapI !== 6 && mapI !== 7)) vReset();
           for (const a of vAmb) {
             a.p += dt * a.v; a.x += Math.cos(a.p * 0.7) * 12 * dt; a.y += Math.sin(a.p * 0.9) * 10 * dt;
             if (mapI === 6) { a.z += 30 * dt * a.v; if (a.z > 160) a.z = 5; }
@@ -7522,6 +7968,7 @@
           5: [{ floor: "#5c9a3f", grid: "rgba(30,70,20,.2)", bg: "#2f5a22", fog: "170,215,140", dots: "rgba(150,200,90,.6)" }, { floor: "#6f7d33", grid: "rgba(60,40,10,.22)", bg: "#4a3a1a", fog: "240,170,90", dots: "rgba(200,170,80,.55)" },
             { floor: "#1f3b38", grid: "rgba(120,170,200,.13)", bg: "#0a1820", fog: "60,90,120", dots: "rgba(90,140,150,.4)" }],
           6: [{ floor: "#251c56", grid: "rgba(0,240,255,.22)", g2: "rgba(255,60,210,.42)", bg: "#160c3a", fog: "60,30,120" }, { floor: "#2a0f40", grid: "rgba(255,150,60,.2)", g2: "rgba(255,60,170,.4)", bg: "#1c0624", fog: "120,30,80" }],
+          7: [{ floor: "#a7acb3", grid: "rgba(0,0,0,.05)", bg: "#8fb6d8", fog: "170,200,230" }, { floor: "#b9a596", grid: "rgba(60,30,10,.05)", bg: "#d98a6a", fog: "240,160,120" }],
         };
         function dnC(s) { // "#rrggbb" | "rgba(r,g,b,a)" | "r,g,b" -> [r,g,b,a]
           if (s[0] === "#") return [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16), 1];
@@ -7802,15 +8249,15 @@
           } catch (e) { return null; }
         }
         function edObs(m) { // plan → arena obstacles for the chosen theme
-          const k = A / 1000, th = m.t, out = [];
+          const k = A / 1000, ks = Math.min(k, 4.5), th = m.t, out = [];
           for (const [ty, x0, y0] of m.o) {
             const x = clamp(x0 * k, 120, A - 120), y = clamp(y0 * k, 120, A - 120), s = ED_SZ[ty];
             if (ty === 0) {
-              const r = s.r * k;
+              const r = s.r * ks;
               if (th === 1) out.push({ t: "forest", k: "tree", x, y, r, c: "#5cc455" });
               else if (th === 2) { const w = r * 0.8; out.push({ t: "cyber", x, y, w, h: w, r: Math.hypot(w, w), c: "0,240,255" }); }
               else out.push({ t: "rock", x, y, r, c: "#4f7fd9", ring: false });
-            } else { const w = s.w * k, h = s.h * k; out.push({ t: "cyber", x, y, w, h, r: Math.hypot(w, h), c: th === 1 ? "170,230,120" : th === 2 ? "255,40,200" : "0,240,255" }); }
+            } else { const w = s.w * ks, h = s.h * ks; out.push({ t: "cyber", x, y, w, h, r: Math.hypot(w, h), c: th === 1 ? "170,230,120" : th === 2 ? "255,40,200" : "0,240,255" }); }
           }
           return out.sort((a, b) => a.y - b.y);
         }
@@ -8215,8 +8662,8 @@
         };
 
         // ---------- DEPTH: slow parallax nebula light under everything (screen space), vignette on every map ----------
-        const PXNEB = { 0: ["#2a3cff", "#ff2bd6", "#00e5ff"], 1: ["#ffcf8a", "#ff9a4a"], 2: ["#9fe8ff", "#ffffff"], 3: ["#7a3cff", "#2a6cff", "#ff4fd8"], 4: ["#ff5a1a", "#ffb02e"], 5: ["#c8ff7a", "#5adf9a"], 6: ["#ff28c8", "#00f0ff", "#7a3cff"] };
-        const PXNA = { 0: 0.13, 1: 0.05, 2: 0.06, 3: 0.2, 4: 0.12, 5: 0.07, 6: 0.14 };
+        const PXNEB = { 0: ["#2a3cff", "#ff2bd6", "#00e5ff"], 1: ["#ffcf8a", "#ff9a4a"], 2: ["#9fe8ff", "#ffffff"], 3: ["#7a3cff", "#2a6cff", "#ff4fd8"], 4: ["#ff5a1a", "#ffb02e"], 5: ["#c8ff7a", "#5adf9a"], 6: ["#ff28c8", "#00f0ff", "#7a3cff"], 7: ["#ffb347", "#5ad1ff", "#ff4fa0"] };
+        const PXNA = { 0: 0.13, 1: 0.05, 2: 0.06, 3: 0.2, 4: 0.12, 5: 0.07, 6: 0.14, 7: 0.06 };
         const pxSoft = {};
         function pxSoftSpr(col) { if (pxSoft[col]) return pxSoft[col]; const c = document.createElement("canvas"); c.width = c.height = 128; const g = c.getContext("2d"), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
           gr.addColorStop(0, col); gr.addColorStop(0.4, col.length === 7 ? col + "88" : col); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return (pxSoft[col] = c); }
@@ -8509,7 +8956,7 @@
             if (!o.on) return;
             const used = o.mUsed.slice(); o.mUsed = [];
             const mode = ["n", "t", "s", "r", "d", "p", "l"].includes(MD) ? MD : "n";
-            o.mp = rpc("start_match", { p_mode: mode, p_difficulty: mode === "r" ? 2 : clamp(S.diff | 0, 0, 4), p_map: clamp(mapI | 0, 0, 6) })
+            o.mp = rpc("start_match", { p_mode: mode, p_difficulty: mode === "r" ? 2 : clamp(S.diff | 0, 0, 4), p_map: clamp(mapI | 0, 0, MAPS.length - 1) })
               .then((r) => { o.mid = r.match_id; for (const b of used) rpc("use_boost", { p_match_id: r.match_id, p_boost: b }).catch(() => {}); return r.match_id; })
               .catch((e) => { o.mid = null; if (e.code === "maintenance" || e.code === "banned") toast(o.err(e)); return null; });
           };
