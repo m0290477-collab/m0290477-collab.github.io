@@ -567,6 +567,87 @@
       @media (max-height: 360px) { .tu-card { grid-template-columns: 170px 1fr; padding: 12px 16px; gap: 14px; } .tu-vis { width: 170px; height: 124px; } .tu-txt h3 { font-size: 19px; } .tu-txt p { font-size: 14px; } }
       @media (max-width: 520px) { .tu-card { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
       @media (prefers-reduced-motion: reduce) { .tu-sn, .tu-or, .tu-fg, .tu-pl, .tu-bm { animation: none; } .tu-sn { stroke-dasharray: none; } }
+      /* ================= PREMIUM PASS (px): portal, Royal Pass, Royal Shop, HUD, game over ================= */
+      :root { --px-g1: #fff3b8; --px-g2: #f5cd5a; --px-g3: #c99a2e; --px-g4: #7a5410; --px-ink: #0b0d0c; --px-glass: rgba(14, 17, 16, .72); --px-ln: rgba(255, 236, 190, .14); }
+      @keyframes px-up { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+      @keyframes px-pop { 0% { opacity: 0; transform: scale(.6); } 70% { opacity: 1; transform: scale(1.08); } 100% { transform: scale(1); } }
+      @keyframes px-shine { 0% { transform: translateX(-130%) skewX(-20deg); } 55%, 100% { transform: translateX(330%) skewX(-20deg); } }
+      @keyframes px-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(124, 255, 158, .45), 0 10px 30px rgba(0, 0, 0, .45); } 50% { box-shadow: 0 0 0 10px rgba(124, 255, 158, 0), 0 10px 30px rgba(0, 0, 0, .45); } }
+      @keyframes px-glow { 0%, 100% { box-shadow: 0 0 0 1px rgba(255, 216, 74, .55), 0 0 14px rgba(255, 200, 60, .35); } 50% { box-shadow: 0 0 0 1px rgba(255, 236, 150, .95), 0 0 26px rgba(255, 210, 70, .7); } }
+      @keyframes px-float { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(var(--dx, 20px), var(--dy, -30px), 0); } }
+      @keyframes px-logo { 0% { background-position: 160% 0, 0 0; } 60%, 100% { background-position: -60% 0, 0 0; } }
+      @keyframes px-dot { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: .7; } }
+      @keyframes px-kf { 0% { opacity: 0; transform: translateX(-16px); } 10%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-6px); } }
+      @keyframes px-flash { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+      @keyframes px-spin { to { transform: rotate(360deg); } }
+      /* every overlay panel slides up softly; buttons press in */
+      .x-ov:not(.x-hide) > .x-box { animation: px-up .38s cubic-bezier(.2, .8, .2, 1) both; }
+      .x-btn, .x-it button, .x-tabs button, .x-seg button, .px-card, .px-tile, .px-mc, .px-chipb { transition: transform .14s cubic-bezier(.2, .8, .2, 1), box-shadow .2s, border-color .2s, background .2s, filter .2s; }
+      .x-btn:active, .x-it button:active, .x-tabs button:active, .x-seg button:active, .px-mc:active, .px-tile:active, .px-chipb:active, .px-card button:active { transform: scale(.94); }
+      .x-ov h2.x-cy, .x-ov .x-box > h2:first-child { background: linear-gradient(180deg, #fff6d2, #e7c66a 60%, #b8892a); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: .03em; }
+      .x-ov .x-btn.x-main { position: relative; overflow: hidden; border: 1px solid rgba(255, 226, 140, .75); background: linear-gradient(180deg, #3f8a5f, #1f5038 55%, #17402c); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 10px 26px rgba(0, 0, 0, .45); text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+      .x-ov .x-btn.x-main::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 34%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .28), transparent); animation: px-shine 3.6s ease-in-out infinite; pointer-events: none; }
+      .x-ov .x-it { background: linear-gradient(180deg, rgba(30, 34, 32, .78), rgba(14, 16, 15, .78)); border: 1px solid var(--px-ln); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05); }
+      .x-ov .x-set { box-sizing: border-box; padding: 10px 12px; border-radius: 14px; background: linear-gradient(180deg, rgba(28, 32, 30, .7), rgba(12, 14, 13, .7)); border: 1px solid var(--px-ln); }
+      .x-ov .x-set > p { color: #e9dfc4 !important; font-weight: 600; letter-spacing: .02em; }
+      .x-ov .x-seg button.on { background: linear-gradient(180deg, #4a3d1c, #2c2412); color: #ffe39a; box-shadow: inset 0 0 0 1px rgba(255, 216, 110, .6), 0 0 12px rgba(255, 200, 80, .18); }
+
+      /* ---------- IN-MATCH HUD ---------- */
+      .x-tl { opacity: .96; gap: 6px; }
+      .x-tl .x-hud.x-stat { background: linear-gradient(180deg, rgba(18, 22, 20, .78), rgba(8, 10, 9, .7)); border: 1px solid rgba(255, 226, 160, .2); box-shadow: 0 6px 16px rgba(0, 0, 0, .35); }
+      .x-stat div { padding: 3px 9px; border-radius: 999px; background: rgba(0, 0, 0, .35); border: 1px solid rgba(124, 255, 158, .3); color: #b8ffcb !important; font-weight: 800; }
+      .x-stat div + div { border-color: rgba(255, 120, 160, .35); color: #ffc2d6 !important; }
+      .x-evo { padding: 4px 10px 4px 8px; border-radius: 999px; background: linear-gradient(180deg, rgba(18, 22, 20, .72), rgba(8, 10, 9, .62)); border: 1px solid rgba(124, 255, 158, .22); align-self: flex-start; }
+      .x-evt { width: 84px; height: 6px; border-radius: 3px; }
+      .x-evt i { box-shadow: 0 0 8px rgba(124, 255, 158, .7); }
+      .x-pw span { padding: 2px 8px; border-radius: 999px; background: rgba(0, 0, 0, .45); border: 1px solid rgba(255, 216, 110, .35); color: #ffe9a8; font-weight: 700; }
+      .x-lb { top: var(--x-st); right: var(--x-sr); left: auto; width: 176px; padding: 8px 8px 6px; opacity: .95; border-radius: 16px; pointer-events: auto;
+        background: linear-gradient(180deg, rgba(18, 22, 20, .78), rgba(8, 10, 9, .7)); border: 1px solid rgba(255, 226, 160, .22); box-shadow: 0 8px 22px rgba(0, 0, 0, .4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+      .x-lb.x-lb0 { width: 176px; display: block; }
+      .x-lb.x-lb0 h4 span, .x-lb.x-lb0 ol { display: block; }
+      .x-lb.x-lb0 h4 span { display: inline; }
+      .x-lb h4 { display: flex; align-items: center; gap: 5px; margin: 0 2px 5px; font-size: 11px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: #e7c66a; }
+      .x-lb h4 span { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+      .x-lb h4 em { font-style: normal; font: 700 10px/1 "Geist Mono", ui-monospace, monospace; color: #9a927e; letter-spacing: 0; }
+      .x-lb li { align-items: center; gap: 6px; padding: 2px 6px; margin: 1px 0; border-radius: 8px; font-size: 12px; line-height: 1.45; color: #e9e6dd; }
+      .x-lb li i { min-width: 18px; text-align: center; font-size: 12px; color: #9a927e; font-weight: 800; }
+      .x-lb li span { font-weight: 700; color: #cfc6ad; font-size: 11.5px; }
+      .x-lb li.me { color: #2a1600; background: linear-gradient(90deg, #fff1a8, #e2a92a); font-weight: 800; box-shadow: 0 0 10px rgba(255, 200, 60, .35); }
+      .x-lb li.me i, .x-lb li.me span { color: #2a1600; }
+      .x-lb li.sep { justify-content: center; padding: 0; line-height: .8; color: #6b6656; letter-spacing: .3em; }
+      [dir="rtl"] .x-lb li em { text-align: right; }
+      @media (max-height: 430px) { .x-lb { width: 158px; padding: 6px 6px 4px; } .x-lb li { font-size: 11px; line-height: 1.35; } }
+      .x-boost { width: 70px; height: 70px; border: 0; background: radial-gradient(circle at 50% 35%, rgba(255, 90, 200, .55), rgba(60, 6, 50, .85) 70%); opacity: .9;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .45); font-weight: 900; letter-spacing: .04em; text-shadow: 0 1px 3px #000; }
+      .x-boost::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; background: conic-gradient(#ff5ad0 var(--bf, 100%), rgba(255, 255, 255, .12) 0); -webkit-mask: radial-gradient(circle, transparent 60%, #000 61%); mask: radial-gradient(circle, transparent 60%, #000 61%); z-index: -1; }
+      .x-boost.on { background: radial-gradient(circle at 50% 35%, #ff8ae0, #8a1878 70%); box-shadow: 0 0 26px #ff2bd6, 0 0 0 3px rgba(255, 255, 255, .25); transform: scale(.95); }
+      .px-kf { position: fixed; top: calc(var(--x-st) + 92px); left: var(--x-sl); display: flex; flex-direction: column; gap: 4px; pointer-events: none; z-index: 5; direction: ltr; }
+      .px-kf div { padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; color: #f1ead6; background: linear-gradient(90deg, rgba(10, 12, 11, .82), rgba(10, 12, 11, .5)); border-inline-start: 3px solid #e7c66a; animation: px-kf 3.2s ease-out forwards; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+      .px-kf div.me { border-color: #7cff9e; color: #d6ffe3; }
+      .px-kf div.dd { border-color: #ff5a7a; color: #ffd0da; }
+      .px-fl { position: fixed; inset: 0; pointer-events: none; z-index: 4; opacity: 0; }
+      .px-fl.k { background: radial-gradient(ellipse at center, transparent 55%, rgba(255, 210, 80, .35)); animation: px-flash .6s ease-out; }
+      .px-fl.d { background: radial-gradient(ellipse at center, rgba(255, 255, 255, .25), rgba(160, 0, 20, .55) 70%); animation: px-flash .9s ease-out; }
+      #c.px-dead { filter: saturate(.35) brightness(.85); transition: filter .5s; }
+
+      /* ---------- GAME OVER ---------- */
+      #over .x-box { max-width: 560px; }
+      #over h2 { font-size: 30px !important; letter-spacing: .08em; text-transform: uppercase; background: linear-gradient(180deg, #ffd0da, #ff5a7a); -webkit-background-clip: text; background-clip: text; color: transparent !important; text-shadow: none; }
+      .px-rank { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 18px; border-radius: 18px; background: linear-gradient(135deg, rgba(255, 210, 90, .2), rgba(122, 60, 255, .2)); border: 1px solid rgba(255, 216, 110, .45); animation: px-pop .6s .25s both; }
+      .px-rank i { font-style: normal; font-size: 34px; }
+      .px-rank b { font: 900 34px/1 "Geist Mono", ui-monospace, monospace; background: linear-gradient(180deg, #fff6d2, #e7b23a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .px-rank small { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #cfc6ad; }
+      .px-rank span { text-align: start; }
+      #over .x-res div { position: relative; border-radius: 16px; padding: 12px 4px 10px; background: linear-gradient(180deg, rgba(34, 38, 36, .85), rgba(14, 16, 15, .85)); border: 1px solid var(--px-ln); animation: px-up .45s both; }
+      #over .x-res div:nth-child(2) { animation-delay: .08s; } #over .x-res div:nth-child(3) { animation-delay: .16s; }
+      #over .x-res div::before { display: block; font-size: 20px; margin-bottom: 2px; }
+      #over .x-res div:nth-child(1)::before { content: "🐍"; } #over .x-res div:nth-child(2)::before { content: "⚔️"; } #over .x-res div:nth-child(3)::before { content: "🏆"; }
+      #over .x-res b { font-size: 30px; font-weight: 900; }
+      .px-rews { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+      .px-rews span { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 800; color: #ffe9a8; background: linear-gradient(180deg, rgba(255, 216, 110, .2), rgba(255, 216, 110, .06)); border: 1px solid rgba(255, 216, 110, .45); animation: px-pop .5s both; }
+      #over #earn.px-gone { display: none; }
+      @media (prefers-reduced-motion: reduce) { .px-bg i, .px-bg b, .px-rpb, .px-rpb::after, .px-cta, .px-cta::after, #menu .x-btn.x-play, #menu h1.x-logo, .x-ov .x-btn.x-main::after, .px-rw.ok, .px-chipb em { animation: none !important; } }
+      [dir="rtl"] #menu .px-car, [dir="rtl"] #menu .px-strip, [dir="rtl"] #menu .px-rpb, [dir="rtl"] #menu .px-news, [dir="rtl"] #menu .px-sec { direction: rtl; }
       /* ===== NEW FEATURES ===== */
       .nf-h { top: auto; bottom: calc(var(--x-sb) + 6px); left: 50%; transform: translateX(-50%); padding: 3px 12px; font-size: 13px; font-weight: 600; color: #fff6c2;
         white-space: nowrap; max-width: calc(100% - 2 * var(--x-sx) - 260px); overflow: hidden; text-overflow: ellipsis; opacity: .85; border-radius: var(--r-pill); }
@@ -649,6 +730,8 @@
           <button class="x-btn x-sub" data-go="revN" data-i18n="revNo">لا، شكراً</button>
         </div>
         <div class="x-hud nf-h x-hide" id="nfh" aria-live="off"></div>
+        <div class="px-kf" id="pxkf" aria-live="polite"></div>
+        <div class="px-fl" id="pxfl" aria-hidden="true"></div>
         <button class="nf-rw x-hide" id="nfrw" data-go="nfrw" aria-label="Rewind" data-i18n-al="nfRw"><span class="x-ring" id="nfrwr"></span><b>⏪</b></button>
         <button class="nf-emb x-hide" id="nfemb" data-go="nfem" aria-label="Emote" data-i18n-al="nfEmote">😀</button>
         <div class="nf-emw x-hide" id="nfemw"></div>
@@ -851,6 +934,7 @@
       </div></div>
       <div class="x-ov x-hide" id="over"><div class="x-box">
         <h2 data-i18n="gameOver">انتهت اللعبة</h2>
+        <div class="px-rank" id="pxrank"></div>
         <div class="x-res">
           <div><b id="fl">0</b><span data-i18n="length">الطول</span></div>
           <div><b id="fk">0</b><span data-i18n="kills">القتلى</span></div>
@@ -860,6 +944,7 @@
         <p class="x-chg x-hide" id="chg" dir="auto"></p>
         <p class="x-chg x-hide" id="nfo" dir="auto"></p>
         <p id="earn"></p>
+        <div class="px-rews" id="pxrews"></div>
         <div class="x-lvp" aria-hidden="true"><i id="lvpb"></i></div><small class="x-lvt" id="lvpt"></small>
         <div id="tmr" class="x-hide"></div>
         <button class="x-btn x-main" data-go="again" data-i18n="again">العب مرة ثانية</button>
@@ -1801,6 +1886,35 @@
         tx_word: ["وضع الكلمات", "Word mode", "Kelime modu", "Mode mots", "Modo palabras", "शब्द मोड"],
       };
       Object.assign(I18N, NF_I18N);
+      Object.assign(I18N, {
+        pxNew: ["جديد", "NEW", "YENİ", "NOUVEAU", "NUEVO", "नया"],
+        pxDaily: ["يومي", "DAILY", "GÜNLÜK", "DU JOUR", "DIARIO", "रोज़ाना"],
+        pxModesH: ["أوضاع اللعب", "Game modes", "Oyun modları", "Modes de jeu", "Modos de juego", "गेम मोड"],
+        pxAll: ["كل الأوضاع", "All modes", "Tüm modlar", "Tous les modes", "Todos los modos", "सभी मोड"],
+        pxLeagueD: ["3 جولات · كون بأول 3 حتى تتأهل", "3 rounds · finish top 3 to qualify", "3 tur · geçmek için ilk 3", "3 manches · finis dans le top 3", "3 rondas · acaba entre los 3 primeros", "3 राउंड · क्वालिफ़ाई के लिए टॉप 3"],
+        pxShopD: ["أشكال ملكية، آثار ومؤثرات", "Royal skins, trails & effects", "Kraliyet görünümleri, izler, efektler", "Skins royaux, traînées et effets", "Aspectos reales, estelas y efectos", "रॉयल स्किन, ट्रेल और इफ़ेक्ट"],
+        pxMoreD: ["الخصم الذكي، الأسرار وغيرها", "Nemesis, secrets & more", "Baş düşman, sırlar ve dahası", "Némésis, secrets et plus", "Némesis, secretos y más", "नेमेसिस, रहस्य और बहुत कुछ"],
+        pxNews: ["الموسم 1 بدأ: القصة، وضع الكلمات، محرر الخرائط والرويال باس", "Season 1 is live: Story, Word mode, Map editor & Royal Pass", "Sezon 1 başladı: Hikâye, Kelime modu, Harita editörü ve Royal Pass", "La saison 1 est lancée : Histoire, mode Mots, éditeur de cartes et Royal Pass", "¡Temporada 1 en marcha: Historia, modo Palabras, editor de mapas y Royal Pass!", "सीज़न 1 शुरू: कहानी, शब्द मोड, मैप एडिटर और रॉयल पास"],
+        pxPremium: ["بريميوم", "PREMIUM", "PREMIUM", "PREMIUM", "PREMIUM", "प्रीमियम"],
+        pxFree: ["مجاني", "FREE", "ÜCRETSİZ", "GRATUIT", "GRATIS", "मुफ़्त"],
+        pxPerks: ["شنو يعطيك البريميوم", "Premium includes", "Premium'da neler var", "Le Premium inclut", "Premium incluye", "प्रीमियम में शामिल"],
+        pxPk1: ["شكلين أسطوريين: {a} و{b}", "2 legendary skins: {a} & {b}", "2 efsanevi görünüm: {a} ve {b}", "2 skins légendaires : {a} et {b}", "2 aspectos legendarios: {a} y {b}", "2 पौराणिक स्किन: {a} और {b}"],
+        pxPk2: ["أثرين، مؤثرين موت، إطارين اسم وإيموجيين", "2 trails, 2 death effects, 2 name frames, 2 emotes", "2 iz, 2 ölüm efekti, 2 isim çerçevesi, 2 ifade", "2 traînées, 2 effets de mort, 2 cadres de nom, 2 émotes", "2 estelas, 2 efectos de muerte, 2 marcos de nombre, 2 emotes", "2 ट्रेल, 2 डेथ इफ़ेक्ट, 2 नाम फ़्रेम, 2 इमोट"],
+        pxPk3: ["عملات أو جواهر بكل الـ50 مستوى المميز", "Coins or gems on all 50 premium tiers", "50 premium seviyenin hepsinde altın veya mücevher", "Pièces ou gemmes aux 50 paliers premium", "Monedas o gemas en los 50 niveles premium", "सभी 50 प्रीमियम टियर पर सिक्के या रत्न"],
+        pxPk4: ["+50% نقاط موسم من كلشي", "+50% season XP from everything", "Her şeyden +%50 sezon XP", "+50 % d'XP de saison sur tout", "+50 % de XP de temporada en todo", "हर चीज़ से +50% सीज़न XP"],
+        pxUnlock: ["افتح البريميوم · {n} 💎", "Unlock Premium · {n} 💎", "Premium'u aç · {n} 💎", "Débloquer le Premium · {n} 💎", "Desbloquear Premium · {n} 💎", "प्रीमियम खोलें · {n} 💎"],
+        pxClaim: ["استلم", "CLAIM", "AL", "PRENDRE", "RECLAMAR", "लें"],
+        pxTierL: ["المستوى", "tier", "seviye", "palier", "nivel", "टियर"],
+        pxFeat: ["مميز اليوم", "Featured today", "Günün öne çıkanları", "En vedette aujourd'hui", "Destacados de hoy", "आज के ख़ास"],
+        pxOwned: ["عندك", "OWNED", "SENDE", "POSSÉDÉ", "TUYO", "आपका"],
+        pxPremOnly: ["الباس المميز", "PREMIUM PASS", "PREMIUM PASS", "PASS PREMIUM", "PASE PREMIUM", "प्रीमियम पास"],
+        pxTierAt: ["الباس · مستوى {n}", "Pass tier {n}", "Pass seviye {n}", "Pass palier {n}", "Pase nivel {n}", "पास टियर {n}"],
+        pxSave: ["وفّر {n}%", "SAVE {n}%", "%{n} KÂR", "-{n} %", "AHORRA {n}%", "{n}% बचत"],
+        pxRank: ["ترتيبك", "Final rank", "Sıralaman", "Classement", "Puesto final", "अंतिम रैंक"],
+        pxOf: ["من {n} ثعبان", "of {n} snakes", "{n} yılan arasında", "sur {n} serpents", "de {n} serpientes", "{n} साँपों में"],
+        pxKfMe: ["⚔️ قضيت على {x}", "⚔️ You eliminated {x}", "⚔️ {x} oyuncusunu eledin", "⚔️ Tu as éliminé {x}", "⚔️ Eliminaste a {x}", "⚔️ आपने {x} को हराया"],
+        pxKfBy: ["💀 {x} قضى عليك", "💀 {x} eliminated you", "💀 {x} seni eledi", "💀 {x} t'a éliminé", "💀 {x} te eliminó", "💀 {x} ने आपको हराया"],
+      });
       let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
       function t(k, o) {
         const r = I18N[k]; let s = r ? r[I18N_L.indexOf(LANG)] || r[0] : k;
@@ -3751,7 +3865,7 @@
             const n = sn.seg.length;
             const ga = sn.pg > 0 ? 0.45 : 1, bo = sn.boost && sn.len > 12, hc = sn.frz > 0 ? "#8fd8ff" : segColor(sn.skin, 0);
             if (bo) { band(sn, 1, 0, 0, 3.4, hc, 0.1 * ga); band(sn, 1, 0, 0, 2.6, hc, 0.16 * ga); } // boost: a slight glow
-            band(sn, 1, 0, 0, 2.15, "rgba(0,0,0,.5)", ga); // outline: one continuous tube under the scale bands
+            if (QL >= 2 && !bo && sn.frz <= 0) { band(sn, 1, 0, 0, 3.1, hc, 0.09 * ga); } band(sn, 1, 0, 0, 2.15, "rgba(0,0,0,.5)", ga); // outline: one continuous tube under the scale bands
             ctx.globalAlpha = ga;
             for (let i = n - 1; i > 0; i -= sn.st) {
               const px = sn.wx[i], py = sn.wy[i];
@@ -3844,7 +3958,7 @@
 
           ctx.drawImage(sky(M), 0, 0, W, CY); xDraw2(vis); nfDrawTop(vis);
 
-          if (S.map && lbS && player && state === "play") {
+          if (S.map && player && state === "play") {
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             const m = Math.round(Math.min(90, W * 0.25)), k = m / A;
             const x = S.side === "right" ? 12 : W - m - 12, y = H - m - (S.ctrl === "btns" ? 104 : 14);
@@ -4315,7 +4429,7 @@
           for (const b of BOOSTS) if (P.bst[b.id] > 0) { P.bst[b.id]--; player[b.id] = 1; }
           if (player.big) player.len = 60;
           cam.x = player.seg[0].x; cam.y = player.seg[0].y; cam.vx = cam.vy = cam.vs = cam.vt = 0;
-          release(); applySettings(); lbS = S.mini ? 0 : 1; lbT = 0; rvUsed = false; revHide();
+          release(); applySettings(); lbS = 1; lbT = 0; rvUsed = false; revHide();
           nfStart();
           state = "play"; last = performance.now(); aqReset(3);
           show(null); $("game").classList.remove("x-hide");
@@ -4558,7 +4672,7 @@
           const v = b.dataset.v;
           if (g.dataset.k === "diff" && +v === 4 && level() < LEG_LV) { toast("🔒 " + _t("legLock")); return; }
           S[g.dataset.k] = isNaN(+v) ? v : +v;
-          if (g.dataset.k === "mini") lbS = S.mini ? 0 : 1;
+          if (g.dataset.k === "mini") lbS = 1;
           if (g.dataset.k === "q") aqReset(4); // honour a manual pick; only step down again if it still runs under 45
           applySettings();
         }));
@@ -4679,7 +4793,7 @@
             nfLoad(d.X);
             if (Array.isArray(d.cc) && d.cc.length === 2 && d.cc.every((c) => /^#[0-9a-f]{6}$/i.test(c))) { SKINS[CUST].c = d.cc.slice(0, 2); $("cc1").value = d.cc[0]; $("cc2").value = d.cc[1]; skinsEl.children[CUST].style.background = swatch(SKINS[CUST]); }
             mapSel = Number.isInteger(d.map) && MAPS[d.map] ? d.map : 0; if (state === "menu" && mapI !== mapSel) setMap(mapSel);
-            lbS = S.mini ? 0 : 1; aqReset(4);
+            lbS = 1; aqReset(4);
             $("nick").value = P.name; paintSkins(); applySettings(); profile(); achR = aReady();
           } finally { loading = false; }
         }
@@ -5736,7 +5850,7 @@
         ["pointerup", "pointercancel"].forEach((t) => addEventListener(t, (e) => {
           if (e.pointerId !== joyId) return; joyId = null; joy.on = false; knob.style.transform = ""; joyEl.classList.remove("x-on");
         }));
-        const lbx = $("lbx"), lbTap = (e) => { e.preventDefault(); lbS = S.mini ? (lbS + 1) % 3 : (lbS === 2 ? 1 : 2); lbT = 0; };
+        const lbx = $("lbx"), lbTap = (e) => { e.preventDefault(); lbS = lbS === 2 ? 1 : 2; lbT = 0; };
         lbx.addEventListener("click", lbTap);
         lbx.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") lbTap(e); });
 
@@ -7102,6 +7216,131 @@
         });
         NFCARDS.push(() => nfCard("🔤", _t("nfWordT"), _t("nfWordD") + (NX.wd ? " · " + _t("nfWords", { n: NX.wd }) : ""), `<button data-go="nfplay" data-m="word">${esc(_t("play"))}</button>`));
         NFCARDS.unshift(NFCARDS.pop(), NFCARDS.pop()); // story and words near the top
+        // ================= PREMIUM LAYER (px): portal, leaderboard, Royal Pass + Shop storefronts, HUD juice, cinematic effects =================
+        // Everything here is presentation: balances and unlocks still go only through WALLET / ENT. Budget: cached sprites, capped effect lists,
+        // nothing per frame on Low quality except the leaderboard text (5 Hz, DOM touched only on change).
+        const pxVis = (id) => !$(id).classList.contains("x-hide");
+        const pxRM = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
+
+        // ---------- LEADERBOARD: always open (top 5 + your own row), tap for top 10 ----------
+        lbS = 1;
+        { const h4 = $("lbx").querySelector("h4"); if (h4 && !$("pxlbn")) h4.insertAdjacentHTML("beforeend", '<em id="pxlbn" dir="ltr"></em>'); }
+        const PX_MED = ["🥇", "🥈", "🥉"];
+        hud = function (dt) {
+          if ((lbT -= dt) > 0) return;
+          lbT = 0.2; // ~5 updates a second
+          const mh = L.on ? "" : modeHud();
+          $("tm").classList.toggle("x-hide", !L.on && !mh);
+          if (mh) $("tm").textContent = mh;
+          if (L.on) { const t = Math.max(0, Math.ceil(L.t)); $("tm").textContent = `${_t("round")} ${L.round + 1}/3 · ${_t("map" + mapI)} · ${(t / 60) | 0}:${String(t % 60).padStart(2, "0")}`; }
+          if (player) {
+            $("len").textContent = "🐍 " + Math.floor(player.len); $("len").setAttribute("aria-label", _t("length") + ": " + Math.floor(player.len));
+            $("kc").textContent = "⚔️ " + player.kills; $("kc").setAttribute("aria-label", _t("kills") + ": " + player.kills);
+            const bf = Math.round(clamp((player.len - 12) / 88, 0, 1) * 100) + "%"; if (bf !== hud.bf) { hud.bf = bf; $("boost").style.setProperty("--bf", bf); }
+          }
+          $("lbx").classList.remove("x-lb0");
+          const all = snakes.filter((s) => s.alive).sort((a, b) => b.len - a.len), top = all.slice(0, lbS === 2 ? 10 : 5);
+          const row = (s, i) => `<li class="${s === player ? "me" : ""}"><i>${i < 3 ? PX_MED[i] : i + 1}</i><em>${s.tm === undefined ? "" : TC[s.tm][0] + " "}${esc(s.name)}</em><span dir="ltr">${Math.floor(s.len)}</span></li>`;
+          let html = top.map(row).join("");
+          if (player && player.alive && !top.includes(player)) html += `<li class="sep" aria-hidden="true">···</li>` + row(player, all.indexOf(player));
+          if (html !== lbH) { lbH = html; $("lb").innerHTML = html; } // touch the DOM only on change
+          const cn = String(all.length); if ($("pxlbn").textContent !== cn) $("pxlbn").textContent = "🐍" + cn;
+        };
+
+        // ---------- PREMIUM FOOD ORBS: a richer pre-rendered pearl (soft coloured halo, core glint, rim light) ----------
+        pearl = function (col) {
+          const key = "q" + col; let c = SP.get(key); if (c) return c;
+          c = mk(64); const g = c.getContext("2d");
+          let gr = g.createRadialGradient(32, 32, 8, 32, 32, 32); gr.addColorStop(0, col); gr.addColorStop(0.45, col); gr.addColorStop(1, "rgba(0,0,0,0)");
+          g.globalAlpha = 0.34; g.fillStyle = gr; g.beginPath(); g.arc(32, 32, 32, 0, 6.283); g.fill(); g.globalAlpha = 1;
+          ball(g, 32, 32, 15, col);
+          gr = g.createRadialGradient(32, 32, 0, 32, 32, 9); gr.addColorStop(0, "rgba(255,255,255,.55)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+          g.globalCompositeOperation = "lighter"; g.fillStyle = gr; g.beginPath(); g.arc(32, 32, 9, 0, 6.283); g.fill(); g.globalCompositeOperation = "source-over";
+          g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 1.4; g.beginPath(); g.arc(32, 32, 13.8, 0.2, 1.75); g.stroke();
+          g.fillStyle = "rgba(255,255,255,.95)"; g.beginPath(); g.arc(26, 25, 2.4, 0, 6.283); g.fill(); // sharp specular glint
+          SP.set(key, c); return c;
+        };
+
+        // ---------- DEPTH: slow parallax nebula light under everything (screen space), vignette on every map ----------
+        const PXNEB = { 0: ["#2a3cff", "#ff2bd6", "#00e5ff"], 1: ["#ffcf8a", "#ff9a4a"], 2: ["#9fe8ff", "#ffffff"], 3: ["#7a3cff", "#2a6cff", "#ff4fd8"], 4: ["#ff5a1a", "#ffb02e"], 5: ["#c8ff7a", "#5adf9a"], 6: ["#ff28c8", "#00f0ff", "#7a3cff"] };
+        const PXNA = { 0: 0.13, 1: 0.05, 2: 0.06, 3: 0.2, 4: 0.12, 5: 0.07, 6: 0.14 };
+        const pxSoft = {};
+        function pxSoftSpr(col) { if (pxSoft[col]) return pxSoft[col]; const c = document.createElement("canvas"); c.width = c.height = 128; const g = c.getContext("2d"), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+          gr.addColorStop(0, col); gr.addColorStop(0.4, col.length === 7 ? col + "88" : col); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return (pxSoft[col] = c); }
+        const PXBL = [0, 1, 2, 3, 4, 5].map((i) => ({ x: (i * 0.37) % 1, y: (i * 0.61 + 0.2) % 1, d: 0.06 + (i % 3) * 0.04, s: 0.55 + (i % 2) * 0.35, p: i * 1.7 }));
+        // the blobs are composed at 1/8 resolution (15 Hz) and laid over the floor with ONE screen-sized additive blit per frame
+        const pxNC = document.createElement("canvas"), pxNG = pxNC.getContext("2d"); let pxNT = 0;
+        NFH.floor.push(() => {
+          if (QL < 1 || NFM.m === "custom") return;
+          const w = Math.max(32, Math.round(W / 8)), h = Math.max(18, Math.round(H / 8));
+          if (pxNC.width !== w || pxNC.height !== h) { pxNC.width = w; pxNC.height = h; pxNT = 0; }
+          if ((pxNT -= fdt) <= 0) {
+            pxNT = 1 / 15; const pal = PXNEB[mapI] || PXNEB[0], n = QL >= 2 ? PXBL.length : 3, big = Math.max(w, h), g = pxNG;
+            g.globalCompositeOperation = "source-over"; g.clearRect(0, 0, w, h); g.globalCompositeOperation = "lighter";
+            for (let i = 0; i < n; i++) {
+              const b = PXBL[i], sz = big * b.s * (1 + 0.06 * Math.sin(time * 0.3 + b.p)), sw = w + sz, sh = h + sz;
+              const x = ((((b.x * sw - (cam.x / 8) * b.d) % sw) + sw) % sw) - sz / 2, y = ((((b.y * sh - (cam.y / 8) * b.d) % sh) + sh) % sh) - sz / 2;
+              g.globalAlpha = (PXNA[mapI] || 0.1) * (0.75 + 0.25 * Math.sin(time * 0.4 + b.p)); g.drawImage(pxSoftSpr(pal[i % pal.length]), x - sz / 2, y - sz / 2, sz, sz);
+            }
+            g.globalAlpha = 1;
+          }
+          ctx.globalCompositeOperation = "lighter"; ctx.imageSmoothingQuality = "low"; ctx.drawImage(pxNC, 0, 0, W, H); ctx.imageSmoothingQuality = "high"; ctx.globalCompositeOperation = "source-over";
+        });
+        NFH.top.push(() => { if (QL < 1 || mapI === 0 || mapI === 5 || mapI === 6) return; ctx.globalAlpha = mapI === 3 ? 0.55 : 0.35; ctx.drawImage(vVig(mapI === 2 || mapI === 1 ? "rgba(20,30,40,.75)" : "rgba(0,0,0,.85)"), -W * 0.1, -H * 0.1, W * 1.2, H * 1.2); ctx.globalAlpha = 1; });
+
+        // ---------- KILL FEED, SHOCKWAVES, CINEMATIC DEATH ----------
+        let pxRings = [], pxDead = false;
+        function pxRing(x, y, c, big) { if (QL < 1 && !big) return; pxRings.push({ x, y, c, l: 0, big }); if (pxRings.length > 8) pxRings.shift(); }
+        NFH.upd.push((dt) => {
+          for (let i = pxRings.length - 1; i >= 0; i--) if ((pxRings[i].l += dt / (pxRings[i].big ? 1.1 : 0.75)) >= 1) pxRings.splice(i, 1);
+          if (pxDead && player && player.alive && state === "play") { pxDead = false; cv.classList.remove("px-dead"); }
+        });
+        NFH.world.push((vis) => {
+          if (!pxRings.length) return;
+          ctx.globalCompositeOperation = "lighter";
+          for (const r of pxRings) {
+            if (!vis(r.x, r.y, 300)) continue; pr(r.x, r.y, 2); const e = 1 - Math.pow(1 - r.l, 3), k = (20 + e * (r.big ? 320 : 170)) * PK;
+            ctx.globalAlpha = 0.85 * (1 - r.l); ctx.strokeStyle = r.c; ctx.lineWidth = Math.max(1.5, (r.big ? 10 : 6) * (1 - r.l) * PK);
+            ctx.beginPath(); ctx.ellipse(PX, PY, k, k * ST, 0, 0, 6.283); ctx.stroke();
+            ctx.globalAlpha = 0.35 * (1 - r.l); const d = k * 0.9; ctx.drawImage(orb(r.c), PX - d, PY - d * ST, d * 2, d * 2 * ST);
+          }
+          ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+        });
+        function pxFlash(k) { const f = $("pxfl"); if (!f || pxRM) return; f.className = "px-fl"; void f.offsetWidth; f.className = "px-fl " + k; }
+        function pxFeed(txt, cls) {
+          const box = $("pxkf"); if (!box) return; const d = document.createElement("div"); d.className = cls || ""; d.textContent = txt; d.setAttribute("dir", "auto");
+          box.appendChild(d); while (box.children.length > 3) box.firstChild.remove(); setTimeout(() => d.remove(), 3300);
+        }
+        { const _credit = credit; credit = function (o, s) {
+            const was = s.alive; _credit(o, s);
+            if (!was || s.alive || state !== "play") return;
+            if (o === player) { pxFeed(_t("pxKfMe", { x: s.name }), "me"); pxFlash("k"); vib(18); }
+            else if (s === player) pxFeed(_t("pxKfBy", { x: o.name }), "dd");
+            else if (s.len >= 120 || snakes.indexOf(s) < 0) pxFeed(`${o.name} ⚔️ ${s.name}`);
+          }; }
+        { const _kill = kill; kill = function (s) {
+            const was = s.alive; _kill(s);
+            if (!was || s.alive) return;
+            const h = s.seg[0]; pxRing(h.x, h.y, segColor(s.skin, 0), s === player);
+            if (s === player) { pxRing(h.x, h.y, "#ffffff", true); pxFlash("d"); if (QL >= 1) { cv.classList.add("px-dead"); pxDead = true; } }
+          }; }
+        NFH.home.push(() => { pxRings = []; pxDead = false; cv.classList.remove("px-dead"); const b = $("pxkf"); if (b) b.textContent = ""; });
+        NFH.start.push(() => { pxRings = []; pxDead = false; cv.classList.remove("px-dead"); const b = $("pxkf"); if (b) b.textContent = ""; lbS = 1; lbH = ""; });
+
+        // ---------- GAME OVER: rank, count-up stats, reward chips ----------
+        { const _gameOver = gameOver; gameOver = function () {
+            const me = player, rk = me ? 1 + snakes.filter((s) => s !== me && s.alive && s.len > me.len).length : 0, tot = snakes.length;
+            _gameOver();
+            if (!me) return;
+            $("pxrank").innerHTML = `<i aria-hidden="true">${rk <= 3 ? PX_MED[rk - 1] : "🏅"}</i><span><small>${esc(_t("pxRank"))}</small><b dir="ltr">#${rk}</b></span><span><small>${esc(_t("pxOf", { n: tot }))}</small></span>`;
+            const parts = $("earn").textContent.split(" · ").filter(Boolean);
+            $("pxrews").innerHTML = parts.map((p, i) => `<span dir="auto" style="animation-delay:${(0.55 + i * 0.12).toFixed(2)}s">${esc(p)}</span>`).join("");
+            $("earn").classList.add("px-gone");
+            const tg = ["fl", "fk", "fb"].map((id) => [id, +$(id).textContent || 0]);
+            if (pxRM) return;
+            tg.forEach(([id]) => { $(id).textContent = "0"; });
+            setTimeout(() => { const t0 = performance.now(); const step = (ts) => { const k = Math.min(1, (ts - t0) / 900), e = 1 - Math.pow(1 - k, 3); tg.forEach(([id, v]) => { $(id).textContent = String(Math.round(v * e)); }); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }, 720);
+          }; }
         NFR = true; nfPaintSet(); for (const f of NFH.load) f();
         // ================= END NEW FEATURES =================
         requestAnimationFrame(loop);
