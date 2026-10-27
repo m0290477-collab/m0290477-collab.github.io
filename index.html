@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://api.open-meteo.com; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
     <meta name="referrer" content="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>Super Snake</title>
@@ -741,6 +741,107 @@
         .px-rw .px-ri svg { width: 38px; height: 38px; }
       }
       @media (prefers-reduced-motion: reduce) { #menu .x-ltabs button::after, .px-rw.r3::before, .px-rw.leg::before, .x-langpop { animation: none; } }
+      /* ---------- ONLINE: leaderboard, friends, chat, migration, gem store, purchase celebration ---------- */
+      .on-box { max-width: 560px; width: 100%; }
+      .on-seg { width: 100%; }
+      .on-seg em { font-style: normal; color: #ffd84a; font-weight: 800; }
+      .on-tabs { display: flex; gap: 6px; overflow-x: auto; width: 100%; padding: 2px 0 4px; scrollbar-width: none; }
+      .on-tabs::-webkit-scrollbar { display: none; }
+      .on-tabs button { flex: 0 0 auto; border: 1px solid rgba(231, 198, 106, .35); background: rgba(255, 255, 255, .06); color: #e9e6dd; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; }
+      .on-tabs button.on { background: linear-gradient(180deg, #ffe08a, #c99a2e); color: #2a1a00; border-color: transparent; font-weight: 700; }
+      .on-me { min-height: 1.2em; font-size: 13px; color: #e7c66a; }
+      .on-lb { list-style: none; margin: 0; padding: 0; width: 100%; max-height: 46vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+      .on-lb li { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .06); }
+      .on-lb li.me { background: rgba(255, 216, 74, .14); border-color: rgba(255, 216, 74, .45); }
+      .on-lb li i { font-style: normal; min-width: 26px; text-align: center; font-weight: 800; color: #b9c6e6; }
+      .on-lb li b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: start; }
+      .on-lb li b small { display: block; font-weight: 400; font-size: 11px; color: #8b97b8; }
+      .on-lb li em { font-style: normal; font-family: "Geist Mono", ui-monospace, monospace; color: #ffd84a; font-weight: 700; }
+      .on-lb li.on-empty { justify-content: center; color: #8b97b8; }
+      .on-av { font-size: 22px; line-height: 1; }
+      .on-add { width: 100%; }
+      .on-add .x-name { flex: 1; min-width: 0; }
+      .on-list { width: 100%; max-height: 44vh; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+      .on-fr { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .07); }
+      .on-fr.dim { opacity: .7; }
+      .on-fr b { flex: 1; min-width: 0; text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .on-fr b small { display: block; font-weight: 400; font-size: 11px; color: #8b97b8; }
+      .on-ib { min-width: 36px; height: 34px; padding: 0 8px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .07); color: #e9e6dd; font: inherit; font-size: 13px; white-space: nowrap; }
+      .on-ib.ok { background: linear-gradient(180deg, #4ee08a, #1c8a4e); border-color: transparent; color: #fff; font-weight: 700; }
+      .on-ib.hot { box-shadow: 0 0 0 2px #ffd84a inset; }
+      .on-ib.dim { opacity: .5; }
+      .on-ib.arm { background: #a3203a; border-color: #ff6b81; }
+      .on-rep { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; width: 100%; }
+      .on-chh { display: flex; align-items: center; gap: 8px; width: 100%; }
+      .on-chh b { flex: 1; text-align: start; }
+      .on-chl { width: 100%; height: 38vh; min-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 6px; }
+      .on-msg { position: relative; align-self: flex-start; max-width: 78%; padding: 6px 30px 14px 10px; border-radius: 14px 14px 14px 4px; background: rgba(255, 255, 255, .09); text-align: start; word-break: break-word; white-space: pre-wrap; }
+      .on-msg.me { align-self: flex-end; background: linear-gradient(180deg, rgba(255, 216, 74, .32), rgba(201, 154, 46, .28)); border-radius: 14px 14px 4px 14px; padding-inline-end: 10px; }
+      .on-msg small { position: absolute; inset-inline-end: 8px; bottom: 2px; font-size: 9px; opacity: .6; }
+      .on-mrep { position: absolute; inset-inline-end: 4px; top: 3px; border: 0; background: none; color: #ff8a9a; font-size: 12px; padding: 2px; opacity: .7; }
+      .on-chr { width: 100%; }
+      .on-chr textarea { flex: 1; min-width: 0; resize: none; height: 42px; }
+      .on-lbl { display: flex; flex-direction: column; gap: 4px; width: 100%; text-align: start; font-size: 13px; color: #b9c6e6; }
+      .on-gbtn { background: rgba(255, 255, 255, .08); border: 1px solid rgba(231, 198, 106, .45); }
+      body.on-in #frs, body.on-in #xsec, body.on-in #impgo { display: none !important; }
+      body:not(.on-in) .on-only { display: none !important; }
+      .on-acts { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; justify-content: center; }
+      .on-del { color: #ff8a9a; }
+      button.px-pill { border: 0; font: inherit; cursor: pointer; }
+      .px-pill.g.on-plus::after { content: " +"; font-weight: 900; color: #fff; }
+      /* gem store */
+      .on-gbox { max-width: 760px; width: 100%; gap: 8px; background: radial-gradient(120% 90% at 50% 0%, rgba(90, 160, 255, .22), rgba(10, 12, 30, .92) 60%), rgba(8, 10, 24, .92);
+        border: 1px solid rgba(120, 200, 255, .35); box-shadow: 0 0 40px rgba(60, 140, 255, .25), inset 0 1px 0 rgba(255, 255, 255, .12); }
+      .on-ghead { display: flex; align-items: center; gap: 10px; justify-content: center; }
+      .on-ghead h2 { margin: 0; background: linear-gradient(180deg, #e9f6ff, #7cc8ff 60%, #3a8cff); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 26px; letter-spacing: .02em; }
+      .on-test { font: 800 10px/1 system-ui, sans-serif; letter-spacing: .08em; color: #2a1a00; background: #ffd84a; padding: 4px 7px; border-radius: 6px; }
+      .on-gsub { margin: 0; color: #b9d8ff; font-size: 13px; }
+      .on-gbal { min-height: 26px; }
+      .on-packs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
+      .on-pack { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px 8px 10px; border-radius: 18px; cursor: pointer; color: #fff; font: inherit;
+        border: 1px solid rgba(140, 210, 255, .35); background: linear-gradient(170deg, rgba(80, 150, 255, .28), rgba(20, 30, 80, .75)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 6px 18px rgba(0, 0, 0, .35);
+        transition: transform .15s ease, box-shadow .2s ease; animation: onPk .45s cubic-bezier(.3, 1.4, .5, 1) both; animation-delay: var(--d); overflow: hidden; }
+      .on-pack::before { content: ""; position: absolute; inset: -40% -60%; background: linear-gradient(100deg, transparent 40%, rgba(255, 255, 255, .22) 50%, transparent 60%); transform: translateX(-60%); animation: onShine 4.5s ease-in-out infinite; animation-delay: calc(var(--d) * 4); pointer-events: none; }
+      .on-pack:active { transform: scale(.96); }
+      .on-pack.busy { opacity: .6; pointer-events: none; }
+      .on-pack.r3, .on-pack.r4 { background: linear-gradient(170deg, rgba(190, 110, 255, .32), rgba(50, 20, 90, .8)); border-color: rgba(210, 160, 255, .5); }
+      .on-pack.r5 { background: linear-gradient(170deg, rgba(255, 210, 90, .38), rgba(90, 50, 8, .85)); border-color: rgba(255, 216, 74, .7); box-shadow: 0 0 22px rgba(255, 200, 60, .35), inset 0 1px 0 rgba(255, 255, 255, .3); }
+      .on-pack.pop { border-color: rgba(120, 255, 200, .6); }
+      .on-pi { font-size: 30px; line-height: 1.1; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .5)); }
+      .on-pack b { font-size: 22px; font-weight: 900; letter-spacing: .01em; text-shadow: 0 2px 6px rgba(0, 0, 0, .5); }
+      .on-pack small { font-size: 12px; color: #cfe3ff; }
+      .on-pack em { font-style: normal; font-size: 11px; font-weight: 800; color: #1a3a00; background: #8dff6a; padding: 2px 7px; border-radius: 999px; min-height: 16px; }
+      .on-pack em.z { background: none; }
+      .on-price { margin-top: 4px; min-width: 70%; padding: 6px 10px; border-radius: 12px; font-weight: 800; background: linear-gradient(180deg, #ffe08a, #c99a2e); color: #2a1a00; box-shadow: 0 2px 0 #7a5a10; }
+      .on-tag { position: absolute; top: 6px; inset-inline-start: 6px; font: 800 9px/1 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; background: #22d39a; color: #002a1a; padding: 3px 6px; border-radius: 6px; }
+      .on-tag.b { background: #ffd84a; color: #2a1a00; }
+      .on-gnote { margin: 0; font-size: 11px; color: #9fb6d8; }
+      @keyframes onPk { from { transform: translateY(14px) scale(.92); opacity: 0; } }
+      @keyframes onShine { 0%, 70% { transform: translateX(-60%); } 100% { transform: translateX(60%); } }
+      /* purchase celebration */
+      .on-cele { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(20, 40, 90, .75), rgba(2, 4, 12, .92)); animation: onFade .25s ease-out; }
+      .on-cele.x-hide { display: none; }
+      .on-rays { position: absolute; width: 140vmax; height: 140vmax; background: repeating-conic-gradient(rgba(120, 200, 255, .16) 0 8deg, transparent 8deg 22deg); animation: onSpin 14s linear infinite; pointer-events: none; }
+      .on-burst { position: absolute; left: 50%; top: 50%; pointer-events: none; }
+      .on-burst i { position: absolute; font-style: normal; font-size: 22px; transform: translate(-50%, -50%); animation: onFly 1.3s cubic-bezier(.2, .8, .3, 1) both; }
+      .on-cbox { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 22px 34px; border-radius: 24px; background: rgba(10, 16, 40, .78); border: 1px solid rgba(140, 210, 255, .5); box-shadow: 0 0 60px rgba(80, 160, 255, .45); text-align: center; }
+      .on-cbox h2 { margin: 0; color: #fff; }
+      .on-gem { font-size: 64px; line-height: 1; filter: drop-shadow(0 0 18px #6cc6ff); animation: onPop .7s cubic-bezier(.3, 1.6, .5, 1) both, onBob 2.2s ease-in-out .7s infinite; }
+      .on-cnum { margin: 0; font-size: 34px; font-weight: 900; color: #ffd84a; text-shadow: 0 0 14px rgba(255, 200, 60, .6); }
+      @keyframes onFade { from { opacity: 0; } }
+      @keyframes onSpin { to { transform: rotate(360deg); } }
+      @keyframes onPop { from { transform: scale(.2) rotate(-25deg); opacity: 0; } }
+      @keyframes onBob { 50% { transform: translateY(-6px) scale(1.04); } }
+      @keyframes onFly { from { transform: translate(-50%, -50%) scale(.3); opacity: 1; } to { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--r)) scale(1); opacity: 0; } }
+      @media (prefers-reduced-motion: reduce) { .on-pack, .on-pack::before, .on-rays, .on-gem, .on-burst i { animation: none; } }
+      @media (max-height: 430px) {
+        .on-packs { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+        .on-pack { padding: 10px 4px 8px; border-radius: 14px; }
+        .on-pack { padding-top: 19px; } .on-tag { top: 4px; inset-inline-start: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 8px; padding: 2px 5px; } [dir="rtl"] .on-tag { transform: translateX(50%); }
+        .on-pi { font-size: 22px; } .on-pack b { font-size: 17px; } .on-pack small { font-size: 10px; } .on-price { font-size: 12px; padding: 5px 4px; min-width: 88%; }
+        .on-ghead h2 { font-size: 20px; } .on-lb, .on-list { max-height: 40vh; } .on-chl { height: 30vh; }
+      }
+      [dir="rtl"] .on-msg { border-radius: 14px 14px 4px 14px; } [dir="rtl"] .on-msg.me { border-radius: 14px 14px 14px 4px; }
       @media (prefers-reduced-motion: reduce) { .ab2.fire, .ab2.act, .ab2.nope, .nf-emw button, .nf-emw button span, .nf-emw::before { animation: none; } }
       .x-ban { text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 2px #000, 0 0 10px #39ff14; }
       /* ================= PREMIUM PASS (px): portal, Royal Pass, Royal Shop, HUD, game over ================= */
@@ -1212,6 +1313,7 @@
           <div class="x-shop" id="frl"></div>
           <p class="x-note" data-i18n="frRemote">الأصدقاء والطلبات والرسائل تشتغل بين الحسابات على هذا الجهاز فقط. بين الأجهزة يحتاج سيرفر (قريباً).</p>
         </div>
+        <div class="on-acts on-only"><button class="x-btn x-sub" data-go="nfonfr">👥 <span data-i18n="onFrT">Friends</span></button><button class="x-btn x-sub" data-go="nfonlb">🏅 <span data-i18n="onLbT">Leaderboard</span></button><button class="x-btn x-sub on-del" data-go="nfondel" data-i18n="onDel">Delete account</button></div>
         <button class="x-btn x-sub x-hide" id="logout" data-go="logout"><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" /></svg><span id="logoutL" data-i18n="logout">تسجيل الخروج</span></button>
         <button class="x-btn x-sub" data-go="menu" data-i18n="back">رجوع</button>
       </div></div>
@@ -1239,6 +1341,7 @@
         <h1 class="x-logo" dir="ltr">SUPER <br />SNAKE</h1>
         <h2 class="x-cy" data-i18n="login" tabindex="-1">Log in</h2>
         <p class="x-note" data-i18n="needAcct">Log in or create an account to play.</p>
+        <button class="x-btn on-gbtn" data-go="nfonguest">▶ <span data-i18n="onGuest">Play as guest</span></button>
         <input class="x-name" id="lu" maxlength="254" spellcheck="false" autocapitalize="off" placeholder="Username or email" data-i18n-ph="idPh" autocomplete="off" aria-label="Username or email" data-i18n-al="idPh" />
         <input class="x-name" id="lp" type="password" maxlength="128" placeholder="Password" data-i18n-ph="password" autocomplete="current-password" aria-label="Password" data-i18n-al="password" />
         <label class="x-chk"><input type="checkbox" id="rem" /><span data-i18n="remember">Remember me</span></label>
@@ -1441,6 +1544,53 @@
         <p class="x-note" data-i18n="admNote" dir="auto">الإدارة: 187.2219@gmail.com فقط</p>
         <button class="x-btn x-sub" data-go="menu" data-i18n="back">رجوع</button>
       </div></div>
+      <div class="x-ov x-hide" id="onlb"><div class="x-box x-form on-box">
+        <h2 class="x-cy">🏅 <span data-i18n="onLbT">Leaderboard</span></h2>
+        <div class="x-seg on-seg" id="onlbp"><button data-lp="all" data-i18n="onLbAll">All time</button><button data-lp="week" data-i18n="onLbWeek">This week</button></div>
+        <div class="on-tabs" id="onlbb"></div>
+        <div class="on-me" id="onlbme"></div>
+        <ol class="on-lb" id="onlbl" aria-live="polite"></ol>
+        <button class="x-btn x-sub" data-go="nfonback" data-i18n="back">Back</button>
+      </div></div>
+      <div class="x-ov x-hide" id="onfr"><div class="x-box x-form on-box">
+        <h2 class="x-cy">👥 <span data-i18n="onFrT">Friends</span></h2>
+        <div class="x-row on-add"><input class="x-name" id="onfrn" maxlength="20" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Username" data-i18n-ph="onFrPh" aria-label="Username" data-i18n-al="onFrPh" /><button class="x-btn x-main" data-go="nfonfradd" data-i18n="onFrSend">Send request</button></div>
+        <p class="x-err" id="onfrm" role="alert"></p>
+        <div class="x-seg on-seg" id="onfrt"><button data-ft="f" data-i18n="onFrT">Friends</button><button data-ft="r"><span data-i18n="onFrReq">Requests</span><em id="onfrrn"></em></button><button data-ft="b" data-i18n="onFrBl">Blocked</button></div>
+        <div class="on-list" id="onfrl" aria-live="polite"></div>
+        <button class="x-btn x-sub" data-go="nfonback" data-i18n="back">Back</button>
+      </div></div>
+      <div class="x-ov x-hide" id="onch"><div class="x-box x-form on-box">
+        <div class="on-chh" id="onchh"></div>
+        <div class="x-chl on-chl" id="onchl" role="log" aria-live="polite" tabindex="0"></div>
+        <div class="x-row on-chr"><textarea class="x-code x-chi" id="onchi" rows="1" maxlength="300" placeholder="Write a message" data-i18n-ph="onChPh" aria-label="Write a message" data-i18n-al="onChPh"></textarea><button class="x-btn x-main" data-go="nfonchsend" aria-label="Send" data-i18n-al="chSend">➤</button></div>
+        <p class="x-err" id="onche" role="alert"></p>
+        <button class="x-btn x-sub" data-go="nfonfr" data-i18n="back">Back</button>
+      </div></div>
+      <div class="x-ov x-hide" id="ongems"><div class="x-box on-gbox">
+        <div class="on-ghead"><h2>💎 <span data-i18n="onGemsT">Gem Store</span></h2><span class="on-test x-hide" id="ongtest" data-i18n="onTest">TEST MODE</span></div>
+        <p class="on-gsub" data-i18n="onGemsSub">Instant gems for your account — secure checkout</p>
+        <div class="on-gbal" id="ongbal"></div>
+        <div class="on-packs" id="ongp"></div>
+        <p class="on-gnote x-hide" id="ongtn" data-i18n="onTestNote">Test mode</p>
+        <p class="on-gnote" data-i18n="onSecure">Payments by Stripe</p>
+        <p class="x-err" id="ongm" role="alert"></p>
+        <button class="x-btn x-sub" data-go="nfonback" data-i18n="back">Back</button>
+      </div></div>
+      <div class="x-ov x-hide" id="onmig"><div class="x-box x-form on-box">
+        <h2 class="x-cy">☁️ <span data-i18n="onMigT">Move your progress online</span></h2>
+        <p class="x-note" data-i18n="onMigD">One time only</p>
+        <label class="on-lbl"><span data-i18n="onMigPick">Account on this device</span><select class="x-name" id="onmigs"></select></label>
+        <input class="x-name" id="onmigp" type="password" maxlength="128" placeholder="Password" data-i18n-ph="onMigPw" aria-label="Password" data-i18n-al="onMigPw" autocomplete="current-password" />
+        <p class="x-err" id="onmige" role="alert"></p>
+        <button class="x-btn x-main" data-go="nfonmiggo" data-i18n="onMigGo">Move my progress</button>
+        <button class="x-btn x-sub" data-go="nfonmigno" data-i18n="onMigNo">Not now</button>
+      </div></div>
+      <div class="on-cele x-hide" id="oncele" role="dialog" aria-modal="true" aria-live="assertive">
+        <div class="on-rays" aria-hidden="true"></div><div class="on-burst" id="onburst" aria-hidden="true"></div>
+        <div class="on-cbox"><div class="on-gem" aria-hidden="true">💎</div><h2 data-i18n="onPayOk">Purchase complete!</h2><p class="on-cnum" dir="ltr">+<b id="oncn">0</b> 💎</p><p id="onct"></p>
+          <button class="x-btn x-main" data-go="nfoncelex">OK</button></div>
+      </div>
       <div class="x-ov x-hide" id="mnt"><div class="x-box">
         <h2 class="x-cy">🚧 <span data-i18n="mntT">تحت الصيانة</span></h2>
         <p data-i18n="mntDef">المباريات متوقفة مؤقتاً للصيانة. حاول بعد شوي.</p>
@@ -1638,7 +1788,7 @@
         evolved: ["تطوّرت!", "Evolved!", "Evrimleştin!", "Évolution !", "¡Evolución!", "विकसित!"],
         bossName: ["ملك الثعابين", "Snake King", "Yılan Kral", "Roi Serpent", "Rey Serpiente", "साँपों का राजा"],
         bossCome: ["⚠️ ملك الثعابين وصل!", "⚠️ The Snake King is here!", "⚠️ Yılan Kral geldi!", "⚠️ Le Roi Serpent arrive !", "⚠️ ¡Llegó el Rey Serpiente!", "⚠️ साँपों का राजा आ गया!"],
-        bossDie: ["👑 هزمت ملك الثعابين! +100 🪙", "👑 You beat the Snake King! +100 🪙", "👑 Yılan Kral'ı yendin! +100 🪙", "👑 Roi Serpent vaincu ! +100 🪙", "👑 ¡Venciste al Rey Serpiente! +100 🪙", "👑 साँपों के राजा को हराया! +100 🪙"],
+        bossDie: ["👑 هزمت ملك الثعابين! +40 🪙", "👑 You beat the Snake King! +40 🪙", "👑 Yılan Kral'ı yendin! +40 🪙", "👑 Roi Serpent vaincu ! +40 🪙", "👑 ¡Venciste al Rey Serpiente! +40 🪙", "👑 साँपों के राजा को हराया! +40 🪙"],
         combo: ["كومبو x", "Combo x", "Kombo x", "Combo x", "Combo x", "कॉम्बो x"],
         pw_spd: ["سرعة", "Speed", "Hız", "Vitesse", "Velocidad", "स्पीड"], pw_pg: ["شبح", "Ghost", "Hayalet", "Fantôme", "Fantasma", "भूत"],
         pw_pm: ["مغناطيس", "Magnet", "Mıknatıs", "Aimant", "Imán", "चुंबक"], pw_frz: ["تجميد", "Freeze", "Dondurma", "Gel", "Congelar", "फ्रीज़"],
@@ -1695,7 +1845,7 @@
         bd_shield: ["تنجو من ضربة واحدة", "Survive one hit", "Bir darbeden kurtul", "Survit à un choc", "Aguanta un golpe", "एक टक्कर से बचें"],
         chest: ["الصندوق اليومي", "Daily chest", "Günlük sandık", "Coffre du jour", "Cofre diario", "दैनिक संदूक"],
         freeChest: ["صندوق مجاني", "Free chest", "Ücretsiz sandık", "Coffre gratuit", "Cofre gratis", "मुफ़्त संदूक"],
-        chestSub: ["50 إلى 200 🪙، مرة كل جلسة", "50 to 200 🪙, once per session", "50–200 🪙, oturumda bir kez", "50 à 200 🪙, une fois par session", "50 a 200 🪙, una vez por sesión", "50 से 200 🪙, हर सेशन में एक बार"],
+        chestSub: ["15 إلى 60 🪙، مرة كل جلسة", "15 to 60 🪙, once per session", "15–60 🪙, oturumda bir kez", "15 à 60 🪙, une fois par session", "15 a 60 🪙, una vez por sesión", "15 से 60 🪙, हर सेशन में एक बार"],
         done: ["تم ✓", "Done ✓", "Tamam ✓", "Fait ✓", "Hecho ✓", "हो गया ✓"],
         open: ["افتح", "Open", "Aç", "Ouvrir", "Abrir", "खोलें"],
         wheel: ["عجلة الحظ", "Lucky wheel", "Şans çarkı", "Roue de la chance", "Ruleta", "किस्मत का पहिया"],
@@ -1797,7 +1947,7 @@
         roomPh: ["كود الغرفة (اختياري)", "Room code (optional)", "Oda kodu (isteğe bağlı)", "Code du salon (facultatif)", "Código de sala (opcional)", "रूम कोड (वैकल्पिक)"],
         privNote: ["نفس الكود = نفس الخريطة وعدد الخصوم. بدون جوائز.", "Same code = same map and bot count. No rewards.", "Aynı kod = aynı harita ve bot sayısı. Ödül yok.", "Même code = même carte et nombre de bots. Sans récompense.", "Mismo código = mismo mapa y bots. Sin premios.", "एक ही कोड = वही नक्शा और बॉट। कोई इनाम नहीं।"],
         room: ["الغرفة", "Room", "Oda", "Salon", "Sala", "रूम"],
-        teamWin: ["فاز فريقك! +1 💎", "Your team won! +1 💎", "Takımın kazandı! +1 💎", "Ton équipe gagne ! +1 💎", "¡Tu equipo ganó! +1 💎", "आपकी टीम जीती! +1 💎"],
+        teamWin: ["فاز فريقك! +15 🪙", "Your team won! +15 🪙", "Takımın kazandı! +15 🪙", "Ton équipe gagne ! +15 🪙", "¡Tu equipo ganó! +15 🪙", "आपकी टीम जीती! +15 🪙"],
         teamLose: ["خسر فريقك", "Your team lost", "Takımın kaybetti", "Ton équipe a perdu", "Tu equipo perdió", "आपकी टीम हारी"],
         tf1: ["فردي", "Solo", "Tekli", "Solo", "Individual", "सोलो"],
         tf2: ["ثنائي", "Duo", "İkili", "Duo", "Dúo", "डुओ"],
@@ -1819,11 +1969,11 @@
         tYours: ["فريقك", "Your team", "Takımın", "Ton équipe", "Tu equipo", "आपकी टीम"],
         tRes: ["المركز {r}/{n} · تقييم الفرق {x} ({d})", "#{r}/{n} · Team rating {x} ({d})", "#{r}/{n} · Takım puanı {x} ({d})", "#{r}/{n} · Cote d'équipe {x} ({d})", "#{r}/{n} · Rating de equipo {x} ({d})", "#{r}/{n} · टीम रेटिंग {x} ({d})"],
         survLeft: ["باقي {n}", "{n} left", "{n} kaldı", "Encore {n}", "Quedan {n}", "{n} बचे"],
-        survWin: ["آخر ثعبان صامد! +3 💎", "Last snake standing! +3 💎", "Ayakta kalan son yılan! +3 💎", "Dernier serpent debout ! +3 💎", "¡Última serpiente en pie! +3 💎", "आख़िरी बचा साँप! +3 💎"],
+        survWin: ["آخر ثعبان صامد! +30 🪙", "Last snake standing! +30 🪙", "Ayakta kalan son yılan! +30 🪙", "Dernier serpent debout ! +30 🪙", "¡Última serpiente en pie! +30 🪙", "आख़िरी बचा साँप! +30 🪙"],
         rating: ["التقييم", "Rating", "Puan", "Classement", "Puntuación", "रेटिंग"],
         dGoal: ["تحدي اليوم: وصّل طولك {n}", "Daily: reach length {n}", "Günlük: {n} uzunluğa ulaş", "Défi : atteins {n}", "Diario: llega a {n}", "डेली: लंबाई {n} तक पहुँचें"],
         dDone: ["تحدي اليوم ✓", "Daily done ✓", "Günlük tamam ✓", "Défi réussi ✓", "Diario hecho ✓", "डेली पूरा ✓"],
-        dGot: ["خلّصت تحدي اليوم! +5 💎", "Daily challenge done! +5 💎", "Günlük görev tamam! +5 💎", "Défi du jour réussi ! +5 💎", "¡Reto diario hecho! +5 💎", "डेली चैलेंज पूरा! +5 💎"],
+        dGot: ["خلّصت تحدي اليوم! +1 💎", "Daily challenge done! +1 💎", "Günlük görev tamam! +1 💎", "Défi du jour réussi ! +1 💎", "¡Reto diario hecho! +1 💎", "डेली चैलेंज पूरा! +1 💎"],
         gemShop: ["متجر الجواهر", "Gem shop", "Mücevher dükkanı", "Boutique de gemmes", "Tienda de gemas", "रत्न दुकान"],
         gx: ["100 عملة", "100 coins", "100 altın", "100 pièces", "100 monedas", "100 सिक्के"],
         gxSub: ["بدّل جوهرة بعملات", "Swap a gem for coins", "Bir mücevheri altına çevir", "Échange une gemme", "Cambia una gema", "एक रत्न को सिक्कों में बदलें"],
@@ -2040,7 +2190,7 @@
         skCls: ["كلاسيكي", "Classic", "Klasik", "Classiques", "Clásicos", "क्लासिक"],
         skFlags: ["الأعلام", "Flags", "Bayraklar", "Drapeaux", "Banderas", "झंडे"],
         flSearch: ["ابحث عن دولة أو رمزها", "Search a country or code", "Ülke veya kod ara", "Chercher un pays ou un code", "Buscar país o código", "देश या कोड खोजें"],
-        flNote: ["مرتبة أبجدياً · {p} 🪙 لكل علم", "Sorted A–Z · {p} 🪙 each", "A–Z sıralı · tanesi {p} 🪙", "Triés de A à Z · {p} 🪙 chacun", "Orden A–Z · {p} 🪙 cada una", "A–Z क्रम · हर एक {p} 🪙"],
+        flNote: ["مرتبة أبجدياً · {p} 💎 لكل علم", "Sorted A–Z · {p} 💎 each", "A–Z sıralı · tanesi {p} 💎", "Triés de A à Z · {p} 💎 chacun", "Orden A–Z · {p} 💎 cada una", "A–Z क्रम · हर एक {p} 💎"],
         music: ["الموسيقى", "Music", "Müzik", "Musique", "Música", "संगीत"],
         revQ: ["فرصة ثانية؟ كمّل من نفس المكان بطولك", "Second chance? Keep your length and continue", "İkinci şans? Uzunluğunu koru ve devam et", "Seconde chance ? Garde ta longueur et continue", "¿Segunda oportunidad? Conserva tu longitud y sigue", "दूसरा मौका? अपनी लंबाई रखें और जारी रखें"],
         revY: ["إحياء · {c} 🪙", "Revive · {c} 🪙", "Canlan · {c} 🪙", "Revivre · {c} 🪙", "Revivir · {c} 🪙", "फिर जिएँ · {c} 🪙"],
@@ -2320,6 +2470,126 @@
         abShD: ["يصد ضربة وحدة خلال ٣ ثواني", "Blocks one hit for 3 s", "3 sn boyunca bir çarpmayı engeller", "Bloque un choc pendant 3 s", "Bloquea un choque durante 3 s", "3 सेकंड तक एक टक्कर रोके"],
         abPhD: ["تعبر من الثعابين ثانيتين", "Pass through snakes for 2 s", "2 sn yılanların içinden geç", "Traverse les serpents 2 s", "Atraviesa serpientes 2 s", "2 सेकंड साँपों के आर-पार जाएँ"],
       });
+      Object.assign(I18N, {
+        onGuest: ["العب كضيف", "Play as guest", "Misafir olarak oyna", "Jouer en invité", "Jugar como invitado", "अतिथि के रूप में खेलें"],
+        onGuestNote: ["الضيف: التقدم والمكافآت ما تنحفظ", "Guest: progress and rewards are not saved", "Misafir: ilerleme ve ödüller kaydedilmez", "Invité : progression et récompenses non enregistrées", "Invitado: el progreso y las recompensas no se guardan", "अतिथि: प्रगति और इनाम सहेजे नहीं जाते"],
+        onGuestEarn: ["سجّل دخولك عشان تحتفظ بمكافآتك", "Sign in to keep your rewards", "Ödüllerini korumak için giriş yap", "Connecte-toi pour garder tes récompenses", "Inicia sesión para conservar tus recompensas", "इनाम रखने के लिए साइन इन करें"],
+        onSignNeed: ["سجّل دخولك لاستخدام هذا", "Sign in to use this", "Bunu kullanmak için giriş yap", "Connecte-toi pour utiliser ceci", "Inicia sesión para usar esto", "इसके लिए साइन इन करें"],
+        onSignIn: ["تسجيل الدخول", "Sign in", "Giriş yap", "Se connecter", "Iniciar sesión", "साइन इन"],
+        onErr: ["صار خطأ، حاول مرة ثانية", "Something went wrong. Try again.", "Bir sorun oluştu. Tekrar dene.", "Un problème est survenu. Réessaie.", "Algo salió mal. Inténtalo de nuevo.", "कुछ गड़बड़ हुई। फिर से कोशिश करें।"],
+        onNet: ["ما في اتصال بالسيرفر", "No connection to the server", "Sunucuya bağlantı yok", "Pas de connexion au serveur", "Sin conexión con el servidor", "सर्वर से कनेक्शन नहीं"],
+        onNoTicket: ["مباراة بدون اتصال: بدون مكافآت", "Offline match: no rewards", "Çevrimdışı maç: ödül yok", "Match hors ligne : pas de récompense", "Partida sin conexión: sin recompensas", "ऑफ़लाइन मैच: कोई इनाम नहीं"],
+        onShort: ["المباراة قصيرة جداً للمكافآت", "Too short for rewards", "Ödül için çok kısa", "Trop court pour une récompense", "Demasiado corta para recompensas", "इनाम के लिए बहुत छोटा"],
+        onPend: ["جارِ حفظ النتيجة…", "Saving result…", "Sonuç kaydediliyor…", "Enregistrement du résultat…", "Guardando resultado…", "नतीजा सहेजा जा रहा है…"],
+        onSxp: ["نقاط الموسم", "season XP", "sezon XP", "XP de saison", "XP de temporada", "सीज़न XP"],
+        onLvUp: ["مستوى {n}!", "Level {n}!", "Seviye {n}!", "Niveau {n} !", "¡Nivel {n}!", "स्तर {n}!"],
+        onE_funds: ["رصيدك ما يكفي", "Not enough balance", "Bakiye yetersiz", "Solde insuffisant", "Saldo insuficiente", "बैलेंस कम है"],
+        onE_claimed: ["استلمتها من قبل", "Already claimed", "Zaten alındı", "Déjà récupéré", "Ya reclamado", "पहले ही ले लिया"],
+        onE_reach: ["لسا ما وصلت", "Not reached yet", "Henüz ulaşılmadı", "Pas encore atteint", "Aún no alcanzado", "अभी नहीं पहुँचे"],
+        onE_rate: ["بطّئ شوي وحاول بعد لحظة", "Too fast — try again in a moment", "Çok hızlı — birazdan tekrar dene", "Trop rapide — réessaie dans un instant", "Demasiado rápido — inténtalo en un momento", "बहुत तेज़ — थोड़ी देर में फिर करें"],
+        onE_banned: ["حسابك محظور", "Your account is banned", "Hesabın yasaklandı", "Ton compte est suspendu", "Tu cuenta está suspendida", "आपका खाता प्रतिबंधित है"],
+        onE_maint: ["السيرفر تحت الصيانة", "Server under maintenance", "Sunucu bakımda", "Serveur en maintenance", "Servidor en mantenimiento", "सर्वर रखरखाव में है"],
+        onE_level: ["مستواك ما يكفي", "Level too low", "Seviye çok düşük", "Niveau trop bas", "Nivel demasiado bajo", "स्तर बहुत कम है"],
+        onE_owned: ["عندك هذا من قبل", "You already own this", "Buna zaten sahipsin", "Tu possèdes déjà ceci", "Ya lo tienes", "यह पहले से आपके पास है"],
+        onE_login: ["اسم المستخدم أو كلمة المرور غلط", "Wrong username or password", "Kullanıcı adı veya şifre yanlış", "Identifiant ou mot de passe incorrect", "Usuario o contraseña incorrectos", "गलत यूज़रनेम या पासवर्ड"],
+        onE_nouser: ["ما لقينا هذا اللاعب", "Player not found", "Oyuncu bulunamadı", "Joueur introuvable", "Jugador no encontrado", "खिलाड़ी नहीं मिला"],
+        onE_self: ["ما تقدر تضيف نفسك", "You can't add yourself", "Kendini ekleyemezsin", "Tu ne peux pas t'ajouter", "No puedes añadirte", "आप खुद को नहीं जोड़ सकते"],
+        onE_already: ["أنتم أصدقاء من قبل", "Already friends", "Zaten arkadaşsınız", "Déjà amis", "Ya sois amigos", "पहले से दोस्त हैं"],
+        onE_full: ["قائمة الأصدقاء ممتلئة", "Friend list is full", "Arkadaş listesi dolu", "Liste d'amis pleine", "Lista de amigos llena", "दोस्तों की सूची भरी है"],
+        onE_giftlim: ["وصلت حد الهدايا اليوم", "Daily gift limit reached", "Günlük hediye sınırı doldu", "Limite de cadeaux du jour atteinte", "Límite diario de regalos alcanzado", "आज की उपहार सीमा पूरी"],
+        onE_giftsent: ["أرسلت له هدية اليوم", "Already sent a gift today", "Bugün zaten hediye gönderdin", "Cadeau déjà envoyé aujourd'hui", "Ya enviaste un regalo hoy", "आज उपहार भेज चुके हैं"],
+        onE_notfr: ["لازم تكونون أصدقاء", "You need to be friends", "Arkadaş olmanız gerekiyor", "Vous devez être amis", "Tenéis que ser amigos", "दोस्त होना ज़रूरी है"],
+        onE_off: ["غير متاح حالياً", "Not available right now", "Şu anda kullanılamıyor", "Indisponible pour le moment", "No disponible ahora", "अभी उपलब्ध नहीं"],
+        onMigT: ["انقل تقدمك للحساب الأونلاين", "Move your progress online", "İlerlemeni çevrimiçi hesaba taşı", "Transfère ta progression en ligne", "Pasa tu progreso a la cuenta online", "अपनी प्रगति ऑनलाइन ले जाएँ"],
+        onMigD: ["مرة وحدة بس: ننقل العملات والمستوى والأغراض من هذا الجهاز لحسابك الأونلاين. الكميات فوق الحد الآمن تنقص.", "One time only: bring coins, level and items from this device into your online account. Amounts above the safety caps are trimmed.", "Sadece bir kez: bu cihazdaki altın, seviye ve eşyaları çevrimiçi hesabına taşı. Güvenlik sınırını aşan miktarlar kırpılır.", "Une seule fois : transfère pièces, niveau et objets de cet appareil vers ton compte en ligne. Les montants au-delà des plafonds sont réduits.", "Solo una vez: trae monedas, nivel y objetos de este dispositivo a tu cuenta online. Lo que supere los límites se recorta.", "सिर्फ़ एक बार: इस डिवाइस के सिक्के, स्तर और चीज़ें ऑनलाइन खाते में लाएँ। सीमा से ऊपर की मात्रा घटा दी जाती है।"],
+        onMigPick: ["الحساب على هذا الجهاز", "Account on this device", "Bu cihazdaki hesap", "Compte sur cet appareil", "Cuenta en este dispositivo", "इस डिवाइस का खाता"],
+        onMigPw: ["كلمة مرور ذاك الحساب", "That account's password", "O hesabın şifresi", "Mot de passe de ce compte", "Contraseña de esa cuenta", "उस खाते का पासवर्ड"],
+        onMigGo: ["انقل تقدمي", "Move my progress", "İlerlememi taşı", "Transférer ma progression", "Pasar mi progreso", "मेरी प्रगति ले जाएँ"],
+        onMigNo: ["مو الحين", "Not now", "Şimdi değil", "Plus tard", "Ahora no", "अभी नहीं"],
+        onMigOk: ["تم النقل: +{c} 🪙 · +{g} 💎 · المستوى {l}", "Progress moved: +{c} 🪙 · +{g} 💎 · level {l}", "Taşındı: +{c} 🪙 · +{g} 💎 · seviye {l}", "Transféré : +{c} 🪙 · +{g} 💎 · niveau {l}", "Progreso pasado: +{c} 🪙 · +{g} 💎 · nivel {l}", "ले जाया गया: +{c} 🪙 · +{g} 💎 · स्तर {l}"],
+        onMigDone: ["هذا الحساب نقل تقدمه من قبل", "This account already moved its progress", "Bu hesap ilerlemesini zaten taşıdı", "Ce compte a déjà transféré sa progression", "Esta cuenta ya pasó su progreso", "यह खाता प्रगति ले जा चुका है"],
+        onLbT: ["المتصدرين", "Leaderboard", "Liderlik tablosu", "Classement", "Clasificación", "लीडरबोर्ड"],
+        onLbAll: ["كل الأوقات", "All time", "Tüm zamanlar", "Depuis toujours", "Histórico", "सर्वकालिक"],
+        onLbWeek: ["هذا الأسبوع", "This week", "Bu hafta", "Cette semaine", "Esta semana", "इस हफ़्ते"],
+        onB_xp: ["الخبرة", "XP", "XP", "XP", "XP", "XP"],
+        onB_best: ["أطول ثعبان", "Best length", "En uzun", "Meilleure longueur", "Mejor longitud", "सबसे लंबा"],
+        onB_rating: ["المصنّف", "Ranked", "Dereceli", "Classé", "Clasificatoria", "रैंक्ड"],
+        onB_team: ["الفرق", "Teams", "Takımlar", "Équipes", "Equipos", "टीमें"],
+        onB_trophies: ["الكؤوس", "Trophies", "Kupalar", "Trophées", "Trofeos", "ट्रॉफ़ी"],
+        onB_kills: ["القتلى", "Kills", "Leşler", "Éliminations", "Eliminaciones", "किल"],
+        onLbEmpty: ["ما في لاعبين للحين", "No players yet", "Henüz oyuncu yok", "Pas encore de joueurs", "Aún no hay jugadores", "अभी कोई खिलाड़ी नहीं"],
+        onLbMe: ["ترتيبك", "Your rank", "Sıran", "Ton rang", "Tu puesto", "आपकी रैंक"],
+        onFrT: ["الأصدقاء", "Friends", "Arkadaşlar", "Amis", "Amigos", "दोस्त"],
+        onFrPh: ["اسم المستخدم", "Username", "Kullanıcı adı", "Nom d'utilisateur", "Nombre de usuario", "यूज़रनेम"],
+        onFrSend: ["أرسل طلب", "Send request", "İstek gönder", "Envoyer", "Enviar solicitud", "अनुरोध भेजें"],
+        onFrReq: ["الطلبات", "Requests", "İstekler", "Demandes", "Solicitudes", "अनुरोध"],
+        onFrBl: ["المحظورين", "Blocked", "Engellenenler", "Bloqués", "Bloqueados", "ब्लॉक किए गए"],
+        onFrNone: ["ما عندك أصدقاء للحين، أضف واحد باسمه", "No friends yet — add one by username", "Henüz arkadaş yok — kullanıcı adıyla ekle", "Pas encore d'amis — ajoute-en un par son nom", "Aún no tienes amigos — añade uno por su nombre", "अभी कोई दोस्त नहीं — यूज़रनेम से जोड़ें"],
+        onFrNoReq: ["ما في طلبات", "No requests", "İstek yok", "Aucune demande", "Sin solicitudes", "कोई अनुरोध नहीं"],
+        onFrNoBl: ["ما في محظورين", "Nobody blocked", "Engellenen yok", "Personne de bloqué", "Nadie bloqueado", "कोई ब्लॉक नहीं"],
+        onFrIn: ["يبي يصير صديقك", "Wants to be your friend", "Arkadaşın olmak istiyor", "Veut être ton ami", "Quiere ser tu amigo", "आपका दोस्त बनना चाहता है"],
+        onFrOut: ["تم إرسال الطلب", "Request sent", "İstek gönderildi", "Demande envoyée", "Solicitud enviada", "अनुरोध भेजा गया"],
+        onAccept: ["قبول", "Accept", "Kabul", "Accepter", "Aceptar", "स्वीकारें"],
+        onDecline: ["رفض", "Decline", "Reddet", "Refuser", "Rechazar", "मना करें"],
+        onCancel: ["إلغاء", "Cancel", "İptal", "Annuler", "Cancelar", "रद्द करें"],
+        onRemove: ["إزالة", "Remove", "Kaldır", "Retirer", "Eliminar", "हटाएँ"],
+        onBlock: ["حظر", "Block", "Engelle", "Bloquer", "Bloquear", "ब्लॉक"],
+        onUnblock: ["إلغاء الحظر", "Unblock", "Engeli kaldır", "Débloquer", "Desbloquear", "अनब्लॉक"],
+        onReport: ["إبلاغ", "Report", "Şikayet et", "Signaler", "Denunciar", "रिपोर्ट"],
+        onGift: ["هدية {n} 🪙", "Gift {n} 🪙", "{n} 🪙 hediye", "Offrir {n} 🪙", "Regalar {n} 🪙", "{n} 🪙 उपहार"],
+        onGiftSent: ["تم إرسال الهدية", "Gift sent", "Hediye gönderildi", "Cadeau envoyé", "Regalo enviado", "उपहार भेजा गया"],
+        onChat: ["دردشة", "Chat", "Sohbet", "Discuter", "Chat", "चैट"],
+        onRepT: ["ليش تبلغ عن {x}؟", "Why are you reporting {x}?", "{x} neden şikayet ediliyor?", "Pourquoi signaler {x} ?", "¿Por qué denuncias a {x}?", "{x} की रिपोर्ट क्यों?"],
+        onRep_cheating: ["غش", "Cheating", "Hile", "Triche", "Trampas", "धोखा"],
+        onRep_abuse: ["إساءة", "Abuse", "Taciz", "Harcèlement", "Abuso", "दुर्व्यवहार"],
+        onRep_name: ["اسم مسيء", "Offensive name", "Kötü isim", "Nom offensant", "Nombre ofensivo", "अपमानजनक नाम"],
+        onRep_spam: ["سبام", "Spam", "Spam", "Spam", "Spam", "स्पैम"],
+        onRep_other: ["شي ثاني", "Other", "Diğer", "Autre", "Otro", "अन्य"],
+        onRepSent: ["وصلنا البلاغ، شكراً", "Report sent. Thank you.", "Şikayet gönderildi. Teşekkürler.", "Signalement envoyé. Merci.", "Denuncia enviada. Gracias.", "रिपोर्ट भेजी गई। धन्यवाद।"],
+        onConfirm: ["اضغط مرة ثانية للتأكيد", "Tap again to confirm", "Onaylamak için tekrar dokun", "Touche encore pour confirmer", "Toca otra vez para confirmar", "पुष्टि के लिए फिर टैप करें"],
+        onChPh: ["اكتب رسالة", "Write a message", "Mesaj yaz", "Écris un message", "Escribe un mensaje", "संदेश लिखें"],
+        onChEmpty: ["ابدأ المحادثة", "Say hi!", "Merhaba de!", "Dis bonjour !", "¡Saluda!", "नमस्ते कहें!"],
+        onGemsT: ["متجر الجواهر", "Gem Store", "Mücevher Mağazası", "Boutique de gemmes", "Tienda de gemas", "रत्न स्टोर"],
+        onGemsSub: ["جواهر فورية لحسابك — دفع آمن", "Instant gems for your account — secure checkout", "Hesabına anında mücevher — güvenli ödeme", "Des gemmes instantanées — paiement sécurisé", "Gemas al instante — pago seguro", "खाते में तुरंत रत्न — सुरक्षित भुगतान"],
+        onGemsBtn: ["جواهر", "Gems", "Mücevher", "Gemmes", "Gemas", "रत्न"],
+        onBonus: ["+{n}% إضافي", "+{n}% bonus", "+%{n} bonus", "+{n} % bonus", "+{n}% extra", "+{n}% बोनस"],
+        onBest: ["أفضل قيمة", "Best value", "En iyi değer", "Meilleure offre", "Mejor valor", "सबसे फ़ायदेमंद"],
+        onPopular: ["الأكثر طلباً", "Most popular", "En popüler", "Le plus populaire", "Más popular", "सबसे लोकप्रिय"],
+        onTest: ["وضع التجربة", "TEST MODE", "TEST MODU", "MODE TEST", "MODO PRUEBA", "टेस्ट मोड"],
+        onTestNote: ["وضع تجربة: استخدم البطاقة 4242 4242 4242 4242 — ما ينخصم أي مبلغ حقيقي.", "Test mode: use card 4242 4242 4242 4242 — no real money is charged.", "Test modu: 4242 4242 4242 4242 kartını kullan — gerçek para çekilmez.", "Mode test : carte 4242 4242 4242 4242 — aucun argent réel n'est débité.", "Modo prueba: usa la tarjeta 4242 4242 4242 4242 — no se cobra dinero real.", "टेस्ट मोड: कार्ड 4242 4242 4242 4242 — कोई असली पैसा नहीं कटेगा।"],
+        onSecure: ["🔒 الدفع عن طريق Stripe. الجواهر توصل حسابك بعد الدفع مباشرة.", "🔒 Payments by Stripe. Gems land in your account right after payment.", "🔒 Ödemeler Stripe ile. Mücevherler ödemeden hemen sonra hesabında.", "🔒 Paiement par Stripe. Les gemmes arrivent juste après le paiement.", "🔒 Pagos con Stripe. Las gemas llegan justo después del pago.", "🔒 भुगतान Stripe से। भुगतान के तुरंत बाद रत्न खाते में।"],
+        onRedirect: ["نفتح صفحة الدفع الآمنة…", "Opening secure checkout…", "Güvenli ödeme açılıyor…", "Ouverture du paiement sécurisé…", "Abriendo pago seguro…", "सुरक्षित भुगतान खुल रहा है…"],
+        onPayProc: ["جارِ تأكيد الدفع…", "Confirming payment…", "Ödeme onaylanıyor…", "Confirmation du paiement…", "Confirmando el pago…", "भुगतान की पुष्टि हो रही है…"],
+        onPaySoon: ["الجواهر بتوصل خلال لحظات", "Your gems will appear shortly", "Mücevherlerin birazdan gelecek", "Tes gemmes arrivent bientôt", "Tus gemas llegarán en breve", "रत्न थोड़ी देर में आ जाएँगे"],
+        onPayOk: ["تم الشراء!", "Purchase complete!", "Satın alma tamam!", "Achat réussi !", "¡Compra completada!", "खरीदारी पूरी!"],
+        onPayGot: ["+{n} جوهرة لحسابك", "+{n} gems added to your account", "Hesabına +{n} mücevher", "+{n} gemmes ajoutées", "+{n} gemas añadidas", "+{n} रत्न जोड़े गए"],
+        onPayCancel: ["تم إلغاء الشراء — ما انخصم شي", "Purchase cancelled — you were not charged", "Satın alma iptal — ücret alınmadı", "Achat annulé — aucun débit", "Compra cancelada — no se te cobró", "खरीदारी रद्द — कोई शुल्क नहीं"],
+        onPayExp: ["انتهت صلاحية صفحة الدفع — ما انخصم شي", "Checkout expired — you were not charged", "Ödeme süresi doldu — ücret alınmadı", "Paiement expiré — aucun débit", "El pago caducó — no se te cobró", "भुगतान की समय-सीमा खत्म — कोई शुल्क नहीं"],
+        onPayOther: ["هذا الشراء لحساب ثاني، سجّل دخول بالحساب اللي دفع", "This purchase belongs to another account — sign in with the account that paid", "Bu satın alma başka bir hesaba ait — ödeyen hesapla giriş yap", "Cet achat appartient à un autre compte — connecte-toi avec celui qui a payé", "Esta compra es de otra cuenta — inicia sesión con la que pagó", "यह खरीदारी दूसरे खाते की है — भुगतान वाले खाते से साइन इन करें"],
+        onSignBuy: ["سجّل دخولك لشراء الجواهر", "Sign in to buy gems", "Mücevher almak için giriş yap", "Connecte-toi pour acheter des gemmes", "Inicia sesión para comprar gemas", "रत्न खरीदने के लिए साइन इन करें"],
+        onGemsOff: ["متجر الجواهر غير متاح حالياً", "The gem store is not available right now", "Mücevher mağazası şu an kapalı", "La boutique de gemmes est indisponible", "La tienda de gemas no está disponible", "रत्न स्टोर अभी उपलब्ध नहीं"],
+        onPk0: ["حفنة", "Handful", "Avuç", "Poignée", "Puñado", "मुट्ठी भर"],
+        onPk1: ["كيس", "Pouch", "Kese", "Bourse", "Bolsa", "थैली"],
+        onPk2: ["صندوق", "Chest", "Sandık", "Coffre", "Cofre", "संदूक"],
+        onPk3: ["خزنة", "Vault", "Kasa", "Chambre forte", "Bóveda", "तिजोरी"],
+        onPk4: ["كنز", "Treasure", "Hazine", "Trésor", "Tesoro", "ख़ज़ाना"],
+        onPk5: ["كنز الملوك", "King's Treasure", "Kralın Hazinesi", "Trésor du roi", "Tesoro del rey", "राजा का ख़ज़ाना"],
+        onDel: ["حذف الحساب", "Delete account", "Hesabı sil", "Supprimer le compte", "Eliminar cuenta", "खाता हटाएँ"],
+        onDelC: ["اضغط مرة ثانية لحذف حسابك نهائياً", "Tap again to delete your account forever", "Hesabını kalıcı silmek için tekrar dokun", "Touche encore pour supprimer définitivement", "Toca otra vez para eliminar tu cuenta para siempre", "खाता हमेशा के लिए हटाने को फिर टैप करें"],
+        onDeleted: ["تم حذف الحساب", "Account deleted", "Hesap silindi", "Compte supprimé", "Cuenta eliminada", "खाता हटाया गया"],
+        onOdds: ["نسب السقوط", "Drop odds", "Düşme oranları", "Probabilités", "Probabilidades", "मिलने की संभावना"],
+        onAllOwned: ["عندك كل شي — ترجع لك {n} 🪙", "You own everything — refunds {n} 🪙", "Hepsine sahipsin — {n} 🪙 iade", "Tu as tout — rembourse {n} 🪙", "Lo tienes todo — devuelve {n} 🪙", "सब आपके पास — {n} 🪙 वापस"],
+        tx_admin: ["تعديل الإدارة", "Admin adjustment", "Yönetici düzeltmesi", "Ajustement admin", "Ajuste de administración", "एडमिन बदलाव"],
+        tx_migrate: ["نقل التقدم", "Progress moved", "İlerleme taşındı", "Progression transférée", "Progreso transferido", "प्रगति ले जाई गई"],
+        tx_iap: ["شراء من المتجر", "Store purchase", "Mağaza satın alımı", "Achat boutique", "Compra en tienda", "स्टोर खरीदारी"],
+        tx_iap_refund: ["استرجاع", "Refund", "İade", "Remboursement", "Reembolso", "रिफ़ंड"],
+        tx_pass: ["الباس الملكي", "Royal Pass", "Kraliyet Pası", "Pass royal", "Pase real", "रॉयल पास"],
+        tx_stripe: ["شراء جواهر", "Gem purchase", "Mücevher alımı", "Achat de gemmes", "Compra de gemas", "रत्न खरीद"],
+        tx_stripe_refund: ["استرجاع شراء", "Purchase refund", "Satın alma iadesi", "Remboursement d'achat", "Reembolso de compra", "खरीद रिफ़ंड"],
+        memNote: ["حسابك محفوظ أونلاين ويشتغل على أي جهاز.", "Your account is saved online and works on any device.", "Hesabın çevrimiçi kayıtlı, her cihazda çalışır.", "Ton compte est enregistré en ligne et marche sur tout appareil.", "Tu cuenta se guarda online y funciona en cualquier dispositivo.", "आपका खाता ऑनलाइन सहेजा है और हर डिवाइस पर चलता है।"],
+        needAcct: ["سجّل دخولك لحفظ تقدمك أونلاين — أو العب كضيف.", "Sign in to save your progress online — or play as a guest.", "İlerlemeni çevrimiçi kaydetmek için giriş yap — ya da misafir oyna.", "Connecte-toi pour sauvegarder en ligne — ou joue en invité.", "Inicia sesión para guardar tu progreso online — o juega como invitado.", "प्रगति ऑनलाइन सहेजने को साइन इन करें — या अतिथि बनकर खेलें।"],
+        codeOk: ["تم استيراد الكود. سجّل دخولك بنفس الحساب لنقل تقدمه أونلاين.", "Code imported. Sign in with that account to move its progress online.", "Kod içe aktarıldı. İlerlemeyi taşımak için o hesapla giriş yap.", "Code importé. Connecte-toi avec ce compte pour transférer sa progression.", "Código importado. Inicia sesión con esa cuenta para pasar su progreso.", "कोड आयात हुआ। प्रगति ऑनलाइन ले जाने के लिए उसी खाते से साइन इन करें।"],
+      });
       let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
       function t(k, o) {
         const r = I18N[k]; let s = r ? r[I18N_L.indexOf(LANG)] || r[0] : k;
@@ -2342,6 +2612,7 @@
       (function () {
         const cv = document.getElementById("c"), ctx = cv.getContext("2d");
         const $ = (id) => document.getElementById(id);
+        var ON = { guest: false, on: false, st: null, mx: {}, mUsed: [], dayN: 0, cache() {}, storeOk: () => false, stats: () => ({}), over() {}, err: () => "", ek: () => "onErr", offerMig() {} };
         let W, H, dpr, Q = "h";
         // quality levels, low to high: DPR cap, particle cap, rain drops, prey count
         const QS = ["l", "m", "h", "u", "x"], QN = { l: "nfLow", m: "mid", h: "high", u: "uhigh", x: "qx" };
@@ -2507,7 +2778,7 @@
           "e:JP.CA.TR.SA.BD.PW.KR.CH.MK.CN.VN.TN.MA.PK.KZ.KG.AL.ME.SO.XK.DM.CY.FM;ed:BR;" +
           "c201:US.LR.MY.TV.CL.TG;c001:GR.AU;c002:NZ;c010:UY;c100:WS.TW;c102:FJ")
           .split(";").forEach((g) => { const [l, cs] = g.split(":"); cs.split(".").forEach((c) => { FLAG_LY[c] = l; }); });
-        const FLAG0 = SKINS.length, FLAG_P = 300, FL_PAGE = 24, FLAGS = [], FLAG_DN = {};
+        const FLAG0 = SKINS.length, FLAG_P = 15, FL_PAGE = 24, FLAGS = [], FLAG_DN = {};
         const flagEmo = (c) => String.fromCodePoint(...[...c].map((x) => 0x1f1a5 + x.charCodeAt(0))); // regional indicator letters
         function flagName(f, l) { // the country name in the game language, from the ISO code; English from the table when Intl has none
           l = l || LANG;
@@ -2550,12 +2821,14 @@
           return FLS;
         }
         const skR = (s) => s.r ?? (!s.p ? 0 : s.p <= 150 ? 1 : 2); // rarity; the original skins are Common (free), Rare or Epic
+        SKINS.forEach((s, i) => { if (!s.p) return; s.lv = skinLv(s); const r = skR(s); if (s.r === undefined) s.r = r;
+          if (s.t === "fl") { s.p = 15; s.cur = "g"; } else if (r >= 4) { s.p = 100 + (i % 4) * 4; s.cur = "g"; } else if (r === 3) { s.p = 60 + (i % 4) * 4; s.cur = "g"; } else if (r === 2) { s.p = 25 + (i % 5) * 2; s.cur = "g"; } });
         const skV = (s) => (!s.p ? 0 : s.cur ? s.p * 100 : s.p); // value in coins for sorting (1 gem = 100 coins, as in the gem exchange)
         const M = { eat: 0, kill: 0, dragon: 0, games: 0, wheelAt: -3, chest: 0, done: {} };
         // shop and mission data; every visible name comes from I18N (mis_, h_, t_, b_, bd_ keys)
-        const MIS = [{ id: "eat", g: 100, r: 100 }, { id: "kill", g: 3, r: 150 }, { id: "dragon", g: 1, r: 300 }];
-        const HATS = [{ id: "crown", e: "👑", p: 200 }, { id: "glass", e: "🕶️", p: 80 }, { id: "horns", e: "😈", p: 120 }];
-        const TRAILS = [{ id: "spark", e: "✨", p: 120 }, { id: "fire", e: "🔥", p: 180 }];
+        const MIS = [{ id: "eat", g: 100, r: 40 }, { id: "kill", g: 3, r: 60 }, { id: "dragon", g: 1, r: 120 }];
+        const HATS = [{ id: "crown", e: "👑", p: 400 }, { id: "glass", e: "🕶️", p: 160 }, { id: "horns", e: "😈", p: 240 }];
+        const TRAILS = [{ id: "spark", e: "✨", p: 240 }, { id: "fire", e: "🔥", p: 360 }];
         const BOOSTS = [{ id: "mag", e: "🧲", p: 50 }, { id: "big", e: "🐍", p: 40 }, { id: "shield", e: "🛡️", p: 60 }];
         const AV = ["🐍", "🦊", "🐯", "🦁", "🐸", "🐼", "🐵", "🦄", "🐲", "👽", "🤖", "😎"];
         const P = { name: "", av: "🐍", xp: 0, coins: 0, own: {}, hat: "", trail: "", bst: {}, dg: { d: -1, s: 0 }, gems: 0, tx: [], rt: 1000, dc: -1, ach: {}, title: "",
@@ -2592,16 +2865,17 @@
           const q = Object.prototype.hasOwnProperty.call(RARE, k) && RARE[k]; if (!q) return false;
           return q.lv ? lv >= q.lv : q.ach ? achN >= q.ach : rtTier(rt) >= 4 || tier >= 4;
         }
-        const FG_AMT = 50, FG_MAX = 5, FR_MAX = 50, INB_MAX = 50, GCL_MAX = 200;
+        const FG_AMT = 20, FG_MAX = 5, FR_MAX = 50, INB_MAX = 50, GCL_MAX = 200;
         // MODES: n classic, t teams, s survival, r ranked (rating), d daily, p private, l league. MD is the running match's mode
         let MD = "n", PB = 0, ROOM = "", tmRes = "";
         // team colors [marker, skin] (yours first), invited friend keys, bot count of a running team match, lobby tab
         const TC = [["🔵", 1], ["🔴", 4], ["🟡", 3], ["🟣", 2]];
         let TI = [], TN = 0, tTab = "l";
-        const TXK = ["boss", "gold", "gift", "match", "lvl", "buy", "chest", "wheel", "mis", "league", "daily", "team", "surv", "rank", "gx", "pack", "ach", "fgift", "tp", "rev", "myst", "lm", "rp", "shop2", "crate", "story", "word"];
+        const TXK = ["boss", "gold", "gift", "match", "lvl", "buy", "chest", "wheel", "mis", "league", "daily", "team", "surv", "rank", "gx", "pack", "ach", "fgift", "tp", "rev", "myst", "lm", "rp", "shop2", "crate", "story", "word", "admin", "migrate", "iap", "iap_refund", "pass", "stripe", "stripe_refund"];
         const RT_T = [0, 1100, 1300, 1500, 1800], rtTier = (r) => RT_T.filter((x) => r >= x).length - 1;
         // every coin or gem change goes through pay(), which keeps the last 40 in the transaction log (P.tx: [unix s, reason, amount, "c"|"g"])
         function pay(c, w, g) {
+          if (cur === "@on") { if (["myst", "lm", "story", "word"].includes(w)) return; P.coins = Math.max(0, P.coins + (c || 0)); P.gems = Math.max(0, P.gems + (g || 0)); return; }
           for (const [a, u] of [[c || 0, "c"], [g || 0, "g"]]) if (a) { P[u === "c" ? "coins" : "gems"] += a; P.tx.unshift([Math.floor(Date.now() / 1000), w, a, u]); }
           if (P.tx.length > 40) P.tx.length = 40;
         }
@@ -2613,24 +2887,24 @@
         const PSTX = ["mk", "sw", "tw", "r1", "dly", "dgm", "rtm"];
         // ACHIEVEMENTS: [id, icon, stat, target, coins, gems, gives a title]. Progress is read from the real stats by aStat().
         const ACH = [
-          ["g1", "🎮", "games", 1, 20, 0], ["g2", "🎮", "games", 10, 50, 0], ["g3", "🎮", "games", 50, 150, 0], ["g4", "🎮", "games", 100, 250, 1],
-          ["g5", "🎮", "games", 250, 400, 2], ["g6", "🎮", "games", 500, 600, 3, 1], ["g7", "🎮", "games", 1000, 1000, 5, 1],
-          ["k1", "⚔️", "kills", 1, 20, 0], ["k2", "⚔️", "kills", 10, 60, 0], ["k3", "⚔️", "kills", 50, 150, 1], ["k4", "⚔️", "kills", 200, 300, 2],
-          ["k5", "⚔️", "kills", 500, 500, 3, 1], ["k6", "⚔️", "kills", 1000, 1000, 5, 1],
-          ["e1", "🍎", "eat", 100, 30, 0], ["e2", "🍎", "eat", 1000, 100, 0], ["e3", "🍎", "eat", 5000, 250, 1], ["e4", "🍎", "eat", 20000, 500, 2, 1], ["e5", "🍎", "eat", 50000, 1000, 4],
-          ["b1", "📏", "best", 100, 30, 0], ["b2", "📏", "best", 250, 80, 0], ["b3", "📏", "best", 500, 200, 1], ["b4", "📏", "best", 1000, 400, 2, 1], ["b5", "📏", "best", 2000, 800, 4, 1],
-          ["l1", "⭐", "lvl", 5, 50, 0], ["l2", "⭐", "lvl", 10, 100, 1], ["l3", "⭐", "lvl", 20, 200, 1], ["l4", "⭐", "lvl", 30, 300, 2, 1],
-          ["l5", "⭐", "lvl", 50, 600, 3], ["l6", "⭐", "lvl", 100, 2000, 10, 1],
-          ["m1", "💥", "mk", 3, 50, 0], ["m2", "💥", "mk", 5, 120, 1], ["m3", "💥", "mk", 10, 300, 2, 1],
-          ["d1", "🐉", "dragon", 1, 150, 1, 1],
-          ["w1", "🏆", "wins", 1, 200, 2], ["w2", "🏆", "wins", 5, 600, 5, 1],
-          ["r1", "📈", "rtm", 1300, 150, 1], ["r2", "📈", "rtm", 1500, 300, 2], ["r3", "📈", "rtm", 1800, 600, 4, 1],
-          ["o1", "🛍️", "own", 3, 60, 0], ["o2", "🛍️", "own", 8, 200, 1, 1],
-          ["s1", "🎁", "dgm", 7, 100, 2],
-          ["v1", "🛡️", "sw", 1, 100, 1], ["v2", "🛡️", "sw", 10, 400, 3, 1],
-          ["t1", "🔵", "tw", 1, 60, 0], ["t2", "🔵", "tw", 10, 250, 2],
-          ["n1", "🥇", "r1", 1, 100, 1], ["n2", "🥇", "r1", 10, 500, 4, 1],
-          ["c1", "🎯", "dly", 1, 60, 0], ["c2", "🎯", "dly", 7, 250, 3, 1],
+          ["g1", "🎮", "games", 1, 10, 0], ["g2", "🎮", "games", 10, 25, 0], ["g3", "🎮", "games", 50, 75, 0], ["g4", "🎮", "games", 100, 125, 1],
+          ["g5", "🎮", "games", 250, 200, 2], ["g6", "🎮", "games", 500, 300, 3, 1], ["g7", "🎮", "games", 1000, 500, 5, 1],
+          ["k1", "⚔️", "kills", 1, 10, 0], ["k2", "⚔️", "kills", 10, 30, 0], ["k3", "⚔️", "kills", 50, 75, 1], ["k4", "⚔️", "kills", 200, 150, 2],
+          ["k5", "⚔️", "kills", 500, 250, 3, 1], ["k6", "⚔️", "kills", 1000, 500, 5, 1],
+          ["e1", "🍎", "eat", 100, 15, 0], ["e2", "🍎", "eat", 1000, 50, 0], ["e3", "🍎", "eat", 5000, 125, 1], ["e4", "🍎", "eat", 20000, 250, 2, 1], ["e5", "🍎", "eat", 50000, 500, 4],
+          ["b1", "📏", "best", 100, 15, 0], ["b2", "📏", "best", 250, 40, 0], ["b3", "📏", "best", 500, 100, 1], ["b4", "📏", "best", 1000, 200, 2, 1], ["b5", "📏", "best", 2000, 400, 4, 1],
+          ["l1", "⭐", "lvl", 5, 25, 0], ["l2", "⭐", "lvl", 10, 50, 1], ["l3", "⭐", "lvl", 20, 100, 1], ["l4", "⭐", "lvl", 30, 150, 2, 1],
+          ["l5", "⭐", "lvl", 50, 300, 3], ["l6", "⭐", "lvl", 100, 1000, 10, 1],
+          ["m1", "💥", "mk", 3, 25, 0], ["m2", "💥", "mk", 5, 60, 1], ["m3", "💥", "mk", 10, 150, 2, 1],
+          ["d1", "🐉", "dragon", 1, 75, 1, 1],
+          ["w1", "🏆", "wins", 1, 100, 2], ["w2", "🏆", "wins", 5, 300, 5, 1],
+          ["r1", "📈", "rtm", 1300, 75, 1], ["r2", "📈", "rtm", 1500, 150, 2], ["r3", "📈", "rtm", 1800, 300, 4, 1],
+          ["o1", "🛍️", "own", 3, 30, 0], ["o2", "🛍️", "own", 8, 100, 1, 1],
+          ["s1", "🎁", "dgm", 7, 50, 2],
+          ["v1", "🛡️", "sw", 1, 50, 1], ["v2", "🛡️", "sw", 10, 200, 3, 1],
+          ["t1", "🔵", "tw", 1, 30, 0], ["t2", "🔵", "tw", 10, 125, 2],
+          ["n1", "🥇", "r1", 1, 50, 1], ["n2", "🥇", "r1", 10, 250, 4, 1],
+          ["c1", "🎯", "dly", 1, 30, 0], ["c2", "🎯", "dly", 7, 125, 3, 1],
         ];
         // achievement names and goals in every language (ar, en, tr, fr, es, hi). Name = stat name + tier numeral
         const AN = { games: ["المخضرم", "Veteran", "Kıdemli", "Vétéran", "Veterano", "अनुभवी"], kills: ["الصياد", "Hunter", "Avcı", "Chasseur", "Cazador", "शिकारी"],
@@ -2685,7 +2959,7 @@
         const DIFF = [{ a: 0.4, s: 0.65, r: 0.75 }, { a: 1, s: 1, r: 1 }, { a: 1.5, s: 1.3, r: 1.25 }, { a: 2, s: 1.6, r: 1.5 }, { a: 2.8, s: 2, r: 2 }], LEG_LV = 30;
         const DF = () => DIFF[state === "play" || state === "over" ? (MD === "r" ? 2 : S.diff) : S.diff] || DIFF[1]; // ranked is always Hard
         const LV_MAX = 100, xpNeed = (n) => Math.round(100 * n ** 1.6);
-        const lvReward = (n) => 25 * n + (n % 10 === 0 ? 500 : 0); // coins on reaching level n, bonus every 10th
+        const lvReward = (n) => 10 * n + (n % 10 === 0 ? 200 : 0); // coins on reaching level n, bonus every 10th
         // SAFE JSON: every parse of stored or imported data drops __proto__ / constructor / prototype keys (prototype-pollution guard);
         // jBad tells the caller one was seen, so a save code carrying one is rejected outright
         const BADK = new Set(["__proto__", "constructor", "prototype"]);
@@ -2744,7 +3018,7 @@
         let kvJ = "", kvW = false;
         // write every account (and the admin PIN/log) when anything changed; tell the player once if the browser refuses
         function persist() {
-          const a = {}; for (const k in ACC) { const { j, ...r } = ACC[k]; a[k] = r; }
+          const a = {}; for (const k in ACC) { if (k[0] === "@") continue; const { j, ...r } = ACC[k]; a[k] = r; }
           const j = JSON.stringify({ v: 1, a, n: PIDN }) + "\n" + JSON.stringify({ h: ADM.h, s: ADM.s, it: ADM.it, log: ADM.log, n: ADM.n, until: ADM.until });
           if (j === kvJ) return;
           const [ja, jd] = j.split("\n"), ok = KV.set("ss-acc", ja) & KV.set("ss-adm", jd);
@@ -3146,7 +3420,7 @@
           if (s.evo >= evoCap(s)) return; // locked by level: DNA does nothing
           if (s === player) sDna();
           if (++s.dna < NEED) return;
-          s.dna = 0; s.evo++; if (s === player && s.evo >= 4) M.dragon = 1; burst(s.seg[0].x, s.seg[0].y, s === player ? 70 : 25, s.evo === 4 ? 10 : 110);
+          s.dna = 0; s.evo++; if (s === player && s.evo >= 4) { M.dragon = 1; ON.mx.dragon = 1; } burst(s.seg[0].x, s.seg[0].y, s === player ? 70 : 25, s.evo === 4 ? 10 : 110);
           if (s !== player) return;
           xBan(_t("evolved") + " " + _t("evo" + s.evo));
           [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.18, "triangle", 0.06), i * 90));
@@ -3419,7 +3693,7 @@
           const h = s.seg[0];
           for (let i = 0; i < 90; i++) { const a = R() * 6.28, d = rnd(0, 170); addFood(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d, rnd(1.5, 3), `hsl(${40 + ((R() * 3) | 0) * 5},100%,60%)`); }
           burst(h.x, h.y, 40, 45); shake(9); vib([30, 30, 60]);
-          if (player && player.alive) { pay(100, "boss"); profile(); xBan(_t("bossDie")); }
+          if (player && player.alive) { pay(40, "boss"); ON.mx.boss = (ON.mx.boss || 0) + 1; profile(); xBan(_t("bossDie")); }
         }
         // AI DIRECTOR (المخرج الذكي): reads the player's skill every 30s, tunes bots and food, and stages surprise events
         const AD = { spd: 1, sr: 1, fs: 1, fv: 1, food: 1, agg: 0.15, smart: 1, bAdd: 0, mod: "", lastMod: "", last: "", t: 30, t0: 0, deaths: 0, skill: 0.4, rain: 0, fog: null };
@@ -3440,7 +3714,7 @@
             const s = snakes[i]; if (!s.ad || s.boss) continue;
             if (s.alive && s.gd && R() < dt * 2) { const t = s.seg[s.seg.length - 1]; addFood(t.x, t.y, 2.5, "#ffd23a"); }
             if (!s.alive || (s.sw && !(s.spd > 0))) {
-              if (!s.alive && s.gd) { pay(60, "gold"); profile(); xBan(_t("adCoins", { x: 60 })); beep(1046, 0.25, "triangle", 0.06, 1568); }
+              if (!s.alive && s.gd) { pay(25, "gold"); ON.mx.gold = (ON.mx.gold || 0) + 1; profile(); xBan(_t("adCoins", { x: 25 })); beep(1046, 0.25, "triangle", 0.06, 1568); }
               snakes.splice(i, 1);
             }
           }
@@ -4458,13 +4732,13 @@
           if (html !== lbH) { lbH = html; $("lb").innerHTML = html; } // touch the DOM only on change
         }
 
-        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop", "nfedit", "nfstory"];
+        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop", "nfedit", "nfstory", "onlb", "onfr", "onch", "ongems", "onmig"];
         // MANDATORY ACCOUNT: with nobody logged in, only the login and create-account screens can show
         function authView(imp, quiet) {
           $("logv").classList.toggle("x-hide", !!imp); $("impv").classList.toggle("x-hide", !imp);
           $("login").scrollTop = 0; if (!quiet) $(imp ? "impv" : "logv").querySelector("h2").focus({ preventScroll: true });
         }
-        const show = (id) => { if (!cur && id !== "reg") id = "login"; if (id === "adm" && !isStaff()) id = "menu"; if (id === "menu" && cur && CFG.mt && !isStaff()) id = "mnt"; if (id === "menu" || id === "mnt") cfgPaint(); if (id === "login" && $("login").classList.contains("x-hide")) authView(0, 1); langClose(); OV.forEach((o) => $(o).classList.toggle("x-hide", o !== id)); };
+        const show = (id) => { if (!cur && id !== "reg" && !(ON.guest && ["menu", "set", "how", "over", "maps", "league", "lgr", "onlb", "ongems"].includes(id))) id = "login"; if (id === "adm" && !isStaff()) id = "menu"; if (id === "menu" && cur && CFG.mt && !isStaff() && !(ON.st && ON.st.is_admin)) id = "mnt"; if (id === "menu" || id === "mnt") cfgPaint(); if (id === "login" && $("login").classList.contains("x-hide")) authView(0, 1); langClose(); OV.forEach((o) => $(o).classList.toggle("x-hide", o !== id)); };
         function release() {
           boostOn = mouseBoost = false; tBtn = 0; joy.on = false; ptr.active = false;
           for (const k in keys) keys[k] = false;
@@ -4491,9 +4765,10 @@
           [...$("diffs").children].forEach((b, i) => { b.textContent = (i === 4 && level() < LEG_LV ? "🔒 " : "") + _t("d" + i); b.classList.toggle("on", S.diff === i); });
         }
         // DAILY GIFT: one claim per local day; consecutive days climb a 7-day streak, a missed day resets it
-        const GIFT = [50, 75, 100, 150, 200, 300, 500];
+        const GIFT = [15, 20, 25, 30, 40, 50, 150]; // 7-day ladder, resets when a day is missed
         const today = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 864e5);
         function claimGift() {
+          if (cur === "@on") { ON.gift(); return; }
           const d = today(), g = P.dg;
           if (g.d === d) { toast(_t("giftHad")); return; }
           g.s = g.d === d - 1 ? (g.s % 7) + 1 : 1; g.d = d;
@@ -4532,6 +4807,7 @@
           paintInbQ();
         }
         function inbClaim(m) {
+          if (cur === "@on") { if (m && m.k === "g" && !m.c) ON.inbClaim(m); return; }
           if (!m || m.k !== "g" || m.c || P.gcl.includes(m.id) || m.d > today() || m.a !== FG_AMT) { toast(_t("fgDup")); return; }
           m.c = 1; m.r = 1; P.gcl.unshift(m.id); if (P.gcl.length > GCL_MAX) P.gcl.length = GCL_MAX;
           pay(m.a, "fgift"); toast(_t("fgGot", { x: m.f })); beep(784, 0.2, "triangle", 0.06, 1175);
@@ -4787,6 +5063,7 @@
           if (b.dataset.a) {
             const a = ACH.find((x) => x[0] === b.dataset.a);
             if (!a || P.ach[a[0]] || aStat(a[2], aLive()) < a[3]) return;
+            if (cur === "@on") { b.disabled = true; ON.ach(a[0]); return; }
             P.ach[a[0]] = 1; pay(a[4], "ach", a[5]); if (a[6] && !P.title) P.title = a[0];
             toast(_t("achGot", { x: aName(a) }) + (a[4] ? ` +${a[4]} 🪙` : "") + (a[5] ? ` +${a[5]} 💎` : "")); beep(784, 0.2, "triangle", 0.06, 1175);
           } else if (b.dataset.t !== undefined) { const id = b.dataset.t; if (id && !P.ach[id]) return; P.title = id; beep(620, 0.08, "triangle", 0.05, 900); }
@@ -4815,8 +5092,8 @@
         $("tuS").addEventListener("click", tuDone);
         function start() {
           lockLand(); // every way into a match is a tap or key press, so this stays inside the user gesture
-          if (!cur) { show("login"); return; }
-          if (CFG.mt && !isStaff()) { L.on = false; if (state !== "menu") home(); else show("mnt"); return; } // maintenance: admin only
+          if (!cur && !ON.guest) { show("login"); return; }
+          if (CFG.mt && !isStaff() && !(ON.st && ON.st.is_admin)) { L.on = false; if (state !== "menu") home(); else show("mnt"); return; } // maintenance: admin only
           if (!KV.get("ss-tut")) { tuOpen(); return; } // first match ever: the 4-card tutorial runs first
           beep(660, 0.12, "triangle", 0.05, 990);
           MD = L.on ? "l" : nfMode() ? "n" : S.mode; tmRes = "";
@@ -4836,11 +5113,11 @@
           player.hat = P.hat; player.trail = P.trail; parts = [];
           for (const s of snakes) if (s.bot) Object.assign(s, { evo: (R() * 2) | 0, dna: 0, cd: 0, slow: 0, ghost: 0 });
           fxs = []; decoys = []; dna = []; evoKey = ""; $("ban").classList.remove("on"); genFood();
-          for (const b of BOOSTS) if (P.bst[b.id] > 0) { P.bst[b.id]--; player[b.id] = 1; }
+          ON.mUsed = []; for (const b of BOOSTS) if (P.bst[b.id] > 0) { P.bst[b.id]--; player[b.id] = 1; ON.mUsed.push(b.id); }
           if (player.big) player.len = 60;
           cam.x = player.seg[0].x; cam.y = player.seg[0].y; cam.vx = cam.vy = cam.vs = cam.vt = 0;
           release(); applySettings(); lbS = 1; lbT = 0; rvUsed = false; revHide();
-          nfStart();
+          nfStart(); ON.mStart();
           state = "play"; last = performance.now(); aqReset(3);
           show(null); $("game").classList.remove("x-hide");
         }
@@ -4883,7 +5160,11 @@
         function revNo() { if (!rvOn) return; revHide(); gameOver(); }
         function revYes() {
           if (!rvOn || state !== "play" || P.coins < rvC) return;
-          revHide(); pay(-rvC, "rev"); profile();
+          if (cur === "@on") { if (ON.rvBusy) return; ON.rvBusy = true; rvT = 30; $("revy").disabled = true; ON.revive(rvL).then((ok) => { ON.rvBusy = false; if (!rvOn || state !== "play") return; if (ok) revGo(); else revNo(); }); return; }
+          revHide(); pay(-rvC, "rev"); profile(); revGo0();
+        }
+        function revGo() { revHide(); profile(); revGo0(); }
+        function revGo0() {
           const k = player.kills, ev = player.evo, dn = player.dna;
           Object.assign(player, makeSnake(player.name, player.skin, false), { len: rvL, kills: k, evo: ev, dna: dn, inv: 3, shield: 0, boost: false });
           const h = player.seg[0]; cam.x = h.x; cam.y = h.y; cam.vx = cam.vy = 0;
@@ -4938,14 +5219,14 @@
         }
         function gameOver() {
           closeExit(); revHide(); state = "over"; AD.deaths = time - AD.t0 < 60 ? AD.deaths + 1 : Math.max(0, AD.deaths - 1);
-          const l = Math.floor(player.len), pb = best;
+          const l = Math.floor(player.len), pb = best, onS = ON.stats(l);
           best = Math.max(best, l);
           $("ngo").textContent = l > pb ? _t("ngoBest") : pb - l + 1 === 1 ? _t("ngoNear1") : _t("ngoNear", { n: pb - l + 1 });
           { const cg = $("chg"); cg.classList.toggle("x-hide", !CH); cg.classList.toggle("lose", !!CH && l <= CH.s);
             if (CH) cg.textContent = l > CH.s ? _t("chWin", { x: chName(), n: CH.s }) : _t("chLose", { x: chName(), n: CH.s, d: CH.s - l + 1 }); }
           SHR = { l, k: player.kills, nm: String(player.name || "").replace(CTRL0g, "").slice(0, 20), sk: player.skin, map: mapI, file: null, url: "" };
           $("fl").textContent = l; $("fk").textContent = player.kills; $("fb").textContent = best;
-          const r = MD === "p" ? 0 : DF().r, xp = Math.round((l + player.kills * 20) * r * CFG.xm), co = Math.round((Math.floor(l / 10) + player.kills * 5) * r * CFG.cm), lv = level();
+          const r = MD === "p" ? 0 : DF().r, xp = Math.round((l + player.kills * 20) * r * CFG.xm), co = Math.round((Math.floor(l / 10) + player.kills * 5) * 0.5 * r * CFG.cm), lv = level();
           tmRes = modeEnd(l);
           P.xp += xp; pay(co, "match"); M.kill += player.kills; M.games++; PST.games++; PST.kills += player.kills; PST.mk = Math.max(PST.mk, player.kills);
           let rw = 0; for (let n = lv + 1; n <= level(); n++) rw += lvReward(n); pay(rw, "lvl"); if (level() > lv) inbAdd(P, { id: "lv:" + level(), k: "lv", n: level() }); profile(); achNote();
@@ -4953,6 +5234,7 @@
             $("lvpt").textContent = mx ? _t("lvMax", { l: v.n }) : _t("lvNext", { l: v.n, x: v.need - v.x, n: v.n + 1 }); }
           SHR.lv = level(); setTimeout(shareCard, 0);
           $("earn").textContent = `+${co} 🪙 · +${xp} ${_t("xp")}` + (level() > lv ? ` · ${_t("newLv")} ${level()}! 🎉 ${_t("lvRew")} +${rw} 🪙` : "") + (tmRes ? " · " + tmRes : "");
+          if (!L.on) ON.over(onS);
           nfOver(l);
           release();
           setTimeout(() => { if (state === "over") { $("game").classList.add("x-hide");
@@ -5007,11 +5289,11 @@
         // per-mode result line for the game-over screen; pays gems and moves the ranked rating
         function modeEnd(l) {
           const rivals = snakes.filter((s) => s !== player && s.alive && !s.ad);
-          if (MD === "s" && player.alive) { pay(0, "surv", 3); PST.sw++; return _t("survWin"); }
+          if (MD === "s" && player.alive) { pay(30, "surv"); PST.sw++; return _t("survWin"); }
           if (MD === "t") { // rank the teams by shared score, then move the team rating (Elo vs each bot team)
             const sc = tScores(l), rk = sc.map((v, i) => i).sort((a, b) => sc[b] - sc[a]), me = rk.indexOf(0), w = me === 0, rb = 900 + S.diff * 100;
             const dl = Math.round((32 / (sc.length - 1)) * sc.slice(1).reduce((a, v) => a + (sc[0] >= v ? 1 : 0) - 1 / (1 + 10 ** ((rb - P.tr) / 400)), 0));
-            P.tr = Math.max(0, P.tr + dl); P.tg++; if (w) { pay(0, "team", 1); PST.tw++; }
+            P.tr = Math.max(0, P.tr + dl); P.tg++; if (w) { pay(15, "team"); PST.tw++; }
             const $r = $("tmr"); $r.classList.remove("x-hide");
             $r.innerHTML = `<h3>🏁 ${_t("tBoard")}</h3>` + rk.map((t, i) => `<div class="x-it${t ? "" : " own"}"><i>${i + 1}</i><b>${TC[t][0]} ${t ? _t("tTeam", { n: t + 1 }) : _t("tYours")}<small>${
               esc(t ? snakes.filter((s) => s.tm === t && !s.ad).map((s) => s.name).join(" · ") : [player.name, ...snakes.filter((s) => s.tm === 0 && s !== player).map((s) => s.name)].join(" · "))}</small></b><span>${Math.floor(sc[t])}</span></div>`).join("");
@@ -5020,14 +5302,14 @@
           if (MD === "r") {
             const rk = rivals.filter((s) => s.len > l).length, n = rivals.length + 1;
             const dl = clamp(Math.round(30 * (1 - (2 * rk) / Math.max(1, n - 1))) + Math.min(10, player.kills * 2), -30, 40);
-            P.rt = Math.max(0, P.rt + dl); PST.rtm = Math.max(PST.rtm, P.rt); if (!rk) { pay(0, "rank", 2); PST.r1++; }
+            P.rt = Math.max(0, P.rt + dl); PST.rtm = Math.max(PST.rtm, P.rt); if (!rk) { pay(25, "rank"); PST.r1++; }
             const ti = rtTier(P.rt);
-            return `#${rk + 1}/${n} · ${_t("rating")} ${P.rt} (${dl >= 0 ? "+" : ""}${dl}) ${TE[ti]} ${_t("tier" + ti)}` + (rk ? "" : " · +2 💎");
+            return `#${rk + 1}/${n} · ${_t("rating")} ${P.rt} (${dl >= 0 ? "+" : ""}${dl}) ${TE[ti]} ${_t("tier" + ti)}` + (rk ? "" : " · +25 🪙");
           }
           return "";
         }
         // daily challenge: today's modifier and length goal come from the date
-        const dGoal = () => 120 + (today() % 6) * 30;
+        const dGoal = () => 120 + ((cur === "@on" && ON.dayN ? ON.dayN : today()) % 6) * 30;
         function modeHud() {
           if (MD === "t") return tScores().map((v, i) => `${TC[i][0]} ${Math.floor(v)}`).join(" · ");
           if (MD === "s") return "⚔️ " + _t("survLeft", { n: snakes.filter((x) => x.bot && !x.ad && x.alive).length });
@@ -5039,7 +5321,7 @@
         function modeTick() {
           if (state !== "play" || !player || !player.alive) return;
           if (MD === "s" && !snakes.some((x) => x.bot && !x.ad && x.alive)) { player.inv = 1e9; sKill(); gameOver(); }
-          else if (MD === "d" && P.dc !== today() && player.len >= dGoal()) { P.dc = today(); PST.dly++; pay(0, "daily", 5); profile(); xBan(_t("dGot")); beep(784, 0.3, "triangle", 0.06, 1568); }
+          else if (MD === "d" && P.dc !== today() && player.len >= dGoal()) { P.dc = today(); PST.dly++; pay(0, "daily", 1); profile(); xBan(_t("dGot")); beep(784, 0.3, "triangle", 0.06, 1568); }
         }
         // CHALLENGE LINK: ?c=<score>&n=<name> (name stripped of control and markup characters, max 20; only ever set as textContent)
         var CH = (() => { try {
@@ -5089,7 +5371,7 @@
         document.addEventListener("click", (e) => {
           const b = e.target.closest("[data-go]"); if (!b) return;
           const g = b.dataset.go;
-          if (!cur && !["dologin", "doreg", "reg", "import", "back"].includes(g)) { if (state !== "play") show("login"); return; }
+          if (!cur && !(ON.guest && ["play", "again", "mplay", "home", "exit", "exitN", "exitY", "revN", "mute", "set", "how", "back", "menu", "maps", "share", "league", "lstart", "lnext"].includes(g)) && !["dologin", "doreg", "reg", "import", "back"].includes(g)) { if (state !== "play") { show("login"); if (ON.guest) toast(_t("onSignNeed")); } return; }
           if (g === "play" || g === "again") start();
           else if (g === "share") shareGo();
           else if (g === "chsend" || g === "chdel" || g === "chblk") chGo(g);
@@ -5124,6 +5406,7 @@
           else if (g === "reg") { back = "login"; $("rerr").textContent = ""; rav = P.av; paintR(); show("reg"); }
           else if (g === "doreg") reg();
           else if (g === "dologin") login();
+          else if (g === "logout" && cur === "@on") { ON.signOut().then(() => { show("login"); toast(_t("loggedOut")); }); }
           else if (g === "logout" && cur) {
             // unsaved progress since the last export: remind first, log out on the second press
             if (ACC[cur].x && !outW && !KV.ok) { outW = true; $("prem").classList.remove("x-hide"); $("logoutL").textContent = _t("logoutAny"); return; }
@@ -5175,6 +5458,7 @@
           const a = ACC[cur], d = snap(), j = JSON.stringify(d);
           if (j === a.j) return;
           a.d = d; a.j = j; a.x = 1; // x: changed since the last export
+          if (a.on) { a.x = 0; ON.cache(d); return; }
           if (!KV.ok && (level() > a.rl || L.tro > a.rt)) { // big progress, nothing saved on the device: remind to copy the save code
             a.rl = level(); a.rt = L.tro;
             if (state === "play") pendRem = true; else setTimeout(() => toast(_t("saveRem")), 2400);
@@ -5257,55 +5541,48 @@
 
         async function reg() {
           if (busy) return;
-          const u = $("ru").value.trim().normalize("NFC"), k = u.toLowerCase(), em = $("re").value.trim().toLowerCase(), p1 = $("rp").value, err = (m) => { $("rerr").textContent = _t(m); };
-          if (!SUB) return err("noCrypto");
+          const u = $("ru").value.trim().normalize("NFC"), em = $("re").value.trim().toLowerCase(), p1 = $("rp").value, err = (m) => { $("rerr").textContent = _t(m); };
           if (!unameOk(u)) return err("unameBad");
           if (!emailOk(em)) return err("emailBad");
-          if (ACC[k]) return err("taken");
-          if (Object.values(ACC).some((a) => a.email === em)) return err("emailTaken");
           if (p1.length < PW_MIN || p1.length > PW_MAX) return err("weakPw");
           if (p1 !== $("rp2").value) return err("pwMismatch");
           busy = true; err("working");
           try {
-            const s = rnb(16), es = rnb(16), d = JSON.parse(JSON.stringify(DEF));
-            d.P.name = u; d.P.av = AV.includes(rav) ? rav : AV[0]; d.S = JSON.parse(JSON.stringify(S)); // keep the settings picked so far
-            const h = await pwHash(p1, s, IT), key = await aesKey(p1, es, IT);
-            if (ACC[k]) return err("taken"); // another tab took the name while hashing
-            ACC[k] = { u, email: em, h, s: hex(s), it: IT, es: hex(es), d };
-            pidSet(k); // owner email: 1; everyone else: the next number from 100
-            enter(k); curKey = key; ACC[k].x = 1;
+            const s = await ON.signup(u, em, p1, AV.includes(rav) ? rav : AV[0]);
+            await ON.enter(s);
             ["ru", "re", "rp", "rp2"].forEach((id) => { $(id).value = ""; }); err("");
-            toast(`${_t("welcome")} ${u}`); show("menu");
-          } catch (e) { err("noCrypto"); } finally { busy = false; }
+            toast(`${_t("welcome")} ${P.name}`); show("menu"); ON.offerMig();
+          } catch (e) { err(ON.ek(e)); } finally { busy = false; }
         }
+        // username or email + password -> server. A device account that is not online yet is created online with the same
+        // name, email and password (after its local password checks out), then offered for the one-time progress move.
         async function login() {
           if (busy) return;
-          const id = $("lu").value.trim().toLowerCase(), err = (m, o) => { $("lerr").textContent = m ? _t(m, o) : ""; };
-          const k = id && (ACC[id] ? id : Object.keys(ACC).find((x) => ACC[x].email === id));
-          if (!SUB) return err("noCrypto");
-          if (!k) return err("noAcct");
-          if (ACC[k].ban) return err("banMsg", { r: ACC[k].ban.r });
-          let lk = lockLeft(k); if (lk) return err("locked", { n: lk });
-          const pw = $("lp").value;
+          const idv = $("lu").value.trim(), pw = $("lp").value, err = (m, o) => { $("lerr").textContent = m ? _t(m, o) : ""; };
+          if (!idv) return err("noAcct");
           if (!pw || pw.length > PW_MAX) return err("wrongPw");
+          const lid = idv.toLowerCase(), k = ACC[lid] && lid[0] !== "@" ? lid : Object.keys(ACC).find((x) => x[0] !== "@" && ACC[x].email === lid);
           busy = true; err("working");
           try {
-            const a = ACC[k];
-            if (!(await pwCheck(pw, a))) { lk = failed(k); return err(lk ? "locked" : "wrongPw", { n: lk }); }
-            delete FAIL[k];
-            await pwUpgrade(pw, a);
-            const key = await aesKey(pw, unhex(a.es), IT);
-            if (k !== cur) enter(k); curKey = key;
-            if ($("rem").checked) KV.set("ss-rem", $("lu").value.trim().slice(0, 254)); else KV.del("ss-rem");
-            $("lp").value = ""; if (!$("rem").checked) $("lu").value = ""; err(""); persist();
-            toast(`${_t("welcome")} ${P.name}`); show("menu");
-          } catch (e) { err("noCrypto"); } finally { busy = false; }
+            let s = null, okLocal = false;
+            try { s = await ON.login(idv, pw); }
+            catch (e) {
+              if (e.code === "invalid_login" && k && SUB && (await pwCheck(pw, ACC[k]))) { okLocal = true; s = await ON.signup(ACC[k].u, ACC[k].email, pw, ACC[k].d && ACC[k].d.P ? ACC[k].d.P.av : AV[0]); }
+              else if (e.code === "banned") return err("banMsg", { r: e.reason || "" });
+              else throw e;
+            }
+            await ON.enter(s);
+            if (!okLocal && k && SUB) okLocal = await pwCheck(pw, ACC[k]);
+            if ($("rem").checked) KV.set("ss-rem", idv.slice(0, 254)); else KV.del("ss-rem");
+            $("lp").value = ""; if (!$("rem").checked) $("lu").value = ""; err("");
+            toast(`${_t("welcome")} ${P.name}`); show("menu"); ON.offerMig(okLocal ? k : "", okLocal ? pw : "");
+          } catch (e) { err(e.code === "rate_limited" ? "onE_rate" : ON.ek(e)); } finally { busy = false; }
         }
 
         // ADMIN: only the account whose email is exactly ADMIN_EMAIL (trimmed, any case). No other roles exist;
         // stored or imported role fields are ignored. The panel opens behind one device PIN (6 digits, PBKDF2; 5 wrong = 60 s lock).
         const ADMIN_EMAIL = "187.2219@gmail.com";
-        function roleOf(k) { return ACC[k] && String(ACC[k].email || "").trim().toLowerCase() === ADMIN_EMAIL ? "o" : ""; }
+        function roleOf(k) { if (ACC[k] && ACC[k].on) return ""; return ACC[k] && String(ACC[k].email || "").trim().toLowerCase() === ADMIN_EMAIL ? "o" : ""; }
         function isStaff() { return !!cur && !!roleOf(cur); }
         // PLAYER IDS: every account keeps a permanent number in ACC[k].id. The ADMIN_EMAIL account is always 1 and nobody else can
         // hold 1; everyone else gets the next number from 100 up (PIDN only grows). Stored ids from storage or a save code are kept when
@@ -5325,7 +5602,7 @@
         }
         // migrate and repair every account: owner = 1, valid unique ids kept (sorted by key, so every tab agrees), the rest numbered
         function pidFix() {
-          const ks = Object.keys(ACC).sort(), used = new Set(), need = []; let ch = false, own = false;
+          const ks = Object.keys(ACC).filter((k) => k[0] !== "@").sort(), used = new Set(), need = []; let ch = false, own = false;
           for (const k of ks) { const a = ACC[k], v = a.id;
             if (pidOwner(a.email) && !own) { own = true; if (v !== 1) { a.id = 1; ch = true; } continue; }
             if (pidOk(v) && v >= PID_MIN && !used.has(v)) { used.add(v); pidTake(v); } else need.push(k);
@@ -5426,7 +5703,7 @@
         const admMay = (k) => !!ACC[k] && isStaff();
         function admUsers() {
           const q = $("admq").value.trim().toLowerCase();
-          const ks = Object.keys(ACC).filter((k) => !q || k.includes(q) || (ACC[k].email || "").includes(q));
+          const ks = Object.keys(ACC).filter((k) => k[0] !== "@" && (!q || k.includes(q) || (ACC[k].email || "").includes(q)));
           const tag = (k) => { const r = roleOf(k); return [r === "o" ? "👑 " + _t("admOwner") : "", ACC[k].ban ? "🚫 " + _t("admBanned") : ""].filter(Boolean).join(" · "); };
           $("admul").innerHTML = ks.length ? ks.map((k) => {
             const a = ACC[k], p = a.d.P, tg = tag(k), xp = num(p.xp);
@@ -5679,9 +5956,9 @@
             const nk = it === IT ? key : await aesKey(pw, es, IT); // future codes always use 210,000
             ACC[k] = rec; // never carries a role: admin comes from the email alone
             pidSet(k, a.id, oldId); // the code's id if unique (never 1 unless the email is the owner's), else this device's old one, else a new one
-            cur = null; enter(k); curKey = nk; ACC[k].x = 0;
+            ACC[k].x = 0; persist();
             $("icode").value = ""; $("ipw").value = ""; err("");
-            toast(_t("codeOk")); show("menu");
+            toast(_t("codeOk")); $("lu").value = ACC[k].u; authView(0, 1); show("login");
           } catch (e) { err("codeBad"); } finally { busy = false; }
         }
 
@@ -6053,6 +6330,7 @@
           h += `<h3>💎 ${_t("gemShop")}</h3><p class="x-note">${_t("gemHow")}</p>` +
             `<div class="x-it"><i>🪙</i><b>${_t("gx")}<small>${_t("gxSub")}</small></b><button data-g="gx" ${P.gems < 1 ? "disabled" : ""}>1 💎</button></div>` +
             `<div class="x-it"><i>🎁</i><b>${_t("pack")}<small>${_t("packSub")}</small></b><button data-g="pack" ${P.gems < 3 ? "disabled" : ""}>3 💎</button></div>`;
+          if (ON.storeOk() && cur === "@on") h += `<div class="x-it"><i>💎</i><b>${esc(_t("onGemsT"))}<small>${esc(_t("onGemsSub"))}</small></b><button data-go="nfongems">${esc(_t("onGemsBtn"))} ＋</button></div>`;
           $("items").innerHTML = h; $("gems").textContent = P.gems; skLazy();
         }
         function paintTx() {
@@ -6065,6 +6343,7 @@
           const cb = e.target.closest("button[data-cat]");
           if (cb) { if (SF.cat !== cb.dataset.cat) { SF.cat = cb.dataset.cat === "f" ? "f" : "c"; SF.q = ""; SF.lim = FL_PAGE; paintShop(); } return; }
           if (e.target.closest("button[data-more]")) { skMore(); return; }
+          if (cur === "@on" && ON.shopClick(e)) return;
           const g = e.target.closest("button[data-g]");
           if (g && !g.disabled) {
             if (g.dataset.g === "gx" && P.gems >= 1) { pay(0, "gx", -1); pay(100, "gx"); }
@@ -6105,7 +6384,7 @@
           ["items", "pts", "txl"].forEach((id) => $(id).classList.toggle("x-hide", b.dataset.t !== id));
           if (b.dataset.t === "pts") paintPts(); else if (b.dataset.t === "txl") paintTx(); else paintShop();
         });
-        const WP = [{ c: 50 }, { b: "mag" }, { c: 120 }, { b: "shield" }, { c: 250 }, { b: "big" }]; // wheel prizes, labelled by wpN()
+        const WP = [{ c: 20 }, { b: "mag" }, { c: 40 }, { b: "shield" }, { c: 80 }, { b: "big" }]; // wheel prizes, labelled by wpN()
         let wheelDeg = 0, spinning = false;
         const wpN = (p) => (p.c ? p.c + " 🪙" : BOOSTS.find((b) => b.id === p.b).e + " " + _t("b_" + p.b));
         function paintPts() {
@@ -6126,8 +6405,9 @@
         }
         $("pts").addEventListener("click", (e) => {
           const b = e.target.closest("button[data-p]"); if (!b || b.disabled) return;
+          if (cur === "@on") { ON.ptsClick(b); return; }
           const p = b.dataset.p;
-          if (p === "chest") { const c = 50 + ((R() * 151) | 0); M.chest = 1; pay(c, "chest"); toast(`🎁 +${c} 🪙`); }
+          if (p === "chest") { const c = 15 + ((R() * 46) | 0); M.chest = 1; pay(c, "chest"); toast(`🎁 +${c} 🪙`); }
           else if (p === "wheel") {
             const k = (R() * WP.length) | 0, pz = WP[k];
             M.wheelAt = M.games; spinning = true;
@@ -6162,7 +6442,7 @@
         });
         function paintLeague() {
           $("lgi").textContent = `${_t("rank")}: ${TE[L.tier]} ${_t("tier" + L.tier)} · ${L.tro} 🏆`;
-          $("lgl").innerHTML = TE.map((t, i) => `<div class="x-it${i === L.tier ? " own" : ""}"><i>${TE[i]}</i><b>${_t("tier" + i)}<small>${_t("prize")} ${100 * (i + 1)} 🪙</small></b>` +
+          $("lgl").innerHTML = TE.map((t, i) => `<div class="x-it${i === L.tier ? " own" : ""}"><i>${TE[i]}</i><b>${_t("tier" + i)}<small>${_t("prize")} ${50 * (i + 1)} 🪙</small></b>` +
             (i === L.tier ? `<span>${_t("youHere")}</span>` : i < L.tier ? "<span>✓</span>" : "") + "</div>").reverse().join("");
         }
         function lgRound() { const ok = MAPS.map((_, i) => i).filter((i) => !mapLock(i)); setMap(ok[(R() * ok.length) | 0]); L.t = 120; start(); }
@@ -6174,9 +6454,10 @@
           snakes.splice(snakes.indexOf(player), 1); player = null;
         }
         function lgShow(all, rk, ok) {
+          if (cur === "@on" && player) ON.over(ON.stats(Math.floor(player.len), { league_round: L.round, league_qualified: !!ok }));
           const li = (s, n) => `<li${s === player ? ' style="color:#ffe600"' : ""}${n ? ` value="${n}"` : ""}>${esc(s.name)} · ${Math.floor(s.len)}</li>`;
           $("lgs").innerHTML = all.slice(0, 5).map((s) => li(s)).join("") + (rk > 4 ? li(player, rk + 1) : "");
-          const last = ok && L.round === 2, prize = 100 * (L.tier + 1);
+          const last = ok && L.round === 2, prize = 50 * (L.tier + 1);
           let m = ok ? _t("qual", { n: rk + 1 }) : rk < 0 ? _t("lostSnake") : _t("needTop3", { n: rk + 1 });
           if (last) {
             pay(prize, "league"); L.tro++; PST.wins++; m = `${_t("champ", { x: _t("tier" + L.tier) })} +${prize} 🪙 · +1 🏆`;
@@ -6642,7 +6923,7 @@
         NFH.over.push(() => {
           if (NFM.m !== "myst") return "";
           if (NX.my === utcDay()) return "";
-          NX.my = utcDay(); pay(50, "myst"); nfSXP(100, "myst"); profile();
+          NX.my = utcDay(); pay(20, "myst"); nfSXP(100, "myst"); profile();
           return "❓ " + _t("nfMyRew", { n: 50 });
         });
         NFH.home.push(() => { NFS.botN = 0; });
@@ -6812,7 +7093,7 @@
           const h = player.seg[0];
           for (const l of LMP) {
             if (NX.lm[l.key] || Math.hypot(h.x - l.x, h.y - l.y) > 100 + player.r) continue;
-            NX.lm[l.key] = 1; pay(40, "lm"); nfSXP(50, "lm");
+            NX.lm[l.key] = 1; pay(15, "lm"); nfSXP(50, "lm");
             const got = LMP.filter((q) => NX.lm[q.key]).length;
             if (got === LMP.length) pay(0, "lm", 1);
             burst(l.x, l.y, 30, 45); shake(4); vib([20, 30, 20]); beep(988, 0.3, "triangle", 0.06, 1976);
@@ -6862,7 +7143,7 @@
             if (Number.isInteger(r.coins) && r.coins >= 0) P.coins = r.coins;
             if (Number.isInteger(r.gems) && r.gems >= 0) P.gems = r.gems;
             if (Array.isArray(r.entitlements)) { NX.own = {}; for (const id of r.entitlements) if (NF_ID.test(id) && ITEMS[id]) NX.own[id] = 1; }
-            if (r.pass && typeof r.pass === "object") { const q = r.pass; if (Number.isInteger(q.xp)) NX.rp.xp = q.xp; NX.rp.pr = q.premium ? 1 : 0;
+            if (r.pass && typeof r.pass === "object") { const q = r.pass; NX.rp.s = rpNo(); if (Number.isInteger(q.xp)) NX.rp.xp = q.xp; NX.rp.pr = q.premium ? 1 : 0;
               if (Array.isArray(q.claimed_free)) NX.rp.cf = q.claimed_free.slice(); if (Array.isArray(q.claimed_premium)) NX.rp.cp = q.claimed_premium.slice(); }
             profile(); commit();
           },
@@ -6871,19 +7152,19 @@
           _debit(pc, pg, why) { if (!this.can(pc, pg)) return false; pay(-(pc || 0), why, -(pg || 0)); return true; },
           async buy(id) {
             const it = ITEMS[id]; if (!it || it.ex || ENT.has(id)) return { ok: false, err: "na" };
-            if (this.src === "server") { try { this.apply(await this.rpc("buy_shop_item", { p_item_id: id })); return { ok: true }; } catch (e) { return { ok: false, err: "net" }; } }
+            if (this.src === "server") { try { this.apply(await this.rpc("buy_shop_item", { p_item_id: id })); return { ok: true }; } catch (e) { return { ok: false, err: e && e.code === "insufficient_funds" ? "funds" : "net", msg: ON.err(e) }; } }
             if (!this._debit(it.pc, it.pg, "shop2")) return { ok: false, err: "funds" };
             ENT.grant(id); profile(); commit(); return { ok: true };
           },
           async bundle(bid) {
             const b = BUNDLES.find((x) => x.id === bid); if (!b || b.items.every((i) => ENT.has(i))) return { ok: false, err: "na" };
-            if (this.src === "server") { try { this.apply(await this.rpc("buy_shop_item", { p_item_id: bid })); return { ok: true }; } catch (e) { return { ok: false, err: "net" }; } }
+            if (this.src === "server") { try { this.apply(await this.rpc("buy_shop_item", { p_item_id: bid })); return { ok: true }; } catch (e) { return { ok: false, err: e && e.code === "insufficient_funds" ? "funds" : "net", msg: ON.err(e) }; } }
             if (!this._debit(b.pc, b.pg, "shop2")) return { ok: false, err: "funds" };
             b.items.forEach((i) => ENT.grant(i)); profile(); commit(); return { ok: true };
           },
           async crate(cid) {
             const c = CRATES.find((x) => x.id === cid); if (!c) return { ok: false, err: "na" };
-            if (this.src === "server") { try { const r = await this.rpc("open_crate", { p_crate: cid }); this.apply(r); return { ok: true, item: r && r.item, refund: r && r.refund }; } catch (e) { return { ok: false, err: "net" }; } }
+            if (this.src === "server") { try { const r = await this.rpc("open_crate", { p_crate: cid }); this.apply(r); return { ok: true, item: r && r.item, refund: r && r.refund }; } catch (e) { return { ok: false, err: e && e.code === "insufficient_funds" ? "funds" : "net", msg: ON.err(e) }; } }
             if (!this._debit(c.pc, c.pg, "crate")) return { ok: false, err: "funds" };
             const pool = Object.keys(ITEMS).filter((k) => !ITEMS[k].ex && !ENT.has(k) && ITEMS[k].r <= c.mx);
             if (!pool.length) { pay(c.ref, "crate"); profile(); commit(); return { ok: true, refund: c.ref }; }
@@ -6893,16 +7174,16 @@
           },
           async premium() {
             if (NX.rp.pr) return { ok: false, err: "na" };
-            if (this.src === "server") { try { this.apply(await this.rpc("unlock_pass_premium", { p_season: rpSid() })); return { ok: true }; } catch (e) { return { ok: false, err: "net" }; } }
+            if (this.src === "server") { try { this.apply(await this.rpc("unlock_pass_premium", { p_season: rpSid() })); return { ok: true }; } catch (e) { return { ok: false, err: e && e.code === "insufficient_funds" ? "funds" : "net", msg: ON.err(e) }; } }
             if (!this._debit(0, RP_PREM, "rp")) return { ok: false, err: "funds" };
             NX.rp.pr = 1; profile(); commit(); return { ok: true };
           },
           async claim(tier, track) {
-            if (this.src === "server") { try { this.apply(await this.rpc("claim_pass_tier", { p_season: rpSid(), p_tier: tier, p_track: track === "p" ? "premium" : "free" })); return { ok: true }; } catch (e) { return { ok: false, err: "net" }; } }
+            if (this.src === "server") { try { const r = await this.rpc("claim_pass_tier", { p_season: rpSid(), p_tier: tier, p_track: track === "p" ? "premium" : "free" }); this.apply(r); const w = (r && r.reward) || {}; return { ok: true, rw: { c: (w.coins | 0) + (r.duplicate_item ? 100 : 0), g: w.gems | 0, i: r.duplicate_item ? "" : w.item || "" } }; } catch (e) { return { ok: false, err: e && e.code === "insufficient_funds" ? "funds" : "net", msg: ON.err(e) }; } }
             const L2 = track === "p" ? NX.rp.cp : NX.rp.cf;
             if (tier > rpTier() || L2.includes(tier) || (track === "p" && !NX.rp.pr)) return { ok: false, err: "na" };
             const rw = rpRew(tier, track); L2.push(tier);
-            if (rw.i && !ENT.has(rw.i)) ENT.grant(rw.i); else if (rw.i) pay(200, "rp");
+            if (rw.i && !ENT.has(rw.i)) ENT.grant(rw.i); else if (rw.i) pay(100, "rp");
             if (rw.c) pay(rw.c, "rp"); if (rw.g) pay(0, "rp", rw.g);
             profile(); commit(); return { ok: true, rw };
           },
@@ -6916,25 +7197,30 @@
         // c: category (sk Royal skins, tr trails, de death effects, em emotes, fr name frames); r: rarity 0 common .. 3 legendary;
         // pc / pg: price in coins / gems; ex: "pass" = only from the Royal Pass
         const ITEMS = {
-          rs_toxic: { c: "sk", e: "🧪", r: 1, pc: 1200 }, rs_frost: { c: "sk", e: "🧊", r: 1, pc: 1500 }, rs_neon: { c: "sk", e: "💡", r: 2, pc: 2000 },
-          rs_lava: { c: "sk", e: "🌋", r: 2, pc: 2500 }, rs_rainbow: { c: "sk", e: "🌈", r: 2, pg: 40 }, rs_gold: { c: "sk", e: "🏆", r: 3, pg: 60 },
+          rs_toxic: { c: "sk", e: "🧪", r: 1, pc: 1200 }, rs_frost: { c: "sk", e: "🧊", r: 1, pc: 1500 }, rs_neon: { c: "sk", e: "💡", r: 2, pg: 30 },
+          rs_lava: { c: "sk", e: "🌋", r: 2, pg: 35 }, rs_rainbow: { c: "sk", e: "🌈", r: 2, pg: 40 }, rs_gold: { c: "sk", e: "🏆", r: 3, pg: 100 },
           rs_galaxy: { c: "sk", e: "🌌", r: 3, ex: "pass" }, rs_royal: { c: "sk", e: "👑", r: 3, ex: "pass" },
           tr_bubbles: { c: "tr", e: "🫧", r: 0, pc: 500 }, tr_hearts: { c: "tr", e: "💖", r: 0, pc: 600 }, tr_stars: { c: "tr", e: "⭐", r: 1, pc: 800 },
-          tr_petals: { c: "tr", e: "🌸", r: 1, pc: 900 }, tr_pixel: { c: "tr", e: "🟪", r: 1, pc: 1100 }, tr_bolt: { c: "tr", e: "⚡", r: 2, pc: 1500 },
+          tr_petals: { c: "tr", e: "🌸", r: 1, pc: 900 }, tr_pixel: { c: "tr", e: "🟪", r: 1, pc: 1100 }, tr_bolt: { c: "tr", e: "⚡", r: 2, pg: 25 },
           tr_comet: { c: "tr", e: "☄️", r: 3, ex: "pass" }, tr_royal: { c: "tr", e: "💫", r: 3, ex: "pass" },
           de_confetti: { c: "de", e: "🎊", r: 0, pc: 700 }, de_fw: { c: "de", e: "🎆", r: 1, pc: 900 }, de_pixel: { c: "de", e: "👾", r: 1, pc: 1100 },
-          de_shock: { c: "de", e: "💥", r: 2, pg: 30 }, de_galaxy: { c: "de", e: "🌠", r: 3, ex: "pass" }, de_royal: { c: "de", e: "🎇", r: 3, ex: "pass" },
+          de_shock: { c: "de", e: "💥", r: 2, pg: 35 }, de_galaxy: { c: "de", e: "🌠", r: 3, ex: "pass" }, de_royal: { c: "de", e: "🎇", r: 3, ex: "pass" },
           em_laugh: { c: "em", e: "😂", r: 0, pc: 300 }, em_cool: { c: "em", e: "😎", r: 0, pc: 300 }, em_angry: { c: "em", e: "😡", r: 0, pc: 300 },
           em_love: { c: "em", e: "😍", r: 0, pc: 400 }, em_skull: { c: "em", e: "💀", r: 1, pc: 500 }, em_fire: { c: "em", e: "🔥", r: 1, pc: 500 },
           em_gg: { c: "em", e: "🤝", r: 1, ex: "pass" }, em_crown: { c: "em", e: "👑", r: 3, ex: "pass" }, em_dragon: { c: "em", e: "🐉", r: 3, ex: "pass" },
           fr_neon: { c: "fr", e: "💠", r: 1, pc: 800 }, fr_fire: { c: "fr", e: "🔥", r: 1, pc: 1200 }, fr_ice: { c: "fr", e: "❄️", r: 1, pc: 1200 },
-          fr_gold: { c: "fr", e: "🥇", r: 2, pg: 50 }, fr_leaf: { c: "fr", e: "🍃", r: 1, ex: "pass" }, fr_royal: { c: "fr", e: "👑", r: 3, ex: "pass" }, fr_galaxy: { c: "fr", e: "🌌", r: 3, ex: "pass" },
+          fr_gold: { c: "fr", e: "🥇", r: 2, pg: 40 }, fr_leaf: { c: "fr", e: "🍃", r: 1, ex: "pass" }, fr_royal: { c: "fr", e: "👑", r: 3, ex: "pass" }, fr_galaxy: { c: "fr", e: "🌌", r: 3, ex: "pass" },
         };
-        const BUNDLES = [{ id: "bn_starter", e: "🎁", items: ["tr_hearts", "em_cool", "fr_neon"], pc: 1300 }, { id: "bn_elem", e: "🧰", items: ["rs_frost", "rs_lava", "de_fw"], pc: 4000 }];
-        const CRATES = [{ id: "cr_lucky", e: "📦", pc: 1000, mx: 1, ref: 300 }, { id: "cr_royal", e: "🎁", pg: 25, mx: 3, ref: 300 }];
+        const BUNDLES = [{ id: "bn_starter", e: "🎁", items: ["tr_hearts", "em_cool", "fr_neon"], pc: 1300 }, { id: "bn_elem", e: "🧰", items: ["rs_frost", "rs_lava", "de_fw"], pg: 45 }];
+        const CRATES = [{ id: "cr_lucky", e: "📦", pc: 1000, mx: 1, ref: 100 }, { id: "cr_royal", e: "🎁", pg: 30, mx: 3, ref: 100 }];
         const RAR = ["nfR0", "nfR1", "nfR2", "nfR3"], RARC = ["#b9c6e6", "#5ad1ff", "#c77dff", "#ffd84a"];
         const itName = (id) => _t("nfI_" + id);
 
+        function crOdds(c) {
+          const W = [50, 30, 15, 5], pool = Object.keys(ITEMS).filter((k) => !ITEMS[k].ex && !ENT.has(k) && ITEMS[k].r <= c.mx), t = pool.reduce((a, k) => a + W[ITEMS[k].r], 0);
+          if (!t) return esc(_t("onAllOwned", { n: c.ref }));
+          return esc(_t("onOdds")) + ": " + [0, 1, 2, 3].map((r) => { const v = pool.filter((k) => ITEMS[k].r === r).reduce((a, k) => a + W[r], 0); return v ? `${esc(_t(RAR[r]))} <bdi dir="ltr">${((100 * v) / t).toFixed(v * 1000 < t ? 1 : 0)}%</bdi>` : ""; }).filter(Boolean).join(" · ");
+        }
         // ===================== ROYAL PASS =====================
         // seasons are 6 weeks from 26 Oct 2026 (UTC); 50 tiers × 100 season XP; free track for all, premium track for RP_PREM gems
         const RP_T0 = Date.UTC(2026, 9, 26), RP_LEN = 42 * 864e5, RP_TIERS = 50, RP_XP = 100, RP_PREM = 300;
@@ -6946,14 +7232,14 @@
         const RP_FI = { 5: "em_gg", 15: "fr_leaf", 25: "tr_bubbles", 35: "de_confetti", 45: "rs_toxic" };
         const RP_PI = { 1: "em_crown", 10: "fr_royal", 15: "de_royal", 20: "tr_comet", 25: "rs_galaxy", 30: "tr_royal", 35: "de_galaxy", 40: "fr_galaxy", 45: "em_dragon", 50: "rs_royal" };
         function rpRew(t, k) {
-          if (k === "p") return RP_PI[t] ? { i: RP_PI[t] } : t % 2 ? { c: 150 } : { g: 3 };
-          return RP_FI[t] ? { i: RP_FI[t] } : t % 10 === 0 ? { g: 5 } : { c: 50 + t * 2 };
+          if (k === "p") return RP_PI[t] ? { i: RP_PI[t] } : t % 2 ? { c: 60 } : { g: 3 };
+          return RP_FI[t] ? { i: RP_FI[t] } : t % 10 === 0 ? { g: 5 } : { c: 20 + t };
         }
         const rwIco = (w) => (w.i ? ITEMS[w.i].e : w.g ? uxGem(w.g) : uxCoin(w.c));
         const rwLbl = (w) => (w.i ? itName(w.i) : w.g ? "+" + w.g : "+" + w.c);
         RP.add = (n, why) => {
-          if (!cur || !(n > 0)) return; rpEnsure();
-          const t0 = rpTier(); NX.rp.xp = Math.min(RP_TIERS * RP_XP + 1e5, NX.rp.xp + Math.round(n * (NX.rp.pr ? 1.5 : 1))); const t1 = rpTier();
+          if (!cur || !(n > 0) || cur === "@on") return; rpEnsure();
+          const t0 = rpTier(); NX.rp.xp = Math.min(RP_TIERS * RP_XP + 1e5, NX.rp.xp + Math.round(n)); const t1 = rpTier();
           if (t1 > t0) { const m = "👑 " + _t("nfRpUp", { n: t1 }); if (state === "play") xBan(m); else setTimeout(() => toast(m), 900); }
           commit();
         };
@@ -6969,7 +7255,7 @@
           NX.ms.m++; NX.ms.e += NFS.ate || 0; NX.ms.k += player.kills;
           let bonus = 0; MIS2.forEach((m, i) => { if (!NX.ms.c.includes(i) && NX.ms[m.k] >= m.g) { NX.ms.c.push(i); bonus += m.x; } });
           RP.add(sx + bonus, "match");
-          return "👑 +" + Math.round((sx + bonus) * (NX.rp.pr ? 1.5 : 1)) + " " + _t("nfSxp") + (bonus ? " (" + _t("nfMisDone") + ")" : "");
+          if (cur === "@on") return ""; return "👑 +" + Math.round(sx + bonus) + " " + _t("nfSxp") + (bonus ? " (" + _t("nfMisDone") + ")" : "");
         });
         function fmtLeft(ms) { const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4); return d ? _t("nfLeftD", { d, h }) : _t("nfLeftH", { h, m }); }
         function paintPass() {
@@ -6992,7 +7278,7 @@
             ${anyClaim ? `<button class="x-btn" data-go="nfclaimall">🎁 ${esc(_t("nfClaimAll"))}</button>` : ""}
             <div class="nf-track" id="nftr">${tr}</div>
             <p class="x-sh">📋 ${esc(_t("nfMisT"))}</p><div class="nf-ms">${ms}</div>
-            <p class="x-note">${esc(_t("nfNoMoney"))}</p>
+            ${ON.storeOk() ? "" : `<p class="x-note">${esc(_t("nfNoMoney"))}</p>`}
             <button class="x-btn x-sub" data-go="nfshop">✨ ${esc(_t("nfShop"))}</button>
             <button class="x-btn x-sub" data-go="nfback" data-to="menu">${esc(_t("back"))}</button>`;
           const trk = $("nftr"), cu = trk.querySelector(".cur"); if (cu) trk.scrollLeft = Math.max(0, cu.offsetLeft - trk.clientWidth / 2);
@@ -7033,12 +7319,12 @@
             <p class="nf-bal">${P.coins} 🪙 · ${P.gems} 💎</p>
             <div class="nf-tabs">${CATS.map(([k, e, n]) => `<button data-go="nfcat" data-c="${k}" class="${k === cat ? "on" : ""}">${e} ${esc(_t(n))}</button>`).join("")}</div>
             <div class="x-shop">${rows}</div>
-            <p class="x-note">${esc(_t("nfNoMoney"))}</p>
+            ${ON.storeOk() ? "" : `<p class="x-note">${esc(_t("nfNoMoney"))}</p>`}
             <button class="x-btn x-sub" data-go="nfback" data-to="${SH2.from}">${esc(_t("back"))}</button>`;
         }
         NFG.nfshop = () => { if (state === "play") return; SH2.from = !$("nfpass").classList.contains("x-hide") ? "nfpass" : !$("shop").classList.contains("x-hide") ? "shop" : "menu"; paintShop2(); show("nfshop"); };
         NFG.nfcat = (b) => { SH2.cat = b.dataset.c; paintShop2(); };
-        NFG.nfbuy = async (b) => { const r = await WALLET.buy(b.dataset.id); if (r.ok) { toast("✅ " + itName(b.dataset.id)); beep(784, 0.15, "triangle", 0.05, 1175); nfEquip(b.dataset.id); } else toast(r.err === "funds" ? _t("nfFunds") : _t("nfErr")); paintShop2(); };
+        NFG.nfbuy = async (b) => { const r = await WALLET.buy(b.dataset.id); if (r.ok) { toast("✅ " + itName(b.dataset.id)); beep(784, 0.15, "triangle", 0.05, 1175); nfEquip(b.dataset.id); } else toast(r.err === "funds" ? _t("nfFunds") : r.msg || _t("nfErr")); paintShop2(); };
         NFG.nfbundle = async (b) => { const r = await WALLET.bundle(b.dataset.id); toast(r.ok ? "✅ " + _t("nfI_" + b.dataset.id) : r.err === "funds" ? _t("nfFunds") : _t("nfErr")); paintShop2(); };
         NFG.nfcrate = async (b) => {
           const r = await WALLET.crate(b.dataset.id);
@@ -7635,7 +7921,7 @@
           if (!NFS.win) return "📖 " + _t("nfStFail", { n: i + 1 });
           const st = NFS.wt <= s.par ? 3 : NFS.wt <= s.par * 1.6 ? 2 : 1, first = i >= NX.cp;
           NX.cs[i] = Math.max(NX.cs[i] || 0, st); if (first) NX.cp = i + 1;
-          const co = first ? 100 + 25 * i : 0; if (co) pay(co, "story"); nfSXP(first ? 150 : 40, "story"); profile();
+          const co = first ? 40 + 10 * i : 0; if (co) pay(co, "story"); nfSXP(first ? 150 : 40, "story"); profile();
           let line = `🏆 ${_t("nfStage", { n: i + 1 })} ${"★".repeat(st)}${"☆".repeat(3 - st)}` + (co ? ` +${co} 🪙` : "");
           if (i + 1 < STG.length) { NFM.st = i + 1; line += " · " + _t("nfStNext", { n: i + 2 }); } else line += " · " + _t("nfStEnd");
           return line;
@@ -7709,7 +7995,7 @@
         NFH.hud.push(() => (NFM.m === "word" && NFS.wch ? `🔤 ${NFS.wch.slice(0, NFS.wi).join("")}▸${NFS.wch.slice(NFS.wi).join("")} · ${NFS.wc}` : ""));
         NFH.over.push(() => {
           if (NFM.m !== "word") return ""; const n = NFS.wc || 0; NX.wd += n;
-          if (n) { pay(10 * n, "word"); nfSXP(15 * n, "word"); profile(); }
+          if (n) { pay(4 * n, "word"); nfSXP(15 * n, "word"); profile(); }
           return "🔤 " + _t("nfWords", { n }) + (n ? ` +${10 * n} 🪙` : "");
         });
         NFCARDS.push(() => nfCard("🔤", _t("nfWordT"), _t("nfWordD") + (NX.wd ? " · " + _t("nfWords", { n: NX.wd }) : ""), `<button data-go="nfplay" data-m="word">${esc(_t("play"))}</button>`));
@@ -7749,7 +8035,7 @@
         chipH = function () {
           const lv = lvInfo(), ta = P.title && ACH.find((a) => a[0] === P.title), pc = lv.n >= LV_MAX ? 100 : (lv.x / lv.need) * 100;
           return `<i class="px-av">${avH(P)}<span class="px-lv">${lv.n}</span></i><div class="px-pc"><b>${esc(P.name || "—")}</b><small>${ta ? "🏷️ " + aName(ta) + " · " : ""}${_t("lvl")} ${lv.n} · <bdi dir="ltr">${lv.x}/${lv.need}</bdi> ${_t("xp")}</small><div class="px-xp"><u style="width:${pc.toFixed(1)}%"></u></div></div>` +
-            `<div class="px-pills"><span class="px-pill">${num(P.coins)} 🪙</span><span class="px-pill g">${num(P.gems)} 💎</span></div>`;
+            `<div class="px-pills"><span class="px-pill">${num(P.coins)} 🪙</span>${ON.storeOk() && cur === "@on" ? `<button type="button" class="px-pill g on-plus" data-go="nfongems" aria-label="${esc(_t("onGemsT"))}">${num(P.gems)} 💎</button>` : `<span class="px-pill g">${num(P.gems)} 💎</span>`}</div>`;
         };
 
         // ---------- PORTAL: Royal Pass banner, mode carousel, daily strip, news ----------
@@ -7761,6 +8047,9 @@
           { k: "ghost", e: "👻", nw: 1, go: 'data-go="nfmodes"', bg: "linear-gradient(140deg,#8a9bbf,#3d3f7a 60%,#16163a)", t: () => _t("nfGhostT"), d: () => _t("nfGhostD") },
           { k: "league", e: "🏆", go: 'data-go="league"', bg: "linear-gradient(140deg,#ffd45a,#b8741a 60%,#4a2a06)", t: () => _t("league"), d: () => _t("pxLeagueD") },
           { k: "shop", e: "✨", go: 'data-go="nfshop"', bg: "linear-gradient(140deg,#ff5ad0,#8a2ad8 60%,#2a0a5a)", t: () => _t("nfShop"), d: () => _t("pxShopD") },
+          { k: "lb", e: "🏅", go: 'data-go="nfonlb"', bg: "linear-gradient(140deg,#ffe08a,#c9862e 60%,#4a2a06)", t: () => _t("onLbT"), d: () => _t("onLbWeek") },
+          { k: "fr", e: "👥", go: 'data-go="nfonfr"', bg: "linear-gradient(140deg,#5ad1ff,#2a5ad8 60%,#0a1a5a)", t: () => _t("onFrT"), d: () => _t("onChat") },
+          { k: "gems", e: "💎", go: 'data-go="nfongems"', hide: () => !ON.storeOk() || cur !== "@on", bg: "linear-gradient(140deg,#9fe8ff,#3a8cff 55%,#1a1a6a)", t: () => _t("onGemsT"), d: () => _t("onGemsSub") },
           { k: "more", e: "🎮", go: 'data-go="nfmodes"', bg: "linear-gradient(140deg,#5a6a7a,#2a3440 60%,#11161c)", t: () => _t("pxAll"), d: () => _t("pxMoreD") },
         ];
         const pxH = {};
@@ -7772,7 +8061,7 @@
           $("pxrpb").classList.toggle("on", pr);
           pxSet("pxrpb", `<span class="px-cr" aria-hidden="true">👑</span><span class="px-tx"><b>${esc(_t("nfPass"))}</b><small>${esc(_t("nfSeason" + (rpNo() % 4)))} · ${esc(_t("nfTier", { t, n: RP_TIERS }))} · ⏳ ${esc(fmtLeft(rpEnd() - Date.now()))}</small><span class="px-bar"><u style="width:${Math.round((100 * xpIn) / RP_XP)}%"></u></span></span>` +
             `<span class="px-go"><small>${esc(_t("pxPremium"))}</small>${pr ? "✓" : RP_PREM + " 💎"}</span>`);
-          pxSet("pxcar", PXMODES.map((m) => `<button type="button" class="px-mc" ${m.go} style="--bg:${m.bg}"><span class="px-ic" aria-hidden="true">${m.e}</span>${m.nw ? `<span class="px-new${m.nw === 2 ? " d" : ""}">${esc(_t(m.nw === 2 ? "pxDaily" : "pxNew"))}</span>` : ""}<b>${esc(m.t())}</b><small>${esc(m.d())}</small></button>`).join(""));
+          pxSet("pxcar", PXMODES.filter((m) => !m.hide || !m.hide()).map((m) => `<button type="button" class="px-mc" ${m.go} style="--bg:${m.bg}"><span class="px-ic" aria-hidden="true">${m.e}</span>${m.nw ? `<span class="px-new${m.nw === 2 ? " d" : ""}">${esc(_t(m.nw === 2 ? "pxDaily" : "pxNew"))}</span>` : ""}<b>${esc(m.t())}</b><small>${esc(m.d())}</small></button>`).join(""));
           const gr = P.dg.d !== today(), un = unread() + (P.ri || []).length + chUnAll(), ar = aReady(), md = NX.ms.c.length;
           const chip = (go, e, lb, n, rdy) => `<button type="button" class="px-chipb${rdy ? " rdy" : ""}" ${go}><i aria-hidden="true">${e}</i><span>${esc(lb)}</span>${n ? `<em>${n}</em>` : ""}</button>`;
           pxSet("pxstrip", chip('data-go="gift"', "🎁", _t("gift"), gr ? "!" : "", gr) + chip('data-go="nfpass"', "📋", _t("nfMisT") + " " + md + "/" + MIS2.length, md < MIS2.length ? MIS2.length - md : "", false) +
@@ -7812,7 +8101,7 @@
             <div class="px-acts"><span class="px-sh" style="justify-content:center"><span class="px-pill">${num(P.coins)} 🪙</span><span class="px-pill g">${num(P.gems)} 💎</span></span>${anyClaim ? `<button type="button" class="x-btn x-main" data-go="nfclaimall">🎁 ${esc(_t("nfClaimAll"))}</button>` : ""}</div>
             <div class="px-trk"><div class="px-lbl"><div class="f"><i>🎁</i>${esc(_t("pxFree"))}</div><div></div><div class="p"><i>👑</i>${esc(_t("pxPremium"))}</div></div><div class="px-scr" id="nftr"><div class="px-row">${cols}</div></div></div>
             <p class="x-sh">📋 ${esc(_t("nfMisT"))}</p><div class="px-ms">${ms}</div>
-            <p class="x-note">${esc(_t("nfNoMoney"))}</p>
+            ${ON.storeOk() ? "" : `<p class="x-note">${esc(_t("nfNoMoney"))}</p>`}
             <div class="px-acts"><button class="x-btn x-sub" data-go="nfshop">✨ ${esc(_t("nfShop"))}</button><button class="x-btn x-sub" data-go="nfback" data-to="menu">${esc(_t("back"))}</button></div>`;
           const trk = $("nftr"), cu = trk.querySelector(".cur") || trk.querySelector(".px-col:last-child"); if (cu) trk.scrollLeft = Math.max(0, cu.offsetLeft - trk.clientWidth / 2 + cu.clientWidth / 2);
         };
@@ -7838,7 +8127,7 @@
           const el = $("nfsb"), cat = SH2.cat;
           let rows = "";
           if (cat === "cr") {
-            rows += CRATES.map((c) => `<div class="px-card bn px-wide r${c.mx >= 3 ? 3 : 1}" style="--rc:${RARC[c.mx >= 3 ? 3 : 1]}"><div class="px-pv"><span class="px-e">${c.e}</span></div><div class="px-bi"><b>${esc(_t("nfI_" + c.id))}</b><small>${esc(_t("nfCrD" + c.mx))}</small></div><div class="px-bt"><button class="buy" data-go="nfcrate" data-id="${c.id}"><bdi dir="ltr">${priceTxt(c)}</bdi></button></div></div>`).join("");
+            rows += CRATES.map((c) => `<div class="px-card bn px-wide r${c.mx >= 3 ? 3 : 1}" style="--rc:${RARC[c.mx >= 3 ? 3 : 1]}"><div class="px-pv"><span class="px-e">${c.e}</span></div><div class="px-bi"><b>${esc(_t("nfI_" + c.id))}</b><small>${esc(_t("nfCrD" + c.mx))}</small><small class="on-odds">${crOdds(c)}</small></div><div class="px-bt"><button class="buy" data-go="nfcrate" data-id="${c.id}"><bdi dir="ltr">${priceTxt(c)}</bdi></button></div></div>`).join("");
             rows += BUNDLES.map((b) => {
               const all = b.items.every((i) => ENT.has(i)), sum = b.items.reduce((a, i) => a + pxCost(ITEMS[i]), 0), sv = Math.round(100 * (1 - pxCost(b) / sum));
               return `<div class="px-card bn px-wide r2" style="--rc:${RARC[2]}">${sv > 0 && !all ? `<span class="px-badge val">${esc(_t("pxSave", { n: sv }))}</span>` : ""}<div class="px-pv">${b.items.map((i) => ITEMS[i].e).join("")}</div><div class="px-bi"><b>${b.e} ${esc(_t("nfI_" + b.id))}</b><small>${b.items.map((i) => esc(itName(i))).join(" · ")}</small>${sv > 0 ? `<span class="px-strk" dir="ltr">${sum} 🪙</span>` : ""}</div>` +
@@ -7850,11 +8139,11 @@
             rows += Object.keys(ITEMS).filter((id) => ITEMS[id].c === cat).sort((a, b) => ITEMS[a].r - ITEMS[b].r || !!ITEMS[a].ex - !!ITEMS[b].ex).map(pxCard).join("");
           }
           const nx = (Math.floor(Date.now() / 864e5) + 1) * 864e5;
-          el.innerHTML = `<div class="px-sh"><h2 class="x-cy">✨ ${esc(_t("nfShop"))}</h2><span class="px-pill">${num(P.coins)} 🪙</span><span class="px-pill g">${num(P.gems)} 💎</span></div>
+          el.innerHTML = `<div class="px-sh"><h2 class="x-cy">✨ ${esc(_t("nfShop"))}</h2><span class="px-pill">${num(P.coins)} 🪙</span>${ON.storeOk() ? `<button type="button" class="px-pill g on-plus" data-go="nfongems" aria-label="${esc(_t("onGemsT"))}">${num(P.gems)} 💎</button>` : `<span class="px-pill g">${num(P.gems)} 💎</span>`}</div>
             <section class="px-feat"><header><b>🔥 ${esc(_t("pxFeat"))}</b><span>⏳ ${esc(fmtLeft(nx - Date.now()))}</span></header><div class="px-grid">${pxFeatIds().map(pxCard).join("")}</div></section>
             <div class="px-tabs2">${CATS.map(([k, e, n]) => `<button data-go="nfcat" data-c="${k}" class="${k === cat ? "on" : ""}">${e} ${esc(_t(n))}</button>`).join("")}</div>
             <div class="px-grid">${rows}</div>
-            <p class="x-note">${esc(_t("nfNoMoney"))}</p>
+            ${ON.storeOk() ? "" : `<p class="x-note">${esc(_t("nfNoMoney"))}</p>`}
             <button class="x-btn x-sub" data-go="nfback" data-to="${SH2.from}">${esc(_t("back"))}</button>`;
           pxPvAll();
         };
@@ -8040,6 +8329,541 @@
             `<circle cx="24" cy="25" r="${big ? 22 : 17}" fill="url(#uxG3)"/><path d="M12 18l6-8h12l6 8-12 22z" fill="url(#uxG1)" stroke="#e9fbff" stroke-width=".9" stroke-linejoin="round"/><path d="M12 18h24M18 10l-2 8 8 22 8-22-2-8M16 18l8-8 8 8" fill="none" stroke="#dff8ff" stroke-width=".7" opacity=".85"/><path d="M18 10h12l-6 8z" fill="url(#uxG2)" opacity=".9"/><path d="M14.5 17.5l4-5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>` +
             (big ? `<path d="M38 9l1 3 3 1-3 1-1 3-1-3-3-1 3-1z M9 31l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" fill="#fff"/>` : "") + `</svg>`;
         }
+        // ===================== ONLINE: Supabase server (accounts, wallet, matches, social, Stripe gem store) =====================
+        // The server is the only source of truth for coins, gems, XP, stats, items, pass progress. While signed in (cur === "@on"):
+        // every action REQUESTS a change through an RPC and the client renders what the server returns (ON.sync()). Local numbers
+        // are display-only and are overwritten by the next server state. Guests (ON.guest) can play matches; nothing is saved.
+        // Device-only things (settings, ghost runs, custom maps, photo skin, drawn avatar) stay on the device, cached per online
+        // account under KV "ss-on-<user id>". Public keys only: the publishable key is safe in the client; no secret key is here.
+        ON = (() => {
+          const SBU = "https://btmvxfiwprkgqcgquozq.supabase.co", SBK = "sb_publishable_o0TaQLE_ZaFJrqe_ZemmBQ_uHo5nnne", K = "@on";
+          const o = { on: false, guest: false, sess: null, st: null, cfg: null, packs: null, uid: "", mid: null, mp: null, mx: {}, mUsed: [], prof: null, from: "menu", K };
+          const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+          const vis = (id) => { const e = $(id); return !!e && !e.classList.contains("x-hide"); };
+          // ---------- transport ----------
+          let refP = null;
+          async function refresh(force) {
+            if (!o.sess || !o.sess.refresh_token) return false;
+            if (!force && o.sess.expires_at * 1000 > Date.now() + 60000) return true;
+            if (refP) return refP;
+            refP = (async () => {
+              try {
+                const r = await fetch(SBU + "/auth/v1/token?grant_type=refresh_token", { method: "POST", headers: { apikey: SBK, "Content-Type": "application/json" }, body: JSON.stringify({ refresh_token: o.sess.refresh_token }) });
+                if (r.status === 400 || r.status === 401 || r.status === 403) { o.dropSess(); return false; }
+                if (!r.ok) return false;
+                setSess(await r.json()); return true;
+              } catch (e) { return false; } finally { refP = null; }
+            })();
+            return refP;
+          }
+          function setSess(s) { o.sess = { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: s.expires_at || Math.floor(Date.now() / 1000) + (s.expires_in || 3600) }; KV.set("ss-sess", JSON.stringify(o.sess)); }
+          o.dropSess = () => { o.sess = null; KV.del("ss-sess"); };
+          async function call(path, body, opt) {
+            opt = opt || {};
+            const h = { apikey: SBK, "Content-Type": "application/json" };
+            if (opt.auth !== false && o.sess) { await refresh(false); if (o.sess) h.Authorization = "Bearer " + o.sess.access_token; }
+            let r;
+            const ac = typeof AbortController === "function" ? new AbortController() : null, tm = ac ? setTimeout(() => ac.abort(), opt.timeout || 20000) : 0;
+            try { r = await fetch(SBU + path, { method: opt.method || "POST", headers: h, body: body === undefined ? undefined : JSON.stringify(body), signal: ac ? ac.signal : undefined }); }
+            catch (e) { throw Object.assign(new Error("net"), { code: "net" }); }
+            finally { clearTimeout(tm); }
+            let j = null; try { j = await r.json(); } catch (e) {}
+            if (r.status === 401 && o.sess && !opt.retry && opt.auth !== false) { if (await refresh(true)) return call(path, body, Object.assign({}, opt, { retry: 1 })); }
+            if (!r.ok && !(opt.ok && opt.ok.includes(r.status))) {
+              const c = (j && (j.message || j.error || j.error_code || j.msg)) || "http_" + r.status;
+              throw Object.assign(new Error(c), { code: String(c), status: r.status, body: j });
+            }
+            return { status: r.status, j };
+          }
+          const rpc = async (fn, args) => (await call("/rest/v1/rpc/" + fn, args || {})).j;
+          o.rpc = rpc;
+          // server error code -> i18n key
+          const EK = { insufficient_funds: "onE_funds", already_claimed: "onE_claimed", not_reached: "onE_reach", not_ready: "onE_reach", rate_limited: "onE_rate", banned: "onE_banned",
+            maintenance: "onE_maint", level_too_low: "onE_level", already_owned: "onE_owned", invalid_login: "onE_login", user_not_found: "onE_nouser", cannot_add_self: "onE_self",
+            already_friends: "onE_already", friends_full: "onE_full", their_friends_full: "onE_full", gift_limit: "onE_giftlim", already_sent: "onE_giftsent", not_friends: "onE_notfr",
+            blocked: "onE_notfr", purchases_disabled: "onE_off", pass_disabled: "onE_off", season_not_active: "onE_off", premium_required: "onE_off", net: "onNet",
+            username_taken: "taken", invalid_username: "unameBad", user_already_exists: "emailTaken", email_exists: "emailTaken", weak_password: "weakPw", transaction_belongs_to_other_user: "onPayOther" };
+          o.ek = (e) => { const c = (e && (e.code || e.message)) || ""; return EK[c] || (/already registered/i.test(c) ? "emailTaken" : "onErr"); };
+          o.err = (e) => _t(o.ek(e));
+          const wset = (w) => { if (w && Number.isInteger(w.coins) && Number.isInteger(w.gems)) { P.coins = w.coins; P.gems = w.gems; } };
+
+          // ---------- server state -> local display state ----------
+          function fill(d, st) {
+            const p = d.P, m = d.M, ps = d.PST, s = st.stats || {}, pr = st.profile || {}, w = st.wallet || {}, inv = st.inventory || {}, cf = st.config || o.cfg || {}, td = today();
+            p.name = pr.username || p.name; if (AV.includes(pr.avatar)) p.av = pr.avatar;
+            p.coins = w.coins | 0; p.gems = w.gems | 0; p.xp = s.xp | 0;
+            p.own = {}; p.bst = {};
+            for (const k in inv) { if (/^b(mag|big|shield)$/.test(k)) p.bst[k.slice(1)] = inv[k] | 0; else if (/^[sht][^_]*$/.test(k)) p.own[k] = 1; }
+            p.hat = pr.hat && p.own["h" + pr.hat] ? pr.hat : ""; p.trail = pr.trail && p.own["t" + pr.trail] ? pr.trail : "";
+            p.ach = {}; for (const a of st.achievements || []) p.ach[a] = 1;
+            p.title = pr.title && p.ach[pr.title] ? pr.title : "";
+            p.rt = Number.isInteger(s.rating) ? s.rating : 1000;
+            if (st.team) { p.tr = st.team.rating | 0; p.tg = st.team.games | 0; }
+            const dg = st.daily_gift || {};
+            p.dg = { d: dg.available ? (dg.next_step > 1 ? td - 1 : -1) : td, s: dg.streak | 0 };
+            p.dc = s.daily_challenge_day && s.daily_challenge_day === cf.day ? td : -1;
+            p.tx = (st.ledger || []).filter((x) => x && x.delta).map((x) => [x.ts | 0, String(x.reason), x.delta | 0, x.currency === "gems" ? "g" : "c"]);
+            if (!Array.isArray(p.inb)) p.inb = [];
+            p.inb = p.inb.filter((x) => x.k !== "g");
+            for (const g of st.unclaimed_gifts || []) p.inb.unshift({ id: "sg:" + g.id, k: "g", f: String(g.from || "?"), a: g.amount | 0, c: 0, r: 0, d: td, ts: Math.floor(Date.now() / 1000), sid: g.id });
+            p.fr = []; p.ri = []; p.ro = []; p.bl = []; p.ch = {};
+            m.eat = s.eat | 0; m.kill = s.kills | 0; m.dragon = s.dragon ? 1 : 0; m.games = s.games | 0; m.wheelAt = Number.isInteger(s.wheel_at_games) ? s.wheel_at_games : -3;
+            m.chest = s.chest_day && s.chest_day === cf.day ? 1 : 0; m.done = {}; for (const k in s.missions_done || {}) m.done[k] = 1;
+            for (const k of ["games", "kills", "wins", "mk", "sw", "tw", "r1", "dly", "dgm"]) ps[k] = s[k] | 0; ps.rtm = Number.isInteger(s.rtm) ? s.rtm : 1000;
+            d.L.tier = clamp(s.league_tier | 0, 0, 4); d.L.tro = s.trophies | 0; d.best = s.best_len | 0;
+            if (Number.isInteger(pr.skin) && SKINS[pr.skin] && (!SKINS[pr.skin].p || p.own["s" + pr.skin])) d.skin = pr.skin;
+          }
+          function profSnap() { return { skin, hat: P.hat, trail: P.trail, av: P.av, title: P.title }; }
+          function live(st) { // apply a fresh server state to the running game without reloading screens
+            const d = { P, M, PST, L: { tier: L.tier, tro: L.tro }, best, skin };
+            fill(d, st); L.tier = d.L.tier; L.tro = d.L.tro; best = d.best; skin = d.skin; av = P.av;
+            o.prof = profSnap(); profile(); repaint();
+          }
+          function repaint() {
+            try {
+              if (vis("shop")) { if (!$("items").classList.contains("x-hide")) paintShop(); if (!$("pts").classList.contains("x-hide")) paintPts(); if (!$("txl").classList.contains("x-hide")) paintTx(); }
+              if (vis("achs")) paintAch(); if (vis("inbox")) paintInb(); if (vis("nfpass")) paintPass(); if (vis("nfshop")) paintShop2(); if (vis("acct")) paintProf();
+              if (vis("ongems")) paintGems();
+            } catch (e) {}
+          }
+          o.cfgApply = (c) => {
+            if (!c) return; o.cfg = c; o.dayN = c.day ? Math.floor(Date.parse(c.day + "T00:00:00Z") / 864e5) : 0;
+            const xm = +c.xp_multiplier, cm = +c.coin_multiplier;
+            CFG.xm = MULS.includes(xm) ? xm : 1; CFG.cm = MULS.includes(cm) ? cm : 1;
+            CFG.mt = c.maintenance && c.maintenance.on ? 1 : 0; CFG.mm = String((c.maintenance && c.maintenance.message) || "").replace(CTRL0g, "").slice(0, 120);
+            const am = String((c.announcement && c.announcement.message) || "").replace(CTRL0g, "").slice(0, 120);
+            CFG.an = c.announcement && c.announcement.on && am ? 1 : 0; if (am !== CFG.am) { CFG.am = am; let h = 7; for (const ch of am) h = (h * 31 + ch.charCodeAt(0)) >>> 0; CFG.ai = h; }
+            try { cfgPaint(); } catch (e) {}
+          };
+          let syncT = 0, syncP = null;
+          o.sync = async () => {
+            if (!o.on) return;
+            if (syncP) return syncP;
+            syncP = (async () => {
+              try { const [st, wl] = await Promise.all([rpc("get_my_state"), rpc("get_wallet")]); if (!o.on) return; o.st = st; o.cfgApply(st.config); live(st); WALLET.apply(wl); repaint(); }
+              catch (e) { if (e.code === "not_authenticated") { o.signOut(true); } }
+              finally { syncP = null; }
+            })();
+            return syncP;
+          };
+          o.syncSoon = (ms) => { clearTimeout(syncT); syncT = setTimeout(o.sync, ms || 600); };
+
+          // ---------- sign in / sign up / sign out ----------
+          o.login = async (identifier, password) => {
+            const r = await call("/functions/v1/login", { identifier, password }, { auth: false, ok: [401, 403, 429] });
+            const j = r.j || {};
+            if (!j.ok) throw Object.assign(new Error(j.error || "invalid_login"), { code: j.error === "rate_limited" ? "rate_limited" : j.error || "invalid_login", reason: j.reason });
+            return j.session;
+          };
+          o.signup = async (username, email, password, avatar) => {
+            const a = (await call("/rest/v1/rpc/username_available", { p_username: username }, { auth: false })).j;
+            if (!a || !a.ok) throw Object.assign(new Error(a && a.reason === "taken" ? "username_taken" : "invalid_username"), { code: a && a.reason === "taken" ? "username_taken" : "invalid_username" });
+            const r = (await call("/auth/v1/signup", { email, password, data: { username, avatar: AV.includes(avatar) ? avatar : "🐍" } }, { auth: false })).j;
+            if (!r || !r.access_token) throw Object.assign(new Error("onErr"), { code: "onErr" });
+            return r;
+          };
+          o.enter = async (sess) => {
+            setSess(sess);
+            const [st, wl] = await Promise.all([rpc("get_my_state"), rpc("get_wallet")]);
+            o.st = st; o.uid = st.profile.id; o.cfgApply(st.config);
+            let dev = null; try { dev = jparse(KV.get("ss-on-" + o.uid) || "null"); } catch (e) {}
+            const base = JSON.parse(JSON.stringify(DEF)), d = dev && isObj(dev) && isObj(dev.P) && isObj(dev.M) && isObj(dev.PST) && isObj(dev.L) ? dev : base;
+            for (const k of Object.keys(base)) if (d[k] === undefined) d[k] = base[k];
+            for (const k of Object.keys(base.P)) if (d.P[k] === undefined) d.P[k] = JSON.parse(JSON.stringify(base.P[k]));
+            if (!d.S) d.S = JSON.parse(JSON.stringify(S)); else d.S.lang = S.lang;
+            fill(d, st);
+            if (cur && cur !== K) commit();
+            ACC[K] = { u: st.profile.username, email: "", h: "", s: "", es: "", id: st.profile.player_id, on: 1, d, rl: 0, rt: 0 };
+            o.on = true; o.guest = false; WALLET.src = "server"; WALLET.rpc = (fn, a) => rpc(fn, a);
+            cur = null; enter(K); curKey = null;
+            WALLET.apply(wl); o.prof = profSnap();
+            document.body.classList.add("on-in"); document.body.classList.remove("on-guest");
+            setTimeout(o.payResume, 300);
+            return st;
+          };
+          o.signOut = async (silent) => {
+            const s = o.sess;
+            if (s && !silent) { try { await fetch(SBU + "/auth/v1/logout", { method: "POST", headers: { apikey: SBK, Authorization: "Bearer " + s.access_token } }); } catch (e) {} }
+            o.dropSess(); o.on = false; o.st = null; o.uid = ""; o.mid = null; WALLET.src = "local"; WALLET.rpc = async (fn) => { throw new Error("server wallet not connected: " + fn); };
+            document.body.classList.remove("on-in");
+            if (cur === K) { logout(); }
+            delete ACC[K];
+            if (silent) show("login");
+          };
+          o.cache = (d) => { // commit() hook: keep the device-only parts; push cosmetic changes to the server
+            if (!o.on || !o.uid) return;
+            try { KV.set("ss-on-" + o.uid, JSON.stringify(d)); } catch (e) {}
+            if (!o.prof) return;
+            const n = profSnap(), ch = {};
+            if (n.skin !== o.prof.skin) ch.p_skin = n.skin; if (n.hat !== o.prof.hat) ch.p_hat = n.hat || ""; if (n.trail !== o.prof.trail) ch.p_trail = n.trail || "";
+            if (n.av !== o.prof.av && AV.includes(n.av)) ch.p_avatar = n.av; if (n.title !== o.prof.title) ch.p_title = n.title || "";
+            if (!Object.keys(ch).length) return;
+            o.prof = n;
+            clearTimeout(o.profT); o.profT = setTimeout(() => { rpc("set_profile", ch).catch((e) => { toast(o.err(e)); o.sync(); }); }, 500);
+          };
+
+          // ---------- matches ----------
+          o.mStart = () => {
+            o.mid = null; o.mp = null; o.mx = { gold: 0, boss: 0, dragon: 0, t0: performance.now() };
+            if (!o.on) return;
+            const used = o.mUsed.slice(); o.mUsed = [];
+            const mode = ["n", "t", "s", "r", "d", "p", "l"].includes(MD) ? MD : "n";
+            o.mp = rpc("start_match", { p_mode: mode, p_difficulty: mode === "r" ? 2 : clamp(S.diff | 0, 0, 4), p_map: clamp(mapI | 0, 0, 6) })
+              .then((r) => { o.mid = r.match_id; for (const b of used) rpc("use_boost", { p_match_id: r.match_id, p_boost: b }).catch(() => {}); return r.match_id; })
+              .catch((e) => { o.mid = null; if (e.code === "maintenance" || e.code === "banned") toast(o.err(e)); return null; });
+          };
+          o.stats = (l, extra) => {
+            const pl = player, st = { length: l | 0, kills: pl ? pl.kills | 0 : 0, eaten: NFS.ate | 0, gold: o.mx.gold | 0, boss: o.mx.boss | 0, dragon: o.mx.dragon ? 1 : 0,
+              duration_s: Math.max(0, Math.round((performance.now() - (o.mx.t0 || performance.now())) / 1000)) };
+            try {
+              if (MD === "s") st.survived = !!(pl && pl.alive);
+              if (MD === "r") { const rv = snakes.filter((s) => s !== pl && s.alive && !s.ad); st.placement = rv.filter((s) => s.len > l).length + 1; st.field_size = rv.length + 1; }
+              if (MD === "t") { const sc = tScores(l), rk = sc.map((v, i) => i).sort((a, b) => sc[b] - sc[a]); st.team_rank = rk.indexOf(0) + 1; st.team_count = sc.length; }
+            } catch (e) {}
+            return Object.assign(st, extra || {});
+          };
+          o.over = (st) => {
+            const el = $("earn");
+            if (!o.on) { if (!cur) { el.textContent = _t("onGuestEarn"); const pr = $("pxrews"); if (pr) pr.innerHTML = `<span>${esc(_t("onGuestEarn"))}</span>`; } return; }
+            const mp = o.mp, mid0 = o.mid; o.mid = null; o.mp = null;
+            const out = (txt) => { el.textContent = txt; el.classList.remove("px-gone"); const pr = $("pxrews"); if (pr) pr.innerHTML = txt.split(" · ").filter(Boolean).map((p, i) => `<span dir="auto" style="animation-delay:${(0.1 + i * 0.1).toFixed(2)}s">${esc(p)}</span>`).join(""); };
+            (async () => {
+              const mid = mid0 || (mp && (await mp));
+              if (!mid) { out(_t("onNoTicket")); o.syncSoon(); return; }
+              let r = null, err = null;
+              for (let i = 0; i < 3 && !r; i++) { try { r = await rpc("submit_match", { p_match_id: mid, p_stats: st }); } catch (e) { err = e; if (e.code !== "net") break; await sleep(1500 * (i + 1)); } }
+              if (!r) { out(o.err(err)); o.syncSoon(); return; }
+              if (r.too_short) out(_t("onShort"));
+              else if (r.expired) out(_t("onNoTicket"));
+              else {
+                const w = r.rewards || {}, x = w.extra || {}, lv = w.level || {};
+                const c = (w.coins | 0) + (w.gold_coins | 0) + (w.boss_coins | 0) + (w.league_coins | 0) + (w.mode_coins | 0) + (lv.level_coins | 0);
+                const parts = [`+${c} 🪙`, `+${w.xp | 0} ${_t("xp")}`];
+                if (w.gems > 0) parts.push(`+${w.gems} 💎`);
+                if (lv.levels_gained > 0) parts.push("🎉 " + _t("onLvUp", { n: lv.level }));
+                if (x.season_xp > 0) parts.push(`👑 +${x.season_xp} ${_t("onSxp")}` + (x.season_premium ? " (×1.5)" : ""));
+                if (typeof tmRes === "string" && tmRes) parts.push(tmRes);
+                out(parts.join(" · "));
+              }
+              if (r.wallet) wset(r.wallet);
+              o.sync();
+            })();
+          };
+          o.revive = async (len) => {
+            const mid = o.mid || (o.mp && (await o.mp));
+            if (!mid) { toast(_t("onNoTicket")); return false; }
+            try { const r = await rpc("spend_revive", { p_match_id: mid, p_length: len | 0 }); wset(r.wallet); profile(); return true; }
+            catch (e) { toast(o.err(e)); return false; }
+          };
+
+          // ---------- rewards & shops (old shop, points tab, gift, achievements, inbox gifts) ----------
+          o.gift = () => {
+            rpc("claim_daily_gift").then((r) => { wset(r.wallet); toast(`🎁 ${_t("giftGot", { n: r.step, x: r.coins })}`); beep(784, 0.2, "triangle", 0.06, 1175); for (const m of P.inb) if (m.k === "dg") m.r = 1; o.sync(); })
+              .catch((e) => { toast(e.code === "already_claimed" ? _t("giftHad") : o.err(e)); o.sync(); });
+          };
+          o.ach = (id) => {
+            const a = ACH.find((x) => x[0] === id);
+            rpc("claim_achievement", { p_id: id }).then((r) => { wset(r.wallet); P.ach[id] = 1; toast(_t("achGot", { x: a ? aName(a) : id }) + (r.coins ? ` +${r.coins} 🪙` : "") + (r.gems ? ` +${r.gems} 💎` : "")); beep(784, 0.2, "triangle", 0.06, 1175); o.sync(); })
+              .catch((e) => { toast(o.err(e)); o.sync(); });
+          };
+          o.inbClaim = (m) => {
+            if (!m.sid) { toast(_t("fgDup")); return; }
+            m.c = 1; m.r = 1;
+            rpc("claim_friend_gift", { p_gift_id: m.sid }).then((r) => { wset(r.wallet); toast(_t("fgGot", { x: m.f })); beep(784, 0.2, "triangle", 0.06, 1175); o.sync(); })
+              .catch((e) => { toast(o.err(e)); o.sync(); });
+          };
+          o.buy = (id, done) => {
+            rpc("buy_shop_item", { p_item_id: id }).then((r) => { wset(r.wallet); const t = id[0];
+              if (id === "gx" || id === "pack") {} else if (t === "b") P.bst[id.slice(1)] = r.qty | 0; else P.own[id] = 1;
+              beep(760, 0.1, "triangle", 0.05, 1200); if (done) done(r); o.syncSoon(300); })
+              .catch((e) => { toast(o.err(e)); o.sync(); });
+          };
+          o.shopClick = (e) => { // old shop: purchases go to the server; equip/unequip stays local and is synced by o.cache
+            const g = e.target.closest("button[data-g]");
+            if (g) { if (!g.disabled) o.buy(g.dataset.g, () => { paintShop(); profile(); }); return true; }
+            const b = e.target.closest("button[data-k]"); if (!b || b.disabled) return false;
+            const k = b.dataset.k, t = k[0], id = k.slice(1);
+            if (t === "s") { const s = SKINS[+id]; if (!s || skOwn(+id)) return false; SF.sel = +id; if (level() < skinLv(s) || (s.cur ? P.gems : P.coins) < s.p) return true;
+              o.buy(k, () => { skin = +id; toast(`✓ ${s.n}`); paintShop(); paintSkins(); profile(); }); return true; }
+            if (t === "b" || !P.own[k]) { o.buy(k, () => { paintShop(); paintSkins(); profile(); }); return true; }
+            return false;
+          };
+          o.ptsClick = (b) => {
+            const p = b.dataset.p; b.disabled = true;
+            if (p === "chest") rpc("open_chest").then((r) => { M.chest = 1; wset(r.wallet); toast(`🎁 +${r.coins} 🪙`); beep(760, 0.1, "triangle", 0.05, 1200); profile(); paintPts(); o.syncSoon(); }).catch((e) => { toast(o.err(e)); o.sync(); });
+            else if (p === "wheel") rpc("spin_wheel").then((r) => {
+                const k = clamp(r.index | 0, 0, WP.length - 1), pz = WP[k]; M.wheelAt = M.games; spinning = true;
+                wheelDeg += 360 * 5 + ((360 - (wheelDeg % 360)) % 360) + (360 - (k * 60 + 30));
+                const w = $("wheel"); requestAnimationFrame(() => { if (w) w.style.transform = `rotate(${wheelDeg}deg)`; });
+                setTimeout(() => { spinning = false; wset(r.wallet); if (pz.b) P.bst[pz.b] = (P.bst[pz.b] || 0) + 1; toast(`🎡 ${_t("won")} ${wpN(pz)}`); beep(760, 0.2, "triangle", 0.05, 1320); profile(); paintPts(); o.sync(); }, 3100);
+              }).catch((e) => { toast(o.err(e)); o.sync(); });
+            else if (p[0] === "m") { const m = MIS.find((x) => "m" + x.id === p); if (!m) return;
+              rpc("claim_mission", { p_id: m.id }).then((r) => { M.done[m.id] = 1; wset(r.wallet); toast(`🎯 +${r.coins} 🪙`); beep(760, 0.1, "triangle", 0.05, 1200); profile(); paintPts(); o.syncSoon(); }).catch((e) => { toast(o.err(e)); o.sync(); }); }
+          };
+
+          // ---------- leaderboard ----------
+          const BOARDS = ["xp", "best", "rating", "team", "trophies", "kills"], WEEK = ["xp", "best", "kills"];
+          const LB = { b: "xp", p: "all", n: 0 };
+          async function paintLb() {
+            if (!LB.p || (LB.p === "week" && !WEEK.includes(LB.b))) LB.b = "xp";
+            [...$("onlbp").children].forEach((x) => x.classList.toggle("on", x.dataset.lp === LB.p));
+            $("onlbb").innerHTML = BOARDS.filter((b) => LB.p === "all" || WEEK.includes(b)).map((b) => `<button type="button" data-lb="${b}" class="${b === LB.b ? "on" : ""}">${esc(_t("onB_" + b))}</button>`).join("");
+            const n = ++LB.n, l = $("onlbl");
+            if (!o.on) { l.innerHTML = `<li class="on-empty">${esc(_t("onSignNeed"))}</li>`; $("onlbme").textContent = ""; return; }
+            l.innerHTML = `<li class="on-empty">…</li>`;
+            try {
+              const r = await rpc("get_leaderboard", { p_board: LB.b, p_period: LB.p, p_limit: 50 }); if (n !== LB.n) return;
+              const med = ["🥇", "🥈", "🥉"];
+              l.innerHTML = (r.rows || []).length ? r.rows.map((x) => `<li class="${x.me ? "me" : ""}"><i>${x.rank <= 3 ? med[x.rank - 1] : x.rank}</i><span class="on-av">${AV.includes(x.avatar) ? x.avatar : "🐍"}</span><b>${esc(x.username)}<small dir="ltr">#${num(x.player_id)}</small></b><em dir="ltr">${num(x.value).toLocaleString("en")}</em></li>`).join("")
+                : `<li class="on-empty">${esc(_t("onLbEmpty"))}</li>`;
+              $("onlbme").innerHTML = r.me ? `${esc(_t("onLbMe"))}: <b dir="ltr">#${num(r.me.rank)}</b> · <bdi dir="ltr">${num(r.me.value).toLocaleString("en")}</bdi>` : "";
+            } catch (e) { if (n === LB.n) l.innerHTML = `<li class="on-empty">${esc(o.err(e))}</li>`; }
+          }
+          o.paintLb = paintLb;
+          $("onlbp").addEventListener("click", (e) => { const b = e.target.closest("[data-lp]"); if (b) { LB.p = b.dataset.lp; paintLb(); } });
+          $("onlbb").addEventListener("click", (e) => { const b = e.target.closest("[data-lb]"); if (b) { LB.b = b.dataset.lb; paintLb(); } });
+
+          // ---------- friends, requests, blocks, gifts, chat, reports ----------
+          const FR = { t: "f", d: null, arm: "", chat: null, chT: 0, last: 0, rep: null };
+          async function loadFr() { try { FR.d = await rpc("list_friends"); } catch (e) { $("onfrm").textContent = o.err(e); } paintFr(); }
+          function paintFr() {
+            const d = FR.d || { friends: [], incoming: [], outgoing: [], blocked: [] }, l = $("onfrl");
+            [...$("onfrt").children].forEach((x) => x.classList.toggle("on", x.dataset.ft === FR.t));
+            $("onfrrn").textContent = d.incoming.length ? " " + d.incoming.length : "";
+            const ib = (go, id, txt, cls) => `<button type="button" class="on-ib${cls ? " " + cls : ""}" data-fa="${go}" data-id="${esc(id)}">${txt}</button>`;
+            const arm = (k) => (FR.arm === k ? " arm" : "");
+            let h = "";
+            if (FR.rep) {
+              const r = FR.rep;
+              h = `<p class="x-note">${esc(_t("onRepT", { x: r.name }))}</p><div class="on-rep">` + ["cheating", "abuse", "name", "spam", "other"].map((k) => `<button type="button" class="x-btn x-sub" data-fa="repgo" data-id="${esc(r.id)}" data-r="${k}">${esc(_t("onRep_" + k))}</button>`).join("") +
+                `</div><button type="button" class="x-btn x-sub" data-fa="repx" data-id="">${esc(_t("onCancel"))}</button>`;
+            } else if (FR.t === "f") {
+              h = d.friends.length ? d.friends.map((f) => `<div class="on-fr"><span class="on-av">${AV.includes(f.avatar) ? f.avatar : "🐍"}</span><b>${esc(f.username)}<small>${_t("lvl")} ${num(f.level)} · <bdi dir="ltr">#${num(f.player_id)}</bdi>${f.unread ? ` · 💬 ${num(f.unread)}` : ""}</small></b>` +
+                ib("chat", f.id, "💬", f.unread ? "hot" : "") + ib("gift", f.id, f.gift_sent_today ? "✓🎁" : "🎁", f.gift_sent_today ? "dim" : "") + ib("rep", f.id + "|" + f.username, "⚑") +
+                ib("block", f.id, "⛔", arm("b" + f.id)) + ib("rm", f.id, "✕", arm("r" + f.id)) + `</div>`).join("") : `<p class="x-note">${esc(_t("onFrNone"))}</p>`;
+            } else if (FR.t === "r") {
+              h = d.incoming.map((f) => `<div class="on-fr"><span class="on-av">${AV.includes(f.avatar) ? f.avatar : "🐍"}</span><b>${esc(f.username)}<small>${esc(_t("onFrIn"))}</small></b>${ib("acc", f.id, "✓ " + esc(_t("onAccept")), "ok")}${ib("dec", f.id, esc(_t("onDecline")))}${ib("block", f.id, "⛔", arm("b" + f.id))}</div>`).join("") +
+                d.outgoing.map((f) => `<div class="on-fr dim"><span class="on-av">${AV.includes(f.avatar) ? f.avatar : "🐍"}</span><b>${esc(f.username)}<small>${esc(_t("onFrOut"))}</small></b>${ib("can", f.id, esc(_t("onCancel")))}</div>`).join("") ||
+                `<p class="x-note">${esc(_t("onFrNoReq"))}</p>`;
+            } else {
+              h = d.blocked.length ? d.blocked.map((f) => `<div class="on-fr"><span class="on-av">⛔</span><b>${esc(f.username)}</b>${ib("unb", f.id, esc(_t("onUnblock")))}</div>`).join("") : `<p class="x-note">${esc(_t("onFrNoBl"))}</p>`;
+            }
+            l.innerHTML = h;
+          }
+          async function frAct(a, id, b) {
+            const m = $("onfrm"); m.textContent = "";
+            const run = async (fn, args, ok) => { try { await rpc(fn, args); if (ok) toast(ok); } catch (e) { m.textContent = o.err(e); } FR.arm = ""; await loadFr(); };
+            if (a === "chat") { const f = (FR.d.friends || []).find((x) => x.id === id); if (f) openChat(f); }
+            else if (a === "gift") run("send_friend_gift", { p_to: id }, _t("onGiftSent"));
+            else if (a === "acc") run("respond_friend_request", { p_from: id, p_accept: true });
+            else if (a === "dec") run("respond_friend_request", { p_from: id, p_accept: false });
+            else if (a === "can") run("cancel_friend_request", { p_to: id });
+            else if (a === "unb") run("unblock_user", { p_user: id });
+            else if (a === "rm" || a === "block") { const k = (a === "rm" ? "r" : "b") + id; if (FR.arm !== k) { FR.arm = k; m.textContent = _t("onConfirm"); paintFr(); return; } run(a === "rm" ? "remove_friend" : "block_user", { p_user: id }); }
+            else if (a === "rep") { const [uid, name] = id.split("|"); FR.rep = { id: uid, name, msg: b && b.dataset.msg ? +b.dataset.msg : null }; paintFr(); }
+            else if (a === "repx") { FR.rep = null; paintFr(); }
+            else if (a === "repgo") { const r = FR.rep; FR.rep = null; try { await rpc("report_player", Object.assign({ p_user: id, p_reason: b.dataset.r }, r && r.msg ? { p_message_id: r.msg } : {})); toast(_t("onRepSent")); } catch (e) { m.textContent = o.err(e); } paintFr(); }
+          }
+          $("onfrl").addEventListener("click", (e) => { const b = e.target.closest("[data-fa]"); if (b) frAct(b.dataset.fa, b.dataset.id, b); });
+          $("onfrt").addEventListener("click", (e) => { const b = e.target.closest("[data-ft]"); if (b) { FR.t = b.dataset.ft; FR.arm = ""; FR.rep = null; paintFr(); } });
+          async function frAdd() {
+            const n = $("onfrn").value.replace(CTRL0g, "").trim().slice(0, 20), m = $("onfrm"); if (!n) return;
+            try { await rpc("send_friend_request", { p_username: n }); $("onfrn").value = ""; m.textContent = ""; toast(_t("onFrOut")); } catch (e) { m.textContent = o.err(e); }
+            loadFr();
+          }
+          $("onfrn").addEventListener("keydown", (e) => { if (e.key === "Enter") frAdd(); });
+          function openChat(f) {
+            FR.chat = f; FR.last = 0; $("onche").textContent = ""; $("onchi").value = "";
+            $("onchh").innerHTML = `<span class="on-av">${AV.includes(f.avatar) ? f.avatar : "🐍"}</span><b>${esc(f.username)}</b><button type="button" class="on-ib" id="onchrep">⚑ ${esc(_t("onReport"))}</button>`;
+            $("onchl").innerHTML = ""; show("onch"); loadChat(true);
+            clearInterval(FR.chT); FR.chT = setInterval(() => { if (!vis("onch")) { clearInterval(FR.chT); return; } loadChat(false); }, 4000);
+          }
+          async function loadChat(first) {
+            const f = FR.chat; if (!f) return;
+            try {
+              const ms = await rpc("get_chat", { p_with: f.id, p_limit: 60 }); if (FR.chat !== f) return;
+              const top = ms.length ? ms[ms.length - 1].id : 0; if (!first && top === FR.last) return; FR.last = top;
+              const l = $("onchl"), tf = new Intl.DateTimeFormat(LANG, { hour: "2-digit", minute: "2-digit" });
+              l.innerHTML = ms.length ? "" : `<p class="x-note">${esc(_t("onChEmpty"))}</p>`;
+              for (const m of ms) {
+                const d = document.createElement("div"); d.className = "on-msg" + (m.mine ? " me" : ""); d.dir = "auto";
+                const t = document.createElement("span"); t.textContent = m.body; d.appendChild(t);
+                const s = document.createElement("small"); s.textContent = tf.format(new Date(m.ts)); d.appendChild(s);
+                if (!m.mine) { const r = document.createElement("button"); r.type = "button"; r.className = "on-mrep"; r.textContent = "⚑"; r.title = _t("onReport"); r.dataset.msg = m.id; d.appendChild(r); }
+                l.appendChild(d);
+              }
+              l.scrollTop = l.scrollHeight;
+              if (ms.some((m) => !m.mine && !m.read)) rpc("mark_chat_read", { p_with: f.id }).catch(() => {});
+            } catch (e) { $("onche").textContent = o.err(e); }
+          }
+          async function chatSend() {
+            const f = FR.chat, i = $("onchi"), v = i.value.replace(CTRL0g, "").trim().slice(0, 300); if (!f || !v) return;
+            i.value = ""; try { await rpc("send_chat", { p_to: f.id, p_body: v }); $("onche").textContent = ""; loadChat(true); } catch (e) { $("onche").textContent = o.err(e); i.value = v; }
+          }
+          $("onchi").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); chatSend(); } });
+          $("onchl").addEventListener("click", (e) => { const b = e.target.closest(".on-mrep"); if (!b || !FR.chat) return; FR.rep = { id: FR.chat.id, name: FR.chat.username, msg: +b.dataset.msg }; FR.t = "f"; show("onfr"); paintFr(); });
+          $("onchh").addEventListener("click", (e) => { if (!e.target.closest("#onchrep") || !FR.chat) return; FR.rep = { id: FR.chat.id, name: FR.chat.username, msg: null }; FR.t = "f"; show("onfr"); paintFr(); });
+
+          // ---------- Stripe gem store (web only) ----------
+          // isIOSApp(): the single gate that hides every real-money UI inside a native iOS wrapper (App Store rule: Apple IAP only there).
+          // True when any of: Capacitor native platform, a WKWebView message bridge (window.webkit.messageHandlers), ?app=ios in the URL
+          // (remembered for the session), or the token "SuperSnakeiOS" in the user agent (set it as appendUserAgent in the wrapper).
+          const IOS_Q = (() => { try { const q = new URLSearchParams(location.search).get("app"); if (q === "ios") sessionStorage.setItem("ss-app", "ios"); return sessionStorage.getItem("ss-app") === "ios"; } catch (e) { return false; } })();
+          o.isIOSApp = () => {
+            try {
+              const C = window.Capacitor;
+              if (C && ((typeof C.isNativePlatform === "function" && C.isNativePlatform()) || (typeof C.getPlatform === "function" && C.getPlatform() === "ios"))) return true;
+              if (window.webkit && window.webkit.messageHandlers) return true;
+              if (/SuperSnakeiOS/i.test(navigator.userAgent || "")) return true;
+            } catch (e) {}
+            return IOS_Q;
+          };
+          o.storeOk = () => !o.isIOSApp() && !!(o.cfg && o.cfg.purchase_providers && o.cfg.purchase_providers.stripe) && !!(o.packs && o.packs.enabled && o.packs.packs && o.packs.packs.length);
+          const money = (c, cur) => { try { return new Intl.NumberFormat(LANG === "ar" ? "ar-u-nu-latn" : LANG, { style: "currency", currency: (cur || "usd").toUpperCase() }).format(c / 100); } catch (e) { return "$" + (c / 100).toFixed(2); } };
+          function paintGems() {
+            const pk = (o.packs && o.packs.packs) || [], test = o.packs && o.packs.mode === "test";
+            $("ongtest").classList.toggle("x-hide", !test); $("ongtn").classList.toggle("x-hide", !test);
+            $("ongbal").innerHTML = o.on ? `<span class="px-pill g">${num(P.gems)} 💎</span>` : `<button type="button" class="x-btn x-sub" data-go="nfonsignin">${esc(_t("onSignBuy"))}</button>`;
+            const gems = ["💎", "💎💎", "💰", "🧰", "👑", "🏰"];
+            $("ongp").innerHTML = pk.map((p, i) => `<button type="button" class="on-pack r${Math.min(5, i)}${i === 2 ? " pop" : ""}${i === pk.length - 1 ? " best" : ""}" data-pid="${esc(p.product_id)}" style="--d:${(i * 0.06).toFixed(2)}s">` +
+              (i === 2 ? `<span class="on-tag">${esc(_t("onPopular"))}</span>` : i === pk.length - 1 ? `<span class="on-tag b">${esc(_t("onBest"))}</span>` : "") +
+              `<span class="on-pi" aria-hidden="true">${gems[Math.min(5, i)]}</span><b dir="ltr">${num(p.gems).toLocaleString("en")}</b><small>${esc(_t("onPk" + Math.min(5, i)))}</small>` +
+              (p.bonus_pct ? `<em>${esc(_t("onBonus", { n: p.bonus_pct }))}</em>` : `<em class="z"></em>`) + `<span class="on-price" dir="ltr">${esc(money(p.price_cents, p.currency))}</span></button>`).join("");
+          }
+          o.paintGems = paintGems;
+          o.openGems = async (from) => {
+            if (o.isIOSApp()) return;
+            o.from = from || "menu"; $("ongm").textContent = "";
+            try { if (!o.packs) o.packs = (await call("/rest/v1/rpc/get_gem_packs", {}, { auth: false })).j; } catch (e) {}
+            if (!o.storeOk()) { toast(_t("onGemsOff")); return; }
+            paintGems(); show("ongems");
+          };
+          $("ongp").addEventListener("click", async (e) => {
+            const b = e.target.closest("[data-pid]"); if (!b || o.buying) return;
+            if (!o.on) { toast(_t("onSignBuy")); show("login"); return; }
+            if (!o.storeOk()) { $("ongm").textContent = _t("onGemsOff"); return; }
+            o.buying = true; b.classList.add("busy"); $("ongm").textContent = _t("onRedirect");
+            try {
+              const r = (await call("/functions/v1/create-checkout", { product_id: b.dataset.pid })).j;
+              if (!r || !r.ok || !/^https:\/\/checkout\.stripe\.com\//.test(r.url || "")) throw Object.assign(new Error("onErr"), { code: "onErr" });
+              KV.set("ss-pending-checkout", JSON.stringify({ s: r.session_id, u: o.uid, t: Date.now() }));
+              location.href = r.url;
+            } catch (e2) { $("ongm").textContent = o.err(e2); b.classList.remove("busy"); o.buying = false; }
+          });
+          // return from Stripe: ?purchase=success&session_id=cs_... | ?purchase=cancel (read once, then stripped from the URL)
+          const PQ = (() => { try { const q = new URLSearchParams(location.search), p = q.get("purchase"), s = q.get("session_id");
+            if (!p) return null; q.delete("purchase"); q.delete("session_id"); const qs = q.toString();
+            history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+            return { p, s: s && /^cs_[A-Za-z0-9_]{10,200}$/.test(s) ? s : null }; } catch (e) { return null; } })();
+          if (PQ && PQ.p === "cancel") { KV.del("ss-pending-checkout"); setTimeout(() => toast(_t("onPayCancel")), 1200); }
+          if (PQ && PQ.p === "success" && PQ.s) { try { const old = jparse(KV.get("ss-pending-checkout") || "null"); KV.set("ss-pending-checkout", JSON.stringify({ s: PQ.s, u: old && old.u, t: Date.now() })); } catch (e) {} }
+          let verifying = false;
+          o.payResume = async () => {
+            if (!o.on || verifying) return;
+            let pend = null; try { pend = jparse(KV.get("ss-pending-checkout") || "null"); } catch (e) {}
+            if (!pend || !pend.s) return;
+            if (Date.now() - (pend.t || 0) > 864e5) { KV.del("ss-pending-checkout"); return; }
+            if (pend.u && pend.u !== o.uid) return; // paid on another account: keep it for that account
+            verifying = true; toast(_t("onPayProc"));
+            try {
+              for (let i = 0; i < 12; i++) {
+                let r;
+                try { r = await call("/functions/v1/verify-purchase", { provider: "stripe", session_id: pend.s }, { ok: [202] }); }
+                catch (e) {
+                  if (e.code === "transaction_belongs_to_other_user") { toast(_t("onPayOther")); return; }
+                  if (e.code === "net" || e.status >= 500) { await sleep(2500); continue; }
+                  KV.del("ss-pending-checkout"); toast(o.err(e)); return;
+                }
+                const j = r.j || {};
+                if (r.status === 200 && j.ok) { KV.del("ss-pending-checkout"); if (j.wallet) wset(j.wallet); await o.sync(); celebrate((j.granted && j.granted.gems) | 0); return; }
+                if (j.status === "expired") { KV.del("ss-pending-checkout"); toast(_t("onPayExp")); return; }
+                await sleep(2500);
+              }
+              toast(_t("onPaySoon")); setTimeout(o.sync, 8000);
+            } finally { verifying = false; }
+          };
+          function celebrate(n) {
+            const c = $("oncele"); $("onct").textContent = _t("onPayGot", { n: n.toLocaleString("en") }); $("oncn").textContent = "0";
+            const bu = $("onburst"); bu.innerHTML = "";
+            const rm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+            if (!rm) for (let i = 0; i < 28; i++) { const s = document.createElement("i"), a = (i / 28) * 6.283, d = 120 + (i % 4) * 45; s.textContent = i % 3 ? "💎" : "✦";
+              s.style.cssText = `--x:${Math.round(Math.cos(a) * d)}px;--y:${Math.round(Math.sin(a) * d)}px;--r:${(i * 47) % 360}deg;animation-delay:${(i % 5) * 0.04}s`; bu.appendChild(s); }
+            c.classList.remove("x-hide"); beep(784, 0.18, "triangle", 0.06, 1568); setTimeout(() => beep(1046, 0.25, "triangle", 0.06, 2093), 180); vib([30, 40, 30]);
+            const t0 = performance.now(), dur = rm ? 1 : 1400, step = (ts) => { const k = Math.min(1, (ts - t0) / dur), e = 1 - Math.pow(1 - k, 3); $("oncn").textContent = Math.round(n * e).toLocaleString("en"); if (k < 1) requestAnimationFrame(step); };
+            requestAnimationFrame(step);
+          }
+          o.celebrate = celebrate;
+
+          // ---------- one-time migration of a local (device) account ----------
+          const MIG = { ok: "", pw: "" };
+          o.locals = () => Object.keys(ACC).filter((k) => k[0] !== "@" && !KV.get("ss-mig-" + k));
+          o.offerMig = (k, pw) => {
+            if (!o.on || !o.st || o.st.profile.migrated_at) return;
+            const ks = o.locals(); if (!ks.length) return;
+            if (!k && KV.get("ss-migskip-" + o.uid)) return;
+            MIG.ok = k && pw ? k : ""; MIG.pw = k && pw ? pw : "";
+            $("onmigs").innerHTML = ks.map((x) => `<option value="${esc(x)}"${x === k ? " selected" : ""}>${esc(ACC[x].u)} · ${_t("lvl")} ${lvOf(num(ACC[x].d.P.xp))} · ${num(ACC[x].d.P.coins)} 🪙</option>`).join("");
+            $("onmigp").value = ""; $("onmige").textContent = ""; migPw(); show("onmig");
+          };
+          const migPw = () => { $("onmigp").classList.toggle("x-hide", $("onmigs").value === MIG.ok && !!MIG.pw); };
+          $("onmigs").addEventListener("change", migPw);
+          o.migGo = async () => {
+            const k = $("onmigs").value, a = ACC[k], e = (m) => { $("onmige").textContent = m; }; if (!a || o.busyMig) return;
+            const pw = k === MIG.ok && MIG.pw ? MIG.pw : $("onmigp").value;
+            o.busyMig = true; e(_t("working"));
+            try {
+              if (!pw || !SUB || !(await pwCheck(pw, a))) { e(_t("wrongPw")); return; }
+              const d = a.d, save = { P: d.P, M: d.M, PST: d.PST, L: d.L, best: d.best, X: d.X ? { own: d.X.own || {} } : undefined };
+              const r = await rpc("migrate_local_save", { p_save: save });
+              KV.set("ss-mig-" + k, o.uid); MIG.pw = "";
+              toast(_t("onMigOk", { c: num(r.coins), g: num(r.gems), l: num(r.level) }));
+              await o.sync(); show("menu");
+            } catch (x) { if (x.code === "already_migrated") { e(_t("onMigDone")); } else e(o.err(x)); }
+            finally { o.busyMig = false; }
+          };
+
+          // ---------- delete account (App Store requirement) ----------
+          let delArm = 0;
+          o.del = async () => {
+            if (!o.on) return;
+            if (!delArm) { delArm = 1; toast(_t("onDelC")); setTimeout(() => { delArm = 0; }, 5000); return; }
+            delArm = 0;
+            try { await rpc("delete_my_account"); KV.del("ss-on-" + o.uid); toast(_t("onDeleted")); await o.signOut(true); } catch (e) { toast(o.err(e)); }
+          };
+
+          // ---------- router for the online buttons (works for guests too) ----------
+          const GO = {
+            nfonback: () => show(o.from === "nfshop" || o.from === "shop" || o.from === "acct" ? o.from : "menu"),
+            nfonlb: () => { if (state === "play") return; o.from = "menu"; show("onlb"); paintLb(); },
+            nfonfr: () => { if (state === "play") return; if (!o.on) { toast(_t("onSignNeed")); show("login"); return; } o.from = vis("acct") ? "acct" : o.from === "acct" ? "acct" : "menu"; FR.rep = null; FR.arm = ""; show("onfr"); paintFr(); loadFr(); },
+            nfonfradd: frAdd,
+            nfonchsend: chatSend,
+            nfongems: (b) => { if (state === "play") return; o.openGems(vis("nfshop") ? "nfshop" : vis("shop") ? "shop" : "menu"); },
+            nfonsignin: () => show("login"),
+            nfonguest: () => { o.guest = true; document.body.classList.add("on-guest"); show("menu"); toast(_t("onGuestNote")); },
+            nfonmiggo: () => o.migGo(),
+            nfonmigno: () => { if (o.uid) KV.set("ss-migskip-" + o.uid, "1"); show("menu"); },
+            nfoncelex: () => { $("oncele").classList.add("x-hide"); },
+            nfondel: () => o.del(),
+          };
+          document.addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (!b) return; const f = GO[b.dataset.go]; if (f) { e.stopPropagation(); f(b, e); } }, true);
+
+          // ---------- boot: public config, gem packs, restore the session ----------
+          o.boot = async () => {
+            try { const [c, pk] = await Promise.all([call("/rest/v1/rpc/get_public_config", {}, { auth: false }), call("/rest/v1/rpc/get_gem_packs", {}, { auth: false })]); o.cfgApply(c.j); o.packs = pk.j; } catch (e) {}
+            let s = null; try { s = jparse(KV.get("ss-sess") || "null"); } catch (e) {}
+            if (s && s.refresh_token) {
+              o.sess = s;
+              if (await refresh(true)) {
+                try { await o.enter(o.sess); if (vis("login") || vis("reg")) show("menu"); } catch (e) { if (e.code !== "net") o.dropSess(); }
+              }
+            }
+            if (!o.on && PQ && PQ.p === "success") setTimeout(() => toast(_t("onSignBuy")), 1500);
+            if (vis("menu")) try { pxLobby(); } catch (e) {}
+          };
+          return o;
+        })();
+        ON.boot();
         NFR = true; nfPaintSet(); for (const f of NFH.load) f();
         // ================= END NEW FEATURES =================
         requestAnimationFrame(loop);
