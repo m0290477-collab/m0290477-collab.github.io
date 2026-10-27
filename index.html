@@ -683,6 +683,121 @@
         .px-mc { width: 128px; height: 108px; }
       }
 
+      /* ---------- ROYAL PASS ---------- */
+      #nfpass .x-box.nf-one { max-width: 980px; display: flex; gap: 12px; }
+      .px-ph { position: relative; overflow: hidden; width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 20px; text-align: start;
+        background: radial-gradient(90% 140% at 0% 0%, rgba(255, 210, 90, .35), transparent 60%), radial-gradient(70% 120% at 100% 100%, rgba(140, 70, 255, .4), transparent 60%), linear-gradient(135deg, #2a1d06, #14101f);
+        border: 1px solid rgba(255, 216, 110, .45); box-shadow: 0 16px 40px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .1); }
+      .px-emb { flex: none; width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-size: 36px; background: radial-gradient(circle at 35% 30%, #fff6cf, #e6ae32 55%, #7a4d08); box-shadow: inset 0 -4px 8px rgba(90, 50, 0, .5), 0 0 24px rgba(255, 196, 60, .45); }
+      .px-ph h2 { margin: 0 !important; font-size: 24px !important; }
+      .px-ph .px-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+      .px-tag2 { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #ffe9a8; background: rgba(0, 0, 0, .4); border: 1px solid rgba(255, 216, 110, .35); white-space: nowrap; }
+      .px-tag2.v { color: #e3ccff; border-color: rgba(199, 125, 255, .45); }
+      .px-tier { flex: none; margin-inline-start: auto; text-align: center; }
+      .px-tier b { display: block; font: 900 34px/1 "Geist Mono", ui-monospace, monospace; background: linear-gradient(180deg, #fff6d2, #e7b23a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .px-tier small { font-size: 11px; letter-spacing: .14em; color: #cfc6ad; text-transform: uppercase; }
+      .px-xpb { width: 100%; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; color: #e9dfc4; }
+      .px-xpb > div { flex: 1; height: 12px; border-radius: 6px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .1); overflow: hidden; }
+      .px-xpb u { position: relative; display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #8a4dff, #c77dff 60%, #ffd84a); box-shadow: 0 0 10px rgba(199, 125, 255, .6); overflow: hidden; }
+      .px-xpb u::after { content: ""; position: absolute; inset: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .5), transparent); animation: px-shine 2.6s ease-in-out infinite; }
+      .px-prem { width: 100%; box-sizing: border-box; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 18px; text-align: start;
+        background: linear-gradient(135deg, rgba(255, 210, 90, .16), rgba(122, 60, 255, .16)); border: 1px solid rgba(255, 216, 110, .4); }
+      .px-prem ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+      .px-prem li { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; line-height: 1.3; color: #f1ead6; }
+      .px-prem li i { font-style: normal; flex: none; }
+      .px-prem h3 { grid-column: 1 / -1; margin: 0; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #ffd84a; }
+      .px-cta { position: relative; overflow: hidden; min-height: 58px; padding: 0 22px; border-radius: 16px; border: 1px solid #fff0b0; cursor: pointer; font: inherit; font-size: 17px; font-weight: 900; letter-spacing: .03em; color: #2a1600; white-space: nowrap;
+        background: linear-gradient(180deg, #fff3b8 0%, #f6c94a 40%, #d79a1c 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 10px 26px rgba(255, 170, 30, .35); animation: px-glow 2.4s ease-in-out infinite; }
+      .px-cta::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 30%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .8), transparent); animation: px-shine 2.8s ease-in-out infinite; }
+      .px-on { padding: 10px 14px; border-radius: 14px; font-weight: 800; color: #d6ffe3; background: linear-gradient(180deg, rgba(46, 140, 80, .5), rgba(20, 70, 40, .5)); border: 1px solid rgba(124, 255, 158, .5); white-space: nowrap; }
+      .px-trk { width: 100%; display: flex; gap: 8px; align-items: stretch; direction: ltr; }
+      .px-lbl { flex: none; width: 74px; display: grid; grid-template-rows: 1fr 26px 1fr; gap: 6px; }
+      .px-lbl div { border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 10.5px; font-weight: 900; letter-spacing: .1em; text-align: center; padding: 4px; }
+      .px-lbl .f { background: linear-gradient(180deg, rgba(60, 70, 90, .7), rgba(30, 34, 44, .7)); color: #dfe8ff; border: 1px solid rgba(180, 200, 255, .25); }
+      .px-lbl .p { background: linear-gradient(180deg, #f9d870, #b87d17); color: #2a1600; border: 1px solid #ffe9a8; box-shadow: 0 0 16px rgba(255, 200, 60, .3); }
+      .px-lbl i { font-style: normal; font-size: 20px; }
+      .px-scr { flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-x; scroll-snap-type: x proximity; overscroll-behavior-x: contain; padding-bottom: 6px; }
+      .px-row { display: flex; gap: 8px; width: max-content; }
+      .px-col { scroll-snap-align: center; flex: none; width: 92px; display: grid; grid-template-rows: 1fr 26px 1fr; gap: 6px; }
+      .px-node { position: relative; display: flex; align-items: center; justify-content: center; }
+      .px-node::before { content: ""; position: absolute; left: -8px; right: -8px; top: 50%; height: 4px; margin-top: -2px; background: rgba(255, 255, 255, .1); }
+      .px-col.done .px-node::before { background: linear-gradient(90deg, #8a4dff, #c77dff); }
+      .px-node b { position: relative; min-width: 26px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; display: grid; place-items: center; font: 800 11px/1 "Geist Mono", ui-monospace, monospace; color: #cfc6ad; background: #1a1c1b; border: 1px solid rgba(255, 255, 255, .18); }
+      .px-col.done .px-node b { color: #fff; background: linear-gradient(180deg, #9b62ff, #5b23c4); border-color: #d6b8ff; }
+      .px-col.cur .px-node b { color: #2a1600; background: linear-gradient(180deg, #fff1a8, #e2a92a); border-color: #fff; box-shadow: 0 0 12px rgba(255, 210, 70, .8); }
+      .px-rw { position: relative; height: 98px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .14); padding: 8px 4px 6px; box-sizing: border-box; overflow: hidden; cursor: default; font: inherit; color: #fff;
+        display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; background: radial-gradient(90% 70% at 50% 30%, color-mix(in srgb, var(--rc, #9aa6c0) 30%, transparent), transparent 70%), linear-gradient(180deg, #232733, #13151c); }
+      .px-rw .px-ri { position: absolute; top: 12px; left: 0; right: 0; text-align: center; font-size: 32px; line-height: 1; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .5)); }
+      .px-rw small { position: relative; display: block; max-width: 100%; font-size: 10.5px; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f1ead6; }
+      .px-rw .px-rr { position: relative; font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--rc, #9aa6c0); }
+      .px-rw.prem { border-color: rgba(255, 216, 110, .55); background: radial-gradient(90% 70% at 50% 30%, color-mix(in srgb, var(--rc, #ffd84a) 34%, transparent), transparent 70%), linear-gradient(180deg, #3a2b0c, #1a1306); }
+      .px-rw.lock::after { content: "🔒"; position: absolute; top: 6px; right: 6px; font-size: 13px; filter: drop-shadow(0 1px 2px #000); }
+      .px-rw.lock .px-ri { filter: saturate(.55) brightness(.8) drop-shadow(0 4px 6px rgba(0, 0, 0, .5)); }
+      .px-rw:disabled { color: #fff; }
+      .px-rw.ok .px-ri { top: 20px; }
+      .px-rw.ok { cursor: pointer; border-color: #ffe9a8; animation: px-glow 1.6s ease-in-out infinite; }
+      .px-rw.ok::before { content: attr(data-claim); position: absolute; top: 0; left: 0; right: 0; padding: 2px 0; font-size: 9px; font-weight: 900; letter-spacing: .08em; color: #2a1600; background: linear-gradient(90deg, #ffe9a8, #f2b733); }
+      .px-rw.got { opacity: .55; }
+      .px-rw.got::after { content: "✓"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 34px; font-weight: 900; color: #7cff9e; text-shadow: 0 2px 8px #000; background: rgba(0, 0, 0, .35); }
+      .px-rw.leg { box-shadow: 0 0 18px color-mix(in srgb, var(--rc) 45%, transparent); }
+      .px-pass2 .nf-ms { width: 100%; }
+      .px-ms { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .px-m { position: relative; overflow: hidden; padding: 10px; border-radius: 14px; text-align: start; background: linear-gradient(180deg, rgba(34, 38, 36, .82), rgba(14, 16, 15, .82)); border: 1px solid var(--px-ln); display: flex; flex-direction: column; gap: 6px; }
+      .px-m b { font-size: 12.5px; font-weight: 700; color: #f1ead6; line-height: 1.25; }
+      .px-m small { display: flex; justify-content: space-between; font: 700 11px/1 "Geist Mono", ui-monospace, monospace; color: #cfc6ad; }
+      .px-m .px-xp u { background: linear-gradient(90deg, #8a4dff, #c77dff); }
+      .px-m.dn { border-color: rgba(124, 255, 158, .45); }
+      .px-m.dn b::before { content: "✓ "; color: #7cff9e; }
+      .px-acts { width: 100%; display: flex; gap: 10px; }
+      .px-acts > * { flex: 1; }
+
+      /* ---------- ROYAL SHOP ---------- */
+      #nfshop .x-box.nf-one { max-width: 1000px; display: flex; gap: 12px; }
+      .px-sh { width: 100%; display: flex; align-items: center; gap: 12px; }
+      .px-sh h2 { margin: 0 !important; flex: 1; text-align: start; font-size: 26px !important; }
+      .px-feat { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 20px; text-align: start; background: radial-gradient(80% 120% at 100% 0%, rgba(255, 90, 160, .25), transparent 60%), radial-gradient(80% 120% at 0% 100%, rgba(255, 196, 60, .2), transparent 60%), linear-gradient(135deg, #1d1410, #120f1c); border: 1px solid rgba(255, 216, 110, .35); }
+      .px-feat header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+      .px-feat header b { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: #ffd84a; }
+      .px-feat header span { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ffb3cf; }
+      .px-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+      .px-feat .px-grid { grid-template-columns: repeat(3, 1fr); }
+      .px-ph.px-shn::after { background: linear-gradient(90deg, transparent, rgba(255, 236, 170, .16), transparent); }
+      .px-acts .px-sh { flex: 0 0 auto; width: auto; }
+      #menu .x-mode button { min-height: 38px; font-size: 13px; }
+      .x-chip .px-av { font-size: 30px; } .x-chip .px-lv { color: #2a1600 !important; font-family: var(--sans, sans-serif); }
+      .px-card { position: relative; overflow: hidden; border-radius: 16px; padding: 0 0 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; text-align: center;
+        background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 26%, #15171c), #0e1014 70%); border: 1px solid color-mix(in srgb, var(--rc) 55%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 8px 18px rgba(0, 0, 0, .35); }
+      .px-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--rc); box-shadow: 0 0 12px var(--rc); }
+      .px-card.r3 { box-shadow: 0 0 22px color-mix(in srgb, var(--rc) 35%, transparent), inset 0 1px 0 rgba(255, 255, 255, .1); }
+      .px-card.r3 .px-pv::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 30%; background: linear-gradient(90deg, transparent, rgba(255, 236, 160, .22), transparent); animation: px-shine 4s ease-in-out infinite; pointer-events: none; }
+      .px-pv { position: relative; height: 86px; display: grid; place-items: center; overflow: hidden; background: radial-gradient(70% 80% at 50% 60%, color-mix(in srgb, var(--rc) 30%, transparent), transparent 70%); }
+      .px-pv canvas { width: 100%; height: 100%; display: block; }
+      .px-pv .px-e { font-size: 44px; line-height: 1; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .5)); }
+      .px-card b { padding: 0 8px; font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .px-card .px-r { font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: var(--rc); }
+      .px-card .px-bt { margin: 2px 10px 0; }
+      .px-card button { width: 100%; min-height: 40px; border-radius: 12px; border: 1px solid rgba(255, 220, 130, .6); background: linear-gradient(180deg, rgba(255, 216, 110, .18), rgba(255, 216, 110, .06)); color: #fff; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+      .px-card button.eq { border-color: rgba(124, 255, 158, .7); background: linear-gradient(180deg, rgba(46, 140, 80, .55), rgba(20, 70, 40, .55)); }
+      .px-card button:disabled { opacity: .5; cursor: default; }
+      .px-card button.buy { background: linear-gradient(180deg, #f9d870, #c88a1c); color: #2a1600; border-color: #ffe9a8; }
+      .px-card button.buy:disabled { background: rgba(255, 255, 255, .06); color: #cfc6ad; border-color: rgba(255, 255, 255, .15); }
+      .px-badge { position: absolute; z-index: 2; top: 8px; inset-inline-start: 8px; padding: 2px 7px; border-radius: 6px; font-size: 9.5px; font-weight: 900; letter-spacing: .08em; color: #2a1600; background: linear-gradient(180deg, #fff1a8, #e2a92a); box-shadow: 0 2px 6px rgba(0, 0, 0, .4); }
+      .px-badge.own { color: #062a12; background: linear-gradient(180deg, #b8ffcb, #4fd37a); }
+      .px-badge.val { inset-inline-start: auto; inset-inline-end: 8px; color: #fff; background: linear-gradient(180deg, #ff6aa8, #d81b60); }
+      .px-tabs2 { width: 100%; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+      .px-tabs2::-webkit-scrollbar { display: none; }
+      .px-tabs2 button { flex: 1 0 auto; min-height: 42px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--px-ln); background: linear-gradient(180deg, rgba(34, 38, 36, .82), rgba(14, 16, 15, .82)); color: #e9dfc4; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+      .px-tabs2 button.on { color: #2a1600; border-color: #ffe9a8; background: linear-gradient(180deg, #fff1a8, #e2a92a); box-shadow: 0 0 14px rgba(255, 200, 60, .3); }
+      .px-wide { grid-column: 1 / -1; }
+      .px-card.bn { flex-direction: row; align-items: center; gap: 12px; padding: 10px 12px; text-align: start; }
+      .px-card.bn .px-pv { width: 120px; height: 76px; flex: none; border-radius: 12px; display: flex; gap: 2px; align-items: center; justify-content: center; font-size: 26px; }
+      .px-card.bn .px-bi { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+      .px-card.bn small { font-size: 11px; color: #cfc6ad; line-height: 1.3; }
+      .px-card.bn b { padding: 0; }
+      .px-card.bn .px-bt { flex: none; width: 120px; margin: 0; }
+      .px-strk { font-size: 11px; color: #9a927e; text-decoration: line-through; }
+      @media (max-width: 700px) { .px-feat .px-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .px-card.bn .px-pv { width: 84px; } .px-card.bn .px-bt { width: 96px; } }
+
       /* ---------- IN-MATCH HUD ---------- */
       .x-tl { opacity: .96; gap: 6px; }
       .x-tl .x-hud.x-stat { background: linear-gradient(180deg, rgba(18, 22, 20, .78), rgba(8, 10, 9, .7)); border: 1px solid rgba(255, 226, 160, .2); box-shadow: 0 6px 16px rgba(0, 0, 0, .35); }
@@ -6644,7 +6759,7 @@
         const rwLbl = (w) => (w.i ? itName(w.i) : w.g ? "+" + w.g : "+" + w.c);
         RP.add = (n, why) => {
           if (!cur || !(n > 0)) return; rpEnsure();
-          const t0 = rpTier(); NX.rp.xp = Math.min(RP_TIERS * RP_XP + 1e5, NX.rp.xp + Math.round(n)); const t1 = rpTier();
+          const t0 = rpTier(); NX.rp.xp = Math.min(RP_TIERS * RP_XP + 1e5, NX.rp.xp + Math.round(n * (NX.rp.pr ? 1.5 : 1))); const t1 = rpTier();
           if (t1 > t0) { const m = "👑 " + _t("nfRpUp", { n: t1 }); if (state === "play") xBan(m); else setTimeout(() => toast(m), 900); }
           commit();
         };
@@ -6660,7 +6775,7 @@
           NX.ms.m++; NX.ms.e += NFS.ate || 0; NX.ms.k += player.kills;
           let bonus = 0; MIS2.forEach((m, i) => { if (!NX.ms.c.includes(i) && NX.ms[m.k] >= m.g) { NX.ms.c.push(i); bonus += m.x; } });
           RP.add(sx + bonus, "match");
-          return "👑 +" + (sx + bonus) + " " + _t("nfSxp") + (bonus ? " (" + _t("nfMisDone") + ")" : "");
+          return "👑 +" + Math.round((sx + bonus) * (NX.rp.pr ? 1.5 : 1)) + " " + _t("nfSxp") + (bonus ? " (" + _t("nfMisDone") + ")" : "");
         });
         function fmtLeft(ms) { const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4); return d ? _t("nfLeftD", { d, h }) : _t("nfLeftH", { h, m }); }
         function paintPass() {
@@ -7386,6 +7501,132 @@
         { const _profile = profile; profile = function () { _profile(); if (pxVis("menu")) pxLobby(); }; }
         new MutationObserver(() => { if (pxVis("menu") && cur) { $("chip").innerHTML = chipH(); pxLobby(); } }).observe($("menu"), { attributes: true, attributeFilter: ["class"] });
         NFH.relang.push(() => { for (const k in pxH) delete pxH[k]; if (pxVis("menu")) pxLobby(); });
+
+        // ---------- ROYAL PASS: pro battle-pass layout ----------
+        const pxRc = (w) => (w.i ? RARC[ITEMS[w.i].r] : w.g ? "#5ad1ff" : "#d7c9a0");
+        const pxTierOf = (id) => { for (const k in RP_PI) if (RP_PI[k] === id) return { t: +k, p: 1 }; for (const k in RP_FI) if (RP_FI[k] === id) return { t: +k, p: 0 }; return null; };
+        paintPass = function () {
+          rpEnsure(); msEnsure();
+          const t = rpTier(), mx = t >= RP_TIERS, xpIn = mx ? RP_XP : NX.rp.xp - t * RP_XP, pr = !!NX.rp.pr, el = $("nfpb");
+          const cell = (i, w, k, ok, got, lock) => { const r = w.i ? ITEMS[w.i].r : -1;
+            return `<button type="button" class="px-rw${k === "p" ? " prem" : ""}${ok ? " ok" : ""}${got ? " got" : ""}${lock ? " lock" : ""}${r >= 3 ? " leg" : ""}" style="--rc:${pxRc(w)}" data-go="nfclaim" data-t="${i}" data-k="${k}" data-claim="${esc(_t("pxClaim"))}" ${ok ? "" : "disabled"} aria-label="${esc(rwLbl(w))}">` +
+              `<span class="px-ri" aria-hidden="true">${rwIco(w)}</span>${r >= 0 ? `<span class="px-rr">${esc(_t(RAR[r]))}</span>` : ""}<small>${esc(rwLbl(w))}</small></button>`; };
+          let cols = "";
+          for (let i = 1; i <= RP_TIERS; i++) {
+            const f = rpRew(i, "f"), p = rpRew(i, "p"), fg = NX.rp.cf.includes(i), pg = NX.rp.cp.includes(i);
+            cols += `<div class="px-col${i <= t ? " done" : ""}${i === t + 1 ? " cur" : ""}">${cell(i, f, "f", i <= t && !fg, fg, false)}<div class="px-node"><b>${i}</b></div>${cell(i, p, "p", i <= t && pr && !pg, pg, !pr)}</div>`;
+          }
+          const anyClaim = [...Array(t)].some((_, j) => !NX.rp.cf.includes(j + 1) || (pr && !NX.rp.cp.includes(j + 1)));
+          const ms = MIS2.map((m, i) => { const v = Math.min(NX.ms[m.k], m.g), dn = NX.ms.c.includes(i);
+            return `<div class="px-m${dn ? " dn" : ""}"><b>${["🎮", "🍎", "⚔️"][i]} ${esc(_t("nfMis" + m.k, { n: m.g }))}</b><div class="px-xp"><u style="width:${Math.round((100 * v) / m.g)}%"></u></div><small><bdi dir="ltr">${v}/${m.g}</bdi><bdi dir="ltr">+${m.x} XP</bdi></small></div>`; }).join("");
+          el.innerHTML = `<div class="px-ph px-shn"><div class="px-emb" aria-hidden="true">👑</div><div style="min-width:0"><h2 class="x-cy">${esc(_t("nfPass"))}</h2>
+              <div class="px-meta"><span class="px-tag2">✦ ${esc(_t("nfSeason" + (rpNo() % 4)))}</span><span class="px-tag2 v">${esc(_t("nfSeasonN", { n: rpNo() + 1 }))}</span><span class="px-tag2">⏳ ${esc(fmtLeft(rpEnd() - Date.now()))}</span></div></div>
+              <div class="px-tier"><b>${t}</b><small>${esc(_t("pxTierL"))}</small></div></div>
+            <div class="px-xpb"><span>${esc(_t("nfTier", { t, n: RP_TIERS }))}</span><div><u style="width:${Math.round((100 * xpIn) / RP_XP)}%"></u></div><span dir="ltr">${mx ? "MAX" : xpIn + "/" + RP_XP + " XP"}</span></div>
+            <div class="px-prem"><div><h3>👑 ${esc(_t("pxPerks"))}</h3><ul>
+              <li><i>🐍</i>${esc(_t("pxPk1", { a: itName("rs_galaxy"), b: itName("rs_royal") }))}</li><li><i>☄️</i>${esc(_t("pxPk2"))}</li>
+              <li><i>💎</i>${esc(_t("pxPk3"))}</li><li><i>⚡</i>${esc(_t("pxPk4"))}</li></ul></div>
+              ${pr ? `<span class="px-on">✅ ${esc(_t("nfPremOn"))}</span>` : `<button type="button" class="px-cta" data-go="nfprem">👑 ${esc(_t("pxUnlock", { n: RP_PREM }))}</button>`}</div>
+            <div class="px-acts"><span class="px-sh" style="justify-content:center"><span class="px-pill">${num(P.coins)} 🪙</span><span class="px-pill g">${num(P.gems)} 💎</span></span>${anyClaim ? `<button type="button" class="x-btn x-main" data-go="nfclaimall">🎁 ${esc(_t("nfClaimAll"))}</button>` : ""}</div>
+            <div class="px-trk"><div class="px-lbl"><div class="f"><i>🎁</i>${esc(_t("pxFree"))}</div><div></div><div class="p"><i>👑</i>${esc(_t("pxPremium"))}</div></div><div class="px-scr" id="nftr"><div class="px-row">${cols}</div></div></div>
+            <p class="x-sh">📋 ${esc(_t("nfMisT"))}</p><div class="px-ms">${ms}</div>
+            <p class="x-note">${esc(_t("nfNoMoney"))}</p>
+            <div class="px-acts"><button class="x-btn x-sub" data-go="nfshop">✨ ${esc(_t("nfShop"))}</button><button class="x-btn x-sub" data-go="nfback" data-to="menu">${esc(_t("back"))}</button></div>`;
+          const trk = $("nftr"), cu = trk.querySelector(".cur") || trk.querySelector(".px-col:last-child"); if (cu) trk.scrollLeft = Math.max(0, cu.offsetLeft - trk.clientWidth / 2 + cu.clientWidth / 2);
+        };
+
+        // ---------- ROYAL SHOP: storefront with rarity cards, live previews, featured rotation, bundle value ----------
+        const pxCost = (it) => (it.pg ? it.pg * 100 : it.pc || 0); // 1 gem = 100 coins, as in the gem exchange
+        function pxFeatIds() {
+          const ids = Object.keys(ITEMS).filter((k) => !ITEMS[k].ex), rg = nfRng(nfSeed("ss-feat-" + utcDay())), out = [];
+          const pool = ids.slice(); while (out.length < 3 && pool.length) { const k = pool.splice((rg() * pool.length) | 0, 1)[0]; if (!out.some((o) => ITEMS[o].c === ITEMS[k].c) || pool.length < 4) out.push(k); }
+          return out;
+        }
+        function pxCard(id) {
+          const it = ITEMS[id], cat = it.c, own = ENT.has(id), eqd = cat === "em" ? NX.eq.em.includes(id) : NX.eq[cat] === id, ti = it.ex ? pxTierOf(id) : null;
+          let btn;
+          if (own) btn = `<button data-go="nfeq" data-id="${id}" class="${eqd ? "eq" : ""}">${esc(_t(eqd ? (cat === "em" ? "nfOnW" : "equipped") : cat === "em" ? "nfAddW" : "equip"))}</button>`;
+          else if (it.ex) btn = `<button data-go="nfpass">🔒 ${esc(ti ? _t("pxTierAt", { n: ti.t }) : _t("nfPassOnly"))}</button>`;
+          else btn = `<button class="buy" data-go="nfbuy" data-id="${id}" ${WALLET.can(it.pc, it.pg) ? "" : "disabled"}><bdi dir="ltr">${priceTxt(it)}</bdi></button>`;
+          const badge = own ? `<span class="px-badge own">✓ ${esc(_t("pxOwned"))}</span>` : it.ex ? `<span class="px-badge">👑 ${esc(ti && ti.p ? _t("pxPremOnly") : _t("nfPass"))}</span>` : "";
+          const pv = cat === "sk" || cat === "tr" || cat === "de" ? `<canvas data-pv="${id}" aria-hidden="true"></canvas>` : `<span class="px-e" aria-hidden="true">${it.e}</span>`;
+          return `<div class="px-card r${it.r}" style="--rc:${RARC[it.r]}">${badge}<div class="px-pv">${pv}</div><b>${it.e} ${esc(itName(id))}</b><span class="px-r">${esc(_t(RAR[it.r]))}</span><div class="px-bt">${btn}</div></div>`;
+        }
+        paintShop2 = function () {
+          const el = $("nfsb"), cat = SH2.cat;
+          let rows = "";
+          if (cat === "cr") {
+            rows += CRATES.map((c) => `<div class="px-card bn px-wide r${c.mx >= 3 ? 3 : 1}" style="--rc:${RARC[c.mx >= 3 ? 3 : 1]}"><div class="px-pv"><span class="px-e">${c.e}</span></div><div class="px-bi"><b>${esc(_t("nfI_" + c.id))}</b><small>${esc(_t("nfCrD" + c.mx))}</small></div><div class="px-bt"><button class="buy" data-go="nfcrate" data-id="${c.id}"><bdi dir="ltr">${priceTxt(c)}</bdi></button></div></div>`).join("");
+            rows += BUNDLES.map((b) => {
+              const all = b.items.every((i) => ENT.has(i)), sum = b.items.reduce((a, i) => a + pxCost(ITEMS[i]), 0), sv = Math.round(100 * (1 - pxCost(b) / sum));
+              return `<div class="px-card bn px-wide r2" style="--rc:${RARC[2]}">${sv > 0 && !all ? `<span class="px-badge val">${esc(_t("pxSave", { n: sv }))}</span>` : ""}<div class="px-pv">${b.items.map((i) => ITEMS[i].e).join("")}</div><div class="px-bi"><b>${b.e} ${esc(_t("nfI_" + b.id))}</b><small>${b.items.map((i) => esc(itName(i))).join(" · ")}</small>${sv > 0 ? `<span class="px-strk" dir="ltr">${sum} 🪙</span>` : ""}</div>` +
+                `<div class="px-bt"><button class="${all ? "eq" : "buy"}" data-go="nfbundle" data-id="${b.id}" ${all ? "disabled" : ""}>${all ? "✓" : `<bdi dir="ltr">${priceTxt(b)}</bdi>`}</button></div></div>`;
+            }).join("");
+          } else {
+            if (NFSHX[cat]) rows += `<div class="px-wide x-shop" style="grid-template-columns:1fr">${NFSHX[cat]()}</div>`;
+            if (cat === "em") rows += `<p class="x-note px-wide">${esc(_t("nfEmHint"))}</p>`;
+            rows += Object.keys(ITEMS).filter((id) => ITEMS[id].c === cat).sort((a, b) => ITEMS[a].r - ITEMS[b].r || !!ITEMS[a].ex - !!ITEMS[b].ex).map(pxCard).join("");
+          }
+          const nx = (Math.floor(Date.now() / 864e5) + 1) * 864e5;
+          el.innerHTML = `<div class="px-sh"><h2 class="x-cy">✨ ${esc(_t("nfShop"))}</h2><span class="px-pill">${num(P.coins)} 🪙</span><span class="px-pill g">${num(P.gems)} 💎</span></div>
+            <section class="px-feat"><header><b>🔥 ${esc(_t("pxFeat"))}</b><span>⏳ ${esc(fmtLeft(nx - Date.now()))}</span></header><div class="px-grid">${pxFeatIds().map(pxCard).join("")}</div></section>
+            <div class="px-tabs2">${CATS.map(([k, e, n]) => `<button data-go="nfcat" data-c="${k}" class="${k === cat ? "on" : ""}">${e} ${esc(_t(n))}</button>`).join("")}</div>
+            <div class="px-grid">${rows}</div>
+            <p class="x-note">${esc(_t("nfNoMoney"))}</p>
+            <button class="x-btn x-sub" data-go="nfback" data-to="${SH2.from}">${esc(_t("back"))}</button>`;
+          pxPvAll();
+        };
+        // live previews: Royal skins as a gliding snake, trails streaming behind one, death effects bursting; ~30 fps only while the shop is open
+        const pxEmoS = {};
+        function pxEmo(e) { if (pxEmoS[e]) return pxEmoS[e]; const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"); g.font = "48px " + EMOJI_F; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(e, 32, 35); return (pxEmoS[e] = c); }
+        function pxPv(cv, tt) {
+          const id = cv.dataset.pv, it = ITEMS[id]; if (!it) return;
+          const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+          const k = Math.min(2, window.devicePixelRatio || 1); if (cv.width !== Math.round(w * k)) { cv.width = Math.round(w * k); cv.height = Math.round(h * k); }
+          const g = cv.getContext("2d"); g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, w, h);
+          const n = 13, R0 = Math.min(h * 0.15, w / 18), gap = R0 * 1.05, x0 = w / 2 + (n * gap) / 2 - R0 * 1.4;
+          const X = (i) => x0 - i * gap, Y = (i) => h / 2 + Math.sin(tt * 3 - i * 0.55) * h * 0.13 * Math.min(1, i / 4), rr = (i) => R0 * (i < 2 ? 1 : 1 - ((i - 2) / n) * 0.55);
+          const spr = it.c === "sk" ? ovsFor(id) : null, base = it.c === "sk" ? null : segColor(skin, 0);
+          if (it.c === "de") { // burst on a loop
+            const cols = { de_confetti: ["#ff4f8b", "#ffe14a", "#36f0ff", "#7cff9e"], de_fw: ["#ffd84a", "#ff5a7a", "#9fe8ff"], de_pixel: ["#b45cff", "#36f0ff", "#ff2bd6"], de_shock: ["#ffffff", "#9fe8ff"], de_galaxy: ["#b46bff", "#ffffff", "#ff7ae0"], de_royal: ["#ffd84a", "#b46bff", "#ffffff"] }[id] || ["#fff"];
+            const ph = (tt * 0.7) % 1, cx = w / 2, cy = h / 2, rg = nfRng(7);
+            g.globalCompositeOperation = "lighter";
+            for (let i = 0; i < 26; i++) { const a = rg() * 6.283, v = (0.3 + rg() * 0.7) * Math.min(w, h * 2) * 0.48 * ph, s = (id === "de_pixel" || id === "de_confetti" ? 5 : 12) * (1 - ph * 0.6);
+              g.globalAlpha = 1 - ph; const x = cx + Math.cos(a) * v, y = cy + Math.sin(a) * v * 0.6 + ph * ph * 10;
+              if (s < 7) { g.fillStyle = cols[i % cols.length]; g.fillRect(x - s / 2, y - s / 2, s, s); } else g.drawImage(orb(cols[i % cols.length]), x - s, y - s, s * 2, s * 2); }
+            if (id === "de_shock") { g.strokeStyle = "rgba(200,240,255," + (1 - ph) + ")"; g.lineWidth = 3; g.beginPath(); g.ellipse(cx, cy, ph * w * 0.45, ph * h * 0.4, 0, 0, 6.283); g.stroke(); }
+            g.globalAlpha = 1; g.globalCompositeOperation = "source-over"; return;
+          }
+          if (it.c === "tr") { // trail particles behind the tail
+            const c2 = TRC[id] || ["#fff", "#fff"], tx = X(n - 1);
+            for (let j = 0; j < 9; j++) { const ph = (tt * 0.9 + j / 9) % 1, x = tx - ph * w * 0.3 - 6, y = Y(n - 1) + Math.sin(j * 2.1 + tt) * h * 0.12 - (id === "tr_bubbles" ? ph * h * 0.25 : 0), a = 1 - ph;
+              g.globalAlpha = a;
+              if (id === "tr_hearts" || id === "tr_stars" || id === "tr_petals") { const s = 14 * (1 - ph * 0.4); g.drawImage(pxEmo(id === "tr_hearts" ? "💖" : id === "tr_stars" ? "⭐" : "🌸"), x - s / 2, y - s / 2, s, s); }
+              else if (id === "tr_pixel") { g.fillStyle = c2[j % 2]; g.fillRect(x - 3.5, y - 3.5, 7, 7); }
+              else if (id === "tr_bubbles") { g.strokeStyle = c2[j % 2]; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 5 + ph * 3, 0, 6.283); g.stroke(); }
+              else { g.globalCompositeOperation = "lighter"; const s = id === "tr_comet" ? 26 : 18; g.drawImage(orb(c2[j % 2]), x - s / 2, y - s / 2, s, s); g.globalCompositeOperation = "source-over"; } }
+            g.globalAlpha = 1;
+          }
+          g.globalAlpha = 0.35; for (let i = n - 1; i >= 0; i -= 2) g.drawImage(SHADOW, X(i) - rr(i) * 1.3, Y(i) - rr(i) * 0.4 + rr(i) * 0.9, rr(i) * 2.6, rr(i) * 1.2); g.globalAlpha = 1;
+          for (let i = n - 1; i >= 0; i--) { const r = rr(i), x = X(i), y = Y(i);
+            if (spr && spr.length) g.drawImage(spr[i % spr.length], x - r, y - r, r * 2, r * 2); else g.drawImage(sphere(base ? segColor(skin, i) : "#888"), x - r, y - r, r * 2, r * 2); }
+          const r0 = R0 * 1.25, hx = X(0) + R0 * 0.4, hy = Y(0);
+          if (spr && spr.length) g.drawImage(spr[0], hx - r0, hy - r0, r0 * 2, r0 * 2); else g.drawImage(sphere(segColor(skin, 0)), hx - r0, hy - r0, r0 * 2, r0 * 2);
+          for (const s of [-1, 1]) { const ex = hx + r0 * 0.35, ey = hy + s * r0 * 0.45, er = r0 * 0.3;
+            g.fillStyle = "#fff"; g.beginPath(); g.arc(ex, ey, er, 0, 6.283); g.fill(); g.fillStyle = "#0a0a12"; g.beginPath(); g.arc(ex + er * 0.35, ey, er * 0.55, 0, 6.283); g.fill();
+            g.fillStyle = "rgba(255,255,255,.9)"; g.beginPath(); g.arc(ex + er * 0.1, ey - er * 0.3, er * 0.22, 0, 6.283); g.fill(); }
+        }
+        let pxPvRaf = 0, pxPvT0 = 0;
+        function pxPvAll() { // runs while the shop is open (waits up to ~0.5 s for it to appear), ~30 fps, one frame only with reduced motion
+          if (pxPvRaf) return; let last = 0, hid = 0;
+          const step = (ts) => {
+            const vis = pxVis("nfshop");
+            if (!vis) { if (++hid > 30) { pxPvRaf = 0; return; } }
+            else { hid = 0; if (ts - last > 33) { last = ts; if (!pxPvT0) pxPvT0 = ts; const tt = (ts - pxPvT0) / 1000; document.querySelectorAll("#nfsb canvas[data-pv]").forEach((c) => pxPv(c, tt)); if (pxRM) { pxPvRaf = 0; return; } } }
+            pxPvRaf = requestAnimationFrame(step);
+          };
+          pxPvRaf = requestAnimationFrame(step);
+        }
 
         // ---------- PREMIUM FOOD ORBS: a richer pre-rendered pearl (soft coloured halo, core glint, rim light) ----------
         pearl = function (col) {
