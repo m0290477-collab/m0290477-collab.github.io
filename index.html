@@ -592,6 +592,97 @@
       .x-ov .x-set > p { color: #e9dfc4 !important; font-weight: 600; letter-spacing: .02em; }
       .x-ov .x-seg button.on { background: linear-gradient(180deg, #4a3d1c, #2c2412); color: #ffe39a; box-shadow: inset 0 0 0 1px rgba(255, 216, 110, .6), 0 0 12px rgba(255, 200, 80, .18); }
 
+      /* ---------- PORTAL (lobby) ---------- */
+      #menu { background: radial-gradient(70% 90% at 50% 45%, rgba(6, 8, 7, .18), rgba(6, 8, 7, .78) 75%), linear-gradient(90deg, rgba(6, 8, 7, .78), rgba(6, 8, 7, .12) 46%, rgba(6, 8, 7, .78)); }
+      .px-bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+      .px-bg i { position: absolute; border-radius: 50%; opacity: .55; background: radial-gradient(circle, var(--c, rgba(255, 210, 90, .5)), transparent 68%); animation: px-float var(--t, 14s) ease-in-out infinite; will-change: transform; }
+      .px-bg b { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #ffe9a8; box-shadow: 0 0 6px #ffd45a; opacity: .7; animation: px-float var(--t, 9s) ease-in-out infinite; }
+      #menu > .x-box { position: relative; z-index: 1; }
+      #menu .x-box.x-lob > * { min-width: 0; }
+      #menu:not(.x-hide) .x-left > *, #menu:not(.x-hide) .x-glass > * { animation: px-up .55s cubic-bezier(.2, .8, .2, 1) both; }
+      #menu:not(.x-hide) .x-left > :nth-child(2) { animation-delay: .04s; } #menu:not(.x-hide) .x-left > :nth-child(3) { animation-delay: .08s; }
+      #menu:not(.x-hide) .x-left > :nth-child(4) { animation-delay: .12s; } #menu:not(.x-hide) .x-left > :nth-child(5) { animation-delay: .16s; }
+      #menu:not(.x-hide) .x-left > :nth-child(6) { animation-delay: .2s; } #menu:not(.x-hide) .x-left > :nth-child(7) { animation-delay: .24s; }
+      #menu:not(.x-hide) .x-left > :nth-child(n+8) { animation-delay: .28s; }
+      #menu:not(.x-hide) .x-glass > :nth-child(2) { animation-delay: .1s; } #menu:not(.x-hide) .x-glass > :nth-child(3) { animation-delay: .14s; } #menu:not(.x-hide) .x-glass > :nth-child(n+4) { animation-delay: .2s; }
+      #menu .x-left { gap: 12px; }
+      #menu .x-tag { font-size: 11px !important; letter-spacing: .34em; color: #e7c66a !important; text-shadow: 0 0 12px rgba(255, 200, 80, .35); }
+      #menu h1.x-logo { position: relative; font-size: clamp(40px, 7.4vw, 86px); font-weight: 800; letter-spacing: .05em; line-height: .9; color: transparent;
+        background: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, .95) 50%, transparent 62%), linear-gradient(180deg, #fff2bf 0%, #f2c94c 30%, #b8862a 49%, #fbf6ea 51%, #d9d2c2 78%, #a9a294 100%);
+        background-size: 260% 100%, 100% 100%; background-repeat: no-repeat; -webkit-background-clip: text; background-clip: text; animation: px-logo 5.5s ease-in-out infinite;
+        filter: drop-shadow(0 6px 18px rgba(0, 0, 0, .65)) drop-shadow(0 0 22px rgba(255, 196, 70, .18)); }
+      #menu h1.x-logo::first-line { color: transparent; }
+      #menu .x-btn.x-play { min-height: 76px; font-size: 26px; font-weight: 800; letter-spacing: .22em; border-radius: 18px; border: 1px solid rgba(190, 255, 200, .7);
+        background: linear-gradient(180deg, #5fd38a 0%, #2c9a5a 45%, #1d6f40 100%); color: #fff; text-shadow: 0 2px 4px rgba(0, 40, 10, .6); animation: px-pulse 2.2s ease-in-out infinite; }
+      #menu .x-btn.x-play .x-ic { width: 26px; height: 26px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .4)); }
+      #menu .x-row.nf-row, #menu .x-left > #giftb, #menu .x-left > [data-go="achs"], #menu .x-left > #inbb { display: none !important; }
+      /* Royal Pass banner */
+      .px-rpb { position: relative; overflow: hidden; width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 10px 14px; min-height: 64px; border-radius: 16px; cursor: pointer;
+        border: 1px solid rgba(255, 226, 140, .85); color: #2a1a00; font: inherit; text-align: start;
+        background: linear-gradient(135deg, #fff1b0 0%, #f4c64e 28%, #d39a26 55%, #f8d873 78%, #b77d1c 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 8px 26px rgba(255, 180, 40, .25), 0 0 0 1px rgba(120, 80, 10, .4); animation: px-glow 2.6s ease-in-out infinite; }
+      .px-rpb::after, .px-shn::after { content: ""; position: absolute; top: -20%; bottom: -20%; left: 0; width: 26%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .75), transparent); animation: px-shine 3.2s ease-in-out infinite; pointer-events: none; }
+      .px-rpb .px-cr { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; background: radial-gradient(circle at 35% 30%, #fff8d8, #e4a72a 60%, #8a5a0c); box-shadow: inset 0 -3px 6px rgba(90, 50, 0, .45), 0 2px 8px rgba(90, 50, 0, .35); }
+      .px-rpb .px-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+      .px-rpb b { font-size: 16px; font-weight: 800; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .px-rpb small { font-size: 12px; font-weight: 600; color: #5a3a00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .px-rpb .px-bar { height: 6px; border-radius: 3px; background: rgba(80, 45, 0, .3); overflow: hidden; }
+      .px-rpb .px-bar u { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #7a3cff, #c77dff); box-shadow: 0 0 6px rgba(160, 90, 255, .7); }
+      .px-rpb .px-go small { display: block; font-size: 9px; letter-spacing: .12em; color: #ffe9a8; }
+      .px-rpb .px-go { flex: none; text-align: center; line-height: 1.15; padding: 5px 10px; border-radius: 10px; font-size: 12px; font-weight: 800; letter-spacing: .06em; color: #fff7da; background: linear-gradient(180deg, #4a2a8a, #2a1458); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25); white-space: nowrap; }
+      .px-rpb.on .px-go { background: linear-gradient(180deg, #2f7a4a, #174d2c); }
+      /* mode carousel */
+      .px-sec { width: 100%; display: flex; align-items: center; justify-content: space-between; margin: 2px 0 -4px; font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #e7c66a; }
+      .px-sec button { background: none; border: 0; color: #cfc6ad; font: inherit; font-size: 11px; letter-spacing: .08em; cursor: pointer; min-height: 32px; text-transform: none; }
+      .px-car { width: 100%; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; touch-action: pan-x; padding: 4px 2px 8px; scrollbar-width: none; overscroll-behavior-x: contain; }
+      .px-car::-webkit-scrollbar { display: none; }
+      .px-mc { position: relative; flex: none; width: 138px; height: 112px; scroll-snap-align: start; border-radius: 16px; border: 1px solid rgba(255, 255, 255, .16); padding: 10px; box-sizing: border-box; overflow: hidden; cursor: pointer;
+        color: #fff; font: inherit; text-align: start; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; background: var(--bg); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 8px 18px rgba(0, 0, 0, .4); }
+      .px-mc::before { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 80% at 85% 0%, rgba(255, 255, 255, .28), transparent 55%), repeating-linear-gradient(135deg, rgba(255, 255, 255, .05) 0 2px, transparent 2px 9px); pointer-events: none; }
+      .px-mc .px-ic { position: absolute; top: 6px; inset-inline-end: 8px; font-size: 34px; line-height: 1; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .45)); transform: rotate(-8deg); }
+      .px-mc b { position: relative; font-size: 14px; font-weight: 800; text-shadow: 0 1px 3px rgba(0, 0, 0, .55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .px-mc small { position: relative; font-size: 11px; line-height: 1.25; color: rgba(255, 255, 255, .85); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .px-new { position: absolute; top: 8px; inset-inline-start: 8px; padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 900; letter-spacing: .08em; color: #2a1a00; background: linear-gradient(180deg, #fff1a8, #f2b733); box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
+      .px-new.d { color: #fff; background: linear-gradient(180deg, #ff6aa8, #d81b60); }
+      /* daily strip */
+      .px-strip { width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .px-chipb { position: relative; min-height: 56px; border-radius: 14px; border: 1px solid var(--px-ln); background: linear-gradient(180deg, rgba(34, 38, 36, .82), rgba(14, 16, 15, .82)); color: #f1ead6; font: inherit; cursor: pointer;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px 2px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); }
+      .px-chipb i { font-style: normal; font-size: 20px; line-height: 1.1; }
+      .px-chipb span { font-size: 10.5px; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; box-sizing: border-box; }
+      .px-chipb em { position: absolute; top: -5px; inset-inline-end: -4px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; font-style: normal; font-size: 11px; font-weight: 800; line-height: 18px; color: #fff; background: #e53950; box-shadow: 0 0 0 2px #0b0d0c; animation: px-dot 1.6s ease-in-out infinite; }
+      .px-chipb.rdy { border-color: rgba(255, 216, 110, .7); box-shadow: 0 0 14px rgba(255, 200, 80, .22), inset 0 1px 0 rgba(255, 255, 255, .1); }
+      .px-news { width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; font-size: 12px; color: #e9dfc4; background: linear-gradient(90deg, rgba(122, 60, 255, .22), rgba(255, 196, 60, .12)); border: 1px solid rgba(199, 125, 255, .3); overflow: hidden; }
+      .px-news b { flex: none; padding: 2px 6px; border-radius: 6px; font-size: 10px; letter-spacing: .1em; color: #fff; background: #7a3cff; }
+      .px-news span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      /* player card */
+      #menu .x-chip#chip { position: relative; overflow: hidden; min-height: 76px; padding: 10px 12px; gap: 12px; border-radius: 18px; border: 1px solid rgba(255, 220, 130, .35);
+        background: linear-gradient(135deg, rgba(60, 48, 20, .55), rgba(16, 19, 18, .8) 45%, rgba(40, 20, 70, .5)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 10px 24px rgba(0, 0, 0, .35); }
+      .px-av { position: relative; flex: none; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; font-style: normal;
+        background: radial-gradient(circle at 35% 30%, #3a4a40, #121614); box-shadow: 0 0 0 2px #e7c66a, 0 0 0 4px rgba(231, 198, 106, .25), 0 6px 14px rgba(0, 0, 0, .5); }
+      .px-av .x-avi { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+      .px-lv { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); min-width: 22px; padding: 1px 6px; border-radius: 8px; font: 800 11px/1.3 var(--sans, sans-serif); color: #2a1a00; background: linear-gradient(180deg, #fff1a8, #e2a92a); box-shadow: 0 2px 4px rgba(0, 0, 0, .5); }
+      .px-pc { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; text-align: start; }
+      .px-pc b { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: start !important; flex: none !important; }
+      .px-pc small { font-size: 11px; color: #cfc6ad; }
+      .px-xp { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .1); overflow: hidden; }
+      .px-xp u { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #35c27a, #e7c66a); box-shadow: 0 0 6px rgba(231, 198, 106, .6); }
+      .px-pills { display: flex; flex-direction: column; gap: 6px; flex: none; }
+      .px-pill { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 76px; padding: 4px 10px; border-radius: 999px; font: 700 13px/1.2 "Geist Mono", ui-monospace, monospace; color: #ffe39a !important;
+        background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .35)); border: 1px solid rgba(255, 220, 130, .3); direction: ltr; }
+      .px-pill.g { color: #b7f0ff !important; border-color: rgba(120, 220, 255, .35); }
+      #menu .x-prev { height: 84px; border-radius: 16px; background: radial-gradient(120% 140% at 50% 120%, rgba(231, 198, 106, .18), transparent 60%), linear-gradient(180deg, rgba(20, 24, 22, .85), rgba(8, 10, 9, .85)); border: 1px solid rgba(255, 220, 130, .22); }
+      #menu .x-glass { border: 1px solid rgba(255, 226, 160, .16); background: linear-gradient(180deg, rgba(20, 23, 22, .72), rgba(10, 12, 11, .78)); box-shadow: 0 20px 50px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .06); }
+      #menu .x-ltabs button { border-radius: 14px; background: linear-gradient(180deg, rgba(36, 40, 38, .85), rgba(14, 16, 15, .85)); }
+      #menu .x-ltabs button:hover { border-color: rgba(255, 216, 110, .6); }
+      @media (min-width: 600px) and (orientation: landscape) {
+        .x-ov .x-box.x-lob { column-gap: 28px; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); align-items: start; }
+      }
+      @media (max-height: 430px) and (orientation: landscape) {
+        #menu h1.x-logo { font-size: clamp(36px, 6.2vw, 60px); }
+        #menu .x-btn.x-play { min-height: 64px; font-size: 22px; }
+        .px-mc { width: 128px; height: 108px; }
+      }
+
       /* ---------- IN-MATCH HUD ---------- */
       .x-tl { opacity: .96; gap: 6px; }
       .x-tl .x-hud.x-stat { background: linear-gradient(180deg, rgba(18, 22, 20, .78), rgba(8, 10, 9, .7)); border: 1px solid rgba(255, 226, 160, .2); box-shadow: 0 6px 16px rgba(0, 0, 0, .35); }
@@ -648,6 +739,10 @@
       #over #earn.px-gone { display: none; }
       @media (prefers-reduced-motion: reduce) { .px-bg i, .px-bg b, .px-rpb, .px-rpb::after, .px-cta, .px-cta::after, #menu .x-btn.x-play, #menu h1.x-logo, .x-ov .x-btn.x-main::after, .px-rw.ok, .px-chipb em { animation: none !important; } }
       [dir="rtl"] #menu .px-car, [dir="rtl"] #menu .px-strip, [dir="rtl"] #menu .px-rpb, [dir="rtl"] #menu .px-news, [dir="rtl"] #menu .px-sec { direction: rtl; }
+      /* ---------- PORTRAIT COVER ---------- */
+      .x-rot { background: radial-gradient(80% 50% at 50% 42%, rgba(201, 154, 46, .22), transparent 70%), radial-gradient(60% 40% at 50% 80%, rgba(122, 60, 255, .18), transparent 70%), #05060d; }
+      .x-rot::before { content: "SUPER SNAKE"; font-size: 34px; font-weight: 800; letter-spacing: .08em; background: linear-gradient(180deg, #fff2bf, #f2c94c 45%, #b8862a); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 18px rgba(255, 196, 70, .3)); }
+      .x-rotic { filter: drop-shadow(0 0 12px rgba(231, 198, 106, .45)); }
       /* ===== NEW FEATURES ===== */
       .nf-h { top: auto; bottom: calc(var(--x-sb) + 6px); left: 50%; transform: translateX(-50%); padding: 3px 12px; font-size: 13px; font-weight: 600; color: #fff6c2;
         white-space: nowrap; max-width: calc(100% - 2 * var(--x-sx) - 260px); overflow: hidden; text-overflow: ellipsis; opacity: .85; border-radius: var(--r-pill); }
@@ -746,18 +841,24 @@
           <button role="menuitemradio" data-v="ar" lang="ar">العربية</button><button role="menuitemradio" data-v="en" lang="en">English</button><button role="menuitemradio" data-v="tr" lang="tr">Türkçe</button><button role="menuitemradio" data-v="fr" lang="fr">Français</button><button role="menuitemradio" data-v="es" lang="es">Español</button><button role="menuitemradio" data-v="hi" lang="hi">हिन्दी</button></div></div>
       </div>
       <div class="x-ov x-hide" id="menu">
+        <div class="px-bg" aria-hidden="true"><i style="left:14%;top:45%;width:222px;height:222px;--c:rgba(255,200,80,.45);--t:22s;--dx:-54px;--dy:-41px;animation-delay:-8s"></i><i style="left:41%;top:69%;width:164px;height:164px;--c:rgba(140,80,255,.45);--t:12s;--dx:56px;--dy:14px;animation-delay:-3s"></i><i style="left:6%;top:50%;width:149px;height:149px;--c:rgba(40,220,160,.35);--t:18s;--dx:-52px;--dy:-20px;animation-delay:-1s"></i><i style="left:49%;top:2%;width:281px;height:281px;--c:rgba(255,60,170,.35);--t:21s;--dx:-45px;--dy:-22px;animation-delay:-10s"></i><i style="left:69%;top:2%;width:300px;height:300px;--c:rgba(60,160,255,.35);--t:21s;--dx:14px;--dy:0px;animation-delay:-0s"></i><i style="left:0%;top:66%;width:196px;height:196px;--c:rgba(255,200,80,.45);--t:14s;--dx:-23px;--dy:3px;animation-delay:-2s"></i><i style="left:10%;top:68%;width:278px;height:278px;--c:rgba(140,80,255,.45);--t:16s;--dx:11px;--dy:37px;animation-delay:-2s"></i><i style="left:69%;top:68%;width:166px;height:166px;--c:rgba(40,220,160,.35);--t:22s;--dx:-36px;--dy:-3px;animation-delay:-1s"></i><b style="left:70%;top:91%;--t:7s;--dx:6px;--dy:-57px;animation-delay:-3s"></b><b style="left:63%;top:87%;--t:14s;--dx:-3px;--dy:-11px;animation-delay:-5s"></b><b style="left:59%;top:74%;--t:13s;--dx:-7px;--dy:-41px;animation-delay:-3s"></b><b style="left:23%;top:89%;--t:9s;--dx:-25px;--dy:-24px;animation-delay:-4s"></b><b style="left:67%;top:63%;--t:11s;--dx:16px;--dy:-32px;animation-delay:-4s"></b><b style="left:77%;top:9%;--t:7s;--dx:2px;--dy:-34px;animation-delay:-2s"></b><b style="left:96%;top:43%;--t:8s;--dx:29px;--dy:-29px;animation-delay:-6s"></b><b style="left:5%;top:85%;--t:7s;--dx:18px;--dy:-25px;animation-delay:-5s"></b><b style="left:43%;top:88%;--t:11s;--dx:8px;--dy:-29px;animation-delay:-7s"></b><b style="left:8%;top:11%;--t:10s;--dx:0px;--dy:-16px;animation-delay:-1s"></b><b style="left:7%;top:93%;--t:10s;--dx:11px;--dy:-24px;animation-delay:-7s"></b><b style="left:36%;top:91%;--t:12s;--dx:26px;--dy:-18px;animation-delay:-5s"></b><b style="left:2%;top:59%;--t:11s;--dx:-20px;--dy:-21px;animation-delay:-1s"></b><b style="left:63%;top:7%;--t:9s;--dx:19px;--dy:-42px;animation-delay:-2s"></b><b style="left:94%;top:31%;--t:12s;--dx:-5px;--dy:-29px;animation-delay:-1s"></b><b style="left:21%;top:57%;--t:12s;--dx:5px;--dy:-43px;animation-delay:-2s"></b></div>
         <div class="x-box x-lob">
         <div class="x-col x-left">
         <p class="x-tag" data-i18n="tag">سوبر سنيك · البوابة</p>
         <h1 class="x-logo" dir="ltr">SUPER<br />SNAKE</h1>
         <p class="x-chal x-hide" id="chal" role="status" dir="auto"></p>
         <button class="x-btn x-main x-play" data-go="mplay"><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor" /></svg><span data-i18n="play">العب</span></button>
+        <button type="button" class="px-rpb" id="pxrpb" data-go="nfpass" aria-label="Royal Pass" data-i18n-al="nfPass"></button>
         <div class="x-seg x-segw x-mode" data-k="mode" style="width:100%"><button data-v="n" data-i18n="mNormal">عادي</button><button data-v="t" data-i18n="mTeams">فرق</button><button data-v="s" data-i18n="mSurv">البقاء</button><button data-v="r" data-i18n="mRanked">مصنّف</button><button data-v="d" data-i18n="mDaily">تحدي اليوم</button><button data-v="p" data-i18n="mPriv">مباراة خاصة</button><button data-v="l" data-i18n="league">الدوري</button></div>
         <p class="x-note" id="mdi" aria-live="polite"></p>
         <button class="x-lnk" data-go="maps" id="mapq"></button>
         <div class="x-row nf-row"><button class="x-btn x-sub" data-go="nfmodes">🎮 <span data-i18n="nfModes">Modes+</span></button><button class="x-btn x-sub" data-go="nfpass">👑 <span data-i18n="nfPass">Royal Pass</span></button></div>
         <p class="x-note nf-wx x-hide" id="nfwx"></p>
         <p class="x-chal x-hide" id="nfmapb" role="status" dir="auto"></p>
+        <div class="px-sec" id="pxsec"></div>
+        <div class="px-car" id="pxcar"></div>
+        <div class="px-strip" id="pxstrip"></div>
+        <div class="px-news" id="pxnews" role="status"></div>
         <input class="x-name x-hide" id="room" maxlength="8" placeholder="كود الغرفة (اختياري)" data-i18n-ph="roomPh" autocomplete="off" aria-label="كود الغرفة" data-i18n-al="roomPh" />
         <div class="x-col x-hide" id="tml" style="width:100%;gap:8px;align-items:stretch">
           <div class="x-seg" data-k="tf" style="width:100%"><button data-v="1" data-i18n="tf1">فردي</button><button data-v="2" data-i18n="tf2">ثنائي</button><button data-v="3" data-i18n="tf3">فرقة ثلاثية</button></div>
@@ -7246,6 +7347,45 @@
           if (html !== lbH) { lbH = html; $("lb").innerHTML = html; } // touch the DOM only on change
           const cn = String(all.length); if ($("pxlbn").textContent !== cn) $("pxlbn").textContent = "🐍" + cn;
         };
+
+        // ---------- PLAYER CARD (lobby chip and profile) ----------
+        chipH = function () {
+          const lv = lvInfo(), ta = P.title && ACH.find((a) => a[0] === P.title), pc = lv.n >= LV_MAX ? 100 : (lv.x / lv.need) * 100;
+          return `<i class="px-av">${avH(P)}<span class="px-lv">${lv.n}</span></i><div class="px-pc"><b>${esc(P.name || "—")}</b><small>${ta ? "🏷️ " + aName(ta) + " · " : ""}${_t("lvl")} ${lv.n} · <bdi dir="ltr">${lv.x}/${lv.need}</bdi> ${_t("xp")}</small><div class="px-xp"><u style="width:${pc.toFixed(1)}%"></u></div></div>` +
+            `<div class="px-pills"><span class="px-pill">${num(P.coins)} 🪙</span><span class="px-pill g">${num(P.gems)} 💎</span></div>`;
+        };
+
+        // ---------- PORTAL: Royal Pass banner, mode carousel, daily strip, news ----------
+        const PXMODES = [
+          { k: "story", e: "📖", nw: 1, go: 'data-go="nfstoryo"', bg: "linear-gradient(140deg,#7b4dff,#3a1488 60%,#1a0848)", t: () => _t("nfStoryT"), d: () => _t("nfStProg", { n: NX.cp, m: STG.length, s: Object.values(NX.cs).reduce((a, v) => a + v, 0), t: STG.length * 3 }) },
+          { k: "myst", e: "❓", nw: 2, go: 'data-go="nfplay" data-m="myst"', bg: "linear-gradient(140deg,#16c9c0,#0a6a8a 60%,#082a4a)", t: () => _t("nfMyst"), d: () => { const r = mystToday(); return r.e + " " + mystName(r) + (NX.my === utcDay() ? " · ✓" : ""); } },
+          { k: "word", e: "🔤", nw: 1, go: 'data-go="nfplay" data-m="word"', bg: "linear-gradient(140deg,#ff9a3a,#e0326e 60%,#6a0a3a)", t: () => _t("nfWordT"), d: () => _t("nfWordD") },
+          { k: "edit", e: "🛠️", nw: 1, go: 'data-go="nfedopen"', bg: "linear-gradient(140deg,#3ad17a,#0f7a5a 60%,#063a2e)", t: () => _t("nfEdT"), d: () => _t("nfEdD") },
+          { k: "ghost", e: "👻", nw: 1, go: 'data-go="nfmodes"', bg: "linear-gradient(140deg,#8a9bbf,#3d3f7a 60%,#16163a)", t: () => _t("nfGhostT"), d: () => _t("nfGhostD") },
+          { k: "league", e: "🏆", go: 'data-go="league"', bg: "linear-gradient(140deg,#ffd45a,#b8741a 60%,#4a2a06)", t: () => _t("league"), d: () => _t("pxLeagueD") },
+          { k: "shop", e: "✨", go: 'data-go="nfshop"', bg: "linear-gradient(140deg,#ff5ad0,#8a2ad8 60%,#2a0a5a)", t: () => _t("nfShop"), d: () => _t("pxShopD") },
+          { k: "more", e: "🎮", go: 'data-go="nfmodes"', bg: "linear-gradient(140deg,#5a6a7a,#2a3440 60%,#11161c)", t: () => _t("pxAll"), d: () => _t("pxMoreD") },
+        ];
+        const pxH = {};
+        const pxSet = (id, html) => { if (pxH[id] !== html) { pxH[id] = html; $(id).innerHTML = html; } };
+        function pxLobby() {
+          if (!cur || !$("pxrpb")) return;
+          rpEnsure(); msEnsure();
+          const t = rpTier(), mx = t >= RP_TIERS, xpIn = mx ? RP_XP : NX.rp.xp - t * RP_XP, pr = !!NX.rp.pr;
+          $("pxrpb").classList.toggle("on", pr);
+          pxSet("pxrpb", `<span class="px-cr" aria-hidden="true">👑</span><span class="px-tx"><b>${esc(_t("nfPass"))}</b><small>${esc(_t("nfSeason" + (rpNo() % 4)))} · ${esc(_t("nfTier", { t, n: RP_TIERS }))} · ⏳ ${esc(fmtLeft(rpEnd() - Date.now()))}</small><span class="px-bar"><u style="width:${Math.round((100 * xpIn) / RP_XP)}%"></u></span></span>` +
+            `<span class="px-go"><small>${esc(_t("pxPremium"))}</small>${pr ? "✓" : RP_PREM + " 💎"}</span>`);
+          pxSet("pxcar", PXMODES.map((m) => `<button type="button" class="px-mc" ${m.go} style="--bg:${m.bg}"><span class="px-ic" aria-hidden="true">${m.e}</span>${m.nw ? `<span class="px-new${m.nw === 2 ? " d" : ""}">${esc(_t(m.nw === 2 ? "pxDaily" : "pxNew"))}</span>` : ""}<b>${esc(m.t())}</b><small>${esc(m.d())}</small></button>`).join(""));
+          const gr = P.dg.d !== today(), un = unread() + (P.ri || []).length + chUnAll(), ar = aReady(), md = NX.ms.c.length;
+          const chip = (go, e, lb, n, rdy) => `<button type="button" class="px-chipb${rdy ? " rdy" : ""}" ${go}><i aria-hidden="true">${e}</i><span>${esc(lb)}</span>${n ? `<em>${n}</em>` : ""}</button>`;
+          pxSet("pxstrip", chip('data-go="gift"', "🎁", _t("gift"), gr ? "!" : "", gr) + chip('data-go="nfpass"', "📋", _t("nfMisT") + " " + md + "/" + MIS2.length, md < MIS2.length ? MIS2.length - md : "", false) +
+            chip('data-go="inbox"', "📬", _t("inbox"), un || "", un > 0) + chip('data-go="achs"', "🏆", _t("ach"), ar || "", ar > 0));
+          pxSet("pxnews", `<b>${esc(_t("pxNew"))}</b><span dir="auto">${esc(_t("pxNews"))}</span>`);
+          pxSet("pxsec", `<span>${esc(_t("pxModesH"))}</span><button type="button" data-go="nfmodes">${esc(_t("pxAll"))} ›</button>`);
+        }
+        { const _profile = profile; profile = function () { _profile(); if (pxVis("menu")) pxLobby(); }; }
+        new MutationObserver(() => { if (pxVis("menu") && cur) { $("chip").innerHTML = chipH(); pxLobby(); } }).observe($("menu"), { attributes: true, attributeFilter: ["class"] });
+        NFH.relang.push(() => { for (const k in pxH) delete pxH[k]; if (pxVis("menu")) pxLobby(); });
 
         // ---------- PREMIUM FOOD ORBS: a richer pre-rendered pearl (soft coloured halo, core glint, rim light) ----------
         pearl = function (col) {
