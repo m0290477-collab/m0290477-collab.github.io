@@ -902,6 +902,9 @@
       .px-rpb .px-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
       .px-rpb b { font-size: 16px; font-weight: 800; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .px-rpb small { font-size: 12px; font-weight: 600; color: #5a3a00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .px-rpb small.px-rm { display: flex; gap: 6px; min-width: 0; }
+      .px-rm .px-sn { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+      .px-rm .px-cd { flex: none; }
       .px-rpb .px-bar { height: 6px; border-radius: 3px; background: rgba(80, 45, 0, .3); overflow: hidden; }
       .px-rpb .px-bar u { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #7a3cff, #c77dff); box-shadow: 0 0 6px rgba(160, 90, 255, .7); }
       .px-rpb .px-go small { display: block; font-size: 9px; letter-spacing: .12em; color: #ffe9a8; }
@@ -2190,7 +2193,7 @@
         skCls: ["كلاسيكي", "Classic", "Klasik", "Classiques", "Clásicos", "क्लासिक"],
         skFlags: ["الأعلام", "Flags", "Bayraklar", "Drapeaux", "Banderas", "झंडे"],
         flSearch: ["ابحث عن دولة أو رمزها", "Search a country or code", "Ülke veya kod ara", "Chercher un pays ou un code", "Buscar país o código", "देश या कोड खोजें"],
-        flNote: ["مرتبة أبجدياً · {p} 💎 لكل علم", "Sorted A–Z · {p} 💎 each", "A–Z sıralı · tanesi {p} 💎", "Triés de A à Z · {p} 💎 chacun", "Orden A–Z · {p} 💎 cada una", "A–Z क्रम · हर एक {p} 💎"],
+        flNote: ["مرتبة أبجدياً · {p} 🪙 لكل علم", "Sorted A–Z · {p} 🪙 each", "A–Z sıralı · tanesi {p} 🪙", "Triés de A à Z · {p} 🪙 chacun", "Orden A–Z · {p} 🪙 cada una", "A–Z क्रम · हर एक {p} 🪙"],
         music: ["الموسيقى", "Music", "Müzik", "Musique", "Música", "संगीत"],
         revQ: ["فرصة ثانية؟ كمّل من نفس المكان بطولك", "Second chance? Keep your length and continue", "İkinci şans? Uzunluğunu koru ve devam et", "Seconde chance ? Garde ta longueur et continue", "¿Segunda oportunidad? Conserva tu longitud y sigue", "दूसरा मौका? अपनी लंबाई रखें और जारी रखें"],
         revY: ["إحياء · {c} 🪙", "Revive · {c} 🪙", "Canlan · {c} 🪙", "Revivre · {c} 🪙", "Revivir · {c} 🪙", "फिर जिएँ · {c} 🪙"],
@@ -2778,7 +2781,7 @@
           "e:JP.CA.TR.SA.BD.PW.KR.CH.MK.CN.VN.TN.MA.PK.KZ.KG.AL.ME.SO.XK.DM.CY.FM;ed:BR;" +
           "c201:US.LR.MY.TV.CL.TG;c001:GR.AU;c002:NZ;c010:UY;c100:WS.TW;c102:FJ")
           .split(";").forEach((g) => { const [l, cs] = g.split(":"); cs.split(".").forEach((c) => { FLAG_LY[c] = l; }); });
-        const FLAG0 = SKINS.length, FLAG_P = 15, FL_PAGE = 24, FLAGS = [], FLAG_DN = {};
+        const FLAG0 = SKINS.length, FLAG_P = 400, FL_PAGE = 24, FLAGS = [], FLAG_DN = {};
         const flagEmo = (c) => String.fromCodePoint(...[...c].map((x) => 0x1f1a5 + x.charCodeAt(0))); // regional indicator letters
         function flagName(f, l) { // the country name in the game language, from the ISO code; English from the table when Intl has none
           l = l || LANG;
@@ -2822,7 +2825,7 @@
         }
         const skR = (s) => s.r ?? (!s.p ? 0 : s.p <= 150 ? 1 : 2); // rarity; the original skins are Common (free), Rare or Epic
         SKINS.forEach((s, i) => { if (!s.p) return; s.lv = skinLv(s); const r = skR(s); if (s.r === undefined) s.r = r;
-          if (s.t === "fl") { s.p = 15; s.cur = "g"; } else if (r >= 4) { s.p = 100 + (i % 4) * 4; s.cur = "g"; } else if (r === 3) { s.p = 60 + (i % 4) * 4; s.cur = "g"; } else if (r === 2) { s.p = 25 + (i % 5) * 2; s.cur = "g"; } });
+          if (s.t === "fl") { s.p = FLAG_P; delete s.cur; } else if (r >= 4) { s.p = 100 + (i % 4) * 4; s.cur = "g"; } else if (r === 3) { s.p = 60 + (i % 4) * 4; s.cur = "g"; } else if (r === 2) { s.p = 25 + (i % 5) * 2; s.cur = "g"; } });
         const skV = (s) => (!s.p ? 0 : s.cur ? s.p * 100 : s.p); // value in coins for sorting (1 gem = 100 coins, as in the gem exchange)
         const M = { eat: 0, kill: 0, dragon: 0, games: 0, wheelAt: -3, chest: 0, done: {} };
         // shop and mission data; every visible name comes from I18N (mis_, h_, t_, b_, bd_ keys)
@@ -8059,7 +8062,7 @@
           rpEnsure(); msEnsure();
           const t = rpTier(), mx = t >= RP_TIERS, xpIn = mx ? RP_XP : NX.rp.xp - t * RP_XP, pr = !!NX.rp.pr;
           $("pxrpb").classList.toggle("on", pr);
-          pxSet("pxrpb", `<span class="px-cr" aria-hidden="true">👑</span><span class="px-tx"><b>${esc(_t("nfPass"))}</b><small>${esc(_t("nfSeason" + (rpNo() % 4)))} · ${esc(_t("nfTier", { t, n: RP_TIERS }))} · ⏳ ${esc(fmtLeft(rpEnd() - Date.now()))}</small><span class="px-bar"><u style="width:${Math.round((100 * xpIn) / RP_XP)}%"></u></span></span>` +
+          pxSet("pxrpb", `<span class="px-cr" aria-hidden="true">👑</span><span class="px-tx"><b>${esc(_t("nfPass"))}</b><small class="px-rm"><span class="px-sn">${esc(_t("nfTier", { t, n: RP_TIERS }))} · ${esc(_t("nfSeason" + (rpNo() % 4)))}</span><span class="px-cd">⏳ <bdi>${esc(fmtLeft(rpEnd() - Date.now()))}</bdi></span></small><span class="px-bar"><u style="width:${Math.round((100 * xpIn) / RP_XP)}%"></u></span></span>` +
             `<span class="px-go"><small>${esc(_t("pxPremium"))}</small>${pr ? "✓" : RP_PREM + " 💎"}</span>`);
           pxSet("pxcar", PXMODES.filter((m) => !m.hide || !m.hide()).map((m) => `<button type="button" class="px-mc" ${m.go} style="--bg:${m.bg}"><span class="px-ic" aria-hidden="true">${m.e}</span>${m.nw ? `<span class="px-new${m.nw === 2 ? " d" : ""}">${esc(_t(m.nw === 2 ? "pxDaily" : "pxNew"))}</span>` : ""}<b>${esc(m.t())}</b><small>${esc(m.d())}</small></button>`).join(""));
           const gr = P.dg.d !== today(), un = unread() + (P.ri || []).length + chUnAll(), ar = aReady(), md = NX.ms.c.length;
