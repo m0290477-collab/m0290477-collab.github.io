@@ -606,10 +606,10 @@
       .nf-rw2.lock::after { content: "🔒"; position: absolute; top: 2px; inset-inline-end: 4px; font-size: 12px; }
       .nf-ms { width: 100%; display: grid; gap: 6px; }
       .nf-ed { display: grid; gap: 10px; width: 100%; }
-      .nf-edc { width: 100%; aspect-ratio: 1; max-height: 70vh; border-radius: 12px; border: 1px solid rgba(0, 229, 255, .35); background: #070a16; touch-action: none; }
+      .nf-edc { width: min(100%, 70vh); height: auto; aspect-ratio: 1; justify-self: center; align-self: start; border-radius: 12px; border: 1px solid rgba(0, 229, 255, .35); background: #070a16; touch-action: none; }
       .nf-code { box-sizing: border-box; width: 100%; min-height: 60px; padding: 8px; border-radius: 10px; font: 12px "Geist Mono", monospace; background: rgba(10, 14, 30, .8); color: #cfe; border: 1px solid rgba(0, 229, 255, .3); }
       .nf-ph { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid #ffd84a; }
-      @media (orientation: landscape) and (min-width: 600px) { .nf-ed { grid-template-columns: minmax(0, 1fr) 260px; align-items: start; } .nf-edc { max-height: 72vh; } }
+      @media (orientation: landscape) and (min-width: 600px) { .nf-ed { grid-template-columns: minmax(0, 1fr) 260px; align-items: start; } .nf-edc { width: min(100%, 74vh); } }
     </style>
   </head>
   <body>
@@ -873,6 +873,31 @@
       </div></div>
       <div class="x-ov x-hide" id="nfpass"><div class="x-box nf-one" id="nfpb"></div></div>
       <div class="x-ov x-hide" id="nfshop"><div class="x-box nf-one" id="nfsb"></div></div>
+      <div class="x-ov x-hide" id="nfedit"><div class="x-box nf-one" style="max-width:920px">
+        <h2 class="x-cy">🛠️ <span data-i18n="nfEdT">Map editor</span></h2>
+        <div class="nf-ed">
+          <canvas class="nf-edc" id="nfedc" aria-label="Map editor" data-i18n-al="nfEdT"></canvas>
+          <div class="x-col" style="gap:8px;width:100%">
+            <div class="nf-tabs" id="nfedtools"></div>
+            <div class="nf-tabs" id="nfedtheme"></div>
+            <input class="x-name" id="nfedn" maxlength="24" spellcheck="false" autocomplete="off" placeholder="Map name" data-i18n-ph="nfEdName" aria-label="Map name" data-i18n-al="nfEdName" />
+            <p class="x-note" id="nfedi"></p>
+            <p class="x-note" data-i18n="nfEdHelp">Tap to place, tap a piece to remove it.</p>
+            <div class="x-row"><button class="x-btn x-main" data-go="nfedplay">▶ <span data-i18n="play">Play</span></button><button class="x-btn x-sub" data-go="nfedsave">💾 <span data-i18n="save">Save</span></button></div>
+            <div class="x-row"><button class="x-btn x-sub" data-go="nfedshare">🔗 <span data-i18n="nfEdShare">Share</span></button><button class="x-btn x-sub" data-go="nfedclr">🗑️ <span data-i18n="nfEdClear">Clear</span></button></div>
+            <textarea class="nf-code" id="nfedcode" rows="2" spellcheck="false" placeholder="SSM1..." aria-label="Map code" data-i18n-al="nfEdCodeL"></textarea>
+            <button class="x-btn x-sub" data-go="nfedload">📥 <span data-i18n="nfEdLoad">Load code</span></button>
+            <div class="x-shop" id="nfedl" style="grid-template-columns:1fr"></div>
+          </div>
+        </div>
+        <button class="x-btn x-sub" data-go="nfback" data-to="nfmodes" data-i18n="back">رجوع</button>
+      </div></div>
+      <div class="x-ov x-hide" id="nfstory"><div class="x-box nf-one">
+        <h2 class="x-cy">📖 <span data-i18n="nfStoryT">Story</span></h2>
+        <p id="nfsti"></p>
+        <div class="x-shop" id="nfstl"></div>
+        <button class="x-btn x-sub" data-go="nfback" data-to="nfmodes" data-i18n="back">رجوع</button>
+      </div></div>
       <div class="x-ov x-hide" id="maps"><div class="x-box">
         <h2 class="x-cy" data-i18n="maps">الخرايط</h2>
         <div class="x-shop" id="mapl"></div>
@@ -1729,6 +1754,51 @@
         nfPhDel: ["احذف الصورة", "Delete photo", "Fotoğrafı sil", "Supprimer la photo", "Borrar foto", "फ़ोटो हटाएँ"],
         nfPhOk: ["تم! صورتك على ثعبانك", "Done! Your photo is on your snake", "Tamam! Fotoğrafın yılanında", "C'est fait ! Ta photo est sur ton serpent", "¡Listo! Tu foto está en tu serpiente", "हो गया! आपकी फ़ोटो साँप पर है"],
         nfPhBad: ["ما قدرنا نفتح الصورة", "Couldn't open that image", "Görsel açılamadı", "Impossible d'ouvrir l'image", "No se pudo abrir la imagen", "तस्वीर नहीं खुली"],
+        nfEdT: ["محرر الخرائط", "Map editor", "Harita editörü", "Éditeur de cartes", "Editor de mapas", "मैप एडिटर"],
+        nfEdD: ["ابنِ خريطتك، احفظها، شاركها والعب فيها", "Build your own map, save it, share it and play it", "Kendi haritanı yap, kaydet, paylaş ve oyna", "Crée ta carte, enregistre-la, partage-la et joue", "Crea tu mapa, guárdalo, compártelo y juega", "अपना मैप बनाएँ, सहेजें, शेयर करें और खेलें"],
+        nfEdOpen: ["افتح", "Open", "Aç", "Ouvrir", "Abrir", "खोलें"],
+        nfEdCount: ["القطع: {n}/{m}", "Pieces: {n}/{m}", "Parçalar: {n}/{m}", "Pièces : {n}/{m}", "Piezas: {n}/{m}", "टुकड़े: {n}/{m}"],
+        nfEdRock: ["صخرة", "Rock", "Kaya", "Rocher", "Roca", "चट्टान"],
+        nfEdWallH: ["جدار أفقي", "Wall —", "Duvar —", "Mur —", "Muro —", "दीवार —"],
+        nfEdWallV: ["جدار عمودي", "Wall |", "Duvar |", "Mur |", "Muro |", "दीवार |"],
+        nfEdBlock: ["مكعب", "Block", "Blok", "Bloc", "Bloque", "ब्लॉक"],
+        nfEdErase: ["ممحاة", "Erase", "Sil", "Gomme", "Borrar", "मिटाएँ"],
+        nfEdSaved: ["خرائطك المحفوظة", "Your saved maps", "Kayıtlı haritaların", "Tes cartes enregistrées", "Tus mapas guardados", "आपके सहेजे मैप"],
+        nfEdEmpty: ["حط قطعة وحدة على الأقل", "Place at least one piece", "En az bir parça koy", "Place au moins une pièce", "Coloca al menos una pieza", "कम से कम एक टुकड़ा रखें"],
+        nfEdOk: ["انحفظت الخريطة", "Map saved", "Harita kaydedildi", "Carte enregistrée", "Mapa guardado", "मैप सहेजा गया"],
+        nfEdShareT: ["جرّب خريطتي في سوبر سنيك!", "Try my map in Super Snake!", "Super Snake'te haritamı dene!", "Essaie ma carte dans Super Snake !", "¡Prueba mi mapa en Super Snake!", "Super Snake में मेरा मैप आज़माएँ!"],
+        nfEdCopy: ["انسخ الرابط من المربع", "Copy the link from the box", "Bağlantıyı kutudan kopyala", "Copie le lien dans la case", "Copia el enlace del cuadro", "बॉक्स से लिंक कॉपी करें"],
+        nfEdBad: ["الكود غير صالح", "That code isn't valid", "Kod geçersiz", "Ce code n'est pas valide", "Ese código no es válido", "यह कोड सही नहीं है"],
+        nfEdLoaded: ["تم تحميل الخريطة", "Map loaded", "Harita yüklendi", "Carte chargée", "Mapa cargado", "मैप लोड हुआ"],
+        nfEdFull: ["الحد الأقصى {m} قطعة", "Maximum {m} pieces", "En fazla {m} parça", "{m} pièces maximum", "Máximo {m} piezas", "अधिकतम {m} टुकड़े"],
+        nfEdEdge: ["بعيد عن الحدود شوي", "Keep a little away from the edge", "Kenardan biraz uzak tut", "Reste un peu loin du bord", "Aléjate un poco del borde", "किनारे से थोड़ा दूर रखें"],
+        nfEdBan: ["خريطة مشتركة لك: {x} · اضغط لفتحها", "A map was shared with you: {x} · tap to open", "Seninle bir harita paylaşıldı: {x} · açmak için dokun", "Une carte partagée avec toi : {x} · touche pour ouvrir", "Te compartieron un mapa: {x} · toca para abrir", "आपके साथ मैप शेयर हुआ: {x} · खोलने के लिए टैप करें"],
+        nfEdName: ["اسم الخريطة", "Map name", "Harita adı", "Nom de la carte", "Nombre del mapa", "मैप का नाम"],
+        nfEdHelp: ["اضغط لتحط قطعة، واضغط على قطعة لتشيلها", "Tap to place, tap a piece to remove it", "Koymak için dokun, kaldırmak için parçaya dokun", "Touche pour placer, touche une pièce pour l'enlever", "Toca para colocar, toca una pieza para quitarla", "रखने के लिए टैप करें, हटाने के लिए टुकड़े पर टैप करें"],
+        nfEdShare: ["شارك", "Share", "Paylaş", "Partager", "Compartir", "शेयर"],
+        nfEdClear: ["امسح الكل", "Clear", "Temizle", "Effacer", "Borrar todo", "सब हटाएँ"],
+        nfEdCodeL: ["كود الخريطة", "Map code", "Harita kodu", "Code de la carte", "Código del mapa", "मैप कोड"],
+        nfEdLoad: ["حمّل الكود", "Load code", "Kodu yükle", "Charger le code", "Cargar código", "कोड लोड करें"],
+        nfStoryT: ["القصة", "Story", "Hikâye", "Histoire", "Historia", "कहानी"],
+        nfStage: ["المرحلة {n}", "Stage {n}", "Bölüm {n}", "Étape {n}", "Etapa {n}", "चरण {n}"],
+        nfG_len: ["وصّل طولك {n}", "Reach length {n}", "{n} boya ulaş", "Atteins la longueur {n}", "Llega a longitud {n}", "{n} लंबाई तक पहुँचें"],
+        nfG_kill: ["اقتل {n} ثعابين", "Get {n} kills", "{n} yılan avla", "Élimine {n} serpents", "Elimina {n} serpientes", "{n} किल करें"],
+        nfG_surv: ["اصمد {n} ثانية", "Survive {n} seconds", "{n} saniye hayatta kal", "Survis {n} secondes", "Sobrevive {n} segundos", "{n} सेकंड बचे रहें"],
+        nfG_boss: ["اهزم {x}", "Defeat {x}", "{x} yen", "Bats {x}", "Derrota a {x}", "{x} को हराएँ"],
+        nfBoss0: ["عملاق الغابة", "the Forest Titan", "Orman Titanı", "le Titan de la forêt", "el Titán del bosque", "जंगल का दानव"],
+        nfBoss1: ["هيدرا السايبر", "the Cyber Hydra", "Siber Hidra", "l'Hydre cyber", "la Hidra ciber", "साइबर हाइड्रा"],
+        nfBoss2: ["إمبراطور النيون", "the Neon Emperor", "Neon İmparator", "l'Empereur néon", "el Emperador de neón", "नियॉन सम्राट"],
+        nfStClear: ["المرحلة اكتملت!", "Stage clear!", "Bölüm tamam!", "Étape réussie !", "¡Etapa superada!", "चरण पूरा!"],
+        nfStFail: ["المرحلة {n} ما اكتملت، حاول مرة ثانية", "Stage {n} not cleared, try again", "Bölüm {n} geçilemedi, tekrar dene", "Étape {n} ratée, réessaie", "Etapa {n} no superada, inténtalo de nuevo", "चरण {n} पूरा नहीं हुआ, फिर कोशिश करें"],
+        nfStNext: ["العب مرة ثانية للمرحلة {n}", "Play again for stage {n}", "Bölüm {n} için tekrar oyna", "Rejoue pour l'étape {n}", "Juega otra vez para la etapa {n}", "चरण {n} के लिए फिर खेलें"],
+        nfStEnd: ["خلّصت القصة! 🎉", "Story complete! 🎉", "Hikâye bitti! 🎉", "Histoire terminée ! 🎉", "¡Historia completada! 🎉", "कहानी पूरी! 🎉"],
+        nfStProg: ["{n}/{m} مراحل · ★ {s}/{t}", "{n}/{m} stages · ★ {s}/{t}", "{n}/{m} bölüm · ★ {s}/{t}", "{n}/{m} étapes · ★ {s}/{t}", "{n}/{m} etapas · ★ {s}/{t}", "{n}/{m} चरण · ★ {s}/{t}"],
+        nfWordGo: ["كُل الحروف بالترتيب لتكوّن الكلمة!", "Eat the letters in order to spell the word!", "Kelimeyi yazmak için harfleri sırayla ye!", "Mange les lettres dans l'ordre pour écrire le mot !", "¡Come las letras en orden para formar la palabra!", "शब्द बनाने के लिए अक्षर क्रम से खाएँ!"],
+        nfWords: ["الكلمات: {n}", "Words: {n}", "Kelimeler: {n}", "Mots : {n}", "Palabras: {n}", "शब्द: {n}"],
+        nfWordT: ["وضع الكلمات", "Word mode", "Kelime modu", "Mode mots", "Modo palabras", "शब्द मोड"],
+        nfWordD: ["كوّن كلمات بلغتك من الحروف الطايرة", "Spell words in your language from floating letters", "Uçan harflerle kendi dilinde kelime yaz", "Écris des mots dans ta langue avec des lettres flottantes", "Forma palabras en tu idioma con letras flotantes", "तैरते अक्षरों से अपनी भाषा में शब्द बनाएँ"],
+        tx_story: ["القصة", "Story", "Hikâye", "Histoire", "Historia", "कहानी"],
+        tx_word: ["وضع الكلمات", "Word mode", "Kelime modu", "Mode mots", "Modo palabras", "शब्द मोड"],
       };
       Object.assign(I18N, NF_I18N);
       let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
@@ -3864,7 +3934,7 @@
           if (html !== lbH) { lbH = html; $("lb").innerHTML = html; } // touch the DOM only on change
         }
 
-        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop"];
+        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop", "nfedit", "nfstory"];
         // MANDATORY ACCOUNT: with nobody logged in, only the login and create-account screens can show
         function authView(imp, quiet) {
           $("logv").classList.toggle("x-hide", !!imp); $("impv").classList.toggle("x-hide", !imp);
@@ -5875,7 +5945,7 @@
         function nfPreStart() { if (!NFR) return; for (const g of NFH.pre) g(); }
         function nfStart() {
           if (!NFR) return;
-          NFS = { t: 0, vb: 0, hh: null, ht: 0 };
+          NFS = { t: 0, vb: 0, hh: null, ht: 0, botN: NFS.botN || 0 };
           for (const g of NFH.start) g();
           nfHud();
         }
@@ -6407,7 +6477,7 @@
         NFG.nfprem = async () => { const r = await WALLET.premium(); if (!r.ok) toast(r.err === "funds" ? _t("nfNoGems", { n: RP_PREM }) : _t("nfErr")); else { toast("👑 " + _t("nfPremOn")); beep(784, 0.3, "triangle", 0.06, 1568); } paintPass(); };
         NFG.nfclaim = async (b) => { const r = await WALLET.claim(+b.dataset.t, b.dataset.k); if (r.ok) { toast("🎁 " + rwLbl(r.rw || {})); beep(988, 0.15, "triangle", 0.05, 1480); } paintPass(); };
         NFG.nfclaimall = async () => { const t = rpTier(); let n = 0; for (let i = 1; i <= t; i++) { for (const k of ["f", "p"]) { const r = await WALLET.claim(i, k); if (r.ok) n++; } } if (n) toast("🎁 × " + n); paintPass(); };
-        NFG.nfback = (b) => { const to = b.dataset.to || "menu"; back = "menu"; if (to === "nfpass") paintPass(); show(to); };
+        NFG.nfback = (b) => { const to = b.dataset.to || "menu"; back = "menu"; if (to === "nfpass") paintPass(); if (to === "nfmodes") paintModes(); show(to); };
         NFH.relang.push(() => { if (!$("nfpass").classList.contains("x-hide")) paintPass(); if (!$("nfshop").classList.contains("x-hide")) paintShop2(); });
         NFH.load.push(() => { rpEnsure(); });
 
@@ -6816,6 +6886,222 @@
           const a = NX.ai; if (!a.n) return nfCard("👿", _t("nfRivalN"), _t("nfRivalD0") + " · " + _t(NX.set.rv ? "on" : "off"), "");
           return nfCard("👿", _t("nfRivalN"), _t("nfRivalD", { n: a.n, l: Math.round(a.l * 100), b: Math.round(a.b * 100), w: Math.round(a.w * 100), k: a.k }) + " · " + _t(NX.set.rv ? "on" : "off"), "");
         });
+
+        // ===================== MAP EDITOR =====================
+        // place rocks, walls and blocks on a 1000×1000 plan (scaled to the 4500 arena), pick a theme, save up to 5 maps,
+        // share as a code or a link (https://billke.com/?m=<code>) and play them
+        const ED_MAX = 80, ED_T = [0, 5, 6], ED_SZ = [{ r: 12 }, { w: 30, h: 5 }, { w: 5, h: 30 }, { w: 10, h: 10 }];
+        const ED = { t: 0, o: [], tool: 0, n: "", sel: -1 };
+        function edCode(m) { const j = JSON.stringify({ n: m.n || "", t: m.t, o: m.o }); return "SSM1." + btoa(unescape(encodeURIComponent(j))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+        function edParse(code) {
+          try {
+            code = String(code || "").trim(); const i = code.indexOf("SSM1."); if (i < 0) return null; code = code.slice(i + 5).replace(/[^A-Za-z0-9_-]/g, "");
+            if (code.length > 6000) return null;
+            const j = JSON.parse(decodeURIComponent(escape(atob(code.replace(/-/g, "+").replace(/_/g, "/")))));
+            const f = nfFixX({ ed: [{ n: typeof j.n === "string" ? j.n : "", t: j.t, o: j.o }] }).ed[0];
+            return f && f.o.length ? f : null;
+          } catch (e) { return null; }
+        }
+        function edObs(m) { // plan → arena obstacles for the chosen theme
+          const k = A / 1000, th = m.t, out = [];
+          for (const [ty, x0, y0] of m.o) {
+            const x = clamp(x0 * k, 120, A - 120), y = clamp(y0 * k, 120, A - 120), s = ED_SZ[ty];
+            if (ty === 0) {
+              const r = s.r * k;
+              if (th === 1) out.push({ t: "forest", k: "tree", x, y, r, c: "#5cc455" });
+              else if (th === 2) { const w = r * 0.8; out.push({ t: "cyber", x, y, w, h: w, r: Math.hypot(w, w), c: "0,240,255" }); }
+              else out.push({ t: "rock", x, y, r, c: "#4f7fd9", ring: false });
+            } else { const w = s.w * k, h = s.h * k; out.push({ t: "cyber", x, y, w, h, r: Math.hypot(w, h), c: th === 1 ? "170,230,120" : th === 2 ? "255,40,200" : "0,240,255" }); }
+          }
+          return out.sort((a, b) => a.y - b.y);
+        }
+        NFH.pre.push(() => {
+          NFS.botN = 0;
+          if (NFM.m === "custom" && NFM.cm) {
+            setMap(ED_T[NFM.cm.t] || 0); obs = edObs(NFM.cm);
+            food = food.filter((f) => !obs.some((o) => oD(o, f.x, f.y) < o.r + 8));
+            for (const s of snakes) if (s.bot) Object.assign(s, makeSnake(s.name, s.skin, true));
+          }
+        });
+        function edDraw() {
+          const c = $("nfedc"); if (!c) return; const r = c.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
+          const sz = Math.max(100, Math.round(r.width)); if (c.width !== sz * d) { c.width = c.height = sz * d; }
+          const g = c.getContext("2d"), k = (sz * d) / 1000; g.setTransform(1, 0, 0, 1, 0, 0);
+          const th = ED.t; g.fillStyle = th === 1 ? "#1f3d1b" : th === 2 ? "#0a0720" : "#070a16"; g.fillRect(0, 0, c.width, c.height);
+          g.strokeStyle = th === 1 ? "rgba(120,200,90,.15)" : th === 2 ? "rgba(0,240,255,.15)" : "rgba(70,110,255,.18)"; g.lineWidth = 1;
+          g.beginPath(); for (let i = 0; i <= 1000; i += 50) { g.moveTo(i * k, 0); g.lineTo(i * k, 1000 * k); g.moveTo(0, i * k); g.lineTo(1000 * k, i * k); } g.stroke();
+          g.strokeStyle = "rgba(255,42,58,.8)"; g.lineWidth = 3; g.strokeRect(1, 1, c.width - 2, c.height - 2);
+          for (const [ty, x, y] of ED.o) {
+            const s = ED_SZ[ty];
+            if (ty === 0) { g.fillStyle = th === 1 ? "#5cc455" : th === 2 ? "#00f0ff" : "#4f7fd9"; g.beginPath(); g.arc(x * k, y * k, s.r * k, 0, 6.283); g.fill(); }
+            else { g.fillStyle = th === 1 ? "#a8e678" : th === 2 ? "#ff28c8" : "#00e5ff"; g.fillRect((x - s.w) * k, (y - s.h) * k, s.w * 2 * k, s.h * 2 * k); }
+          }
+          $("nfedi").textContent = _t("nfEdCount", { n: ED.o.length, m: ED_MAX });
+        }
+        function edPaint() {
+          const tl = [["⬤", "nfEdRock"], ["▬", "nfEdWallH"], ["▮", "nfEdWallV"], ["■", "nfEdBlock"], ["🧽", "nfEdErase"]];
+          $("nfedtools").innerHTML = tl.map(([e, n], i) => `<button data-go="nfedtool" data-i="${i}" class="${ED.tool === i ? "on" : ""}">${e} ${esc(_t(n))}</button>`).join("");
+          $("nfedtheme").innerHTML = [0, 1, 2].map((i) => `<button data-go="nfedth" data-i="${i}" class="${ED.t === i ? "on" : ""}">${MAPS[ED_T[i]].e} ${esc(_t("map" + ED_T[i]))}</button>`).join("");
+          $("nfedn").value = ED.n;
+          $("nfedl").innerHTML = NX.ed.length ? `<p class="x-sh">💾 ${esc(_t("nfEdSaved"))}</p>` + NX.ed.map((m, i) => `<div class="x-it"><i>${MAPS[ED_T[m.t]].e}</i><b>${esc(m.n || _t("nfEdT") + " " + (i + 1))}<small>${m.o.length}/${ED_MAX}</small></b><button data-go="nfedopenm" data-i="${i}">${esc(_t("nfEdOpen"))}</button><button data-go="nfeddel" data-i="${i}" aria-label="${esc(_t("nfPhDel"))}">🗑️</button></div>`).join("") : "";
+          edDraw();
+        }
+        NFG.nfedopen = () => { if (state === "play") return; if (NFM.pend) { const m = NFM.pend; NFM.pend = null; ED.t = m.t; ED.o = m.o.map((o) => o.slice()); ED.n = m.n; $("nfmapb").classList.add("x-hide"); } show("nfedit"); requestAnimationFrame(edPaint); };
+        NFG.nfedtool = (b) => { ED.tool = +b.dataset.i; edPaint(); };
+        NFG.nfedth = (b) => { ED.t = +b.dataset.i; edPaint(); };
+        NFG.nfedclr = () => { ED.o = []; edDraw(); };
+        NFG.nfedplay = () => { if (!ED.o.length) { toast(_t("nfEdEmpty")); return; } ED.n = $("nfedn").value.replace(CTRL0g, "").slice(0, 24); NFM.cm = { n: ED.n, t: ED.t, o: ED.o.map((o) => o.slice()) }; NFM.m = "custom"; start(); };
+        NFG.nfedsave = () => {
+          if (!ED.o.length) { toast(_t("nfEdEmpty")); return; }
+          ED.n = $("nfedn").value.replace(CTRL0g, "").trim().slice(0, 24); const m = { n: ED.n, t: ED.t, o: ED.o.map((o) => o.slice()) };
+          const i = NX.ed.findIndex((x) => x.n && x.n === m.n); if (i >= 0) NX.ed[i] = m; else { NX.ed.push(m); if (NX.ed.length > 5) NX.ed.shift(); }
+          commit(); toast("💾 " + _t("nfEdOk")); edPaint();
+        };
+        NFG.nfedopenm = (b) => { const m = NX.ed[+b.dataset.i]; if (!m) return; ED.t = m.t; ED.o = m.o.map((o) => o.slice()); ED.n = m.n; edPaint(); };
+        NFG.nfeddel = (b) => { NX.ed.splice(+b.dataset.i, 1); commit(); edPaint(); };
+        NFG.nfedshare = async () => {
+          if (!ED.o.length) { toast(_t("nfEdEmpty")); return; }
+          ED.n = $("nfedn").value.replace(CTRL0g, "").trim().slice(0, 24);
+          const code = edCode({ n: ED.n, t: ED.t, o: ED.o }), url = "https://billke.com/?m=" + code; $("nfedcode").value = url;
+          try { if (navigator.share) { await navigator.share({ title: "Super Snake", text: _t("nfEdShareT"), url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+          try { await navigator.clipboard.writeText(url); toast(_t("shCopied")); } catch (e) { $("nfedcode").select(); toast(_t("nfEdCopy")); }
+        };
+        NFG.nfedload = () => { const m = edParse($("nfedcode").value); if (!m) { toast(_t("nfEdBad")); return; } ED.t = m.t; ED.o = m.o; ED.n = m.n; edPaint(); toast("📥 " + _t("nfEdLoaded")); };
+        {
+          const c = $("nfedc");
+          if (c) c.addEventListener("pointerdown", (e) => {
+            e.preventDefault(); const r = c.getBoundingClientRect(), x = Math.round(((e.clientX - r.left) / r.width) * 1000), y = Math.round(((e.clientY - r.top) / r.height) * 1000);
+            if (x < 0 || y < 0 || x > 1000 || y > 1000) return;
+            const near = ED.o.findIndex(([, ox, oy]) => Math.hypot(ox - x, oy - y) < 28);
+            if (ED.tool === 4) { if (near >= 0) ED.o.splice(near, 1); }
+            else if (near >= 0) ED.o.splice(near, 1); // tapping a piece removes it
+            else if (ED.o.length >= ED_MAX) toast(_t("nfEdFull", { m: ED_MAX }));
+            else if (x < 40 || y < 40 || x > 960 || y > 960) toast(_t("nfEdEdge"));
+            else ED.o.push([ED.tool, x, y]);
+            edDraw();
+          });
+          addEventListener("resize", () => { if (!$("nfedit").classList.contains("x-hide")) edDraw(); });
+        }
+        // a shared map link (?m=...) shows a banner in the lobby
+        { try { const q = new URLSearchParams(location.search).get("m"); const m = q ? edParse("SSM1." + q.replace(/^SSM1\./, "")) : null;
+            if (m) { NFM.pend = m; const b = $("nfmapb"); b.setAttribute("data-go", "nfedopen"); b.setAttribute("role", "button"); b.tabIndex = 0; } } catch (e) {} }
+        function paintMapB() { const b = $("nfmapb"); if (!b) return; b.classList.toggle("x-hide", !NFM.pend); if (NFM.pend) b.textContent = "🛠️ " + _t("nfEdBan", { x: NFM.pend.n || _t("nfEdT") }); }
+        NFH.load.push(paintMapB); NFH.relang.push(paintMapB); NFH.relang.push(() => { if (!$("nfedit").classList.contains("x-hide")) edPaint(); });
+        NFCARDS.push(() => nfCard("🛠️", _t("nfEdT"), _t("nfEdD"), `<button data-go="nfedopen">${esc(_t("nfEdOpen"))}</button>`));
+
+        // ===================== STORY CAMPAIGN =====================
+        // 12 stages on Forest, Classic and Cyber with three bosses; clear a stage to unlock the next; stars by time
+        const STG = [{ m: 5, g: "len", n: 80, b: 5, par: 90 }, { m: 0, g: "kill", n: 2, b: 8, par: 150 }, { m: 6, g: "surv", n: 60, b: 10, par: 60 }, { m: 5, g: "boss", n: 1, b: 6, bl: 300, bo: 0, par: 150 },
+          { m: 0, g: "len", n: 200, b: 10, par: 180 }, { m: 6, g: "kill", n: 4, b: 12, par: 220 }, { m: 5, g: "surv", n: 90, b: 18, par: 90 }, { m: 6, g: "boss", n: 1, b: 8, bl: 450, bo: 1, par: 180 },
+          { m: 0, g: "len", n: 350, b: 14, par: 260 }, { m: 5, g: "kill", n: 6, b: 16, par: 280 }, { m: 6, g: "len", n: 500, b: 16, par: 320 }, { m: 0, g: "boss", n: 1, b: 10, bl: 700, bo: 2, par: 240 }];
+        const stGoal = (s) => _t("nfG_" + s.g, { n: s.n, x: s.g === "boss" ? _t("nfBoss" + s.bo) : "" });
+        NFH.pre.push(() => { if (NFM.m !== "story") return; const s = STG[NFM.st] || STG[0]; setMap(s.m); NFS.botN = s.b; });
+        NFH.start.push(() => {
+          NFS.sg = null; NFS.win = 0; NFS.sb = null;
+          if (NFM.m !== "story") return; const s = STG[NFM.st] || STG[0]; NFS.sg = s; NFS.botN = s.b; syncBots();
+          setTimeout(() => { if (state === "play" && NFS.sg) xBan(`📖 ${_t("nfStage", { n: NFM.st + 1 })}: ${stGoal(s)}`); }, 800);
+          if (s.g === "boss") setTimeout(() => {
+            if (state !== "play" || NFS.sg !== s) return; const b = makeSnake(_t("nfBoss" + s.bo), "gold", false);
+            Object.assign(b, { boss: true, len: s.bl, hat: "crown" }); snakes.push(b); NFS.sb = b; xBan("⚠️ " + _t("nfBoss" + s.bo)); beep(110, 0.6, "sawtooth", 0.08, 70); shake(5);
+          }, 3500);
+        });
+        NFH.upd.push(() => {
+          const s = NFS.sg; if (!s || NFS.win || state !== "play" || !player || !player.alive) return;
+          const done = s.g === "len" ? player.len >= s.n : s.g === "kill" ? player.kills >= s.n : s.g === "surv" ? NFS.t >= s.n : !!NFS.sb && !NFS.sb.alive;
+          if (!done) return;
+          NFS.win = 1; NFS.wt = NFS.t; player.inv = 1e9; xBan("🏆 " + _t("nfStClear")); beep(784, 0.4, "triangle", 0.07, 1568); vib([30, 40, 60]); burst(player.seg[0].x, player.seg[0].y, 40, 45);
+          setTimeout(() => { if (state === "play" && player && player.alive) { player.inv = 0; gameOver(); } }, 1400);
+        });
+        NFH.hud.push(() => {
+          const s = NFS.sg; if (!s || !player) return "";
+          const v = s.g === "len" ? Math.floor(player.len) + "/" + s.n : s.g === "kill" ? player.kills + "/" + s.n : s.g === "surv" ? Math.min(s.n, Math.floor(NFS.t)) + "/" + s.n + "s" : NFS.sb ? (NFS.sb.alive ? "👑 " + Math.floor(NFS.sb.len) : "✓") : "…";
+          return `📖 ${NFM.st + 1}/${STG.length} · 🎯 ${v}`;
+        });
+        NFH.over.push(() => {
+          if (NFM.m !== "story" || !NFS.sg) return "";
+          const i = NFM.st, s = NFS.sg;
+          if (!NFS.win) return "📖 " + _t("nfStFail", { n: i + 1 });
+          const st = NFS.wt <= s.par ? 3 : NFS.wt <= s.par * 1.6 ? 2 : 1, first = i >= NX.cp;
+          NX.cs[i] = Math.max(NX.cs[i] || 0, st); if (first) NX.cp = i + 1;
+          const co = first ? 100 + 25 * i : 0; if (co) pay(co, "story"); nfSXP(first ? 150 : 40, "story"); profile();
+          let line = `🏆 ${_t("nfStage", { n: i + 1 })} ${"★".repeat(st)}${"☆".repeat(3 - st)}` + (co ? ` +${co} 🪙` : "");
+          if (i + 1 < STG.length) { NFM.st = i + 1; line += " · " + _t("nfStNext", { n: i + 2 }); } else line += " · " + _t("nfStEnd");
+          return line;
+        });
+        function paintStory() {
+          const el = $("nfstl"); if (!el) return;
+          const stars = Object.values(NX.cs).reduce((a, v) => a + v, 0);
+          $("nfsti").textContent = _t("nfStProg", { n: NX.cp, m: STG.length, s: stars, t: STG.length * 3 });
+          el.innerHTML = STG.map((s, i) => {
+            const lock = i > NX.cp, st = NX.cs[i] || 0;
+            return `<div class="x-it${st ? " own" : ""}"><i>${s.g === "boss" ? "👑" : MAPS[s.m].e}</i><b>${esc(_t("nfStage", { n: i + 1 }))} · ${esc(_t("map" + s.m))}<small>${esc(stGoal(s))} · ${"★".repeat(st)}${"☆".repeat(3 - st)}</small></b>` +
+              `<button data-go="nfplay" data-m="story" data-s="${i}" ${lock ? "disabled" : ""}>${lock ? "🔒" : esc(_t("play"))}</button></div>`;
+          }).join("");
+        }
+        NFG.nfstoryo = () => { if (state === "play") return; paintStory(); show("nfstory"); };
+        NFH.relang.push(() => { if (!$("nfstory").classList.contains("x-hide")) paintStory(); });
+        NFCARDS.push(() => nfCard("📖", _t("nfStoryT"), _t("nfStProg", { n: NX.cp, m: STG.length, s: Object.values(NX.cs).reduce((a, v) => a + v, 0), t: STG.length * 3 }), `<button data-go="nfstoryo">${esc(_t("nfEdOpen"))}</button>`));
+
+        // ===================== WORD MODE =====================
+        // letters float in the arena; eat them in order to spell the word shown at the bottom (word lists in all six languages)
+        const WORDS = {
+          en: ["SNAKE", "APPLE", "GAME", "FAST", "NEON", "KING", "STAR", "GOLD", "FIRE", "MOON", "TREE", "WIN", "CYBER", "BOOST", "EGG"],
+          ar: ["ثعبان", "تفاح", "نجمة", "ذهب", "نار", "قمر", "شجرة", "فوز", "سرعة", "ملك", "بيت", "بحر"],
+          tr: ["YILAN", "ELMA", "OYUN", "HIZLI", "NEON", "KRAL", "YILDIZ", "ALTIN", "ATEŞ", "AY", "AĞAÇ"],
+          fr: ["SERPENT", "POMME", "JEU", "VITE", "NEON", "ROI", "ETOILE", "OR", "FEU", "LUNE", "ARBRE"],
+          es: ["SERPIENTE", "MANZANA", "JUEGO", "RAPIDO", "NEON", "REY", "ESTRELLA", "ORO", "FUEGO", "LUNA", "ARBOL"],
+          hi: ["कमल", "नमक", "घर", "जल", "फल", "सरल", "कलम", "महल", "शहर", "नगर"],
+        };
+        let WL = [];
+        function wdNew() {
+          const ws = WORDS[LANG] || WORDS.en; let w; do { w = ws[(R() * ws.length) | 0]; } while (ws.length > 1 && w === NFS.wd);
+          NFS.wd = w; NFS.wch = Array.from(w); NFS.wi = 0; WL = WL.filter(() => false); wdFill(true);
+        }
+        function wdAlpha() { const ws = WORDS[LANG] || WORDS.en; return [...new Set(ws.join("").split(""))]; }
+        function wdFill(all) {
+          if (!player) return; const h = player.seg[0], need = NFS.wch[NFS.wi], al = wdAlpha();
+          WL = WL.filter((l) => Math.hypot(l.x - h.x, l.y - h.y) < 1600);
+          const spot = (d0, d1) => { for (let k = 0; k < 20; k++) { const a = R() * 6.283, d = rnd(d0, d1), x = clamp(h.x + Math.cos(a) * d, 80, A - 80), y = clamp(h.y + Math.sin(a) * d, 80, A - 80); if (!obs.some((o) => oD(o, x, y) < o.r + 40)) return { x, y }; } return null; };
+          let have = WL.filter((l) => l.ch === need).length;
+          while (have < 2) { const p = spot(220, 650); if (!p) break; WL.push({ x: p.x, y: p.y, ch: need, ph: R() * 6 }); have++; }
+          while (WL.length < 14) { const p = spot(250, 1200); if (!p) break; WL.push({ x: p.x, y: p.y, ch: al[(R() * al.length) | 0], ph: R() * 6 }); }
+        }
+        NFH.start.push(() => { WL = []; NFS.wd = ""; NFS.wc = 0; if (NFM.m === "word") { wdNew(); setTimeout(() => { if (state === "play" && NFM.m === "word") xBan("🔤 " + _t("nfWordGo")); }, 900); } });
+        NFH.home.push(() => { WL = []; });
+        NFH.upd.push((dt) => {
+          if (NFM.m !== "word" || state !== "play" || !player || !player.alive || !NFS.wch) return;
+          if ((NFS.wft = (NFS.wft || 0) - dt) <= 0) { NFS.wft = 1; wdFill(false); }
+          const h = player.seg[0], er = player.r + 24;
+          for (let i = WL.length - 1; i >= 0; i--) {
+            const l = WL[i]; if (Math.abs(l.x - h.x) > er || Math.abs(l.y - h.y) > er) continue;
+            WL.splice(i, 1);
+            if (l.ch === NFS.wch[NFS.wi]) {
+              NFS.wi++; player.len += 3; beep(660 + NFS.wi * 90, 0.12, "triangle", 0.05, 990 + NFS.wi * 90); floats.push({ x: l.x, y: l.y, t: l.ch, l: 1 });
+              if (NFS.wi >= NFS.wch.length) { NFS.wc++; player.len += 25; xBan("🔤 " + NFS.wd + "! +25"); shake(4); vib([20, 30, 20]); burst(h.x, h.y, 24, 120); wdNew(); }
+              else wdFill(false);
+            } else beep(220, 0.08, "square", 0.03);
+          }
+        });
+        NFH.world.push((vis) => {
+          if (!WL.length || state !== "play") return;
+          const need = NFS.wch && NFS.wch[NFS.wi]; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          for (const l of WL) {
+            if (!vis(l.x, l.y)) continue; const ok = l.ch === need;
+            pr(l.x, l.y, 26 + 6 * Math.sin(time * 3 + l.ph)); const d = 34 * PK;
+            ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = ok ? 0.55 : 0.3; ctx.drawImage(orb(ok ? "#ffd84a" : "#7fb4ff"), PX - d, PY - d, d * 2, d * 2); ctx.globalCompositeOperation = "source-over";
+            ctx.globalAlpha = 1; ctx.drawImage(disc(ok ? "#3a2a00" : "#0b1630"), PX - d * 0.62, PY - d * 0.62, d * 1.24, d * 1.24);
+            ctx.fillStyle = ok ? "#ffe27a" : "#e6f0ff"; ctx.font = `800 ${Math.max(10, Math.round(26 * PK))}px system-ui, sans-serif`; ctx.fillText(l.ch, PX, PY + 1);
+          }
+          ctx.textBaseline = "alphabetic"; ctx.globalAlpha = 1;
+        });
+        NFH.hud.push(() => (NFM.m === "word" && NFS.wch ? `🔤 ${NFS.wch.slice(0, NFS.wi).join("")}▸${NFS.wch.slice(NFS.wi).join("")} · ${NFS.wc}` : ""));
+        NFH.over.push(() => {
+          if (NFM.m !== "word") return ""; const n = NFS.wc || 0; NX.wd += n;
+          if (n) { pay(10 * n, "word"); nfSXP(15 * n, "word"); profile(); }
+          return "🔤 " + _t("nfWords", { n }) + (n ? ` +${10 * n} 🪙` : "");
+        });
+        NFCARDS.push(() => nfCard("🔤", _t("nfWordT"), _t("nfWordD") + (NX.wd ? " · " + _t("nfWords", { n: NX.wd }) : ""), `<button data-go="nfplay" data-m="word">${esc(_t("play"))}</button>`));
+        NFCARDS.unshift(NFCARDS.pop(), NFCARDS.pop()); // story and words near the top
         NFR = true; nfPaintSet(); for (const f of NFH.load) f();
         // ================= END NEW FEATURES =================
         requestAnimationFrame(loop);
