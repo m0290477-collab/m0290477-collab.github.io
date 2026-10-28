@@ -1612,7 +1612,13 @@
         <div class="x-seg b13c-tabs"><button type="button" data-go="nfb13cat" data-at="u" data-i18n="admUsers">Users</button><button type="button" data-go="nfb13cat" data-at="r" data-i18n="b13cReports">Reports</button><button type="button" data-go="nfb13cat" data-at="c" data-i18n="admSet">Settings</button><button type="button" data-go="nfb13cat" data-at="l" data-i18n="admLog">Log</button></div>
         <div id="b13cab" class="b13c-ab"></div>
         <button class="x-btn x-sub" data-go="nfback" data-to="b13cps" data-i18n="back">Back</button></div></div>
-      <div id="b13cvg" aria-hidden="true"></div><div id="b13cup" class="x-hide" role="status"><span data-i18n="b13cUpd">A new version is available</span><button type="button" class="go" data-i18n="b13cUpdGo">Update</button><button type="button" class="x" aria-label="✕">✕</button></div>
+      <div class="x-ov x-hide" id="b13dmp" role="dialog" aria-modal="true" aria-labelledby="b13dmpt"><div class="b13d-mp">
+        <header class="b13d-hd"><button type="button" class="b13d-bk" data-go="back" aria-label="Back" data-i18n-al="back">‹</button><h2 class="x-cy" id="b13dmpt">🗺️ <span data-i18n="b13dPick">Choose your arena</span></h2><span class="b13d-cnt" id="b13dcnt"></span></header>
+        <div class="b13d-gr" id="b13dgr" role="listbox" aria-label="Arenas" data-i18n-al="p10Arena"></div>
+        <footer class="b13d-ft"><div class="b13d-sel" id="b13dsel" aria-live="polite"></div><button type="button" class="x-btn x-main x-play b13d-go" id="b13dgo"><span data-i18n="p10Play">Play now</span></button></footer>
+      </div></div>
+      
+<div id="b13cvg" aria-hidden="true"></div><div id="b13cup" class="x-hide" role="status"><span data-i18n="b13cUpd">A new version is available</span><button type="button" class="go" data-i18n="b13cUpdGo">Update</button><button type="button" class="x" aria-label="✕">✕</button></div>
       <div class="x-ov x-hide" id="onch"><div class="x-box x-form on-box">
         <div class="on-chh" id="onchh"></div>
         <div class="x-chl on-chl" id="onchl" role="log" aria-live="polite" tabindex="0"></div>
@@ -1918,6 +1924,49 @@
         b13cUpdGo: ["حدّث", "Update", "Güncelle", "Mettre à jour", "Actualizar", "अपडेट करें"],
         b13cPsBtn: ["إعدادات الملف", "Profile settings", "Profil ayarları", "Paramètres du profil", "Ajustes del perfil", "प्रोफ़ाइल सेटिंग्स"],
         b13cForever: ["للأبد", "Forever", "Sonsuza dek", "Pour toujours", "Para siempre", "हमेशा के लिए"],
+        map8: ["الكثبان الذهبية", "Golden Dunes", "Altın Kumullar", "Dunes dorées", "Dunas doradas", "सुनहरे टीले"],
+        mapd8: ["كثبان رملية تموّجها الرياح", "Wind-rippled sand dunes", "Rüzgârın dalgalandırdığı kum tepeleri", "Dunes ondulées par le vent", "Dunas onduladas por el viento", "हवा से लहराते रेत के टीले"],
+        map9: ["الأدغال", "Jungle", "Balta Ormanı", "Jungle", "Selva", "घना जंगल"],
+        mapd9: ["أرض أدغال كثيفة وأوراق استوائية", "Dense tropical jungle floor", "Sık tropik orman zemini", "Sol dense de jungle tropicale", "Suelo denso de selva tropical", "घने उष्णकटिबंधीय जंगल की ज़मीन"],
+        map10: ["حقل الثلج", "Snowfield", "Kar Ovası", "Champ de neige", "Campo nevado", "बर्फ़ का मैदान"],
+        mapd10: ["ثلج ناعم وثلوج متساقطة", "Soft snow and falling flakes", "Yumuşak kar ve yağan taneler", "Neige douce et flocons", "Nieve suave y copos cayendo", "नरम बर्फ़ और गिरते फाहे"],
+        map11: ["نهر الحمم", "Lava Flow", "Lav Akıntısı", "Coulée de lave", "Río de lava", "लावा धारा"],
+        mapd11: ["قشرة سوداء وشقوق حمم متوهجة", "Black crust with glowing lava cracks", "Parlayan lav çatlaklı kara kabuk", "Croûte noire et fissures de lave", "Corteza negra con grietas de lava", "काली परत और चमकती लावा दरारें"],
+        map12: ["قاع المحيط", "Ocean Floor", "Okyanus Tabanı", "Fond marin", "Fondo marino", "समुद्र तल"],
+        mapd12: ["رمال وأصداف تحت الماء الصافي", "Sand and shells under clear water", "Berrak suyun altında kum ve deniz kabukları", "Sable et coquillages sous l'eau claire", "Arena y conchas bajo agua clara", "साफ़ पानी के नीचे रेत और सीपियाँ"],
+        map13: ["وسط المدينة", "Downtown", "Şehir Merkezi", "Centre-ville", "Centro", "डाउनटाउन"],
+        mapd13: ["أسفلت المدينة، ساحة مفتوحة", "City asphalt, open arena", "Şehir asfaltı, açık arena", "Asphalte urbain, arène ouverte", "Asfalto urbano, arena abierta", "शहर का डामर, खुला मैदान"],
+        map14: ["السديم", "Nebula", "Bulutsu", "Nébuleuse", "Nebulosa", "नीहारिका"],
+        mapd14: ["فضاء عميق وسحب سديم ملوّنة", "Deep space and coloured nebula", "Derin uzay ve renkli bulutsu", "Espace profond et nébuleuse", "Espacio profundo y nebulosa", "गहरा अंतरिक्ष और रंगीन नीहारिका"],
+        map15: ["غابة الخريف", "Autumn Forest", "Sonbahar Ormanı", "Forêt d'automne", "Bosque otoñal", "पतझड़ का जंगल"],
+        mapd15: ["أوراق خريف ملوّنة على الأرض", "Coloured autumn leaves on the ground", "Yerde renkli sonbahar yaprakları", "Feuilles d'automne au sol", "Hojas de otoño en el suelo", "ज़मीन पर रंगीन पतझड़ी पत्ते"],
+        map16: ["الشاطئ", "Sunny Beach", "Güneşli Plaj", "Plage ensoleillée", "Playa soleada", "धूप वाला समुद्र तट"],
+        mapd16: ["رمال ذهبية وأصداف صغيرة", "Golden sand and little shells", "Altın kum ve küçük kabuklar", "Sable doré et petits coquillages", "Arena dorada y conchitas", "सुनहरी रेत और छोटी सीपियाँ"],
+        map17: ["الكهف العميق", "Deep Cave", "Derin Mağara", "Grotte profonde", "Cueva profunda", "गहरी गुफा"],
+        mapd17: ["صخر كهف رطب وحصى", "Damp cave rock and gravel", "Nemli mağara kayası ve çakıl", "Roche humide et gravier", "Roca húmeda y grava", "नम गुफा की चट्टान और बजरी"],
+        map18: ["المستنقع", "Swamp", "Bataklık", "Marais", "Pantano", "दलदल"],
+        mapd18: ["ماء عكر وزنابق ماء", "Murky water and lily pads", "Bulanık su ve nilüferler", "Eau trouble et nénuphars", "Agua turbia y nenúfares", "गंदला पानी और कुमुदिनी"],
+        map19: ["رماد البركان", "Ash Volcano", "Kül Volkanı", "Volcan de cendres", "Volcán de ceniza", "राख ज्वालामुखी"],
+        mapd19: ["رماد بركاني وجمر متصاعد", "Volcanic ash and rising embers", "Volkanik kül ve yükselen közler", "Cendres et braises qui montent", "Ceniza y brasas que suben", "ज्वालामुखी राख और उठते अंगारे"],
+        map20: ["كهف الجليد", "Ice Cave", "Buz Mağarası", "Grotte de glace", "Cueva de hielo", "बर्फ़ की गुफा"],
+        mapd20: ["جليد أزرق شفاف وفقاعات متجمدة", "Clear blue ice with frozen bubbles", "Donmuş kabarcıklı berrak mavi buz", "Glace bleue et bulles gelées", "Hielo azul con burbujas heladas", "जमे बुलबुलों वाली नीली बर्फ़"],
+        map21: ["مدينة النيون", "Neon City", "Neon Şehir", "Ville néon", "Ciudad neón", "नियॉन सिटी"],
+        mapd21: ["شوارع ممطرة تعكس أضواء النيون", "Rain-wet streets reflecting neon", "Neon yansıtan ıslak sokaklar", "Rues mouillées aux reflets néon", "Calles mojadas con reflejos de neón", "नियॉन झलकाती भीगी सड़कें"],
+        map22: ["الأطلال القديمة", "Ancient Ruins", "Antik Harabeler", "Ruines antiques", "Ruinas antiguas", "प्राचीन खंडहर"],
+        mapd22: ["بلاط معبد قديم يكسوه الطحلب", "Mossy ancient temple stones", "Yosunlu antik tapınak taşları", "Pierres de temple moussues", "Piedras de templo con musgo", "काई से ढके प्राचीन मंदिर के पत्थर"],
+        map23: ["السافانا", "Savanna", "Savan", "Savane", "Sabana", "सवाना"],
+        mapd23: ["عشب جاف وتراب أحمر", "Dry grass and red earth", "Kuru ot ve kızıl toprak", "Herbe sèche et terre rouge", "Hierba seca y tierra roja", "सूखी घास और लाल मिट्टी"],
+        map24: ["الوادي الأحمر", "Red Canyon", "Kızıl Kanyon", "Canyon rouge", "Cañón rojo", "लाल घाटी"],
+        mapd24: ["طبقات صخر رملي أحمر", "Layered red sandstone", "Katmanlı kızıl kumtaşı", "Grès rouge en strates", "Arenisca roja en capas", "परतदार लाल बलुआ पत्थर"],
+        map25: ["أزهار الكرز", "Cherry Blossom", "Kiraz Çiçeği", "Cerisiers en fleurs", "Flor de cerezo", "चेरी ब्लॉसम"],
+        mapd25: ["عشب أخضر وبتلات ساكورا", "Green lawn and sakura petals", "Yeşil çimen ve sakura yaprakları", "Pelouse et pétales de sakura", "Césped y pétalos de sakura", "हरी घास और साकुरा पंखुड़ियाँ"],
+        map26: ["غابة الليل", "Night Forest", "Gece Ormanı", "Forêt de nuit", "Bosque nocturno", "रात का जंगल"],
+        mapd26: ["طحلب تحت ضوء القمر ويراعات", "Moonlit moss and fireflies", "Ay ışığında yosun ve ateşböcekleri", "Mousse au clair de lune et lucioles", "Musgo a la luz de la luna y luciérnagas", "चाँदनी में काई और जुगनू"],
+        map27: ["كهف الكريستال", "Crystal Cave", "Kristal Mağara", "Grotte de cristal", "Cueva de cristal", "क्रिस्टल गुफा"],
+        mapd27: ["بلورات جمشت متوهجة", "Glowing amethyst crystals", "Parlayan ametist kristalleri", "Cristaux d'améthyste lumineux", "Cristales de amatista brillantes", "चमकते नीलम क्रिस्टल"],
+        b13dPick: ["اختر الساحة", "Choose your arena", "Arenanı seç", "Choisis ton arène", "Elige tu arena", "अपना एरीना चुनें"],
+        b13dNew: ["جديد", "NEW", "YENİ", "NOUVEAU", "NUEVO", "नया"],
+        b13dCnt: ["{n} ساحة", "{n} arenas", "{n} arena", "{n} arènes", "{n} arenas", "{n} एरीना"],
         p11Ph: ["صورة الملف", "Profile photo", "Profil fotoğrafı", "Photo de profil", "Foto de perfil", "प्रोफ़ाइल फ़ोटो"],
         p11Ch: ["اختر صورة", "Choose photo", "Fotoğraf seç", "Choisir une photo", "Elegir foto", "फ़ोटो चुनें"],
         p11Rm: ["إزالة الصورة", "Remove photo", "Fotoğrafı kaldır", "Retirer la photo", "Quitar foto", "फ़ोटो हटाएँ"],
@@ -3310,12 +3359,32 @@
           { e: "🌲", bg: "#07140a", floor: "#2e5427", grid: "rgba(12,40,10,.22)", wf: "rgba(52,36,18,.95)", wc: "170,230,120", fog: "8,26,10", turn: 1, ob: "forest", sz: 1.5, dots: "rgba(80,130,50,.55)" },
           { e: "💠", bg: "#04010c", floor: "#0a0720", grid: "rgba(0,240,255,.12)", g2: "rgba(255,40,200,.28)", wf: "rgba(28,0,58,.92)", wc: "255,40,200", fog: "12,0,34", turn: 1, ob: "cyber", sz: 1.5 },
           { e: "🏙️", bg: "#0b0e18", floor: "#262b3a", grid: "rgba(255,255,255,.03)", wf: "rgba(28,32,46,.94)", wc: "255,196,110", fog: "12,16,30", turn: 1, ob: "city", sz: 2.2 },
+          {"e": "🏜️", "bg": "#3a2412", "floor": "#7a5527", "grid": "rgba(90,60,20,.10)", "wf": "rgba(120,80,38,.95)", "wc": "255,196,120", "fog": "60,40,20", "turn": 1, "tx": "maps/tx_dunes.webp?v=13d1", "txa": 0.3, "txw": 720, "dim": 0.26, "b": 1}, // Golden Dunes (build13d)
+          {"e": "🌴", "bg": "#06120a", "floor": "#16260f", "grid": "rgba(10,30,8,.18)", "wf": "rgba(40,30,14,.95)", "wc": "150,230,110", "fog": "6,22,8", "turn": 1, "tx": "maps/tx_jungle.webp?v=13d1", "txa": 0.2, "txw": 560, "dim": 0.14, "b": 5}, // Jungle (build13d)
+          {"e": "🏔️", "bg": "#0c2236", "floor": "#6f8197", "grid": "rgba(60,110,160,.14)", "wf": "rgba(110,150,190,.9)", "wc": "230,250,255", "fog": "20,50,80", "turn": 1, "tx": "maps/tx_snow.webp?v=13d1", "txa": 0.32, "txw": 720, "dim": 0.3, "b": 2}, // Snowfield (build13d)
+          {"e": "🔥", "bg": "#140503", "floor": "#160c08", "grid": "rgba(255,90,30,.06)", "wf": "rgba(60,20,10,.95)", "wc": "255,110,30", "fog": "20,6,3", "turn": 1, "tx": "maps/tx_lava.webp?v=13d1", "txa": 0.14, "txw": 560, "dim": 0.1, "b": 4}, // Lava Flow (build13d)
+          {"e": "🐚", "bg": "#04212b", "floor": "#1f5a66", "grid": "rgba(20,90,110,.12)", "wf": "rgba(20,80,100,.92)", "wc": "120,230,255", "fog": "4,30,44", "turn": 1, "tx": "maps/tx_ocean.webp?v=13d1", "txa": 0.4, "txw": 620, "dim": 0.26, "b": 2}, // Ocean Floor (build13d)
+          {"e": "🚦", "bg": "#0b0e18", "floor": "#222428", "grid": "rgba(255,255,255,.03)", "wf": "rgba(28,32,46,.94)", "wc": "255,196,110", "fog": "12,16,30", "turn": 1, "tx": "maps/tx_downtown.webp?v=13d1", "txa": 0.28, "txw": 640, "dim": 0.16}, // Downtown (build13d)
+          {"e": "🌌", "bg": "#000", "floor": "#04050c", "grid": "rgba(140,120,255,.06)", "wf": "rgba(40,20,90,.9)", "wc": "170,120,255", "fog": "0,0,8", "turn": 1, "tx": "maps/tx_nebula.webp?v=13d1", "txa": 0.08, "txw": 900, "dim": 0.06, "b": 3, "stars": 1}, // Nebula (build13d)
+          {"e": "🍂", "bg": "#140a04", "floor": "#2e1a0c", "grid": "rgba(40,20,6,.16)", "wf": "rgba(60,34,16,.95)", "wc": "255,170,80", "fog": "26,14,6", "turn": 1, "tx": "maps/tx_autumn.webp?v=13d1", "txa": 0.3, "txw": 520, "dim": 0.16, "b": 5}, // Autumn Forest (build13d)
+          {"e": "🏖️", "bg": "#0a3a4a", "floor": "#7d6442", "grid": "rgba(120,90,50,.10)", "wf": "rgba(150,120,80,.95)", "wc": "120,230,255", "fog": "20,60,80", "turn": 1, "tx": "maps/tx_beach.webp?v=13d1", "txa": 0.34, "txw": 620, "dim": 0.28, "b": 1}, // Sunny Beach (build13d)
+          {"e": "🪨", "bg": "#050504", "floor": "#14130f", "grid": "rgba(200,170,120,.05)", "wf": "rgba(40,34,26,.96)", "wc": "220,190,130", "fog": "6,6,4", "turn": 1, "tx": "maps/tx_cave.webp?v=13d1", "txa": 0.18, "txw": 560, "dim": 0.12}, // Deep Cave (build13d)
+          {"e": "🐸", "bg": "#0a0e06", "floor": "#1f2414", "grid": "rgba(20,30,10,.16)", "wf": "rgba(40,44,22,.95)", "wc": "170,210,90", "fog": "14,20,8", "turn": 1, "tx": "maps/tx_swamp.webp?v=13d1", "txa": 0.24, "txw": 600, "dim": 0.16, "b": 5}, // Swamp (build13d)
+          {"e": "🌋", "bg": "#100604", "floor": "#141210", "grid": "rgba(255,110,40,.05)", "wf": "rgba(50,24,14,.95)", "wc": "255,120,50", "fog": "18,8,4", "turn": 1, "tx": "maps/tx_ash.webp?v=13d1", "txa": 0.18, "txw": 560, "dim": 0.1, "b": 4}, // Ash Volcano (build13d)
+          {"e": "🧊", "bg": "#041422", "floor": "#0c2c44", "grid": "rgba(120,200,255,.06)", "wf": "rgba(30,90,130,.92)", "wc": "140,220,255", "fog": "6,24,40", "turn": 1, "tx": "maps/tx_icecave.webp?v=13d1", "txa": 0.3, "txw": 600, "dim": 0.18, "b": 2}, // Ice Cave (build13d)
+          {"e": "🌆", "bg": "#04010c", "floor": "#0a0b14", "grid": "rgba(0,240,255,.07)", "wf": "rgba(28,0,58,.92)", "wc": "255,40,200", "fog": "12,0,34", "turn": 1, "tx": "maps/tx_neoncity.webp?v=13d1", "txa": 0.16, "txw": 640, "dim": 0.1, "b": 0}, // Neon City (build13d)
+          {"e": "🏛️", "bg": "#1a140a", "floor": "#3e3424", "grid": "rgba(60,46,20,.12)", "wf": "rgba(90,74,48,.95)", "wc": "240,200,120", "fog": "30,24,12", "turn": 1, "tx": "maps/tx_ruins.webp?v=13d1", "txa": 0.3, "txw": 680, "dim": 0.22, "b": 1}, // Ancient Ruins (build13d)
+          {"e": "🦁", "bg": "#2a1a0a", "floor": "#4a3420", "grid": "rgba(80,50,20,.12)", "wf": "rgba(110,76,40,.95)", "wc": "255,200,110", "fog": "50,32,14", "turn": 1, "tx": "maps/tx_savanna.webp?v=13d1", "txa": 0.3, "txw": 640, "dim": 0.22, "b": 1}, // Savanna (build13d)
+          {"e": "⛰️", "bg": "#2a0e06", "floor": "#4a2212", "grid": "rgba(80,30,10,.12)", "wf": "rgba(110,50,26,.95)", "wc": "255,150,90", "fog": "50,20,10", "turn": 1, "tx": "maps/tx_canyon.webp?v=13d1", "txa": 0.28, "txw": 720, "dim": 0.2, "b": 1}, // Red Canyon (build13d)
+          {"e": "🌸", "bg": "#1a0e14", "floor": "#2c3a1a", "grid": "rgba(40,20,30,.12)", "wf": "rgba(70,40,50,.95)", "wc": "255,180,210", "fog": "30,16,24", "turn": 1, "tx": "maps/tx_sakura.webp?v=13d1", "txa": 0.28, "txw": 560, "dim": 0.2, "b": 5}, // Cherry Blossom (build13d)
+          {"e": "🌙", "bg": "#02070a", "floor": "#061014", "grid": "rgba(140,200,255,.04)", "wf": "rgba(16,30,40,.95)", "wc": "140,200,255", "fog": "2,8,14", "turn": 1, "tx": "maps/tx_nightforest.webp?v=13d1", "txa": 0.16, "txw": 560, "dim": 0.08, "b": 5}, // Night Forest (build13d)
+          {"e": "💎", "bg": "#06040e", "floor": "#0c0d18", "grid": "rgba(190,120,255,.05)", "wf": "rgba(34,20,60,.94)", "wc": "190,120,255", "fog": "10,4,22", "turn": 1, "tx": "maps/tx_crystal.webp?v=13d1", "txa": 0.16, "txw": 560, "dim": 0.08, "b": 0}, // Crystal Cave (build13d)
         ];
         // arena sides (x 3000): Classic, Forest, Cyber and City 9000; Desert, Ice, Space and Volcano 7500
         MAPS[0].sz = MAPS[5].sz = MAPS[6].sz = MAPS[7].sz = 3; MAPS[1].sz = MAPS[2].sz = MAPS[3].sz = MAPS[4].sz = 2.5;
         const TE = ["🥉", "🥈", "🥇", "💠", "💎"]; // league tier emblems; names are I18N tier0..4
         const L = { tier: 0, tro: 0, on: false, round: 0, t: 0 };
-        let mapI = 0, mapSel = 0, obs = [];
+        let mapI = 0, mapSel = 0, obs = [], MFX = 0;
         const STARS = Array.from({ length: 2400 }, () => ({ x: R() * A0, y: R() * A0, s: 1 + R() * 2 }));
         // distance test against an obstacle: circles by centre; boxes (o.w, o.h half sizes) by their edge, offset by o.r so "oD(o,x,y) < o.r + m" means "within m"
         function oD(o, x, y) {
@@ -3589,8 +3658,8 @@
           return (MP.cp = o);
         }
         function mpApron(M) {
-          if (mapI === 3) return null; const k = M.floor + M.bg; if (MPAP[k]) return MPAP[k];
-          return (MPAP[k] = dnMix([M.floor, M.bg], mapI === 0 || mapI === 6 ? [0.35, 0.65] : [0.62, 0.38], "hex"));
+          if (MFX === 3) return null; const k = M.floor + M.bg; if (MPAP[k]) return MPAP[k];
+          return (MPAP[k] = dnMix([M.floor, M.bg], MFX === 0 || MFX === 6 ? [0.35, 0.65] : [0.62, 0.38], "hex"));
         }
         // ---------- drawing ----------
         function mpBld(o) { // a city building: one visible side, the front with windows and an optional neon sign, the roof
@@ -3703,7 +3772,7 @@
             ctx.strokeStyle = gr; ctx.lineWidth = 2; ctx.globalAlpha = 1 - s.l; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - Math.cos(s.a) * 90, y - 30); ctx.stroke(); ctx.globalAlpha = 1; } }
         }
         function mpBack(vis, vx0, vx1, vy0, vy1, M) { // before the floor: far star field, the ground apron, the far and side border decorations
-          if (mapI === 3) mpStars();
+          if (MFX === 3) mpStars();
           const ap = mpApron(M);
           if (ap) { const ex0 = Math.max(-MP_E, vx0), ex1 = Math.min(A + MP_E, vx1), ey0 = Math.max(-MP_E, vy0), ey1 = Math.min(A + MP_E, vy1);
             if (ex0 < ex1 && ey0 < ey1) { ctx.beginPath(); mpQuadPath(ex0, ey0, ex1, ey1); ctx.fillStyle = ap; ctx.fill(); } }
@@ -3711,7 +3780,7 @@
         }
         function mpFront(vis) { for (const it of MP.front) if ((QL > 0 || it.row === 0) && vis(it.x, it.y, it.r)) mpItem(it); }
         function mpFloor(vis, fx0, fx1, fy0, fy1) {
-          if (mapI === 3 && MP.neb.length && QL > 1) { // nebula clouds lying over the floor (at most 3 per frame)
+          if (MFX === 3 && MP.neb.length && QL > 1) { // nebula clouds lying over the floor (at most 3 per frame)
             ctx.globalCompositeOperation = "lighter"; let nn = 0;
             for (const b of MP.neb) { if (nn >= 3 || !vis(b.x, b.y, b.r)) continue; nn++; pr(b.x, b.y, 0); const d = b.r * 2 * PK; ctx.globalAlpha = 0.16 * (0.85 + 0.15 * Math.sin(time * 0.3 + b.x)); ctx.drawImage(mpSoft(b.c), PX - d / 2, PY - (d * ST) / 2, d, d * ST); }
             ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
@@ -3760,7 +3829,7 @@
           g.fillStyle = "rgba(255,255,255,.1)"; for (const r of MP.roads) { g.fillRect((r - RW) * k, 0, 2 * RW * k, A * k); g.fillRect(0, (r - RW) * k, A * k, 2 * RW * k); }
         }
         function setMap(i) {
-          mapI = i; obs = []; const t = MAPS[i].ob, ak = MAPS[i].sz || 1, ar = ak * ak;
+          mapI = i; MFX = MAPS[i].b ?? i; obs = []; const t = MAPS[i].ob, ak = MAPS[i].sz || 1, ar = ak * ak;
           A = Math.round(A0 * ak);
           if (t !== "city") { /* build9: open PvP arena, the interior has no obstacles or hazards */ } else if (t === "forest") { // clusters of trees and rocks, overlapping so there are no deadly gaps inside a cluster
             const NC = Math.round(8 * ar);
@@ -4839,7 +4908,7 @@
           ctx.beginPath(); ctx.moveTo(ux, uy); ctx.lineTo(tx, ty);
           ctx.strokeStyle = `rgba(${M.wc},.35)`; ctx.lineWidth = 10; ctx.stroke();
           ctx.strokeStyle = `rgb(${M.wc})`; ctx.lineWidth = 2.5; ctx.stroke();
-          if (mapI === 3) mpField(x0, y0, x1, y1);
+          if (MFX === 3) mpField(x0, y0, x1, y1);
         }
         // sprite caches are capped: the oldest sprite goes first, so many colours (the custom-colour picker, 120 skins) can't grow memory forever
         class XCap extends Map { constructor(n) { super(); this.n = n; } set(k, v) { if (this.size >= this.n && !this.has(k)) this.delete(this.keys().next().value); return super.set(k, v); } }
@@ -5478,7 +5547,7 @@
           if (html !== lbH) { lbH = html; $("lb").innerHTML = html; } // touch the DOM only on change
         }
 
-        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop", "nfedit", "nfstory", "onlb", "onfr", "onch", "ongems", "onmig", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm"];
+        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop", "nfedit", "nfstory", "onlb", "onfr", "onch", "ongems", "onmig", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm", "b13dmp"];
         // MANDATORY ACCOUNT: with nobody logged in, only the login and create-account screens can show
         function authView(imp, quiet) {
           $("logv").classList.toggle("x-hide", !!imp); $("impv").classList.toggle("x-hide", !imp);
@@ -7521,7 +7590,7 @@
         function nfSXP(n, why) { if (NFR && RP.add) RP.add(n, why); }
         var RP = { add: null };
         // one click router for every new button (data-go="nf...")
-        var NFG = {}, B13 = {}, B13C = {}; // build13 module (filled at the end of the script)
+        var NFG = {}, B13 = {}, B13C = {}, B13D = {}; // build13 module (filled at the end of the script)
         document.addEventListener("click", (e) => {
           const b = e.target.closest("[data-go]"); if (!b) return; const g = b.dataset.go;
           if (!g.startsWith("nf") || !NFG[g]) return;
@@ -7742,22 +7811,22 @@
           for (let i = 0; i < nS; i++) vScr.push({ x: R(), y: R(), p: R() * 6.28, v: rnd(0.4, 1), s: rnd(0.6, 1.4) });
         }
         NFH.upd.push((dt) => {
-          if (vMap !== mapI || (QL <= 0 && vAmb.length) || (QL > 0 && !vAmb.length && vScr.length === 0 && mapI !== 6 && mapI !== 7)) vReset();
+          if (vMap !== mapI || (QL <= 0 && vAmb.length) || (QL > 0 && !vAmb.length && vScr.length === 0 && MFX !== 6 && MFX !== 7)) vReset();
           for (const a of vAmb) {
             a.p += dt * a.v; a.x += Math.cos(a.p * 0.7) * 12 * dt; a.y += Math.sin(a.p * 0.9) * 10 * dt;
-            if (mapI === 6) { a.z += 30 * dt * a.v; if (a.z > 160) a.z = 5; }
+            if (MFX === 6) { a.z += 30 * dt * a.v; if (a.z > 160) a.z = 5; }
             if (Math.abs(a.x - cam.x) > 1000 || Math.abs(a.y - cam.y) > 800) { a.x = cam.x + rnd(-900, 900); a.y = cam.y + rnd(-700, 700); }
           }
           for (const s of vScr) {
             s.p += dt * s.v;
-            if (mapI === 5) { s.y += dt * 0.05 * s.v; s.x += Math.sin(s.p) * dt * 0.03; }
-            else if (mapI === 2) { s.y += dt * 0.08 * s.v; s.x += Math.sin(s.p) * dt * 0.02; } // ice: snow
-            else if (mapI === 4) { s.y -= dt * 0.06 * s.v; s.x += Math.sin(s.p * 2) * dt * 0.02; } // volcano: embers rise
-            else if (mapI === 1) { s.x += dt * 0.09 * s.v; s.y += Math.sin(s.p) * dt * 0.01; } // desert: blowing dust
+            if (MFX === 5) { s.y += dt * 0.05 * s.v; s.x += Math.sin(s.p) * dt * 0.03; }
+            else if (MFX === 2) { s.y += dt * 0.08 * s.v; s.x += Math.sin(s.p) * dt * 0.02; } // ice: snow
+            else if (MFX === 4) { s.y -= dt * 0.06 * s.v; s.x += Math.sin(s.p * 2) * dt * 0.02; } // volcano: embers rise
+            else if (MFX === 1) { s.x += dt * 0.09 * s.v; s.y += Math.sin(s.p) * dt * 0.01; } // desert: blowing dust
             else { s.x += dt * 0.004 * s.v; s.y += Math.sin(s.p * 0.5) * dt * 0.004; }
             if (s.y > 1.05) s.y = -0.05; if (s.y < -0.05) s.y = 1.05; if (s.x > 1.05) s.x = -0.05; if (s.x < -0.05) s.x = 1.05;
           }
-          if (mapI === 6 && QL > 0 && NB.n !== vBeatN) { // cyber: a neon ring on the floor on every beat
+          if (MFX === 6 && QL > 0 && NB.n !== vBeatN) { // cyber: a neon ring on the floor on every beat
             vBeatN = NB.n; const G = 300;
             vRing.push({ x: Math.round((cam.x + rnd(-700, 700)) / G) * G, y: Math.round((cam.y + rnd(-500, 500)) / G) * G, l: 0, c: ["0,240,255", "255,40,200", "170,90,255"][NB.n % 3] });
             if (vRing.length > 6) vRing.shift();
@@ -7768,11 +7837,11 @@
         // floor layer: neon rings (cyber), soft light pools (forest), sparkles (classic)
         NFH.floor.push((vis) => {
           if (QL <= 0) return;
-          if (mapI === 6 && vRing.length) {
+          if (MFX === 6 && vRing.length) {
             ctx.lineWidth = 3;
             for (const r of vRing) { if (!vis(r.x, r.y, 300)) continue; pr(r.x, r.y, 0); const k = (30 + r.l * 260) * PK; ctx.strokeStyle = `rgba(${r.c},${0.6 * (1 - r.l)})`; ctx.beginPath(); ctx.ellipse(PX, PY, k, k * ST, 0, 0, 6.283); ctx.stroke(); }
           }
-          if (mapI === 0) { // classic: twinkling neon specks on the floor
+          if (MFX === 0) { // classic: twinkling neon specks on the floor
             ctx.globalCompositeOperation = "lighter";
             for (const a of vAmb) { if (!vis(a.x, a.y)) continue; pr(a.x, a.y, 0); const tw = 0.5 + 0.5 * Math.sin(a.p * 3); ctx.globalAlpha = (0.25 + 0.35 * tw) * (0.4 + 0.6 * DN.n); const s = (10 + tw * 14) * PK; ctx.drawImage(orb(a.v > 0.7 ? "#ff3cc8" : "#3cf0ff"), PX - s / 2, PY - s / 2, s, s); }
             ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
@@ -7780,12 +7849,12 @@
         });
         // world layer: fireflies (forest), rising data bits (cyber), secrets
         NFH.world.push((vis) => {
-          if (QL > 0 && (mapI === 5 || mapI === 6)) {
+          if (QL > 0 && (MFX === 5 || MFX === 6)) {
             ctx.globalCompositeOperation = "lighter";
             const night = 0.45 + 0.55 * xN;
             for (const a of vAmb) {
               if (!vis(a.x, a.y)) continue; pr(a.x, a.y, a.z);
-              if (mapI === 5) { const bl = Math.max(0, Math.sin(a.p * 2.3)); ctx.globalAlpha = bl * night; const s = 22 * PK; ctx.drawImage(orb("#e4ff7a"), PX - s / 2, PY - s / 2, s, s); }
+              if (MFX === 5) { const bl = Math.max(0, Math.sin(a.p * 2.3)); ctx.globalAlpha = bl * night; const s = 22 * PK; ctx.drawImage(orb("#e4ff7a"), PX - s / 2, PY - s / 2, s, s); }
               else { ctx.globalAlpha = 0.5 * (1 - a.z / 160); ctx.fillStyle = a.v > 0.7 ? "#ff3cc8" : "#36f0ff"; const s = 4 * PK + 1; ctx.fillRect(PX - s / 2, PY - s / 2, s, s); }
             }
             ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
@@ -8984,7 +9053,7 @@
           }
           ctx.globalCompositeOperation = "lighter"; ctx.imageSmoothingQuality = "low"; ctx.drawImage(pxNC, 0, 0, W, H); ctx.imageSmoothingQuality = "high"; ctx.globalCompositeOperation = "source-over";
         });
-        NFH.top.push(() => { return; ctx.globalAlpha = mapI === 3 ? 0.55 : 0.35 * (0.5 + 0.5 * DN.v); ctx.drawImage(vVig(mapI === 2 || mapI === 1 ? "rgba(20,30,40,.75)" : "rgba(0,0,0,.85)"), -W * 0.1, -H * 0.1, W * 1.2, H * 1.2); ctx.globalAlpha = 1; });
+        NFH.top.push(() => { return; ctx.globalAlpha = MFX === 3 ? 0.55 : 0.35 * (0.5 + 0.5 * DN.v); ctx.drawImage(vVig(MFX === 2 || MFX === 1 ? "rgba(20,30,40,.75)" : "rgba(0,0,0,.85)"), -W * 0.1, -H * 0.1, W * 1.2, H * 1.2); ctx.globalAlpha = 1; });
 
         // ---------- KILL FEED, SHOCKWAVES, CINEMATIC DEATH ----------
         let pxRings = [], pxDead = false;
@@ -9676,7 +9745,7 @@
           if (TXP[i]) return TXP[i];
           let im = TXI[i];
           if (!im) {
-            const v = getComputedStyle(document.documentElement).getPropertyValue("--p10-tx" + i), m = /url\(["']?(data:[^"')]+)/.exec(v || "");
+            const v = MAPS[i] && MAPS[i].tx ? 'url("' + MAPS[i].tx + '")' : getComputedStyle(document.documentElement).getPropertyValue("--p10-tx" + i), m = /url\(["']?((?:data:|maps\/)[^"')]+)/.exec(v || "");
             if (!m) return null;
             im = TXI[i] = new Image(); im.decoding = "async"; im.src = m[1];
           }
@@ -9716,7 +9785,7 @@
         {
           const BK = ["back", "menu", "nfonback", "nfback", "home", "stuX"];
           const P10_NOBACK = { over: 1, lgr: 1, mnt: 1, onmig: 1, login: 1, reg: 1, menu: 1, studio: 1 };
-          const P10_OV = ["acct", "shop", "set", "how", "maps", "league", "lgr", "achs", "inbox", "adm", "onlb", "onfr", "onch", "ongems", "onmig", "mnt", "chat", "nfmodes", "nfedit", "nfstory", "nfpass", "nfshop", "over", "reg", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm"];
+          const P10_OV = ["acct", "shop", "set", "how", "maps", "league", "lgr", "achs", "inbox", "adm", "onlb", "onfr", "onch", "ongems", "onmig", "mnt", "chat", "nfmodes", "nfedit", "nfstory", "nfpass", "nfshop", "over", "reg", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm", "b13dmp"];
           const ARW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
           const num2 = (n) => { try { return num(n); } catch (_) { return String(n || 0); } };
           const wallet = () => {
@@ -10508,7 +10577,7 @@
           // background dim before food and snakes, plus a CSS vignette while playing
           let vgOn = null;
           B13C.dim = () => {
-            ctx.fillStyle = "rgba(3,6,14,.16)"; ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = "rgba(3,6,14," + (MAPS[mapI].dim ?? 0.16) + ")"; ctx.fillRect(0, 0, W, H);
             const on = state === "play"; if (on !== vgOn) { vgOn = on; document.body.classList.toggle("b13c-play", on); }
           };
 
@@ -10750,6 +10819,53 @@
           $("b13cup").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; if (b.classList.contains("go")) { if (state !== "play") location.reload(); } else $("b13cup").classList.add("x-hide"); });
           setTimeout(B13C.updCheck, 4000); setInterval(B13C.updCheck, 5 * 60 * 1000);
           document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - UP.t > 60000) { UP.t = Date.now(); B13C.updCheck(); } });
+        }
+        // ===================== build13d: 20 new arenas (ids 8..27) + pre-match arena picker =====================
+        {
+          // texture tint / grid / tile size for the new arenas (the arrays were sized for the first 8)
+          MAPS.forEach((m, i) => { if (m.tx) { TXA[i] = m.txa; TXG[i] = 0.18; TXW[i] = m.txw; } });
+          if (MAPS[1] && MAPS[1].dim === undefined) MAPS[1].dim = 0.22; // bright desert + ice: a little more dim so snakes and food pop
+          if (MAPS[2] && MAPS[2].dim === undefined) MAPS[2].dim = 0.24;
+          const sm0 = setMap;
+          setMap = function (i) { sm0(i); try { txPat(mapI); } catch (_) {} }; // start loading the chosen arena's texture right away
+          try { txPat(mapI); } catch (_) {}
+          const TH = (i) => `maps/th_${i}.webp?v=13d2`;
+          const grid = $("b13dgr"), sel = $("b13dsel"), go = $("b13dgo");
+          const card = (m, i) => {
+            const lk = mapLock(i), on = i === mapSel;
+            return `<button type="button" class="b13d-c${on ? " on" : ""}${lk ? " lk" : ""}" data-m="${i}" role="option" aria-selected="${on}" aria-label="${esc(_t("map" + i))}">` +
+              `<span class="b13d-im"><img src="${TH(i)}" alt="" loading="lazy" decoding="async" width="240" height="150" draggable="false">` +
+              (m.tx ? `<i class="b13d-nw">${esc(_t("b13dNew"))}</i>` : "") + (lk ? `<em class="b13d-lk">🔒 ${esc(lk)}</em>` : "") + (on ? `<i class="b13d-ck" aria-hidden="true">✓</i>` : "") + `</span>` +
+              `<b><span aria-hidden="true">${m.e}</span> ${esc(_t("map" + i))}</b></button>`;
+          };
+          const paintSel = () => {
+            const m = MAPS[mapSel]; sel.innerHTML = `<b>${m.e} ${esc(_t("map" + mapSel))}</b><small>${esc(_t("mapd" + mapSel))}</small>`;
+            $("b13dcnt").textContent = _t("b13dCnt", { n: MAPS.length });
+          };
+          const paint = () => { grid.innerHTML = MAPS.map(card).join(""); paintSel(); };
+          B13D.mapOpen = () => {
+            if (state === "play") return;
+            if (mapLock(mapSel)) { const ok = MAPS.findIndex((_, i) => !mapLock(i)); mapSel = ok < 0 ? 0 : ok; }
+            back = "menu"; paint(); show("b13dmp");
+            requestAnimationFrame(() => { const c = grid.querySelector(".b13d-c.on"); if (c) c.scrollIntoView({ block: "nearest", inline: "nearest" }); });
+          };
+          grid.addEventListener("click", (e) => {
+            const b = e.target.closest(".b13d-c"); if (!b) return; const i = +b.dataset.m, lk = mapLock(i);
+            if (lk) { toast("🔒 " + _t("requires") + " " + lk); return; }
+            if (i === mapSel && e.detail > 1) { go.click(); return; }
+            mapSel = i; setMap(i); paintMode(); commit(); beep(620, 0.06, "triangle", 0.04, 900);
+            grid.querySelectorAll(".b13d-c").forEach((c) => { const on = +c.dataset.m === i; c.classList.toggle("on", on); c.setAttribute("aria-selected", on); const im = c.querySelector(".b13d-im"), ck = im.querySelector(".b13d-ck"); if (on && !ck) im.insertAdjacentHTML("beforeend", '<i class="b13d-ck" aria-hidden="true">✓</i>'); if (!on && ck) ck.remove(); });
+            paintSel();
+          });
+          go.addEventListener("click", () => { if (mapLock(mapSel)) return; setMap(mapSel); start(); });
+          // Play (and the Arenas tab) open the picker first; league rounds and private rooms pick their own arena
+          document.addEventListener("click", (e) => {
+            const b = e.target.closest && e.target.closest('[data-go="mplay"],[data-go="maps"]'); if (!b || b.disabled) return;
+            if (b.dataset.go === "mplay" && (S.mode === "l" || S.mode === "p")) return;
+            if (!cur) return; // signed-out: the normal flow shows the sign-in screen
+            e.preventDefault(); e.stopImmediatePropagation(); B13D.mapOpen();
+          }, true);
+          NFH.relang.push(() => { if (!$("b13dmp").classList.contains("x-hide")) paint(); });
         }
         requestAnimationFrame(loop);
       })();
@@ -12104,6 +12220,39 @@ body.b13c-play #b13cup { display: none; }
 #set .x-set[hidden], #set .x-set.x-hide { display: none !important; }
 .b13-id small.b13c-fv { font-size: 8.5px; font-weight: 800; color: #ffd76a; letter-spacing: .04em; text-transform: uppercase; }
 .b13-id.tk small.b13c-fv, .b13-id.me small.b13c-fv { display: none; }
+
+</style>
+<style id="ss13d">
+/* ===== build13d: pre-match arena picker ===== */
+#b13dmp { padding: 0 !important; overflow: hidden !important; }
+.b13d-mp { position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box;
+  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background: radial-gradient(120% 90% at 50% 0%, rgba(40, 70, 140, .35), transparent 60%), linear-gradient(180deg, #07102a, #040817); }
+.b13d-hd { flex: none; display: flex; align-items: center; gap: 10px; min-height: 38px; }
+.b13d-hd h2 { margin: 0; flex: 1; min-width: 0; font-size: 18px; text-align: start; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-bk { flex: none; width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(120, 200, 255, .35); background: rgba(10, 24, 60, .75); color: #cfe9ff; font: 700 22px/1 system-ui, sans-serif; cursor: pointer; }
+[dir="rtl"] .b13d-bk { transform: scaleX(-1); }
+.b13d-cnt { flex: none; font: 700 11px/1 system-ui, sans-serif; color: #9fc3e8; padding: 5px 8px; border-radius: 999px; background: rgba(79, 227, 255, .1); border: 1px solid rgba(79, 227, 255, .25); }
+.b13d-gr { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; margin: 6px 0; padding: 4px 2px 8px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 8px; align-content: start; scrollbar-width: thin; }
+.b13d-c { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 4px; border-radius: 12px; cursor: pointer; text-align: start; min-width: 0;
+  border: 1.5px solid rgba(120, 170, 255, .22); background: rgba(9, 18, 44, .85); color: #e8f2ff; font: inherit; transition: transform .12s, border-color .12s, box-shadow .12s; }
+.b13d-c:active { transform: scale(.97); }
+.b13d-c.on { border-color: #ffd34d; box-shadow: 0 0 0 1px rgba(255, 211, 77, .6), 0 0 16px rgba(255, 200, 60, .35); background: rgba(40, 30, 8, .7); }
+.b13d-im { position: relative; display: block; aspect-ratio: 16 / 10; border-radius: 9px; overflow: hidden; background: #0a1124; }
+.b13d-im img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.b13d-c.lk .b13d-im img { filter: grayscale(.7) brightness(.55); }
+.b13d-c b { display: block; font: 700 12px/1.2 system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px 2px; }
+.b13d-nw { position: absolute; top: 4px; inset-inline-start: 4px; font: 900 8.5px/1 system-ui, sans-serif; letter-spacing: .06em; padding: 3px 5px; border-radius: 5px; color: #062018; background: linear-gradient(180deg, #8dffcf, #2fd39a); font-style: normal; }
+.b13d-ck { position: absolute; top: 4px; inset-inline-end: 4px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font: 900 11px/1 system-ui, sans-serif; color: #2a1600; background: #ffd34d; font-style: normal; }
+.b13d-lk { position: absolute; inset: auto 4px 4px 4px; font: 700 9.5px/1.2 system-ui, sans-serif; color: #fff; background: rgba(0, 0, 0, .65); padding: 3px 5px; border-radius: 6px; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-ft { flex: none; display: flex; align-items: center; gap: 10px; padding-top: 6px; border-top: 1px solid rgba(120, 170, 255, .15); }
+.b13d-sel { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: start; }
+.b13d-sel b { font: 800 14px/1.2 system-ui, sans-serif; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-sel small { font: 500 11px/1.25 system-ui, sans-serif; color: #9fb7d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-go { flex: none; width: auto !important; min-width: 132px; margin: 0 !important; padding: 0 18px !important; height: 42px; }
+@media (max-height: 360px) { .b13d-hd { min-height: 32px; } .b13d-hd h2 { font-size: 16px; } .b13d-bk { width: 30px; height: 30px; } .b13d-gr { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 6px; margin: 4px 0; } .b13d-go { height: 38px; } }
+@media (max-width: 420px) { .b13d-gr { grid-template-columns: repeat(2, minmax(0, 1fr)); } .b13d-go { min-width: 110px; } }
 
 </style>
 </body>
