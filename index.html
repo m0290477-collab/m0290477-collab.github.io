@@ -4108,7 +4108,7 @@
         }
         function musTick() {
           const a = AC; if (!a) return;
-          const want = S.sound && S.music && a.state === "running" ? (state === "play" ? "m" : "l") : "";
+          const want = S.sound && S.music && a.state === "running" ? (state === "play" ? "m" : window.__SM && __SM.on ? "" : "l") : "";
           if (!MUS.g) { MUS.g = a.createGain(); MUS.g.gain.value = 0.0001; MUS.g.connect(a.destination);
             const n = Math.ceil(a.sampleRate * 0.06), b = a.createBuffer(1, n, a.sampleRate), c = b.getChannelData(0); for (let i = 0; i < n; i++) c[i] = Math.random() * 2 - 1; MUS.nb = b; }
           const now = a.currentTime;
@@ -4364,7 +4364,7 @@
             if (me) beep(120, 0.6, "sawtooth", 0.07, 40);
           }
         }
-        function credit(o, s) { const was = s.alive; kill(s); if (was && !s.alive) { o.kills++; if (o === player) sKill(); } }
+        function credit(o, s) { const was = s.alive; if (s.boss && s.alive) s.bkBy = o; kill(s); if (was && !s.alive) { o.kills++; if (o === player) sKill(); } }
         function evoUpdate(dt) {
           while (dna.length < dnaN()) spawnDna();
           if (false) { keys.e = keys["ث"] = false; useAb(player); }
@@ -5743,6 +5743,7 @@
           const mu = $("mute"); mu.classList.toggle("x-off", !S.sound); mu.setAttribute("aria-label", _t(S.sound ? "mute" : "unmute"));
           paintDiff(); paintMode();
           commit();
+          try { window.__SM && __SM.gameSet(); } catch (_) {}
         }
         function paintDiff() {
           if (S.diff === 4 && level() < LEG_LV) S.diff = 3;
@@ -6103,6 +6104,7 @@
           release(); applySettings(); lbS = 1; lbT = 0; rvUsed = false; revHide();
           nfStart(); ON.mStart();
           state = "play"; last = performance.now(); aqReset(3);
+          try { window.__SM && __SM.start(); } catch (_) {}
           show(null); $("game").classList.remove("x-hide");
         }
         // no pause: a match only ends by dying, the league clock, or exiting (a forfeit that counts as a death)
@@ -6121,6 +6123,7 @@
           snakes = snakes.filter((s) => s.bot && !s.ad); player = null; AD.mod = ""; adMod(); AD.fog = null;
           if (mapI !== mapSel) setMap(mapSel);
           $("game").classList.add("x-hide"); show("menu");
+          try { window.__SM && __SM.home(); } catch (_) {}
         }
         // REVIVE (second chance): once a match in Classic, Daily and Private rooms (not league, team, survival or ranked); 5 s to accept, then the normal
         // game over. Price in coins grows with the run: 50 + 10 per 100 length, max 150. Comes back at a safe spot with its length and 3 s invulnerability
@@ -6203,8 +6206,9 @@
         }
         function gameOver() {
           closeExit(); revHide(); state = "over"; AD.deaths = time - AD.t0 < 60 ? AD.deaths + 1 : Math.max(0, AD.deaths - 1);
-          const l = Math.round(player.len), pb = best, onS = ON.stats(l); // build13j: round (boosting stops at ~12, floor showed 11)
+          const l = Math.round(player.len), pb = best, onS = ON.stats(l, window.__SM && __SM.endCode ? { end: __SM.endCode() } : undefined); // build13j: round (boosting stops at ~12, floor showed 11)
           best = Math.max(best, l);
+          try { window.__SM && __SM.over0(l, pb, player.kills | 0); } catch (_) {}
           $("ngo").textContent = l > pb ? _t("ngoBest") : pb - l + 1 === 1 ? _t("ngoNear1") : _t("ngoNear", { n: pb - l + 1 });
           { const cg = $("chg"); cg.classList.toggle("x-hide", !CH); cg.classList.toggle("lose", !!CH && l <= CH.s);
             if (CH) cg.textContent = l > CH.s ? _t("chWin", { x: chName(), n: CH.s }) : _t("chLose", { x: chName(), n: CH.s, d: CH.s - l + 1 }); }
@@ -7646,6 +7650,7 @@
         }
         function loop(now) {
           if (document.hidden || rotOn) { last = now; requestAnimationFrame(loop); return; } // paused while hidden or held upright
+          if (window.__ssCap && now - last < 1000 / window.__ssCap - 4) { requestAnimationFrame(loop); return; } // build13m: 30 fps cap
           const raw = Math.max(0, (now - last) / 1000), dt = Math.min(0.05, raw);
           last = now; fdt = dt;
           { const fv = !!(S.fps && state === "play" && player && player.alive); if (fv !== loop.fv) { loop.fv = fv; $("fps").classList.toggle("x-hide", !fv); } } // FPS only during active play
@@ -8893,14 +8898,15 @@
         });
         NFH.upd.push(() => {
           const s = NFS.sg; if (!s || NFS.win || state !== "play" || !player || !player.alive) return;
-          const done = s.g === "len" ? player.len >= s.n : s.g === "kill" ? player.kills >= s.n : s.g === "surv" ? NFS.t >= s.n : !!NFS.sb && !NFS.sb.alive;
+          if (s.g === "boss" && NFS.sb && !NFS.sb.alive && NFS.sb.bkBy !== player && !NFS.rb) { NFS.rb = 1; xBan("⚠️ " + _t("smBossBack")); setTimeout(() => { NFS.rb = 0; if (state !== "play" || NFS.sg !== s || NFS.win) return; const b = makeSnake(_t("nfBoss" + s.bo), "gold", false); Object.assign(b, { boss: true, len: s.bl, hat: "crown" }); snakes.push(b); NFS.sb = b; xBan("⚠️ " + _t("nfBoss" + s.bo)); }, 3000); }
+          const done = s.g === "len" ? player.len >= s.n : s.g === "kill" ? player.kills >= s.n : s.g === "surv" ? NFS.t >= s.n : !!NFS.sb && !NFS.sb.alive && NFS.sb.bkBy === player;
           if (!done) return;
-          NFS.win = 1; NFS.wt = NFS.t; player.inv = 1e9; xBan("🏆 " + _t("nfStClear")); beep(784, 0.4, "triangle", 0.07, 1568); vib([30, 40, 60]); burst(player.seg[0].x, player.seg[0].y, 40, 45);
+          NFS.win = 1; NFS.wt = NFS.t; NFS.stN = NFM.st + 1; player.inv = 1e9; xBan("🏆 " + _t("nfStClear")); beep(784, 0.4, "triangle", 0.07, 1568); vib([30, 40, 60]); burst(player.seg[0].x, player.seg[0].y, 40, 45);
           setTimeout(() => { if (state === "play" && player && player.alive) { player.inv = 0; gameOver(); } }, 1400);
         });
         NFH.hud.push(() => {
           const s = NFS.sg; if (!s || !player) return "";
-          const v = s.g === "len" ? Math.floor(player.len) + "/" + s.n : s.g === "kill" ? player.kills + "/" + s.n : s.g === "surv" ? Math.min(s.n, Math.floor(NFS.t)) + "/" + s.n + "s" : NFS.sb ? (NFS.sb.alive ? "👑 " + Math.floor(NFS.sb.len) : "✓") : "…";
+          const v = s.g === "len" ? Math.floor(player.len) + "/" + s.n : s.g === "kill" ? player.kills + "/" + s.n : s.g === "surv" ? "⏱ " + Math.max(0, Math.ceil(s.n - NFS.t)) + "s" : NFS.sb ? (NFS.sb.alive ? "👑 " + Math.floor(NFS.sb.len) : "✓") : "…";
           return `📖 ${NFM.st + 1}/${STG.length} · 🎯 ${v}`;
         });
         NFH.over.push(() => {
@@ -9531,6 +9537,7 @@
                 if (x.season_xp > 0) parts.push(`👑 +${x.season_xp} ${_t("onSxp")}` + (x.season_premium ? " (×1.5)" : ""));
                 if (typeof tmRes === "string" && tmRes) parts.push(tmRes);
                 out(parts.join(" · "));
+                try { window.__SM && __SM.overR(r, c, lv, st); } catch (_) {}
               }
               if (r.wallet) wset(r.wallet);
               o.sync();
@@ -10858,7 +10865,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13l" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13m" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -11338,9 +11345,9 @@
               (who ? `<span class="h-ft"><span class="h-cav">${who.photo && /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(who.photo) ? `<img src="${who.photo}" alt="">` : B13G.h(who.avatar)}</span><small class="h-cw"><span>${esc(_t(c ? "b13dChamp" : "b13dLeader"))}</span><b><bdi>${esc(who.username)}</bdi></b></small></span>` : "");
             // live event (today's Daily Mystery rule) + more events
             const en = tryv(() => mystName(mystToday()), "") || strip(tryv(() => $("p10evn").textContent, "")), ec = tryv(() => fmtLeft((utcDay() + 1) * 864e5 - Date.now()), "");
-            $("b13hev").innerHTML = `<span class="h-art" style="background-image:url(ui/bn_event.webp${V})"></span><span class="h-bdg pill r">${esc(_t("b13hLive"))}</span>` +
+            (window.__SM && __SM.ev || ((x) => { $("b13hev").innerHTML = x; }))(`<span class="h-art" style="background-image:url(ui/bn_event.webp${V})"></span><span class="h-bdg pill r">${esc(_t("b13hLive"))}</span>` +
               `<span class="h-lab o">${esc(_t("b13hEvent"))}</span><b class="h-t h-stroke">${esc(en || _t("hmEv"))}</b>` +
-              `<span class="h-ft">${ic("timer", "h-tm")}<small>${esc(ec)}</small><small class="h-more h-stroke">${esc(_t("b13hMore2"))} ›</small></span>`;
+              `<span class="h-ft">${ic("timer", "h-tm")}<small>${esc(ec)}</small><small class="h-more h-stroke">${esc(_t("b13hMore2"))} ›</small></span>`);
           }
           function pRight() {
             const ld = tryv(() => !!B13.mis, false); if (!ld) misKick(); const ms = tryv(() => B13.mis.missions, []) || [], done = ms.filter((x) => x.claimed || x.value >= x.goal).length, cl = ms.filter((x) => !x.claimed && x.value >= x.goal).length;
@@ -11854,9 +11861,10 @@
           };
           { const _dcx = DCX; DCX = (s, o, k) => { _dcx(s, o, k); requestAnimationFrame(() => requestAnimationFrame(snapDeath)); }; }
           J.dcText = (d, alive) => {
-            if (alive || !d) return alive ? _t("jDcTime") : "";
+            if (window.__SM && __SM.dcOk) d = __SM.dcOk(d, alive);
+            if (alive || !d) return window.__SM && __SM.endText ? __SM.endText(d, alive) : _t("jDcUnk");
             const x = String(d.nm || "").replace(/^[^\p{L}\p{N}]+/u, "") || "?";
-            return d.k === "wall" ? _t("jDcWall") : d.k === "head" ? _t("jDcHead", { x }) : d.k === "fire" ? _t("jDcFire", { x }) : d.k === "quit" ? _t("jDcQuit") : d.k === "body" ? _t("jDcBody", { x }) : "";
+            return d.k === "wall" ? _t("jDcWall") : d.k === "head" ? _t("jDcHead", { x }) : d.k === "fire" ? _t("jDcFire", { x }) : d.k === "quit" ? _t("jDcQuit") : d.k === "body" ? _t("jDcBody", { x }) : (window.__SM && __SM.endText ? __SM.endText(d, alive) : _t("jDcUnk"));
           };
 
 
@@ -11865,7 +11873,7 @@
           for (let i = 8; i < MAPS.length; i++) if (!MAPS[i].sz) MAPS[i].sz = 2.5; // build13d arenas were 3,000 × 3,000; now 7,500 × 7,500 like the classic ones
           const _sync = syncBots;
           syncBots = function () {
-            if (MD === "t" || !(J.inStart || state === "play")) return _sync();
+            if (MD === "t" || NFM.m === "story" || !(J.inStart || state === "play")) return _sync();
             const want = Math.max(2, J.tot - 1), bots = snakes.filter((x) => x.bot && !x.ad);
             while (bots.length < want) { const b = makeSnake(bn(bots.length), botSkin(), true); b.ni = bots.length; snakes.push(b); bots.push(b); }
             while (bots.length > want) snakes.splice(snakes.indexOf(bots.pop()), 1);
@@ -12052,7 +12060,7 @@
                 // hero rank card with count-up
                 $("pxrank").innerHTML = `<span class="j-rav">${avH(P)}</span><span class="j-rk"><small>${esc(_t("pxRank"))}</small><b dir="ltr"><span id="jrkn">#${rk}</span></b><small class="j-of">${esc(_t("pxOf", { n: tot }))}</small></span>` +
                   `<span class="j-rid">${tv(() => rid(ON.st.profile.vip_id || ON.st.profile.player_id), "")}</span>` +
-                  (dct ? `<span class="j-dc">${J.snap ? `<img src="${J.snap}" alt="">` : ""}<b dir="auto">${esc(dct)}</b></span>` : "");
+                  (dct ? `<span class="j-dc${alive ? " ok" : ""}">${J.snap ? `<img src="${J.snap}" alt="">` : ""}<b dir="auto">${esc(dct)}</b></span>` : "");
                 if (dct && !J.snap) setTimeout(() => { const el = document.querySelector('#pxrank .j-dc'); if (el && J.snap && !el.querySelector('img')) el.insertAdjacentHTML('afterbegin', `<img src="${J.snap}" alt="">`); }, 120);
                 if (!RMq.matches && tot > rk) setTimeout(() => { const el = $("jrkn"); if (!el) return; const t0 = performance.now(); const st = (ts) => { const k = Math.min(1, (ts - t0) / 900), e = 1 - Math.pow(1 - k, 3); el.textContent = "#" + Math.round(tot - (tot - rk) * e); if (k < 1) requestAnimationFrame(st); }; el.textContent = "#" + tot; requestAnimationFrame(st); }, 760);
               } catch (e) { console.warn("b13j over", e); }
@@ -12475,18 +12483,19 @@
                 `<section class="k-sec"><h4>${esc(_t("kBlocked"))}</h4><div class="k-list" id="ksbl">${ST.blocked === null ? "…" : ST.blocked.length ? ST.blocked.map((x) => `<div class="k-li"><span>${tv(() => B13G.h(x.avatar), "")}<b><bdi>${esc(x.username)}</bdi></b>${tv(() => J.rid(x.vip_id || x.player_id), "")}</span><button type="button" class="x-btn x-sub" data-kset="unb" data-id="${esc(x.id)}">${esc(_t("kUnblock"))}</button></div>`).join("") : `<p class="k-note">${esc(_t("kNoBlocked"))}</p>`}</div></section>`;
             } else if (ST.sec === "app") {
               const o = [["1", _t("kOn")], ["0", _t("kOff")]];
-              h += `<section class="k-sec">${row(_t("kSound"), seg("s:sound", o, S.sound ? 1 : 0))}${row(_t("kMusic"), seg("s:music", o, S.music ? 1 : 0))}${row(_t("kVib"), seg("vib", o, vibOn() ? 1 : 0))}${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>` +
+              h += (window.__SM && __SM.on ? __SM.appHTML() + `<section class="k-sec">${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>` : `<section class="k-sec">${row(_t("kSound"), seg("s:sound", o, S.sound ? 1 : 0))}${row(_t("kMusic"), seg("s:music", o, S.music ? 1 : 0))}${row(_t("kVib"), seg("vib", o, vibOn() ? 1 : 0))}${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>`) +
                 `<section class="k-sec">${row(_t("kLang"), seg("lang", [["ar", "العربية"], ["en", "English"], ["tr", "Türkçe"], ["fr", "Français"], ["es", "Español"], ["hi", "हिन्दी"]], LANG))}` +
                 `${row(_t("kGfx"), seg("gfx", [["h", _t("kGfxHi")], ["m", _t("kGfxMid")], ["l", _t("kGfxLo")]], gfx()))}${row(_t("kBattery"), seg("bat", o, S.q === "l" || S.q === "lo" ? 1 : 0))}</section>` +
                 `<section class="k-sec"><button type="button" class="x-btn x-sub" data-kset="controls">🎮 ${esc(_t("kControls"))} ›</button></section>`;
             } else {
               const pr = ST.purch, lg = ST.ledger;
-              h += `<section class="k-sec"><h4>${esc(_t("kPurch"))}</h4><div class="k-list">${pr === null ? "…" : pr.length ? pr.map((x) => `<div class="k-li"><span><b>${esc(String(x.product || "").replace(/^web\./, ""))}</b><small>${esc(fmtD(x.at, 1))}${x.env && x.env !== "live" ? " · TEST" : ""}</small></span><span dir="ltr">${x.amount_cents ? "$" + (x.amount_cents / 100).toFixed(2) : ""} · ${esc(x.status)}</span></div>`).join("") : `<p class="k-note">${esc(_t("kNoPurch"))}</p>`}</div>` +
+              h += (window.__SM && __SM.on ? __SM.moreHTML() : "") + `<section class="k-sec"><h4>${esc(_t("kPurch"))}</h4><div class="k-list">${pr === null ? "…" : pr.length ? pr.map((x) => `<div class="k-li"><span><b>${esc(String(x.product || "").replace(/^web\./, ""))}</b><small>${esc(fmtD(x.at, 1))}${x.env && x.env !== "live" ? " · TEST" : ""}</small></span><span dir="ltr">${x.amount_cents ? "$" + (x.amount_cents / 100).toFixed(2) : ""} · ${esc(x.status)}</span></div>`).join("") : `<p class="k-note">${esc(_t("kNoPurch"))}</p>`}</div>` +
                 `<h4>${esc(_t("kWalletLog"))}</h4><div class="k-list">${lg === null ? "…" : (lg || []).slice(0, 25).map((x) => `<div class="k-li"><span><b>${esc(I18N["tx_" + x.reason] ? _t("tx_" + x.reason) : x.reason)}</b><small>${esc(fmtD(x.created_at || x.at, 1))}</small></span><span dir="ltr" class="${x.delta < 0 ? "neg" : "pos"}">${x.delta > 0 ? "+" : ""}${nf(x.delta)} ${x.currency === "gems" ? "💎" : "🪙"}</span></div>`).join("")}</div></section>` +
                 `<section class="k-sec"><h4>${esc(_t("kHelp"))}</h4><textarea id="kshelp" rows="3" maxlength="500" dir="auto" placeholder="${esc(_t("kHelpPh"))}"></textarea><div class="k-inl"><button type="button" class="x-btn x-main" data-kset="help">${esc(_t("kSend"))}</button></div><p class="x-err" id="kshm" role="alert"></p></section>` +
                 `<section class="k-sec"><div class="k-inl"><a class="x-btn x-sub" href="/privacy.html" target="_blank" rel="noopener">${esc(_t("kTerms"))} ↗</a>${isOwner() ? `<button type="button" class="x-btn x-sub" data-kset="adm">🛡️ ${esc(_t("kAdmin"))}</button>` : ""}</div></section>`;
             }
             b.innerHTML = h + "</div>";
+            try { window.__SM && __SM.on && __SM.setPainted(ST.sec); } catch (_) {}
           };
           const setLoad = async () => {
             if (!online()) return;
@@ -12930,6 +12939,334 @@
             // a friend who answered the invite (or an expired one) frees the slot label on the next paint
             if (NFH.home) NFH.home.push(() => { if (!B13.room) L.inv = {}; });
           }
+        }
+        try { Object.assign(I18N, {"smStreak": ["المكافأة اليومية", "Daily reward", "Günlük ödül", "Récompense du jour", "Recompensa diaria", "दैनिक इनाम"], "smDayN": ["اليوم {n}", "Day {n}", "{n}. gün", "Jour {n}", "Día {n}", "दिन {n}"], "smClaimNow": ["استلمها الآن", "Claim it now", "Hemen al", "Récupère-la", "Recógela ya", "अभी लें"], "smTomorrow": ["التالية غداً", "Next one tomorrow", "Sıradaki yarın", "La suivante demain", "La siguiente mañana", "अगला कल"], "smStreakSub": ["7 أيام متتالية = صندوق", "7 days in a row = chest", "Üst üste 7 gün = sandık", "7 jours d'affilée = coffre", "7 días seguidos = cofre", "लगातार 7 दिन = संदूक"], "smNewB": ["جديد", "NEW", "YENİ", "NOUVEAU", "NUEVO", "नया"], "smNewT": ["ما الجديد", "What's new", "Yenilikler", "Nouveautés", "Novedades", "नया क्या है"], "smNew1": ["بوابة حيّة ليلاً ونهاراً", "A living portal, day and night", "Gece ve gündüz yaşayan bir portal", "Un portail vivant, jour et nuit", "Un portal vivo, de día y de noche", "दिन-रात जीवंत पोर्टल"], "smNew2": ["تعرّف على سلاي، دليلك الأفعى", "Meet Sly, your snake guide", "Yılan rehberin Sly ile tanış", "Voici Sly, ton guide serpent", "Conoce a Sly, tu guía serpiente", "मिलिए स्लाई से, आपका साँप गाइड"], "smNew3": ["مكافآت يومية: 7 أيام متتالية تفتح صندوقاً", "Daily rewards: 7 days in a row open a chest", "Günlük ödüller: üst üste 7 gün bir sandık açar", "Récompenses quotidiennes : 7 jours d'affilée ouvrent un coffre", "Recompensas diarias: 7 días seguidos abren un cofre", "दैनिक इनाम: लगातार 7 दिन पर संदूक"], "smNew4": ["أصوات وموسيقى جديدة مع تحكم بمستوى الصوت", "New sounds and music, with volume controls", "Yeni sesler ve müzik, ses ayarlarıyla", "Nouveaux sons et musiques, avec réglage du volume", "Nuevos sonidos y música, con control de volumen", "नई आवाज़ें और संगीत, वॉल्यूम कंट्रोल के साथ"], "smSupport": ["تواصل مع الدعم", "Contact support", "Destekle iletişim", "Contacter le support", "Contactar con soporte", "सपोर्ट से संपर्क"], "smData": ["اطلب بياناتي", "Request my data", "Verilerimi iste", "Demander mes données", "Solicitar mis datos", "मेरा डेटा माँगें"], "smDataOk": ["يتم تنزيل ملف بياناتك", "Your data file is downloading", "Veri dosyan indiriliyor", "Ton fichier de données se télécharge", "Tu archivo de datos se está descargando", "आपकी डेटा फ़ाइल डाउनलोड हो रही है"], "smCredits": ["الشكر والمساهمون", "Credits", "Emeği geçenler", "Crédits", "Créditos", "श्रेय"], "smCr1": ["لعبة من تطوير مولير داود", "A game by Molier Dawood", "Molier Dawood'un bir oyunu", "Un jeu de Molier Dawood", "Un juego de Molier Dawood", "Molier Dawood का एक गेम"], "smCr2": ["الرسوم والموسيقى والمؤثرات الصوتية أصلية، صُنعت لـ Super Snake", "Art, music and sound effects are original, made for Super Snake", "Görseller, müzik ve ses efektleri Super Snake için yapılmış özgün içeriktir", "Graphismes, musiques et effets sonores originaux, créés pour Super Snake", "Arte, música y efectos de sonido originales, creados para Super Snake", "कला, संगीत और साउंड इफ़ेक्ट मौलिक हैं, Super Snake के लिए बनाए गए"], "smCr3": ["الخطوط: Baloo 2 و Cairo و Nunito (رخصة SIL Open Font)", "Fonts: Baloo 2, Cairo, Nunito (SIL Open Font License)", "Yazı tipleri: Baloo 2, Cairo, Nunito (SIL Open Font License)", "Polices : Baloo 2, Cairo, Nunito (SIL Open Font License)", "Fuentes: Baloo 2, Cairo, Nunito (SIL Open Font License)", "फ़ॉन्ट: Baloo 2, Cairo, Nunito (SIL Open Font License)"], "jDcStage": ["المرحلة {n} اكتملت!", "Stage {n} cleared!", "{n}. bölüm tamamlandı!", "Étape {n} terminée !", "¡Etapa {n} superada!", "चरण {n} पूरा!"], "jDcSurv": ["آخر أفعى صامدة!", "Last snake standing!", "Ayakta kalan son yılan!", "Dernier serpent debout !", "¡Última serpiente en pie!", "आख़िरी बचा साँप!"], "jDcUnk": ["سبب غير معروف", "Unknown", "Bilinmiyor", "Inconnu", "Desconocido", "अज्ञात"], "smBossBack": ["أفعى أخرى أسقطت الزعيم... لقد عاد! اهزمه بنفسك", "Another snake took the boss down. It's back: beat it yourself!", "Patronu başka bir yılan devirdi. Geri döndü: onu sen yen!", "Un autre serpent a battu le boss. Il revient : bats-le toi-même !", "Otra serpiente derribó al jefe. ¡Vuelve: véncelo tú!", "किसी और साँप ने बॉस गिराया। वह लौट आया: खुद हराओ!"], "smKilledBy": ["قتلك", "Killed by", "Seni öldüren", "Tué par", "Te eliminó", "आपको मारा"], "smAiNote": ["هذا لاعب آلي، لا يمكن إضافته أو الإبلاغ عنه.", "This is an AI player, so it can't be added or reported.", "Bu bir yapay zekâ oyuncu; eklenemez veya şikâyet edilemez.", "C'est un joueur IA : impossible de l'ajouter ou de le signaler.", "Es un jugador IA: no se puede añadir ni reportar.", "यह AI खिलाड़ी है, इसे जोड़ा या रिपोर्ट नहीं किया जा सकता।"], "smRecent": ["لاعبون قابلتهم", "Recent players", "Son oyuncular", "Joueurs récents", "Jugadores recientes", "हाल के खिलाड़ी"], "smRecentSub": ["آخر 20 أفعى قابلتها أو قتلتك في مبارياتك الأخيرة", "The last 20 snakes you met or that took you down in your recent matches", "Son maçlarında karşılaştığın ya da seni deviren son 20 yılan", "Les 20 derniers serpents croisés ou qui t'ont éliminé récemment", "Las últimas 20 serpientes que viste o que te eliminaron", "हाल के मैचों में मिले या आपको हराने वाले आख़िरी 20 साँप"], "smRecentNone": ["العب مباراة وستظهر هنا الأفاعي التي قابلتها", "Play a match and the snakes you meet will show up here", "Bir maç oyna, karşılaştığın yılanlar burada görünür", "Joue une partie : les serpents croisés apparaîtront ici", "Juega una partida y aquí aparecerán las serpientes que veas", "एक मैच खेलें, मिले साँप यहाँ दिखेंगे"], "smHowK": ["قتلك", "Took you down", "Seni devirdi", "T'a éliminé", "Te eliminó", "आपको हराया"], "smHowV": ["قتلته", "You took them down", "Sen devirdin", "Tu l'as éliminé", "Lo eliminaste", "आपने हराया"], "smHowM": ["قابلته", "Met", "Karşılaştın", "Croisé", "Te cruzaste", "मिले"], "smRepNote": ["ملاحظة اختيارية (300 حرف)", "Optional note (300 characters)", "İsteğe bağlı not (300 karakter)", "Note facultative (300 caractères)", "Nota opcional (300 caracteres)", "वैकल्पिक नोट (300 अक्षर)"], "smRepDup": ["أبلغت عن هذا اللاعب خلال آخر 24 ساعة", "You already reported this player in the last 24 hours", "Bu oyuncuyu son 24 saatte zaten şikâyet ettin", "Tu as déjà signalé ce joueur ces dernières 24 h", "Ya reportaste a este jugador en las últimas 24 horas", "आप पिछले 24 घंटे में इस खिलाड़ी की रिपोर्ट कर चुके हैं"], "smRepSelf": ["لا يمكنك الإبلاغ عن نفسك", "You can't report yourself", "Kendini şikâyet edemezsin", "Tu ne peux pas te signaler toi-même", "No puedes reportarte a ti mismo", "आप खुद की रिपोर्ट नहीं कर सकते"], "smRepRate": ["بلاغات كثيرة اليوم، حاول لاحقاً", "Too many reports today, try later", "Bugün çok fazla şikâyet, sonra dene", "Trop de signalements aujourd'hui, réessaie plus tard", "Demasiados reportes hoy, inténtalo luego", "आज बहुत रिपोर्ट हो गईं, बाद में कोशिश करें"], "onRep_photo": ["صورة مسيئة", "Offensive photo", "Uygunsuz fotoğraf", "Photo offensante", "Foto ofensiva", "अपमानजनक फ़ोटो"], "onRep_teaming": ["تعاون غير عادل (تيمنغ)", "Teaming", "Takımlaşma", "Alliance (teaming)", "Hacer equipo (teaming)", "टीमिंग"], "kaR_photo": ["صورة مسيئة", "Offensive photo", "Offensive photo", "Offensive photo", "Offensive photo", "Offensive photo"], "kaR_teaming": ["تيمنغ", "Teaming", "Teaming", "Teaming", "Teaming", "Teaming"]}); } catch (_) {}
+        // ===================== build13m: soul pass (living portal, Sly, sound + music, button juice, celebrations, daily streak) =====================
+        // SSoul (inlined as its own <script>) is the only new global; this block wires it into the game. Nothing here calls preventDefault on taps.
+        {
+          const SM = (window.__SM = { on: false, mounted: false });
+          const SSTR = {"_langs": ["en", "ar", "tr", "fr", "es", "hi"], "_note": "Super Snake soul pass strings. Arrays = random lines. {name},{day},{n},{t} are placeholders.", "greet_morning": {"en": ["Morning, {name}! The arena's warming up ☀️", "Rise and slither, {name}!", "Good morning, {name}. Coffee? I prefer apples."], "ar": ["صباح الخير يا {name}! الساحة تسخن ☀️", "هلا {name}! صباحك نشاط", "صباح النور يا {name}، جاهز للزحف؟"], "tr": ["Günaydın {name}! Arena ısınıyor ☀️", "Kalk ve süzül, {name}!", "Günaydın {name}, elma var mı?"], "fr": ["Bonjour {name} ! L'arène se réveille ☀️", "Debout et en glisse, {name} !", "Bonjour {name}, prêt à ramper ?"], "es": ["¡Buenos días, {name}! La arena se calienta ☀️", "¡Arriba y a deslizar, {name}!", "Buenos días, {name}. ¿Manzanas?"], "hi": ["सुप्रभात {name}! अखाड़ा गरम हो रहा है ☀️", "उठो और सरको, {name}!", "गुड मॉर्निंग {name}, तैयार?"]}, "greet_day": {"en": ["Hey {name}! Ready to rule the arena?", "{name}! I saved you a spot on the leaderboard.", "Welcome back, {name}! Let's grow big."], "ar": ["هلا {name}! جاهز تحكم الساحة؟", "{name}! حجزت لك مكان بلوحة الصدارة", "أهلاً من جديد يا {name}! يلا نكبر"], "tr": ["Selam {name}! Arenaya hükmetmeye hazır mısın?", "{name}! Sana sıralamada yer ayırdım.", "Tekrar hoş geldin {name}! Hadi büyüyelim."], "fr": ["Salut {name} ! Prêt à dominer l'arène ?", "{name} ! Je t'ai gardé une place au classement.", "Bon retour, {name} ! On grandit ?"], "es": ["¡Hola {name}! ¿Listo para dominar la arena?", "¡{name}! Te guardé un lugar en la clasificación.", "¡Bienvenido de nuevo, {name}! A crecer."], "hi": ["हे {name}! अखाड़े पर राज करने को तैयार?", "{name}! लीडरबोर्ड पर तुम्हारी जगह रखी है।", "वापसी मुबारक {name}! चलो बड़े बनें।"]}, "greet_evening": {"en": ["Evening, {name}! Lanterns are up 🏮", "Perfect night for a big match, {name}.", "Good evening, {name}! The crowd is waiting."], "ar": ["مساء الخير يا {name}! الفوانيس طلعت 🏮", "ليلة حلوة لمباراة كبيرة يا {name}", "مساء النور يا {name}! الجمهور ينتظرك"], "tr": ["İyi akşamlar {name}! Fenerler yandı 🏮", "Büyük maç için harika gece, {name}.", "İyi akşamlar {name}! Seyirci bekliyor."], "fr": ["Bonsoir {name} ! Les lanternes s'allument 🏮", "Belle nuit pour un grand match, {name}.", "Bonsoir {name} ! La foule t'attend."], "es": ["¡Buenas noches, {name}! Faroles arriba 🏮", "Noche perfecta para una gran partida, {name}.", "¡Buenas, {name}! El público espera."], "hi": ["शुभ संध्या {name}! लालटेनें जल गईं 🏮", "बड़े मैच के लिए बढ़िया रात, {name}।", "नमस्ते {name}! भीड़ इंतज़ार में है।"]}, "greet_night": {"en": ["Still up, {name}? One more match… 🌙", "Shh… night arena, {name}. Sneaky mode on.", "Night owl {name}! The moon is watching."], "ar": ["لسه صاحي يا {name}؟ مباراة وحدة بس… 🌙", "ششش… ساحة الليل يا {name}", "سهران يا {name}؟ القمر يتفرج"], "tr": ["Hâlâ uyanık mısın {name}? Bir maç daha… 🌙", "Şşş… gece arenası, {name}.", "Gece kuşu {name}! Ay izliyor."], "fr": ["Encore debout, {name} ? Un dernier match… 🌙", "Chut… arène de nuit, {name}.", "Oiseau de nuit {name} ! La lune regarde."], "es": ["¿Aún despierto, {name}? Una más… 🌙", "Shh… arena nocturna, {name}.", "¡Búho nocturno {name}! La luna mira."], "hi": ["अभी भी जाग रहे हो {name}? बस एक मैच… 🌙", "श्श… रात का अखाड़ा, {name}।", "रात के उल्लू {name}! चाँद देख रहा है।"]}, "greet_first": {"en": ["Hi {name}! I'm Sly, keeper of the arena. Let's play!"], "ar": ["هلا {name}! أنا سلاي، حارس الساحة. يلا نلعب!"], "tr": ["Selam {name}! Ben Sly, arenanın bekçisi. Hadi oynayalım!"], "fr": ["Salut {name} ! Je suis Sly, gardien de l'arène. On joue ?"], "es": ["¡Hola {name}! Soy Sly, guardián de la arena. ¡A jugar!"], "hi": ["नमस्ते {name}! मैं स्लाई हूँ, अखाड़े का रखवाला। चलो खेलें!"]}, "greet_back": {"en": ["{name}! You're back! I missed you 💚"], "ar": ["{name}! رجعت! اشتقت لك 💚"], "tr": ["{name}! Döndün! Seni özledim 💚"], "fr": ["{name} ! Te revoilà ! Tu m'as manqué 💚"], "es": ["¡{name}! ¡Volviste! Te extrañé 💚"], "hi": ["{name}! तुम लौट आए! तुम्हारी याद आई 💚"]}, "tap": {"en": ["Hey! That tickles!", "Hiss-terical! 😆", "Careful, the crown is real gold.", "Boop!", "I'm not a button… okay, maybe a little."], "ar": ["يا! هذا يدغدغ!", "ههههه 😆", "انتبه، التاج ذهب حقيقي", "بوب!", "أنا مو زر… طيب شوي"], "tr": ["Hey! Gıdıklanıyor!", "Tıs-sss! 😆", "Dikkat, taç gerçek altın.", "Bop!", "Ben düğme değilim… belki biraz."], "fr": ["Hé ! Ça chatouille !", "Sss-uper drôle ! 😆", "Attention, la couronne est en or.", "Boup !", "Je ne suis pas un bouton… enfin, un peu."], "es": ["¡Oye! ¡Cosquillas!", "¡Sss-uper gracioso! 😆", "Cuidado, la corona es de oro.", "¡Bup!", "No soy un botón… bueno, un poco."], "hi": ["अरे! गुदगुदी होती है!", "हिस्स! 😆", "ध्यान से, ताज असली सोने का है।", "बूप!", "मैं बटन नहीं हूँ… थोड़ा सा शायद।"]}, "tap_many": {"en": ["Okay okay, I'm dizzy! 💫"], "ar": ["خلاص خلاص، دخت! 💫"], "tr": ["Tamam tamam, başım döndü! 💫"], "fr": ["D'accord, j'ai le tournis ! 💫"], "es": ["¡Vale, vale, me mareo! 💫"], "hi": ["ठीक है ठीक है, चक्कर आ गया! 💫"]}, "idle": {"en": ["Psst… the PLAY button is right there.", "Did you check today's missions?", "I heard the Royal Pass has a shiny new skin…", "Your snake looks great today.", "Fun fact: I've never lost a staring contest."], "ar": ["بسس… زر العب هناك", "شفت مهمات اليوم؟", "سمعت أن الرويال باس فيه سكن جديد يلمع…", "ثعبانك شكله حلو اليوم", "معلومة: ما خسرت ولا تحدي تحديق"], "tr": ["Pşşt… OYNA düğmesi orada.", "Bugünün görevlerine baktın mı?", "Royal Pass'te parlak bir kostüm varmış…", "Yılanın bugün harika görünüyor.", "Bilgi: hiç bakışma yarışı kaybetmedim."], "fr": ["Psst… le bouton JOUER est juste là.", "Tu as vu les missions du jour ?", "Il paraît que le Royal Pass a un skin tout neuf…", "Ton serpent a fière allure.", "Fun fact : je n'ai jamais perdu un concours de regard."], "es": ["Psst… el botón JUGAR está ahí.", "¿Viste las misiones de hoy?", "Dicen que el Royal Pass trae un aspecto nuevo…", "Tu serpiente se ve genial hoy.", "Dato: nunca perdí un duelo de miradas."], "hi": ["प्स्स… खेलें बटन वहीं है।", "आज के मिशन देखे?", "सुना है रॉयल पास में नई चमकदार स्किन है…", "आज तुम्हारा साँप शानदार दिख रहा है।", "मज़ेदार बात: मैं कभी घूरने की प्रतियोगिता नहीं हारा।"]}, "sleepy": {"en": ["Zzz… five more minutes…"], "ar": ["خخخ… خمس دقايق بس…"], "tr": ["Zzz… beş dakika daha…"], "fr": ["Zzz… encore cinq minutes…"], "es": ["Zzz… cinco minutos más…"], "hi": ["ज़्ज़्ज़… बस पाँच मिनट और…"]}, "wake": {"en": ["Huh? I'm awake! Totally awake!"], "ar": ["هاه؟ أنا صاحي! صاحي والله!"], "tr": ["Ha? Uyanığım! Tamamen!"], "fr": ["Hein ? Je suis réveillé ! Totalement !"], "es": ["¿Eh? ¡Estoy despierto! ¡Totalmente!"], "hi": ["हाँ? मैं जाग रहा हूँ! पूरी तरह!"]}, "win": {"en": ["WOW, {name}! That was legendary! 🏆", "Champion moves, {name}!"], "ar": ["واو يا {name}! هذا أسطوري! 🏆", "حركات أبطال يا {name}!"], "tr": ["VAY {name}! Efsaneydi! 🏆", "Şampiyon hareketleri, {name}!"], "fr": ["WOUAH {name} ! Légendaire ! 🏆", "Des gestes de champion, {name} !"], "es": ["¡GUAU, {name}! ¡Legendario! 🏆", "¡Movimientos de campeón, {name}!"], "hi": ["वाह {name}! यह तो लाजवाब था! 🏆", "चैंपियन वाली चालें, {name}!"]}, "lose": {"en": ["So close! Next one's yours, {name}.", "Shake it off — again?"], "ar": ["قريبة! الجاية لك يا {name}", "ولا يهمك — مرة ثانية؟"], "tr": ["Çok yaklaştın! Sıradaki senin, {name}.", "Boş ver — bir daha?"], "fr": ["Presque ! La prochaine est pour toi, {name}.", "On secoue ça — encore ?"], "es": ["¡Casi! La próxima es tuya, {name}.", "Sacúdetelo — ¿otra?"], "hi": ["बस थोड़ा सा! अगला तुम्हारा है, {name}।", "कोई बात नहीं — फिर से?"]}, "streak_hi": {"en": ["Day {day} streak! Don't break it, {name}!"], "ar": ["سلسلة اليوم {day}! لا تقطعها يا {name}!"], "tr": ["{day}. gün serisi! Bozma, {name}!"], "fr": ["Série jour {day} ! Ne la casse pas, {name} !"], "es": ["¡Racha de {day} días! ¡No la rompas, {name}!"], "hi": ["{day} दिन की लय! तोड़ना मत, {name}!"]}, "new_unlock": {"en": ["Ooh, something new unlocked! Go look!"], "ar": ["أوه، انفتح شي جديد! روح شوف!"], "tr": ["Ooo, yeni bir şey açıldı! Bak!"], "fr": ["Oh, un truc vient de se débloquer ! Va voir !"], "es": ["¡Uh, desbloqueaste algo! ¡Míralo!"], "hi": ["ओह, कुछ नया खुला! जाकर देखो!"]}, "streak_title": {"en": "Daily rewards", "ar": "المكافآت اليومية", "tr": "Günlük ödüller", "fr": "Récompenses quotidiennes", "es": "Recompensas diarias", "hi": "दैनिक इनाम"}, "streak_sub": {"en": "Log in every day. Day 7 is a Royal Chest!", "ar": "سجّل دخولك كل يوم. اليوم السابع صندوق ملكي!", "tr": "Her gün giriş yap. 7. gün Kraliyet Sandığı!", "fr": "Connecte-toi chaque jour. Jour 7 : coffre royal !", "es": "Entra cada día. ¡El día 7 es un cofre real!", "hi": "हर दिन लॉग इन करो। सातवाँ दिन शाही संदूक!"}, "streak_day": {"en": "Day {n}", "ar": "اليوم {n}", "tr": "{n}. gün", "fr": "Jour {n}", "es": "Día {n}", "hi": "दिन {n}"}, "streak_claim": {"en": "Claim", "ar": "استلم", "tr": "Al", "fr": "Récupérer", "es": "Reclamar", "hi": "लो"}, "streak_claimed": {"en": "Claimed", "ar": "تم الاستلام", "tr": "Alındı", "fr": "Récupéré", "es": "Reclamado", "hi": "ले लिया"}, "streak_tomorrow": {"en": "Come back tomorrow for day {n}", "ar": "ارجع بكرة لليوم {n}", "tr": "{n}. gün için yarın gel", "fr": "Reviens demain pour le jour {n}", "es": "Vuelve mañana para el día {n}", "hi": "दिन {n} के लिए कल आना"}, "streak_count": {"en": "{n}-day streak", "ar": "سلسلة {n} أيام", "tr": "{n} günlük seri", "fr": "Série de {n} jours", "es": "Racha de {n} días", "hi": "{n} दिन की लय"}, "streak_chest": {"en": "Royal Chest", "ar": "صندوق ملكي", "tr": "Kraliyet Sandığı", "fr": "Coffre royal", "es": "Cofre real", "hi": "शाही संदूक"}, "tap_to_open": {"en": "Tap to open", "ar": "اضغط للفتح", "tr": "Açmak için dokun", "fr": "Touche pour ouvrir", "es": "Toca para abrir", "hi": "खोलने के लिए टैप करें"}, "collect": {"en": "Collect", "ar": "اجمع", "tr": "Topla", "fr": "Récupérer", "es": "Recoger", "hi": "इकट्ठा करो"}, "close": {"en": "Close", "ar": "إغلاق", "tr": "Kapat", "fr": "Fermer", "es": "Cerrar", "hi": "बंद करें"}, "levelup": {"en": "LEVEL UP!", "ar": "ترقية!", "tr": "SEVİYE ATLADIN!", "fr": "NIVEAU SUPÉRIEUR !", "es": "¡SUBES DE NIVEL!", "hi": "लेवल अप!"}, "level_n": {"en": "Level {n}", "ar": "المستوى {n}", "tr": "Seviye {n}", "fr": "Niveau {n}", "es": "Nivel {n}", "hi": "लेवल {n}"}, "reward": {"en": "REWARD!", "ar": "مكافأة!", "tr": "ÖDÜL!", "fr": "RÉCOMPENSE !", "es": "¡RECOMPENSA!", "hi": "इनाम!"}, "new_record": {"en": "NEW RECORD!", "ar": "رقم قياسي جديد!", "tr": "YENİ REKOR!", "fr": "NOUVEAU RECORD !", "es": "¡NUEVO RÉCORD!", "hi": "नया रिकॉर्ड!"}, "victory": {"en": "VICTORY!", "ar": "فوز!", "tr": "ZAFER!", "fr": "VICTOIRE !", "es": "¡VICTORIA!", "hi": "जीत!"}, "next_unlock": {"en": "Next unlock", "ar": "الفتح القادم", "tr": "Sıradaki kilit", "fr": "Prochain déblocage", "es": "Siguiente desbloqueo", "hi": "अगला अनलॉक"}, "season_ends": {"en": "Season ends in {t}", "ar": "الموسم ينتهي خلال {t}", "tr": "Sezon {t} içinde bitiyor", "fr": "Fin de saison dans {t}", "es": "La temporada termina en {t}", "hi": "सीज़न {t} में खत्म"}, "trophy_road": {"en": "Trophy Road", "ar": "طريق الكؤوس", "tr": "Kupa Yolu", "fr": "Route des trophées", "es": "Camino de trofeos", "hi": "ट्रॉफी रोड"}, "whats_new": {"en": "What's new", "ar": "الجديد", "tr": "Yenilikler", "fr": "Nouveautés", "es": "Novedades", "hi": "नया क्या है"}, "set_audio": {"en": "Audio", "ar": "الصوت", "tr": "Ses", "fr": "Audio", "es": "Audio", "hi": "ऑडियो"}, "set_master": {"en": "Master volume", "ar": "الصوت العام", "tr": "Ana ses", "fr": "Volume général", "es": "Volumen general", "hi": "मुख्य वॉल्यूम"}, "set_music": {"en": "Music", "ar": "الموسيقى", "tr": "Müzik", "fr": "Musique", "es": "Música", "hi": "संगीत"}, "set_sfx": {"en": "Sound effects", "ar": "المؤثرات", "tr": "Efektler", "fr": "Effets sonores", "es": "Efectos", "hi": "इफ़ेक्ट"}, "set_track": {"en": "Lobby music", "ar": "موسيقى الردهة", "tr": "Lobi müziği", "fr": "Musique du hall", "es": "Música del lobby", "hi": "लॉबी संगीत"}, "trk_auto": {"en": "Auto (day/night)", "ar": "تلقائي (ليل/نهار)", "tr": "Otomatik (gece/gündüz)", "fr": "Auto (jour/nuit)", "es": "Auto (día/noche)", "hi": "ऑटो (दिन/रात)"}, "trk_arena": {"en": "Arena", "ar": "الساحة", "tr": "Arena", "fr": "Arène", "es": "Arena", "hi": "अखाड़ा"}, "trk_night": {"en": "Moonlight", "ar": "ضوء القمر", "tr": "Ay ışığı", "fr": "Clair de lune", "es": "Luz de luna", "hi": "चाँदनी"}, "set_haptics": {"en": "Haptics", "ar": "الاهتزاز", "tr": "Titreşim", "fr": "Vibrations", "es": "Vibración", "hi": "हैप्टिक्स"}, "set_motion": {"en": "Animations", "ar": "الحركات", "tr": "Animasyonlar", "fr": "Animations", "es": "Animaciones", "hi": "एनिमेशन"}, "mot_auto": {"en": "Auto", "ar": "تلقائي", "tr": "Otomatik", "fr": "Auto", "es": "Auto", "hi": "ऑटो"}, "mot_full": {"en": "Full", "ar": "كاملة", "tr": "Tam", "fr": "Complètes", "es": "Completas", "hi": "पूरा"}, "mot_reduced": {"en": "Reduced", "ar": "مخففة", "tr": "Azaltılmış", "fr": "Réduites", "es": "Reducidas", "hi": "कम"}, "set_fps": {"en": "Frame rate", "ar": "معدل الإطارات", "tr": "Kare hızı", "fr": "Images/s", "es": "FPS", "hi": "फ़्रेम रेट"}, "set_livebg": {"en": "Living background", "ar": "خلفية حية", "tr": "Canlı arka plan", "fr": "Fond animé", "es": "Fondo animado", "hi": "जीवंत बैकग्राउंड"}, "set_mascot": {"en": "Sly the mascot", "ar": "التميمة سلاي", "tr": "Maskot Sly", "fr": "Mascotte Sly", "es": "Mascota Sly", "hi": "मैस्कॉट स्लाई"}, "on": {"en": "On", "ar": "تشغيل", "tr": "Açık", "fr": "Oui", "es": "Sí", "hi": "चालू"}, "off": {"en": "Off", "ar": "إيقاف", "tr": "Kapalı", "fr": "Non", "es": "No", "hi": "बंद"}};
+          const nf = (v) => Number(v || 0).toLocaleString("en-US");
+          const lsg = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (_) { return d; } };
+          const lss = (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} };
+          const SO = () => window.SSoul;
+          const online = () => cur === "@on" && !!(ON.st && ON.st.profile);
+          const homeVis = () => { const h = $("b13h"); return !!h && !!h.offsetParent && !$("menu").classList.contains("x-hide"); };
+          const anyOpen = () => !!document.querySelector(".ss-modal") || !$("b13pop").classList.contains("x-hide") || [...document.querySelectorAll(".x-ov:not(.x-hide)")].some((o) => o.id !== "menu" && o.offsetParent);
+          const esc2 = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+          let nm0 = "", lang0 = "", greetAt = 0, lowQ = null, statusP = null;
+          // ---------- prefs <-> game settings (sound/music on-off, vibration) ----------
+          const syncPrefs = (pp) => {
+            window.__ssCap = +pp.fps === 30 ? 30 : 0;
+            lss("ss-vib", pp.haptics ? "1" : "0");
+            const snd = pp.sfx > 0 && pp.master > 0 ? 1 : 0, mus = pp.music > 0 && pp.master > 0 ? 1 : 0;
+            if (S.sound !== snd || S.music !== mus) { S.sound = snd; S.music = mus; try { applySettings(); } catch (_) {} }
+          };
+          SM.gameSet = () => { // in-match mute button / old controls screen changed S.sound / S.music / S.q
+            const so = SO(); if (!SM.on || !so) return;
+            const pr = so.getPrefs(), pa = {}, on = pr.master > 0;
+            if (!S.sound && pr.sfx > 0 && on) pa.sfx = 0; else if (S.sound && !(pr.sfx > 0 && on)) { pa.sfx = pr.sfx > 0 ? pr.sfx : 0.9; if (!on) pa.master = 0.9; }
+            if (!S.music && pr.music > 0 && on) pa.music = 0; else if (S.music && !(pr.music > 0 && (on || pa.master))) { pa.music = pr.music > 0 ? pr.music : 0.6; if (!on) pa.master = 0.9; }
+            if (Object.keys(pa).length) so.setPrefs(pa);
+            const low = S.q === "l";
+            if (lowQ !== low) { // Low graphics / Battery saver: static portal background, 30 fps
+              const first = lowQ === null; lowQ = low;
+              if (low) { if (!first || pr.livebg || pr.fps !== 30) { lss("ss-soul-preq", JSON.stringify({ livebg: pr.livebg, fps: pr.fps })); so.setPrefs({ livebg: false, fps: 30 }); } }
+              else if (!first) { let b = null; try { b = JSON.parse(lsg("ss-soul-preq", "null")); } catch (_) {} so.setPrefs(b && typeof b === "object" ? { livebg: b.livebg !== false, fps: +b.fps === 30 ? 30 : 60 } : { livebg: true, fps: 60 }); }
+            }
+          };
+          // ---------- daily streak (server: daily_status / claim_daily) ----------
+          const rwOf = (ds) => (ds.rewards || []).map((r) => (r.chest ? { chest: true, coins: 0, gems: r.gems | 0 } : { coins: r.coins | 0 }));
+          SM.status = () => (statusP = ON.rpc("daily_status").then((d) => { SM.ds = d; try { if (d && P.dg) P.dg = { d: d.claimed ? today() : -1, s: d.streak | 0 }; } catch (_) {} return d; }).catch(() => null));
+          SM.streak = async (auto) => {
+            const so = SO(); if (!so || SM.busy) return;
+            SM.busy = true;
+            try {
+              const ds = await SM.status(); if (!ds) { toast(_t("onErr")); return; }
+              if (auto && (ds.claimed || anyOpen() || !homeVis())) return;
+              const rewards = rwOf(ds);
+              await so.streak.show({ day: ds.day, claimed: ds.claimed, rewards, onClaim: async (day, rw) => {
+                try {
+                  const r = await ON.rpc("claim_daily");
+                  if (r.wallet && Number.isInteger(r.wallet.coins)) { P.coins = r.wallet.coins; P.gems = r.wallet.gems; }
+                  if (rw) { rw.coins = r.coins | 0; rw.gems = r.gems | 0; }
+                  try { P.dg = { d: today(), s: r.step | 0 }; for (const m of P.inb || []) if (m.k === "dg") m.r = 1; } catch (_) {}
+                  SM.ds = Object.assign({}, ds, { claimed: true, day: r.day, streak: r.day });
+                  setTimeout(() => { try { profile(); } catch (_) {} try { ON.syncSoon && ON.syncSoon(1500); } catch (_) {} }, 50);
+                  return true;
+                } catch (e) { toast(e && (e.code === "already_claimed" || e.message === "already_claimed") ? _t("giftHad") : ON.err(e)); return false; }
+              } });
+            } finally { SM.busy = false; try { profile(); } catch (_) {} }
+          };
+          ON.gift = () => (SO() && SM.on ? SM.streak(false) : null); // the gift button, the inbox line and the Social sheet all go through ON.gift
+          // ---------- rotating event card (Today's event · Daily reward · What's new) ----------
+          let evI = 0, evH0 = "", evT = 0, evDown = 0;
+          const evSlide = (i) => {
+            if (i === 0) return [evH0, "nfmodes"];
+            if (i === 1) { const d = SM.ds, done = !!(d && d.claimed), n = d ? d.day : 1;
+              return [`<span class="h-art" style="background-image:url(ui/bn_missions.webp)"></span><span class="h-bdg pill ${done ? "g" : "r"}">${esc2(_t("smDayN", { n }))}</span>` +
+                `<span class="h-lab o">${esc2(_t("smStreak"))}</span><b class="h-t h-stroke">${esc2(done ? _t("smTomorrow") : _t("smClaimNow"))}</b>` +
+                `<span class="h-ft"><img class="ss-evc" alt="" src="ui/soul/assets/chest_closed.webp"><small>${esc2(_t("smStreakSub"))}</small></span>`, "gift"]; }
+            return [`<span class="h-art" style="background-image:url(ui/bn_pass.webp)"></span><span class="h-bdg pill g">${esc2(_t("smNewB"))}</span>` +
+              `<span class="h-lab o">${esc2(_t("smNewT"))}</span><b class="h-t h-stroke">${esc2(_t("smNew1"))}</b><span class="h-ft"><small class="h-more h-stroke">${esc2(_t("b13hMore2"))} ›</small></span>`, "ssnew"];
+          };
+          const evPaint = () => {
+            const b = $("b13hev"); if (!b) return;
+            const [h, go] = evSlide(evI), pips = SM.on ? `<span class="ss-evp" aria-hidden="true">${[0, 1, 2].map((k) => `<i class="${k === evI ? "on" : ""}"></i>`).join("")}</span>` : "", html = h + pips;
+            if (b._smh !== html) { b._smh = html; b.innerHTML = html; }
+            if (b.dataset.go !== go) b.dataset.go = go;
+          };
+          SM.ev = (h) => { evH0 = h; if (!SM.on) evI = 0; evPaint(); };
+          const evNext = () => {
+            if (!SM.on || !homeVis() || document.hidden || Date.now() - evDown < 2500) return;
+            const so = SO(); if (so && so.getPrefs().motion === "reduced") return;
+            evI = (evI + 1) % 3; const b = $("b13hev"); evPaint();
+            if (b && !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) { b.classList.remove("ss-evin"); void b.offsetWidth; b.classList.add("ss-evin"); }
+          };
+          document.addEventListener("pointerdown", (e) => { if (e.target && e.target.closest && e.target.closest("#b13hev")) evDown = Date.now(); }, { capture: true, passive: true });
+          document.addEventListener("click", (e) => {
+            const n = e.target && e.target.closest && e.target.closest('[data-go="ssnew"]'); if (!n) return;
+            B13.pop(`<div class="j-pcw ss-new"><h3>✨ ${esc2(_t("smNewT"))} · 13m</h3><ul>${[1, 2, 3, 4].map((k) => `<li>${esc2(_t("smNew" + k))}</li>`).join("")}</ul><div class="b13-row2"><button type="button" class="x-btn x-main" data-b13x="1">OK</button></div></div>`);
+          });
+          // ---------- Settings: App (audio/display) + More (credits, support, my data) ----------
+          SM.appHTML = () => `<section class="k-sec h-own"><h4>${esc2(SO().t("set_audio"))}</h4><div id="kssoul" class="h-own"></div></section>`;
+          SM.moreHTML = () => `<section class="k-sec"><div class="k-inl ss-more"><button type="button" class="x-btn x-sub" data-ssm="support">💬 ${esc2(_t("smSupport"))}</button>` +
+            `<button type="button" class="x-btn x-sub" data-ssm="data">📄 ${esc2(_t("smData"))}</button><button type="button" class="x-btn x-sub" data-ssm="credits">⭐ ${esc2(_t("smCredits"))}</button></div><p class="x-err" id="kssmm" role="status"></p></section>`;
+          SM.setPainted = (sec) => { const h = $("kssoul"); if (sec === "app" && h && SO()) SO().renderSettings(h); };
+          $("kset").addEventListener("click", async (e) => {
+            const b = e.target.closest && e.target.closest("[data-ssm]"); if (!b) return; const a = b.dataset.ssm, m = $("kssmm");
+            if (a === "credits") {
+              B13.pop(`<div class="j-pcw ss-cred"><h3>⭐ ${esc2(_t("smCredits"))}</h3><p><b>Super Snake</b></p><p>${esc2(_t("smCr1"))}</p><p>${esc2(_t("smCr2"))}</p><p>${esc2(_t("smCr3"))}</p><p class="k-note">billke.com</p><div class="b13-row2"><button type="button" class="x-btn x-main" data-b13x="1">OK</button></div></div>`);
+            } else if (a === "support") {
+              const t = $("kshelp"); if (t) { t.scrollIntoView({ block: "center" }); setTimeout(() => { try { t.focus(); } catch (_) {} }, 250); }
+            } else if (a === "data") {
+              if (b.disabled) return; b.disabled = true; if (m) m.textContent = "…";
+              try {
+                const d = await ON.rpc("export_my_data");
+                const blob = new Blob([JSON.stringify(d, null, 2)], { type: "application/json" }), u = URL.createObjectURL(blob), x = document.createElement("a");
+                x.href = u; x.download = "super-snake-my-data.json"; document.body.appendChild(x); x.click(); x.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+                if (m) { m.textContent = _t("smDataOk"); m.classList.add("k-okm"); }
+              } catch (er) { if (m) { m.textContent = ON.err(er); m.classList.remove("k-okm"); } }
+              finally { b.disabled = false; }
+            }
+          });
+          // ---------- Game Over: count-up, record / victory, coins fly after the server answers ----------
+          const countUp = (el, to, ms) => {
+            if (!el) return; to = to | 0; if (to <= 0 || (SO() && document.documentElement.classList.contains("ss-reduced"))) { el.textContent = to; return; }
+            const t0 = performance.now(); const f = (tn) => { const k = Math.min(1, (tn - t0) / ms), v = Math.round(to * (1 - Math.pow(1 - k, 3))); el.textContent = v; if (k < 1 && state === "over") requestAnimationFrame(f); else el.textContent = to; }; requestAnimationFrame(f);
+          };
+          const overVis = () => new Promise((res) => { let n = 0; const ck = () => { if (!$("over").classList.contains("x-hide") || n++ > 40) res(!$("over").classList.contains("x-hide")); else setTimeout(ck, 100); }; ck(); });
+          SM.over0 = (l, pb, k) => {
+            const so = SO(); if (!SM.on || !so) return;
+            so.music.scene("gameover"); SM.rec = l > pb && pb > 0;
+            overVis().then((ok) => { if (!ok) return; countUp($("fl"), l, 700); countUp($("fk"), k, 700); if (SM.rec) setTimeout(() => { if (state === "over") so.celebrate("record"); }, 800); });
+          };
+          SM.overR = (r, coins, lv, st) => {
+            const so = SO(); if (!SM.on || !so || !r || r.too_short || r.expired) return;
+            overVis().then((ok) => {
+              if (!ok || state !== "over") return;
+              const tg = [...document.querySelectorAll(".p10-pl.c")].find((e) => e.getClientRects().length) || null;
+              const win = st && +st.placement === 1 && +st.field_size >= 4;
+              setTimeout(() => {
+                if (state !== "over") return;
+                const go = coins > 0 ? so.celebrate("coins", { from: $("pxrews").firstElementChild || "#pxrews", to: tg, amount: Math.min(coins, 280) }) : Promise.resolve();
+                if (win && !SM.rec) so.celebrate("victory");
+                go.then(() => { if (lv && lv.levels_gained > 0 && state === "over") so.celebrate("levelup", { level: lv.level }); });
+              }, SM.rec ? 1500 : 650);
+            });
+          };
+          SM.start = () => { const so = SO(); if (!SM.on || !so) return; so.music.scene("match"); so.pause(); };
+          SM.home = () => {
+            const so = SO(); if (!SM.on || !so) return;
+            so.music.scene("menu"); so.resume(); mount();
+            if (Date.now() - greetAt > 10 * 60000) { greetAt = Date.now(); setTimeout(() => so.mascot.greet(), 700); }
+            SM.status().then(() => evPaint());
+          };
+          // ---------- end of match: the real reason (never a default "Time's up") ----------
+          const endKind = (alive) => { const p = player; if (!p) return "none"; if (alive === undefined) alive = !!p.alive; if (alive) return NFM.m === "story" && NFS.win ? "stage" : MD === "s" ? "surv" : "unknown"; const d = SM.dcOk(window.__J && __J.dc, false); return d && d.k ? d.k : "unknown"; };
+          SM.endCode = () => endKind();
+          if (NFH.death) NFH.death.push((s) => { if (s === player) SM.deadAt = time; }); // runs inside kill(), before the revive offer / Game Over
+          if (NFH.start) NFH.start.push(() => { SM.deadAt = null; });
+          SM.dcOk = (d, alive) => (!d || alive || d.k === "quit" || (SM.deadAt != null && d.t != null && Math.abs(d.t - SM.deadAt) < 0.3) ? d : null);
+          SM.endText = (d, alive) => {
+            const c = alive ? endKind(true) : "unknown";
+            if (c === "stage") return "🏆 " + _t("jDcStage", { n: NFS.stN || NFM.st || 1 });
+            if (c === "surv") return "🏆 " + _t("jDcSurv");
+            try { console.warn("[13m] unknown match end", { alive: !!alive, d, md: MD, nf: NFM.m, t: time }); const J0 = window.__J; if (J0) (J0.dlog = J0.dlog || []).push({ k: "unknown", alive: !!alive, md: MD, nf: NFM.m, t: +(+time).toFixed(2) }); } catch (_) {}
+            return _t("jDcUnk");
+          };
+          // ---------- "Killed by" card, Recent players, reports (owner request 2026-10-28) ----------
+          // Every opponent in a match today is an AI snake (realtime multiplayer is not wired), so a killer or a met snake only gets
+          // Add / Report / Block when it is linked to a real account (s.pid = server player id); AI snakes show the "AI player" chip.
+          const RPK = () => "ss-recent-" + (ON.uid || "x");
+          const rpGet = () => { try { const a = JSON.parse(lsg(RPK(), "[]")); return Array.isArray(a) ? a : []; } catch (_) { return []; } };
+          const rpSet = (a) => lss(RPK(), JSON.stringify(a.slice(0, 20)));
+          const snkInfo = (o) => ({ n: String(o.name || "").replace(/^[^\p{L}\p{N}]+/u, "").slice(0, 24) || "?", bot: o.pid ? 0 : 1, sk: o.skin, len: Math.round(o.len || 0), pid: o.pid || 0 });
+          const swH = (sk) => { let bg = "#3a4"; try { bg = sk === "gold" ? "radial-gradient(circle at 35% 35%,#ffe680,#ffc61a)" : swatch(SKINS[sk]); } catch (_) {} return `<i class="ss-sw" style="background:${bg}" aria-hidden="true"></i>`; };
+          const skNm = (sk) => { try { return sk === "gold" ? "Boss" : _t(SKINS[sk].n) || SKINS[sk].n; } catch (_) { return ""; } };
+          const tagH = (x) => (x.bot ? `<small class="k-aic ss-ai">🤖 ${esc2(_t("kBot"))}</small>` : (window.__J && __J.rid ? __J.rid(x.pid) : `<small>#${x.pid}</small>`));
+          let met = new Map(), feed = [];
+          SM.killer = null;
+          if (NFH.start) NFH.start.push(() => { met = new Map(); feed = []; SM.killer = null; });
+          setInterval(() => { // snakes you met: within ~650 units of your head, sampled every 1.5 s
+            if (state !== "play" || !player || !player.alive) return; const h = player.seg[0];
+            for (const s of snakes) { if (s === player || !s.alive || s.ad) continue; const q = s.seg[0]; if (Math.abs(q.x - h.x) > 650 || Math.abs(q.y - h.y) > 650) continue;
+              const x = snkInfo(s), k = x.n + "|" + x.bot, o = met.get(k); if (!o || o.len < x.len) met.set(k, Object.assign(x, { how: "met" })); }
+          }, 1500);
+          { const _dcx = DCX; DCX = (s, o, k) => { _dcx(s, o, k); if (s === player && o) SM.killer = Object.assign(snkInfo(o), { k, t: +(+time).toFixed(2), how: "killer" }); }; }
+          { const _cr = credit; credit = function (o, s) { const was = !!(s && s.alive); const r = _cr.apply(this, arguments); if (was && s && !s.alive && state === "play") { if (o === player) feed.push(Object.assign(snkInfo(s), { how: "victim" })); else if (s === player) feed.push(Object.assign(snkInfo(o), { how: "killer" })); } return r; }; }
+          const kOk = () => { const k = SM.killer; return k && SM.deadAt != null && Math.abs(k.t - SM.deadAt) < 0.3 ? k : null; };
+          const saveRecent = () => {
+            const k = kOk(), now = Date.now(), list = [];
+            if (k) list.push(Object.assign({}, k, { at: now }));
+            for (const f of feed) if (f.how === "victim") list.push(Object.assign({}, f, { at: now }));
+            [...met.values()].sort((a, b) => b.len - a.len).slice(0, 12).forEach((m) => list.push(Object.assign({}, m, { at: now })));
+            const seen = new Set(), out = [];
+            for (const x of list) { const key = x.n + "|" + x.bot; if (seen.has(key)) continue; seen.add(key); out.push(x); }
+            for (const x of rpGet()) { if (x.at === now) continue; out.push(x); }
+            rpSet(out);
+          };
+          const kbHTML = (k) => {
+            const cause = window.__J && __J.dcText ? __J.dcText(window.__J.dc, false) : "";
+            return `${swH(k.sk)}<span class="ss-kbt"><small>☠ ${esc2(_t("smKilledBy"))}</small><b><bdi>${esc2(k.n)}</bdi></b>${tagH(k)}</span>` +
+              `<small class="ss-kbm" dir="auto">${esc2(cause)} · ${esc2(_t("kLen"))} <b dir="ltr">${nf(k.len)}</b>${skNm(k.sk) ? " · " + esc2(skNm(k.sk)) : ""}</small>`;
+          };
+          const aiCard = (x) => B13.pop(`<div class="j-pcw ss-aic"><div class="ss-aih">${swH(x.sk)}<span><b><bdi>${esc2(x.n)}</bdi></b> <small class="k-aic ss-ai">🤖 ${esc2(_t("kBot"))}</small></span></div>` +
+            `<p>${esc2(_t("kLen"))} <b dir="ltr">${nf(x.len)}</b>${skNm(x.sk) ? " · " + esc2(skNm(x.sk)) : ""}</p><p class="k-note">${esc2(_t("smAiNote"))}</p>` +
+            `<div class="b13-row2"><button type="button" class="x-btn x-sub" data-ssrp="1">👥 ${esc2(_t("smRecent"))}</button><button type="button" class="x-btn x-main" data-b13x="1">OK</button></div></div>`);
+          SM.openWho = (x) => { if (!x) return; if (!x.bot && x.pid && window.__J && __J.card) __J.card(x.pid); else aiCard(x); };
+          SM.recent = () => {
+            const a = rpGet(), last = a.length ? a[0].at : 0;
+            const row = (x, i) => `<button type="button" class="ss-rpr" data-ssw="${i}">${swH(x.sk)}<span class="ss-rpn"><b><bdi>${esc2(x.n)}</bdi></b>${tagH(x)}</span>` +
+              `<small>${esc2(_t(x.how === "killer" ? "smHowK" : x.how === "victim" ? "smHowV" : "smHowM"))} · <span dir="ltr">${nf(x.len)}</span></small></button>`;
+            SM._rp = a;
+            B13.pop(`<div class="j-pcw ss-rp"><h3>👥 ${esc2(_t("smRecent"))}</h3><p class="k-note">${esc2(_t("smRecentSub"))}</p><div class="ss-rpl">${a.length ? a.map((x, i) => (i && a[i - 1].at !== x.at ? `<hr>` : "") + row(x, i)).join("") : `<p class="k-note">${esc2(_t("smRecentNone"))}</p>`}</div>` +
+              `<div class="b13-row2"><button type="button" class="x-btn x-main" data-b13x="1">OK</button></div></div>`);
+          };
+          document.addEventListener("click", (e) => {
+            const t = e.target && e.target.closest ? e.target : null; if (!t) return;
+            if (t.closest("[data-ssrp]")) { SM.recent(); return; }
+            const w = t.closest("[data-ssw]"); if (w) { const x = (SM._rp || [])[+w.dataset.ssw]; if (x) SM.openWho(x); return; }
+            const kb = t.closest("#sskb"); if (kb) { SM.openWho(kOk()); }
+          });
+          { const _goK = gameOver; gameOver = function () {
+              const r = _goK.apply(this, arguments);
+              try {
+                saveRecent(); const k = kOk(), dc = document.querySelector("#pxrank .j-dc");
+                if (k && dc && player && !player.alive) { dc.id = "sskb"; dc.classList.add("ss-kb"); dc.setAttribute("role", "button"); dc.setAttribute("tabindex", "0"); const im = dc.querySelector("img"); dc.innerHTML = (im ? im.outerHTML : "") + kbHTML(k); }
+                if (!$("ssrpb")) { const lt = $("lvpt"); if (lt) lt.insertAdjacentHTML("afterend", `<button type="button" class="ss-rpb" id="ssrpb" data-ssrp="1"></button>`); }
+                const rb = $("ssrpb"); if (rb) rb.textContent = "👥 " + _t("smRecent") + " ›";
+              } catch (er) { console.warn("[13m] killed-by", er); }
+              return r;
+            }; }
+          // Friends screen: Recent players button under the add-friend box
+          setInterval(() => { const g = $("jfrgo"), box = g && g.closest(".j-add, .j-addb, div"); if (g && !$("ssrpf") && box) box.insertAdjacentHTML("afterend", `<button type="button" class="x-btn x-sub ss-rpf" id="ssrpf" data-ssrp="1">👥 ${esc2(_t("smRecent"))}</button>`); }, 1500);
+          // public player card: Report for any real player who isn't you (it was only offered for friends)
+          { const J0 = window.__J || {}; if (J0.card) { const _c = J0.card; J0.card = async (q) => { await _c(q); try {
+              const p = J0.cardP, ba = document.querySelector("#b13pb .j-pc .j-pba");
+              if (p && ba && p.id && p.id !== ON.uid && !ba.querySelector('[data-jpa="rep"]')) ba.insertAdjacentHTML("beforeend", `<button type="button" class="x-btn x-sub" data-jpa="rep" data-id="${esc2(p.id)}">⚑ ${esc2(_t("onReport"))}</button>`);
+            } catch (_) {} }; } }
+          // Report: reason picker (cheating, offensive name, offensive photo, teaming, other) + optional note -> report_player (admin reports queue)
+          { const J0 = window.__J || {}, _act = J0.act || J0.act0 || (() => {}); J0.act = (async (a, id, b) => {
+              if (a === "rep") {
+                const nm = (window.__J && __J.cardP && __J.cardP.id === id ? __J.cardP.username : "") || "";
+                const rs = ["cheating", "name", "photo", "teaming", "other"];
+                try { $("b13pop").classList.remove("j-pp"); } catch (_) {} // the picker gets the solid popup panel (j-pp = transparent frame for the public card)
+                B13.pop(`<div class="j-pcw ss-rep" data-rid="${esc2(id)}"><h3>⚑ ${esc2(_t("onRepT", { x: nm }))}</h3><div class="ss-repr" role="radiogroup">${rs.map((k, i) => `<button type="button" role="radio" aria-checked="${i ? "false" : "true"}" class="x-btn x-sub${i ? "" : " on"}" data-ssr="${k}">${esc2(_t("onRep_" + k))}</button>`).join("")}</div>` +
+                  `<textarea id="ssrepn" rows="2" maxlength="300" dir="auto" placeholder="${esc2(_t("smRepNote"))}"></textarea><p class="x-err" id="ssrepm" role="alert"></p>` +
+                  `<div class="b13-row2"><button type="button" class="x-btn x-main" data-jpa="repsend" data-id="${esc2(id)}">${esc2(_t("kSend"))}</button><button type="button" class="x-btn x-sub" data-b13x="1">${esc2(_t("onCancel"))}</button></div></div>`);
+                return;
+              }
+              if (a === "repsend") {
+                const box = b.closest(".ss-rep"), on = box && box.querySelector("[data-ssr].on"), m = $("ssrepm");
+                b.disabled = true;
+                try { await ON.rpc("report_player", { p_user: id, p_reason: on ? on.dataset.ssr : "other", p_details: ($("ssrepn").value || "").trim() || null }); B13.popX(); toast(_t("onRepSent")); }
+                catch (er) { const c = er && (er.code || er.message); if (m) m.textContent = c === "already_reported" ? _t("smRepDup") : c === "cannot_report_self" ? _t("smRepSelf") : c === "rate_limited" ? _t("smRepRate") : (window.__J && __J.errT ? __J.errT(er) : ON.err(er)); b.disabled = false; }
+                return;
+              }
+              return _act(a, id, b);
+            }); }
+          document.addEventListener("click", (e) => { const r = e.target && e.target.closest && e.target.closest("[data-ssr]"); if (!r) return; r.parentElement.querySelectorAll("[data-ssr]").forEach((x) => { const on = x === r; x.classList.toggle("on", on); x.setAttribute("aria-checked", String(on)); }); });
+          // ---------- notification dots + next-unlock strip (portal) ----------
+          // idempotent: touches the DOM only when a value changes, so no observer can loop on it
+          const sDot = (el, v) => {
+            if (!el) return; const d = el.querySelector(":scope > .ss-dot"), want = !v ? null : v === true ? "" : +v > 99 ? "99+" : String(v);
+            if (want == null) { if (d) d.remove(); return; }
+            if (d && d.textContent === want) return;
+            SO().dot(el, v);
+          };
+          const uday = () => Math.floor(Date.now() / 864e5);
+          const invN = () => { try { const iv = ON.st.inventory || {}; return Object.keys(iv).filter((k) => (iv[k] | 0) > 0).length; } catch (_) { return 0; } };
+          const lkK = () => "ss-lk-seen-" + (ON.uid || "x");
+          window.addEventListener("click", (e) => {
+            const t = e.target && e.target.closest && e.target.closest('#b13hnv [data-go="shop"], #b13hnv [data-hm="sk"], #b13hsw, #b13hcv');
+            if (!t) return;
+            if (t.matches('[data-go="shop"]')) lss("ss-shop-seen", String(uday())); else lss(lkK(), String(invN()));
+            const d = t.querySelector(":scope > .ss-dot"); if (d) d.remove();
+            setTimeout(paintDots, 0);
+          }, true);
+          let nxK = "";
+          const paintDots = () => {
+            const so = SO(); if (!SM.on || !so || !homeVis()) return;
+            const nv = $("b13hnv");
+            if (nv) {
+              sDot(nv.querySelector('[data-go="shop"]'), lsg("ss-shop-seen", "") !== String(uday()));
+              const n = invN(); if (lsg(lkK(), "") === "") lss(lkK(), String(n)); // first visit: nothing is "new" yet
+              const nw = Math.max(0, n - (+lsg(lkK(), "0") || 0)); sDot(nv.querySelector("[data-hm=sk]"), nw || false);
+            }
+            const mi = $("b13hmi"); if (mi) { const ms = (window.B13 && B13.mis && B13.mis.missions) || []; sDot(mi, ms.filter((x) => !x.claimed && x.value >= x.goal).length || false); }
+            // next unlock: the next level-gated avatar (hidden when everything is unlocked)
+            const st = $("b13hst"); if (!st || typeof B13G !== "object") return;
+            let lv = 1; try { lv = level(); } catch (_) {}
+            const nx = B13G.L.filter((a) => a.u === "l" && !B13G.open(a.id)).sort((a, b) => a.q - b.q)[0];
+            let box = $("ssnx");
+            if (!nx) { if (box) box.remove(); nxK = ""; return; }
+            const k = nx.id + "|" + lv + "|" + LANG;
+            if (box && k === nxK) return;
+            if (!box) { box = document.createElement("div"); box.id = "ssnx"; box.setAttribute("aria-hidden", "true"); st.appendChild(box); }
+            nxK = k;
+            so.teaser(box, { label: so.t("next_unlock") + " · " + B13G.name(nx.id), value: Math.min(lv, nx.q), max: nx.q, icon: B13G.src(nx.id) });
+            box.querySelector("span[dir=ltr]").textContent = "Lv " + Math.min(lv, nx.q) + "/" + nx.q;
+          };
+          SM.dots = paintDots;
+          // ---------- mount / init ----------
+          const mount = () => {
+            const so = SO(), h = $("b13h"), st = $("b13hst"); if (!so || !h || !st) return;
+            if (!h.querySelector(":scope > .ss-bg")) so.mountBackground(h);
+            if (!st.querySelector(".ss-mascot")) so.mountMascot(st, { size: innerHeight < 400 ? 84 : 96, greet: !SM.mounted, greetDelay: 900, style: { insetInlineStart: "1%", bottom: "21%" } });
+            document.body.classList.add("ss-live");
+            const py = $("b13hpy"); if (py) py.classList.add("ss-breathe", "ss-shine");
+            SM.mounted = true;
+          };
+          const unmount = () => { const so = SO(); if (!so) return; so.unmountMascot(); so.unmountBackground(); so.music.stop(0.3); document.body.classList.remove("ss-live"); SM.mounted = false; };
+          const init = () => {
+            const so = SO(); if (!so || SM.on || SM.starting || !online() || !$("b13h")) return;
+            SM.starting = true;
+            const p = ON.st.profile, last = +lsg("ss-soul-last", 0), now = Date.now(), first = !lsg("ss-soul-seen", "");
+            lss("ss-soul-last", String(now));
+            if (!lsg("ss-soul-v1", "")) { // first run: carry the old Sound/Music/Vibration switches over
+              so.setPrefs({ sfx: S.sound ? 0.9 : 0, music: S.music ? 0.6 : 0, haptics: lsg("ss-vib", "1") !== "0" });
+            }
+            const g = $("game"); if (g) g.setAttribute("data-soul-nojuice", "");
+            nm0 = p.username || ""; lang0 = LANG;
+            so.init({ base: "ui/soul/", lang: LANG, name: nm0, firstLaunch: first, daysAway: last ? Math.floor((now - last) / 864e5) : 0, strings: SSTR,
+              coinTarget: "#b13hc", gemTarget: "#b13hg", autoOverlays: ".x-ov", panelSelector: ":scope > .x-box, :scope > .b13-pb, :scope > *", onPrefs: syncPrefs })
+              .then(() => {
+                SM.on = true; SM.starting = false; lss("ss-soul-seen", "1"); greetAt = Date.now();
+                syncPrefs(so.getPrefs()); SM.gameSet(); mount(); evPaint();
+                clearInterval(evT); evT = setInterval(evNext, 6000);
+                SM.status().then((d) => { evPaint(); if (d && !d.claimed && lsg("ss-streak-auto", "") !== String(d.server_day)) setTimeout(() => { if (homeVis() && !anyOpen()) { lss("ss-streak-auto", String(d.server_day)); SM.streak(true); } }, 2100); });
+              }).catch(() => { SM.starting = false; });
+          };
+          setInterval(() => {
+            const so = SO(); if (!so) return;
+            if (!SM.on) { init(); return; }
+            if (!online()) { if (SM.mounted) unmount(); return; }
+            if (!SM.mounted && $("b13h")) { mount(); so.music.scene(state === "play" ? "match" : "menu"); }
+            const n = ON.st.profile.username || ""; if (n !== nm0) { nm0 = n; so.setName(n); }
+            if (LANG !== lang0) { lang0 = LANG; so.setLang(LANG); evPaint(); }
+            try { paintDots(); } catch (_) {}
+          }, 1000);
         }
         requestAnimationFrame(loop);
       })();
@@ -15615,5 +15952,992 @@ html, body, button, [data-go], [role="button"], .x-it, .j-frow { touch-action: m
 .l-pkn.l-pkt { margin: 0; padding: 6px 8px; border-radius: 10px; background: rgba(120, 200, 255, .08); }
 
 </style>
+<style id="ss13m-soul">
+/* Super Snake — SOUL PASS module styles. Everything is namespaced .ss-* / --ss-*; nothing here touches game selectors.
+   Uses individual transform properties (scale / translate) so it composes with any transform the game already sets. */
+:root {
+  --ss-gold: #ffd36a; --ss-gold2: #e9a93a; --ss-ink: #0b1030; --ss-glass: rgba(14, 20, 52, .82); --ss-line: rgba(255, 214, 120, .55);
+  --ss-spring: cubic-bezier(.34, 1.56, .64, 1); --ss-out: cubic-bezier(.22, 1, .36, 1);
+  --ss-font: "Baloo 2", "Cairo", "Nunito", system-ui, sans-serif;
+}
+
+/* ---------- button juice ---------- */
+.ss-juice { transition: scale .32s var(--ss-spring), filter .2s ease; }
+.ss-press { scale: .93 !important; filter: brightness(1.12) saturate(1.1); transition: scale .07s ease-out, filter .07s ease-out !important; }
+.ss-pop { animation: ss-pop .38s var(--ss-spring); }
+@keyframes ss-pop { 0% { scale: .93; } 55% { scale: 1.05; } 100% { scale: 1; } }
+.ss-shine { position: relative; overflow: hidden; }
+.ss-shine::after { content: ""; position: absolute; inset: -20% auto -20% -60%; width: 40%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .45), transparent); transform: skewX(-18deg);
+  animation: ss-shine 3.6s ease-in-out infinite; }
+@keyframes ss-shine { 0%, 62% { left: -60%; } 100% { left: 130%; } }
+.ss-breathe { animation: ss-breathe 2.4s ease-in-out infinite; }
+@keyframes ss-breathe { 0%, 100% { scale: 1; filter: drop-shadow(0 0 0 rgba(120, 255, 140, 0)); } 50% { scale: 1.035; filter: drop-shadow(0 0 14px rgba(120, 255, 140, .55)); } }
+
+/* notification dot */
+.ss-dot { position: absolute; top: -4px; inset-inline-end: -4px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px;
+  background: radial-gradient(circle at 35% 30%, #ff8a8a, #e3122f 60%); color: #fff; font: 800 11px/18px var(--ss-font); text-align: center;
+  box-shadow: 0 0 0 2px #1a0e2a, 0 2px 6px rgba(0, 0, 0, .5); pointer-events: none; z-index: 3; animation: ss-dot 2.2s ease-in-out infinite; }
+.ss-dot:empty { min-width: 12px; height: 12px; padding: 0; top: -2px; inset-inline-end: -2px; }
+@keyframes ss-dot { 0%, 80%, 100% { scale: 1; } 86% { scale: 1.25; } 92% { scale: .95; } }
+
+/* ---------- living background ---------- */
+.ss-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; background: #070c22; contain: strict; }
+.ss-bg > * { position: absolute; will-change: transform; }
+.ss-bg .ss-scene { inset: -4% -4%; background: center / cover no-repeat; transition: opacity 2.5s linear; }
+.ss-bg .ss-tint { inset: 0; mix-blend-mode: normal; transition: background-color 3s linear; will-change: auto; }
+.ss-bg canvas { inset: 0; width: 100%; height: 100%; }
+.ss-bg .ss-fore { bottom: -3%; height: 106%; width: auto; }
+.ss-bg .ss-fore.l { left: -2%; }
+.ss-bg .ss-fore.r { right: -2%; }
+.ss-bg .ss-shaft { top: -30%; width: 22%; height: 150%; transform-origin: 50% 0;
+  background: linear-gradient(180deg, rgba(255, 236, 170, .28), rgba(255, 236, 170, .08) 55%, transparent 80%);
+  filter: blur(6px); animation: ss-shaft 9s ease-in-out infinite; will-change: opacity; }
+@keyframes ss-shaft { 0%, 100% { opacity: .35; } 50% { opacity: .85; } }
+.ss-bg .ss-vig { inset: 0; will-change: auto; background: radial-gradient(ellipse 70% 75% at 50% 55%, transparent 55%, rgba(4, 6, 20, .45)); }
+.ss-bg.ss-static .ss-shaft { animation: none; opacity: .5; }
+
+/* ---------- mascot ---------- */
+.ss-mascot { position: absolute; width: 120px; height: 120px; z-index: 5; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.ss-mascot .ss-mbody { position: absolute; inset: 0; transform-origin: 50% 100%; animation: ss-idle 3.2s ease-in-out infinite; }
+.ss-mascot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .12s linear; pointer-events: none;
+  -webkit-user-drag: none; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .45)); }
+.ss-mascot img.on { opacity: 1; }
+.ss-mascot .ss-mshadow { position: absolute; left: 22%; right: 22%; bottom: -2px; height: 10px; border-radius: 50%; background: rgba(0, 0, 0, .35); filter: blur(3px); }
+@keyframes ss-idle { 0%, 100% { scale: 1 1; } 50% { scale: 1.015 .975; } }
+.ss-mascot.ss-hop .ss-mbody { animation: ss-hop .55s var(--ss-spring); }
+@keyframes ss-hop { 0% { scale: 1.1 .85; translate: 0 0; } 40% { scale: .92 1.1; translate: 0 -22%; } 70% { scale: 1.05 .95; translate: 0 0; } 100% { scale: 1 1; translate: 0 0; } }
+.ss-mascot.ss-shake .ss-mbody { animation: ss-wob .5s ease; }
+@keyframes ss-wob { 0%, 100% { rotate: 0deg; } 20% { rotate: -9deg; } 40% { rotate: 7deg; } 60% { rotate: -5deg; } 80% { rotate: 3deg; } }
+.ss-mascot.ss-spin .ss-mbody { animation: ss-spin .8s var(--ss-out); }
+@keyframes ss-spin { to { rotate: 360deg; } }
+.ss-mascot.ss-enter { animation: ss-menter .7s var(--ss-spring) both; }
+@keyframes ss-menter { from { translate: 0 60%; opacity: 0; scale: .6; } to { translate: 0 0; opacity: 1; scale: 1; } }
+
+.ss-bubble { position: absolute; bottom: 92%; inset-inline-start: 55%; min-width: 120px; max-width: 230px; padding: 8px 12px; border-radius: 16px;
+  background: #fffaf0; color: #1b1f3a; font: 700 13px/1.3 var(--ss-font); box-shadow: 0 6px 18px rgba(0, 0, 0, .35), inset 0 -3px 0 rgba(0, 0, 0, .08);
+  transform-origin: 0 100%; scale: 0; opacity: 0; transition: scale .35s var(--ss-spring), opacity .2s ease; pointer-events: none; z-index: 6; white-space: normal; }
+[dir="rtl"] .ss-bubble, .ss-bubble[dir="rtl"] { transform-origin: 100% 100%; }
+.ss-bubble::after { content: ""; position: absolute; top: 100%; inset-inline-start: 14px; border: 8px solid transparent; border-top-color: #fffaf0; border-bottom: 0; }
+.ss-bubble.on { scale: 1; opacity: 1; }
+.ss-zzz { position: absolute; top: 4%; inset-inline-end: 8%; font: 800 16px var(--ss-font); color: #cfe9ff; text-shadow: 0 0 6px #6aa8ff; opacity: 0; pointer-events: none; }
+.ss-mascot.ss-sleep .ss-zzz { animation: ss-z 2.6s ease-in-out infinite; }
+@keyframes ss-z { 0% { opacity: 0; translate: 0 0; scale: .6; } 30% { opacity: 1; } 100% { opacity: 0; translate: 14px -30px; scale: 1.2; } }
+
+/* ---------- full-screen FX + modal ---------- */
+.ss-fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 2147483000; }
+.ss-banner { position: fixed; left: 50%; top: 38%; translate: -50% -50%; z-index: 2147483001; pointer-events: none; text-align: center;
+  font: 900 clamp(34px, 9vh, 64px)/1 var(--ss-font); color: #fff4c6; letter-spacing: .02em;
+  -webkit-text-stroke: 2px #6b3a00; text-shadow: 0 4px 0 #a35c00, 0 8px 22px rgba(0, 0, 0, .55), 0 0 30px rgba(255, 210, 90, .6); animation: ss-ban 1.9s var(--ss-out) forwards; }
+.ss-banner small { display: block; margin-top: 8px; font-size: .38em; -webkit-text-stroke: 0; color: #fff; text-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
+@keyframes ss-ban { 0% { scale: 2.4; opacity: 0; } 14% { scale: .9; opacity: 1; } 22% { scale: 1.06; } 30%, 78% { scale: 1; opacity: 1; } 100% { scale: 1.1; opacity: 0; } }
+.ss-rays { position: fixed; left: 50%; top: 40%; width: 140vmax; height: 140vmax; translate: -50% -50%; pointer-events: none; z-index: 2147482999;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 220, 120, .22) 0 6deg, transparent 6deg 18deg);
+  -webkit-mask: radial-gradient(circle, #000 0, transparent 45%); mask: radial-gradient(circle, #000 0, transparent 45%);
+  animation: ss-rays 2s linear forwards; }
+@keyframes ss-rays { 0% { opacity: 0; rotate: 0deg; } 15% { opacity: 1; } 80% { opacity: .8; } 100% { opacity: 0; rotate: 40deg; } }
+
+.ss-modal { position: fixed; inset: 0; z-index: 2147482990; display: flex; align-items: center; justify-content: center; padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: radial-gradient(ellipse at 50% 45%, rgba(40, 30, 90, .55), rgba(3, 4, 14, .88)); font-family: var(--ss-font); color: #fff; animation: ss-fade .25s ease both; }
+@keyframes ss-fade { from { opacity: 0; } }
+.ss-card { position: relative; width: min(680px, 94vw); max-height: 94vh; overflow: auto; box-sizing: border-box; padding: 14px 18px 16px; border-radius: 22px;
+  background: linear-gradient(180deg, rgba(36, 44, 104, .97), rgba(14, 18, 50, .97)); border: 2px solid var(--ss-line);
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, .35), 0 20px 50px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .15); }
+.ss-in { animation: ss-in .45s var(--ss-spring) both; }
+@keyframes ss-in { from { scale: .82; translate: 0 18px; opacity: 0; } to { scale: 1; translate: 0 0; opacity: 1; } }
+.ss-out { animation: ss-outk .22s ease-in both; }
+@keyframes ss-outk { to { scale: .9; translate: 0 10px; opacity: 0; } }
+.ss-card h3 { margin: 0 0 2px; font-size: 22px; font-weight: 900; color: var(--ss-gold); text-shadow: 0 2px 0 #6b3a00; text-align: center; }
+.ss-card .ss-sub { margin: 0 0 10px; text-align: center; font-size: 13px; opacity: .85; }
+.ss-x { position: absolute; top: 8px; inset-inline-end: 8px; width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--ss-line); background: rgba(0, 0, 0, .35); color: #fff; font: 900 16px var(--ss-font); cursor: pointer; }
+.ss-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; margin: 8px 0 12px; }
+.ss-day { position: relative; min-width: 0; height: clamp(84px, 26vh, 118px); border-radius: 14px; padding: 6px 4px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  background: linear-gradient(180deg, #2a3478, #1a2050); border: 2px solid rgba(255, 255, 255, .12); font-weight: 800; font-size: 11px; }
+.ss-day b { font-size: 12px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-day > span { white-space: nowrap; }
+.ss-day .ss-ri { width: 70%; aspect-ratio: 1; background: url() center / contain no-repeat; }
+.ss-day.done { opacity: .62; }
+.ss-day.done::after { content: "✔"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 34px; color: #6dff9b; text-shadow: 0 2px 0 #0b5a2a, 0 0 12px rgba(80, 255, 140, .6); }
+.ss-day.today { border-color: var(--ss-gold); background: linear-gradient(180deg, #5a4a14, #2c2410); box-shadow: 0 0 0 3px rgba(255, 210, 90, .25), 0 0 22px rgba(255, 200, 80, .45); animation: ss-breathe 1.8s ease-in-out infinite; }
+.ss-day.big { grid-column: span 1; background: linear-gradient(180deg, #6a2a7a, #2a1240); }
+.ss-day.stamp::after { animation: ss-stamp .5s var(--ss-spring) both; }
+@keyframes ss-stamp { from { scale: 3; opacity: 0; } to { scale: 1; opacity: 1; } }
+.ss-row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.ss-btn { min-width: 160px; height: 46px; padding: 0 22px; border-radius: 14px; border: 0; cursor: pointer; font: 900 18px var(--ss-font); color: #fff;
+  background: linear-gradient(180deg, #7dff6a, #22b33a 55%, #168a2a); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .25), inset 0 2px 0 rgba(255, 255, 255, .45), 0 4px 0 #0c5a1a, 0 8px 18px rgba(0, 0, 0, .4);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .35); }
+.ss-btn[disabled] { filter: grayscale(.8) brightness(.8); cursor: default; }
+.ss-btn.gold { background: linear-gradient(180deg, #ffe58a, #f2b230 55%, #c47e10); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .2), inset 0 2px 0 rgba(255, 255, 255, .5), 0 4px 0 #7a4a06, 0 8px 18px rgba(0, 0, 0, .4); color: #4a2a00; text-shadow: 0 1px 0 rgba(255, 255, 255, .5); }
+.ss-chestwrap { position: relative; width: 220px; height: 210px; margin: 0 auto; cursor: pointer; }
+.ss-chestwrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.ss-chestwrap .ss-cglow { position: absolute; inset: -30%; border-radius: 50%; background: radial-gradient(circle, rgba(255, 220, 120, .65), transparent 60%); opacity: 0; transition: opacity .3s; }
+.ss-chestwrap.lit .ss-cglow { opacity: 1; animation: ss-rays 3s linear infinite; }
+.ss-chestwrap.shk img { animation: ss-cshake .32s ease; }
+@keyframes ss-cshake { 0%, 100% { rotate: 0deg; scale: 1; } 25% { rotate: -6deg; scale: 1.05 .95; } 50% { rotate: 5deg; scale: .97 1.04; } 75% { rotate: -3deg; } }
+.ss-loot { display: flex; gap: 14px; justify-content: center; margin: 6px 0 10px; font: 900 22px var(--ss-font); }
+.ss-loot span { display: inline-flex; align-items: center; gap: 6px; animation: ss-in .5s var(--ss-spring) both; }
+.ss-loot i { width: 30px; height: 30px; display: inline-block; background: center / contain no-repeat; }
+
+/* ---------- rotator + teaser ---------- */
+.ss-rot { position: relative; overflow: hidden; border-radius: 14px; touch-action: pan-y; }
+.ss-rot .ss-slides { display: flex; transition: transform .55s var(--ss-out); }
+.ss-rot .ss-slide { flex: 0 0 100%; }
+.ss-rot .ss-pips { position: absolute; bottom: 6px; left: 0; right: 0; display: flex; gap: 5px; justify-content: center; pointer-events: none; }
+.ss-rot .ss-pips i { width: 6px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .45); transition: width .3s; }
+.ss-rot .ss-pips i.on { width: 16px; background: var(--ss-gold); }
+.ss-teaser { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; background: var(--ss-glass); border: 1px solid var(--ss-line); font: 800 12px var(--ss-font); color: #fff; }
+.ss-teaser img { width: 34px; height: 34px; object-fit: contain; }
+.ss-teaser .ss-bar { flex: 1; height: 8px; border-radius: 4px; background: rgba(0, 0, 0, .45); overflow: hidden; }
+.ss-teaser .ss-bar i { display: block; height: 100%; background: linear-gradient(90deg, #ffe17a, #ff9a2a); border-radius: 4px; }
+
+/* ---------- settings panel ---------- */
+.ss-set { display: grid; gap: 8px; font-family: var(--ss-font); color: #fff; }
+.ss-set .ss-sr { display: flex; align-items: center; gap: 12px; min-height: 40px; padding: 4px 10px; border-radius: 12px; background: rgba(255, 255, 255, .04); }
+.ss-set .ss-sr > span { flex: 0 0 38%; font-weight: 700; font-size: 14px; }
+.ss-set input[type=range] { flex: 1; accent-color: #ffcf4a; height: 28px; }
+.ss-set .ss-seg { display: inline-flex; margin-inline-start: auto; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255, 255, 255, .15); }
+.ss-set .ss-seg button { border: 0; padding: 7px 12px; background: rgba(0, 0, 0, .3); color: #cfd6ff; font: 800 12px var(--ss-font); cursor: pointer; }
+.ss-set .ss-seg button.on { background: linear-gradient(180deg, #4aa8ff, #1f6fe0); color: #fff; }
+.ss-set output { width: 36px; text-align: end; font-weight: 800; font-size: 12px; opacity: .8; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-shine::after, .ss-breathe, .ss-dot, .ss-mascot .ss-mbody, .ss-bg .ss-shaft, .ss-day.today { animation: none !important; }
+}
+.ss-reduced .ss-shine::after, .ss-reduced .ss-breathe, .ss-reduced .ss-dot, .ss-reduced .ss-mascot .ss-mbody, .ss-reduced .ss-day.today { animation: none !important; }
+
+/* build13m: soul pass glue */
+body.ss-live #b13h > .h-bg, body.ss-live #b13h > .h-fx { display: none; }
+body.ss-live #b13h > .ss-bg { z-index: 0; }
+body.ss-live #b13h > .h-sc { z-index: 1; }
+#b13hst .ss-mascot { z-index: 4; }
+#b13hst .ss-bubble { max-width: 210px; }
+/* rotating event card */
+#b13hev .ss-evp { position: absolute; bottom: 5px; inset-inline-end: 9px; display: flex; gap: 4px; z-index: 2; pointer-events: none; }
+#b13hev .ss-evp i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, .35); transition: width .25s, background .25s; }
+#b13hev .ss-evp i.on { width: 12px; border-radius: 3px; background: #ffd46b; }
+#b13hev .ss-evc { width: 22px; height: 22px; object-fit: contain; margin-inline-end: 4px; flex: none; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5)); }
+#b13hev.ss-evin > *:not(.h-art):not(.ss-evp) { animation: ss-evin .45s cubic-bezier(.2, .9, .3, 1.2) both; }
+#b13hev.ss-evin > .h-art { animation: ss-evfade .5s ease both; }
+@keyframes ss-evin { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+@keyframes ss-evfade { from { opacity: .35; } to { opacity: 1; } }
+/* Settings > App: SSoul sliders inside the k-sec card */
+#kssoul .ss-set { padding: 0; background: none; border: 0; box-shadow: none; }
+#kssoul .ss-sr { padding: 7px 0; border-bottom: 1px solid rgba(255, 255, 255, .07); }
+#kssoul .ss-sr:last-child { border-bottom: 0; }
+.ss-more { flex-wrap: wrap; }
+.ss-cred p { margin: 4px 0; line-height: 1.35; }
+.ss-new ul { margin: 6px 0 10px; padding-inline-start: 18px; text-align: start; line-height: 1.45; }
+/* streak calendar: the reward amount always fits (short landscape phones) */
+.ss-day .ss-ri { width: 100%; aspect-ratio: auto; flex: 1 1 0; min-height: 0; margin: 3px 0; }
+.ss-day b { flex: none; line-height: 1.15; }
+/* chest sequence fits a 330 px tall landscape phone: chest, loot and Collect all on screen */
+.ss-chestwrap { width: min(220px, 52vh); height: min(210px, 50vh); }
+.ss-modal .ss-card .ss-loot { margin: 2px 0 6px; font-size: min(22px, 5.6vh); }
+.ss-modal .ss-card .ss-sub { margin-bottom: 6px; }
+@media (max-height: 400px) { .ss-modal .ss-card { padding: 10px 16px 12px; } .ss-modal .ss-card h3 { font-size: 19px; } .ss-days { margin: 4px 0 8px; } }
+/* Game Over rank card: never squeezed, so the cause pill never covers "OF 30 SNAKES" */
+body #over #pxrank { flex-shrink: 0 !important; grid-template-rows: auto auto; }
+body #over #pxrank .j-rk small.j-of { overflow: visible; }
+body #over .x-box > .p10-oc.j-col0 > :not(#pxrank) { flex-shrink: 1; min-height: 0; }
+body #over #pxrank .j-dc.ok { background: rgba(80, 220, 140, .14); border-color: rgba(110, 240, 160, .5); }
+body #over #pxrank .j-dc.ok b { color: #c8ffd9; }
+/* Killed by card (inside the rank card), Recent players, report picker */
+body #over #pxrank .j-dc.ss-kb { cursor: pointer; display: grid; grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "im sw t" "im sw m"; column-gap: 8px; row-gap: 0; padding: 4px 10px 4px 4px; }
+body #over #pxrank .j-dc.ss-kb > img { grid-area: im; width: 58px; height: 36px; }
+body #over #pxrank .j-dc.ss-kb > .ss-sw { grid-area: sw; }
+.ss-kbt { grid-area: t; display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; }
+.ss-kbt small { font: 800 10px/1 var(--sans, system-ui); letter-spacing: 1px; text-transform: uppercase; color: #ffb3ba; }
+.ss-kbt b { font: 900 14px/1.15 var(--sans, system-ui) !important; color: #fff !important; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ss-kbm { grid-area: m; font: 700 11px/1.25 var(--sans, system-ui); color: #ffd0d4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ss-sw { display: inline-block; width: 30px; height: 30px; border-radius: 50%; flex: none; border: 2px solid rgba(255, 255, 255, .7); box-shadow: 0 2px 6px rgba(0, 0, 0, .5); align-self: center; }
+.ss-ai { font-size: 10px !important; padding: 1px 6px; border-radius: 999px; background: rgba(120, 160, 255, .2); color: #cfe0ff !important; white-space: nowrap; letter-spacing: 0 !important; text-transform: none !important; }
+.ss-rpb { margin-top: 2px; align-self: center; background: none; border: 0; color: #ffe08a; font: 800 12.5px var(--sans, system-ui); padding: 6px 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.ss-rp .ss-rpl { max-height: min(52vh, 320px); overflow: auto; display: flex; flex-direction: column; gap: 4px; margin: 6px 0; -webkit-overflow-scrolling: touch; }
+.ss-rp hr { border: 0; border-top: 1px dashed rgba(255, 255, 255, .18); margin: 4px 0; width: 100%; }
+.ss-rpr { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 8px; border-radius: 10px; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .1); color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.ss-rpr .ss-sw { width: 26px; height: 26px; }
+.ss-rpn { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; overflow: hidden; }
+.ss-rpn b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-rpr > small { opacity: .8; white-space: nowrap; }
+.ss-aih { display: flex; align-items: center; gap: 10px; justify-content: center; }
+.ss-aih .ss-sw { width: 44px; height: 44px; }
+.ss-repr { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0; }
+.ss-repr .x-btn.on { outline: 2px solid #ffd659; background: rgba(255, 214, 89, .18) !important; }
+.ss-rep textarea { width: 100%; box-sizing: border-box; border-radius: 10px; padding: 8px; background: rgba(0, 0, 0, .3); color: #fff; border: 1px solid rgba(255, 255, 255, .2); font: inherit; resize: none; }
+.ss-rpf { margin-top: 8px; width: 100%; }
+body #over #pxrank .ss-kbm, body #over #pxrank .ss-kbm b { text-transform: none !important; letter-spacing: 0 !important; font-size: 11px !important; }
+body #over #pxrank .ss-kbm b { font-weight: 900 !important; color: #fff !important; }
+/* build13m: next-unlock strip under the skin plate (display only, never takes taps) */
+#ssnx { position: absolute; inset-inline-end: 4px; bottom: 68px; width: min(215px, 40%); padding: 3px 9px; gap: 6px; font-size: 10.5px; pointer-events: none; z-index: 2; opacity: .95; }
+#ssnx img { width: 24px; height: 24px; border-radius: 50%; }
+#ssnx .ss-bar { height: 5px; margin-top: 2px; }
+#ssnx span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.b13h-low #ssnx { opacity: 1; }
+#b13h .nv > .ss-dot { top: 1px; inset-inline-end: calc(50% - 26px); }
+#b13h #b13hmi > .ss-dot { top: 4px; inset-inline-end: 4px; }
+/* build13m QA: on short screens the selected-stage card covered stage node 11 (EN + AR); keep it clear of the map path */
+@media (max-height: 360px) { #b13hsm .h-sc { width: 236px !important; } #b13hsm .h-sc .h-goal span { font-size: 11.5px; } }
+
+</style>
+<script id="ss13m-soul-js">
+/* Super Snake — SOUL PASS module  (window.SSoul)
+ * Self-contained, drop-in. Only global it creates: window.SSoul.
+ * Rules kept: everything lives in one IIFE; every helper is a `const` arrow (no block-level function declarations
+ * that could shadow game globals such as loop/start/beep); listeners are passive; nothing calls preventDefault;
+ * clicks are never blocked; all loops pause when the page is hidden; prefers-reduced-motion is honoured.
+ *
+ * Hooks:  SSoul.init(opts) -> Promise            SSoul.sfx(name, {vol, rate})        SSoul.haptic(kind)
+ *         SSoul.celebrate(type, opts) -> Promise SSoul.mascotSay(key, vars)          SSoul.music.play(track) / .stop() / .scene(s)
+ *         SSoul.mountBackground(host, opts)      SSoul.mountMascot(host, opts)       SSoul.streak.show(opts) -> Promise
+ *         SSoul.transition(el, 'in'|'out')       SSoul.dot(el, n|true|false)         SSoul.rotator(el, opts)   SSoul.teaser(el, opts)
+ *         SSoul.renderSettings(el)               SSoul.setPrefs(p) / getPrefs()      SSoul.setLang(l) / setName(n)
+ *         SSoul.pause() / resume()               SSoul.t(key, vars)                  SSoul.destroy()
+ */
+(() => {
+  "use strict";
+  if (window.SSoul && window.SSoul.version) return;
+  const VERSION = "soul-1.0";
+  const W = window, D = document;
+  const now = () => (W.performance && performance.now ? performance.now() : Date.now());
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = (arr) => arr[(Math.random() * arr.length) | 0];
+  const el = (tag, cls, html) => { const e = D.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+  const safe = (fn) => (...a) => { try { return fn(...a); } catch (e) { if (W.console) console.warn("[SSoul]", e); return undefined; } };
+  const sstep = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
+
+  // ------------------------------------------------------------------ config + prefs
+  const cfg = {
+    base: "soul/", lang: "en", name: "", firstLaunch: false, daysAway: 0, streakDay: 0,
+    strings: null, i18nUrl: null, audioContext: null,
+    coinTarget: null, gemTarget: null,
+    juiceSelector: "button, .x-btn, [data-go], [data-kset], [data-b13s], [role=tab], .h-card, .h-mini, .h-mode, .h-mapc, [data-soul-btn]",
+    noJuiceSelector: "input, textarea, select, canvas, [data-soul-nojuice], .ss-mascot",
+    backSelector: "[data-back], .k-hb, .x-back, .ss-x, [data-soul-sfx=close], [aria-label=Back]",
+    playSelector: ".h-play, #b13hpy, [data-soul-play]",
+    sparkleSelector: ".h-play, #b13hpy, .x-main, .ss-btn, [data-soul-sparkle]",
+    autoOverlays: false, panelSelector: ":scope > *",
+    iosSwitchHaptic: false, onPrefs: null,
+  };
+  const PKEY = "ss-soul-v1";
+  const DEF = { master: 0.9, music: 0.6, sfx: 0.9, haptics: true, motion: "auto", fps: 60, livebg: true, mascot: true, track: "auto" };
+  const prefs = Object.assign({}, DEF);
+  try { Object.assign(prefs, JSON.parse(localStorage.getItem(PKEY) || "{}")); } catch (e) { /* private mode */ }
+  const savePrefs = () => { try { localStorage.setItem(PKEY, JSON.stringify(prefs)); } catch (e) { /* ignore */ } };
+  const mqReduce = W.matchMedia ? W.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+  const reduced = () => prefs.motion === "reduced" || (prefs.motion === "auto" && !!mqReduce.matches);
+  const asset = (p) => cfg.base + "assets/" + p;
+
+  // ------------------------------------------------------------------ i18n
+  let STR = {};
+  const lastPick = {};
+  const t = (key, vars) => {
+    const e = STR[key]; let s = e ? (e[cfg.lang] != null ? e[cfg.lang] : e.en) : key;
+    if (Array.isArray(s)) { let i = (Math.random() * s.length) | 0; if (s.length > 1 && i === lastPick[key]) i = (i + 1) % s.length; lastPick[key] = i; s = s[i]; }
+    s = String(s == null ? key : s);
+    const v = Object.assign({ name: cfg.name || "" }, vars || {});
+    return s.replace(/\{(\w+)\}/g, (m, k) => (v[k] != null ? String(v[k]) : m)).replace(/\s+([!?.،,])/g, (m, p) => (cfg.name ? m : p));
+  };
+  const isRTL = () => cfg.lang === "ar";
+
+  // ------------------------------------------------------------------ gestures (shared)
+  let lastGesture = 0, lastAct = now();
+  const gestureListeners = [];
+  const onGesture = (fn) => gestureListeners.push(fn);
+  const gesture = () => { lastGesture = now(); lastAct = lastGesture; for (let i = 0; i < gestureListeners.length; i++) safe(gestureListeners[i])(); };
+
+  // ------------------------------------------------------------------ audio manager
+  const MUSIC = { arena: { loop: 38.4, gain: 1.0 }, night: { loop: 25.2631579, gain: 0.55 } };
+  const SFX_NAMES = ["tap", "open", "close", "coin", "reward", "levelup", "error", "whoosh", "pop", "chest"];
+  const AU = { ctx: null, own: false, master: null, mus: null, fx: null, buf: {}, pend: {}, cur: null, curName: "", want: "", scene: "menu", lastPlay: {}, ext: "mp3" };
+  const pickExt = () => {
+    const ua = navigator.userAgent || "";
+    const apple = /iP(hone|ad|od)/.test(ua) || (/Safari/.test(ua) && !/Chrome|Chromium|Android|Edg/.test(ua));
+    let ogg = "";
+    try { ogg = D.createElement("audio").canPlayType('audio/ogg; codecs="vorbis"'); } catch (e) { /* none */ }
+    return !apple && ogg ? "ogg" : "mp3";
+  };
+  const ensureCtx = () => {
+    if (!AU.ctx) {
+      const AC = W.AudioContext || W.webkitAudioContext; if (!AC) return null;
+      AU.ctx = cfg.audioContext || new AC(); AU.own = !cfg.audioContext;
+      AU.master = AU.ctx.createGain(); AU.master.connect(AU.ctx.destination);
+      AU.mus = AU.ctx.createGain(); AU.mus.connect(AU.master);
+      AU.fx = AU.ctx.createGain(); AU.fx.connect(AU.master);
+      applyVolumes();
+    }
+    if (AU.ctx.state !== "running" && !D.hidden) { try { AU.ctx.resume(); } catch (e) { /* ignore */ } }
+    return AU.ctx;
+  };
+  const applyVolumes = () => {
+    if (!AU.ctx) return; const tt = AU.ctx.currentTime;
+    AU.master.gain.setTargetAtTime(clamp(+prefs.master, 0, 1), tt, 0.05);
+    AU.mus.gain.setTargetAtTime(clamp(+prefs.music, 0, 1) * 0.55, tt, 0.15);
+    AU.fx.gain.setTargetAtTime(clamp(+prefs.sfx, 0, 1), tt, 0.05);
+  };
+  const decode = (ab) => new Promise((res, rej) => { try { const p = AU.ctx.decodeAudioData(ab, res, rej); if (p && p.then) p.then(res, rej); } catch (e) { rej(e); } });
+  const load = (name) => {
+    if (AU.buf[name]) return Promise.resolve(AU.buf[name]);
+    if (AU.pend[name]) return AU.pend[name];
+    if (!ensureCtx()) return Promise.reject(new Error("no audio"));
+    AU.pend[name] = fetch(asset("audio/" + name + "." + AU.ext)).then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .then(decode).then((b) => { AU.buf[name] = b; return b; })
+      .catch((e) => { delete AU.pend[name]; throw e; });
+    return AU.pend[name];
+  };
+  let unlocked = false;
+  const unlock = () => {
+    const c = ensureCtx(); if (!c) return;
+    if (!unlocked) {
+      unlocked = true;
+      try { const b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); } catch (e) { /* ignore */ }
+      SFX_NAMES.forEach((n) => load("sfx_" + n).catch(() => {}));
+      if (AU.want) musicPlay(AU.want);
+    }
+  };
+  onGesture(unlock);
+
+  const sfx = (name, o) => {
+    o = o || {};
+    if (!unlocked || +prefs.sfx <= 0 || +prefs.master <= 0 || D.hidden) return;
+    const c = ensureCtx(); if (!c) return;
+    const tn = now(); if (tn - (AU.lastPlay[name] || 0) < (o.gap != null ? o.gap : 35)) return; AU.lastPlay[name] = tn;
+    const go = (b) => {
+      const s = c.createBufferSource(), g = c.createGain(); s.buffer = b;
+      const jitter = name === "tap" || name === "pop" || name === "coin" ? 1 + (Math.random() - 0.5) * 0.08 : 1;
+      s.playbackRate.value = (o.rate || 1) * jitter; g.gain.value = o.vol != null ? o.vol : 1;
+      s.connect(g); g.connect(AU.fx); s.start(0);
+    };
+    const b = AU.buf["sfx_" + name];
+    if (b) go(b); else load("sfx_" + name).then((bb) => { if (now() - tn < 300) go(bb); }).catch(() => {});
+  };
+
+  const trackFor = (tr) => {
+    if (tr && tr !== "auto") return tr;
+    const h = hourNow(); return h >= 19 || h < 6 ? "night" : "arena";
+  };
+  const musicPlay = (tr) => {
+    AU.want = tr || prefs.track || "auto";
+    if (!unlocked || AU.scene === "match") return;
+    const name = trackFor(AU.want); if (name === AU.curName && AU.cur) return;
+    const c = ensureCtx(); if (!c) return;
+    load("music_" + name).then((b) => {
+      if (AU.scene === "match" || trackFor(AU.want) !== name) return;
+      musicStop(1.2);
+      // MP3 decoders add a few ms of priming silence: find the first audible sample and loop from there.
+      const ch = b.getChannelData(0); let off = 0; const lim = Math.min(ch.length, (b.sampleRate * 0.25) | 0);
+      for (let i = 0; i < lim; i++) { if (Math.abs(ch[i]) > 0.0015) { off = i / b.sampleRate; break; } }
+      const s = c.createBufferSource(), g = c.createGain(); s.buffer = b; s.loop = true;
+      s.loopStart = off; s.loopEnd = Math.min(b.duration, off + MUSIC[name].loop);
+      g.gain.setValueAtTime(0.0001, c.currentTime); g.gain.exponentialRampToValueAtTime(MUSIC[name].gain, c.currentTime + 1.5);
+      s.connect(g); g.connect(AU.mus); s.start(0, off);
+      AU.cur = { s, g }; AU.curName = name;
+    }).catch(() => {});
+  };
+  const musicStop = (fade) => {
+    const cur = AU.cur; if (!cur || !AU.ctx) return; AU.cur = null; AU.curName = "";
+    const tt = AU.ctx.currentTime, f = fade == null ? 0.6 : fade;
+    try { cur.g.gain.cancelScheduledValues(tt); cur.g.gain.setValueAtTime(cur.g.gain.value || 0.0001, tt); cur.g.gain.exponentialRampToValueAtTime(0.0001, tt + f); cur.s.stop(tt + f + 0.05); } catch (e) { /* ignore */ }
+  };
+  const musicScene = (s) => { // 'menu' | 'match' | 'gameover'
+    AU.scene = s;
+    if (s === "match") musicStop(0.8);
+    else if (s === "gameover") { if (AU.cur && AU.ctx) AU.cur.g.gain.setTargetAtTime(0.25, AU.ctx.currentTime, 0.4); else musicPlay(AU.want || "auto"); }
+    else { if (AU.cur && AU.ctx) AU.cur.g.gain.setTargetAtTime(MUSIC[AU.curName].gain, AU.ctx.currentTime, 0.4); musicPlay(AU.want || "auto"); }
+  };
+
+  // ------------------------------------------------------------------ haptics
+  const HAP = { tap: 8, light: 6, select: 10, success: [14, 50, 22], heavy: 28, error: [30, 40, 30], reward: [10, 30, 10, 30, 40] };
+  let swEl = null;
+  const haptic = (kind) => {
+    if (!prefs.haptics) return;
+    const p = HAP[kind] || HAP.tap;
+    if (now() - lastGesture > 5000 && !lastGesture) return; // browsers refuse vibrate before the first user gesture
+    try { if (navigator.vibrate) { navigator.vibrate(p); return; } } catch (e) { /* ignore */ }
+    // Optional iOS 18+ trick: toggling a native <input switch> inside a user gesture plays the system haptic. Off by default.
+    if (cfg.iosSwitchHaptic && now() - lastGesture < 600) {
+      try {
+        if (!swEl) { swEl = el("label", "", '<input type="checkbox" switch>'); swEl.style.cssText = "position:fixed;left:-99px;top:0;width:1px;height:1px;opacity:0;pointer-events:none"; swEl.setAttribute("aria-hidden", "true"); D.body.appendChild(swEl); }
+        swEl.click();
+      } catch (e) { /* ignore */ }
+    }
+  };
+
+  // ------------------------------------------------------------------ sprite atlas
+  const ATLAS = { img: null, ok: false, map: { glow: [0, 0], glowB: [64, 0], firefly: [128, 0], sparkle: [192, 0], sparkleW: [256, 0], coin: [320, 0], gem: [384, 0], lantern: [448, 0], leaf: [0, 64],
+    conf0: [64, 64], conf1: [128, 64], conf2: [192, 64], conf3: [256, 64], conf4: [320, 64], conf5: [384, 64] }, C: 64, clouds: null, cloudsOk: false, icons: {} };
+  const loadAtlas = () => {
+    if (ATLAS.img) return;
+    ATLAS.img = new Image(); ATLAS.img.decoding = "async"; ATLAS.img.onload = () => { ATLAS.ok = true; }; ATLAS.img.src = asset("particles.webp");
+    ATLAS.clouds = new Image(); ATLAS.clouds.decoding = "async"; ATLAS.clouds.onload = () => { ATLAS.cloudsOk = true; }; ATLAS.clouds.src = asset("clouds.webp");
+  };
+  const icon = (name) => { // data-URL of one atlas cell (for reward icons in DOM)
+    if (ATLAS.icons[name]) return ATLAS.icons[name];
+    if (!ATLAS.ok) return "";
+    const c = el("canvas"); c.width = c.height = 64; const m = ATLAS.map[name];
+    c.getContext("2d").drawImage(ATLAS.img, m[0], m[1], 64, 64, 0, 0, 64, 64);
+    return (ATLAS.icons[name] = c.toDataURL());
+  };
+  const drawSprite = (g, name, x, y, s, a, rot) => {
+    const m = ATLAS.map[name]; if (!m || !ATLAS.ok) return;
+    g.globalAlpha = clamp(a, 0, 1);
+    if (rot) { g.save(); g.translate(x, y); g.rotate(rot); g.drawImage(ATLAS.img, m[0], m[1], 64, 64, -s / 2, -s / 2, s, s); g.restore(); }
+    else g.drawImage(ATLAS.img, m[0], m[1], 64, 64, x - s / 2, y - s / 2, s, s);
+  };
+
+  // ------------------------------------------------------------------ time of day
+  let forcedHour = null;
+  const hourNow = () => { if (forcedHour != null) return forcedHour; const d = new Date(); return d.getHours() + d.getMinutes() / 60; };
+  const phase = () => {
+    const h = hourNow();
+    const day = sstep(5.5, 7.5, h) * (1 - sstep(17.5, 19.5, h)); // 0 night … 1 day
+    const dusk = Math.max(0, 1 - Math.abs(h - 18.5) / 1.6), dawn = Math.max(0, 1 - Math.abs(h - 6.3) / 1.3);
+    const tint = dusk > 0 ? `rgba(255,120,40,${(dusk * 0.22).toFixed(3)})` : dawn > 0 ? `rgba(255,150,170,${(dawn * 0.18).toFixed(3)})` : "rgba(0,0,0,0)";
+    return { h, day, night: 1 - day, tint, key: h < 5 ? "night" : h < 11.5 ? "morning" : h < 17 ? "day" : h < 21.5 ? "evening" : "night" };
+  };
+
+  // ------------------------------------------------------------------ living background
+  const BG = { host: null, root: null, cv: null, g: null, sN: null, sD: null, tint: null, fl: null, fr: null, shafts: [], run: false, raf: 0, last: 0, t: 0,
+    w: 0, h: 0, dpr: 1, parts: [], clouds: [], tx: 0, ty: 0, cx: 0, cy: 0, ph: null, phT: 0, vis: true, paused: false, io: null, ro: null };
+  const qDpr = () => Math.min(W.devicePixelRatio || 1, prefs.fps >= 60 ? 1.5 : 1);
+  const bgResize = () => {
+    if (!BG.root) return; const r = BG.root.getBoundingClientRect(); BG.w = Math.max(1, r.width); BG.h = Math.max(1, r.height); BG.dpr = qDpr();
+    BG.cv.width = Math.round(BG.w * BG.dpr); BG.cv.height = Math.round(BG.h * BG.dpr); seedParts(); if (!BG.run) bgDraw(0);
+  };
+  const seedParts = () => {
+    const n = Math.round(clamp(BG.w * BG.h / 9000, 14, 46));
+    BG.parts = []; for (let i = 0; i < n; i++) BG.parts.push(newPart(true));
+    BG.clouds = []; for (let i = 0; i < 4; i++) BG.clouds.push({ x: rnd(-0.2, 1), y: rnd(0.02, 0.28), s: rnd(0.22, 0.42), v: rnd(0.004, 0.011), k: i % 3 });
+  };
+  const newPart = (init) => {
+    const ph = BG.ph || phase(); const nightish = ph.night > 0.5; const r = Math.random();
+    let kind;
+    if (nightish) kind = r < 0.55 ? "firefly" : r < 0.8 ? "lantern" : "star";
+    else kind = r < 0.55 ? "mote" : r < 0.85 ? "leaf" : "sparkle";
+    const p = { kind, x: rnd(0, 1), y: init ? rnd(0, 1) : kind === "lantern" ? 1.08 : kind === "leaf" ? -0.06 : rnd(0, 1), a: 0, life: 0, max: rnd(6, 14), s: 1, ph: rnd(0, 6.28), v: rnd(0.5, 1.4), rot: rnd(0, 6.28) };
+    if (kind === "firefly") { p.s = rnd(10, 20); p.y = init ? rnd(0.35, 0.95) : rnd(0.4, 0.95); }
+    if (kind === "lantern") { p.s = rnd(14, 26); p.max = rnd(18, 30); }
+    if (kind === "star") { p.s = rnd(10, 18); p.y = rnd(0.02, 0.3); }
+    if (kind === "mote") { p.s = rnd(6, 13); }
+    if (kind === "leaf") { p.s = rnd(14, 22); p.max = rnd(10, 16); }
+    if (kind === "sparkle") { p.s = rnd(10, 18); p.y = rnd(0.05, 0.6); }
+    return p;
+  };
+  const bgDraw = (dt) => {
+    const g = BG.g; if (!g) return; const w = BG.w, h = BG.h, d = BG.dpr, ph = BG.ph || phase();
+    g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h);
+    // clouds (drift)
+    if (ATLAS.cloudsOk) {
+      g.globalCompositeOperation = "source-over";
+      for (const c of BG.clouds) {
+        c.x += c.v * dt * (0.6 + ph.day); if (c.x > 1.25) { c.x = -0.45; c.y = rnd(0.02, 0.28); }
+        const cw = w * c.s, chh = cw / 2; g.globalAlpha = 0.18 + 0.55 * ph.day;
+        g.drawImage(ATLAS.clouds, 0, c.k * 128, 256, 128, c.x * w - BG.cx * 6, c.y * h, cw, chh);
+      }
+    }
+    // particles
+    g.globalCompositeOperation = "lighter";
+    for (let i = 0; i < BG.parts.length; i++) {
+      const p = BG.parts[i]; p.life += dt; const k = p.life / p.max; const fade = Math.min(1, p.life / 1.2, (p.max - p.life) / 1.2);
+      let x = p.x * w, y = p.y * h, a = fade, s = p.s, name = "glow", rot = 0;
+      if (p.kind === "firefly") { p.x += Math.sin(p.ph + p.life * 0.7 * p.v) * 0.0009; p.y += Math.cos(p.ph + p.life * 0.5) * 0.0006; a *= 0.45 + 0.55 * Math.abs(Math.sin(p.ph + p.life * 2.2)); name = "firefly"; }
+      else if (p.kind === "lantern") { p.y -= 0.006 * dt * p.v; x += Math.sin(p.ph + p.life * 0.6) * 6; a *= 0.85; name = "lantern"; s *= 1 - 0.4 * (1 - p.y); }
+      else if (p.kind === "star") { a *= Math.max(0, Math.sin(p.ph + p.life * 1.7)); name = "sparkleW"; }
+      else if (p.kind === "mote") { p.y -= 0.004 * dt * p.v; p.x += Math.sin(p.ph + p.life) * 0.0005; a *= 0.6; name = "glow"; }
+      else if (p.kind === "leaf") { p.y += 0.035 * dt * p.v; p.x += (Math.sin(p.ph + p.life * 1.3) * 0.05 + 0.02) * dt; rot = p.rot + Math.sin(p.life * 2) * 1.1; name = "leaf"; g.globalCompositeOperation = "source-over"; }
+      else if (p.kind === "sparkle") { a *= Math.max(0, Math.sin(p.ph + p.life * 2.4)); name = "sparkle"; }
+      drawSprite(g, name, x - BG.cx * 10, y - BG.cy * 6, s, a, rot);
+      if (p.kind === "leaf") g.globalCompositeOperation = "lighter";
+      if (k >= 1 || p.y < -0.1 || p.y > 1.1 || p.x < -0.1 || p.x > 1.1) BG.parts[i] = newPart(false);
+    }
+    g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
+  };
+  const bgApplyPhase = () => {
+    const ph = (BG.ph = phase());
+    if (BG.sD) BG.sD.style.opacity = ph.day.toFixed(3);
+    if (BG.tint) BG.tint.style.backgroundColor = ph.tint;
+    BG.shafts.forEach((s) => { s.style.display = ph.day > 0.15 ? "" : "none"; });
+  };
+  const bgTick = (tn) => {
+    if (!BG.run) return;
+    BG.raf = requestAnimationFrame(bgTick);
+    const minDt = prefs.fps >= 60 ? 0 : 1000 / prefs.fps - 2;
+    if (tn - BG.last < minDt) return;
+    const dt = clamp((tn - (BG.last || tn)) / 1000, 0, 0.05); BG.last = tn; BG.t += dt;
+    if (tn - BG.phT > 60000) { BG.phT = tn; bgApplyPhase(); }
+    // camera: slow breathing drift + pointer parallax (eased)
+    const dx = Math.sin(BG.t * 0.07) * 0.35 + BG.tx, dy = Math.cos(BG.t * 0.05) * 0.25 + BG.ty;
+    BG.cx += (dx - BG.cx) * Math.min(1, dt * 3); BG.cy += (dy - BG.cy) * Math.min(1, dt * 3);
+    const sc = 1.04 + Math.sin(BG.t * 0.1) * 0.008;
+    const tr1 = `translate3d(${(-BG.cx * 9).toFixed(2)}px,${(-BG.cy * 5).toFixed(2)}px,0) scale(${sc.toFixed(4)})`;
+    BG.sN.style.transform = tr1; BG.sD.style.transform = tr1;
+    const tr2 = `translate3d(${(-BG.cx * 26).toFixed(2)}px,${(-BG.cy * 8).toFixed(2)}px,0)`;
+    BG.fl.style.transform = tr2; BG.fr.style.transform = tr2;
+    bgDraw(dt);
+  };
+  const bgShouldRun = () => !!BG.root && prefs.livebg && !reduced() && !D.hidden && BG.vis && !BG.paused;
+  const bgUpdate = () => {
+    if (!BG.root) return;
+    BG.root.classList.toggle("ss-static", !bgShouldRun());
+    if (bgShouldRun()) { if (!BG.run) { BG.run = true; BG.last = 0; BG.raf = requestAnimationFrame(bgTick); } }
+    else { BG.run = false; cancelAnimationFrame(BG.raf); bgDraw(0); }
+  };
+  const onPtrMove = (e) => {
+    if (!BG.root || !BG.run) return; const x = e.clientX / (W.innerWidth || 1) - 0.5, y = e.clientY / (W.innerHeight || 1) - 0.5;
+    BG.tx = clamp(x * 1.6, -1, 1); BG.ty = clamp(y * 1.2, -1, 1);
+  };
+  const mountBackground = (host, o) => {
+    o = o || {}; if (!host) return null; if (BG.root) unmountBackground();
+    loadAtlas();
+    const r = el("div", "ss-bg"); r.setAttribute("aria-hidden", "true");
+    const sN = el("div", "ss-scene"); sN.style.backgroundImage = `url("${asset("bg_scene_night.webp")}")`;
+    const sD = el("div", "ss-scene"); sD.style.backgroundImage = `url("${asset("bg_scene_day.webp")}")`; sD.style.opacity = "0";
+    const tint = el("div", "ss-tint");
+    const shafts = [0, 1, 2].map((i) => { const s = el("div", "ss-shaft"); s.style.left = 8 + i * 17 + "%"; s.style.transform = `rotate(${-24 + i * 4}deg)`; s.style.animationDelay = -i * 3 + "s"; return s; });
+    const cv = el("canvas");
+    const fl = el("img", "ss-fore l"); fl.alt = ""; fl.decoding = "async"; fl.src = asset("bg_fore_l.webp");
+    const fr = el("img", "ss-fore r"); fr.alt = ""; fr.decoding = "async"; fr.src = asset("bg_fore_r.webp");
+    const vig = el("div", "ss-vig");
+    [sN, sD, tint].concat(shafts).concat([cv, fl, fr, vig]).forEach((x) => r.appendChild(x));
+    if (o.foreground === false) { fl.style.display = fr.style.display = "none"; }
+    host.insertBefore(r, host.firstChild);
+    Object.assign(BG, { host, root: r, cv, g: cv.getContext("2d"), sN, sD, tint, fl, fr, shafts, t: 0 });
+    bgApplyPhase(); bgResize();
+    if (W.ResizeObserver) { BG.ro = new ResizeObserver(() => bgResize()); BG.ro.observe(r); } else W.addEventListener("resize", bgResize, { passive: true });
+    if (W.IntersectionObserver) { BG.io = new IntersectionObserver((es) => { BG.vis = es[es.length - 1].isIntersecting; bgUpdate(); }); BG.io.observe(r); }
+    W.addEventListener("pointermove", onPtrMove, { passive: true });
+    bgUpdate();
+    return r;
+  };
+  const unmountBackground = () => {
+    BG.run = false; cancelAnimationFrame(BG.raf);
+    if (BG.ro) BG.ro.disconnect(); if (BG.io) BG.io.disconnect();
+    W.removeEventListener("pointermove", onPtrMove);
+    if (BG.root && BG.root.parentNode) BG.root.parentNode.removeChild(BG.root);
+    BG.root = null; BG.g = null;
+  };
+
+  // ------------------------------------------------------------------ mascot
+  const POSES = ["idle", "wave", "happy", "surprised", "sleepy"];
+  const MS = { root: null, body: null, imgs: {}, bubble: null, pose: "idle", poseT: 0, sayT: 0, idleT: 0, sleeping: false, taps: [], idleSaid: 0, chk: 0 };
+  const mPose = (p, ms) => {
+    if (!MS.root) return; MS.pose = p;
+    POSES.forEach((k) => MS.imgs[k].classList.toggle("on", k === p));
+    clearTimeout(MS.poseT); if (ms) MS.poseT = setTimeout(() => mPose(MS.sleeping ? "sleepy" : "idle"), ms);
+  };
+  const mAnim = (cls, ms) => { if (!MS.root || reduced()) return; MS.root.classList.remove(cls); void MS.root.offsetWidth; MS.root.classList.add(cls); setTimeout(() => MS.root && MS.root.classList.remove(cls), ms || 600); };
+  const say = (text, ms) => {
+    if (!MS.root || !prefs.mascot || !text) return;
+    MS.bubble.textContent = text; MS.bubble.setAttribute("dir", isRTL() ? "rtl" : "ltr"); MS.bubble.classList.add("on");
+    clearTimeout(MS.sayT); MS.sayT = setTimeout(() => MS.bubble && MS.bubble.classList.remove("on"), ms || clamp(1400 + text.length * 55, 2400, 5200));
+  };
+  const mascotSay = (key, vars, ms) => { const s = t(key, vars); say(s, ms); return s; };
+  const wake = () => { if (!MS.sleeping) return; MS.sleeping = false; MS.root.classList.remove("ss-sleep"); mPose("surprised", 700); mAnim("ss-hop", 560); mascotSay("wake"); };
+  const greet = () => {
+    if (!MS.root) return;
+    const ph = phase(); let key = "greet_" + ph.key;
+    if (cfg.firstLaunch) key = "greet_first"; else if (cfg.daysAway >= 3) key = "greet_back"; else if (cfg.streakDay >= 2 && Math.random() < 0.4) key = "streak_hi";
+    mPose("wave", 2600); mAnim("ss-hop", 560); sfx("pop", { vol: 0.6 });
+    mascotSay(key, { day: cfg.streakDay });
+  };
+  const mascotCelebrate = (key, vars) => { if (!MS.root) return; wake(); if (!key && MS.bubble) MS.bubble.classList.remove("on"); mPose("happy", 2400); mAnim("ss-hop", 560); setTimeout(() => mAnim("ss-hop", 560), 600); if (key) mascotSay(key, vars); };
+  const onMascotTap = () => {
+    lastAct = now();
+    if (MS.sleeping) { wake(); return; }
+    const tn = now(); MS.taps = MS.taps.filter((x) => tn - x < 1600); MS.taps.push(tn);
+    haptic("light");
+    if (MS.taps.length >= 5) { MS.taps = []; mPose("surprised", 900); mAnim("ss-spin", 820); sfx("whoosh", { vol: 0.7 }); mascotSay("tap_many"); return; }
+    mPose("surprised", 380); setTimeout(() => mPose("happy", 900), 380); mAnim("ss-shake", 520); sfx("pop", { rate: 0.9 + MS.taps.length * 0.12 }); mascotSay("tap");
+  };
+  const mascotLoop = () => { // cheap 1 Hz check: idle lines + falling asleep
+    if (!MS.root || D.hidden || !prefs.mascot) return;
+    const idle = now() - lastAct;
+    if (!MS.sleeping && idle > 60000) { MS.sleeping = true; MS.root.classList.add("ss-sleep"); mPose("sleepy"); mascotSay("sleepy", null, 3000); return; }
+    if (!MS.sleeping && idle > 18000 && now() - MS.idleT > 26000 && MS.idleSaid < 3 && !MS.bubble.classList.contains("on")) {
+      MS.idleT = now(); MS.idleSaid++; mPose("wave", 1800); mascotSay("idle");
+    }
+  };
+  const mountMascot = (host, o) => {
+    o = o || {}; if (!host) return null; if (MS.root) unmountMascot();
+    const r = el("div", "ss-mascot ss-enter"); r.setAttribute("role", "img"); r.setAttribute("aria-label", "Sly");
+    const size = o.size || 120; r.style.width = r.style.height = size + "px";
+    Object.assign(r.style, o.style || { left: "8px", bottom: "8px" });
+    const body = el("div", "ss-mbody"); body.appendChild(el("div", "ss-mshadow"));
+    POSES.forEach((p) => { const i = el("img"); i.alt = ""; i.decoding = "async"; i.draggable = false; i.src = asset("mascot_" + p + ".webp"); MS.imgs[p] = i; body.appendChild(i); });
+    const bubble = el("div", "ss-bubble"); bubble.setAttribute("aria-live", "polite");
+    const z = el("div", "ss-zzz", "z<small>z</small>");
+    r.appendChild(body); r.appendChild(z); r.appendChild(bubble);
+    if (o.bubbleSide === "left") { bubble.style.insetInlineStart = "auto"; bubble.style.insetInlineEnd = "55%"; }
+    r.addEventListener("click", onMascotTap, { passive: true });
+    host.appendChild(r);
+    Object.assign(MS, { root: r, body, bubble, sleeping: false, idleSaid: 0 });
+    r.style.display = prefs.mascot ? "" : "none";
+    mPose("idle");
+    clearInterval(MS.chk); MS.chk = setInterval(mascotLoop, 1000);
+    if (o.greet !== false) setTimeout(greet, o.greetDelay != null ? o.greetDelay : 900);
+    return r;
+  };
+  const unmountMascot = () => { clearInterval(MS.chk); clearTimeout(MS.sayT); clearTimeout(MS.poseT); if (MS.root && MS.root.parentNode) MS.root.parentNode.removeChild(MS.root); MS.root = null; };
+
+  // ------------------------------------------------------------------ full-screen FX canvas (celebrations)
+  const FX = { cv: null, g: null, parts: [], run: false, raf: 0, last: 0, w: 0, h: 0, dpr: 1, coinT: 0 };
+  const fxEnsure = () => {
+    loadAtlas();
+    if (!FX.cv) { FX.cv = el("canvas", "ss-fx"); FX.cv.setAttribute("aria-hidden", "true"); FX.g = FX.cv.getContext("2d"); }
+    if (!FX.cv.parentNode) D.body.appendChild(FX.cv);
+    const w = W.innerWidth, h = W.innerHeight, d = Math.min(W.devicePixelRatio || 1, 1.5);
+    if (w !== FX.w || h !== FX.h || d !== FX.dpr) { FX.w = w; FX.h = h; FX.dpr = d; FX.cv.width = Math.round(w * d); FX.cv.height = Math.round(h * d); }
+  };
+  const rectOf = (x) => {
+    if (!x) return { x: W.innerWidth / 2, y: W.innerHeight / 2 };
+    if (typeof x === "string") x = D.querySelector(x);
+    if (x && x.getBoundingClientRect) { const r = x.getBoundingClientRect(); if (r.width || r.height) return { x: r.left + r.width / 2, y: r.top + r.height / 2, el: x }; return { x: W.innerWidth / 2, y: W.innerHeight / 2 }; }
+    return { x: +x.x || 0, y: +x.y || 0 };
+  };
+  const pulse = (e) => { if (!e || !e.classList) return; e.classList.remove("ss-pop"); void e.offsetWidth; e.classList.add("ss-pop"); setTimeout(() => e.classList.remove("ss-pop"), 420); };
+  const fxTick = (tn) => {
+    if (!FX.run) return;
+    const dt = clamp((tn - (FX.last || tn)) / 1000, 0, 0.04); FX.last = tn;
+    const g = FX.g, d = FX.dpr; g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, FX.w, FX.h);
+    const ps = FX.parts;
+    for (let i = ps.length - 1; i >= 0; i--) {
+      const p = ps[i]; p.t += dt;
+      if (p.t < 0) continue;
+      if (p.tgt && p.t > p.seekAt) { // fly to the counter
+        const dx = p.tgt.x - p.x, dy = p.tgt.y - p.y, dist = Math.hypot(dx, dy);
+        p.sk = Math.min(1, (p.sk || 0) + dt * 2.2); const sp = 300 + 1500 * p.sk * p.sk;
+        p.vx += (dx / (dist || 1) * sp - p.vx) * Math.min(1, dt * 8); p.vy += (dy / (dist || 1) * sp - p.vy) * Math.min(1, dt * 8);
+        if (dist < 18) { ps.splice(i, 1); if (tn - FX.coinT > 55) { FX.coinT = tn; sfx(p.kind === "gem" ? "pop" : "coin", { vol: 0.55, gap: 0 }); pulse(p.tgt.el); } continue; }
+      } else { p.vy += p.gr * dt; p.vx *= 1 - p.drag * dt; p.vy *= 1 - p.drag * dt; }
+      p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt;
+      const k = p.t / p.life;
+      if (!p.tgt && (k >= 1 || p.y > FX.h + 40)) { ps.splice(i, 1); continue; }
+      let a = p.tgt ? 1 : Math.min(1, (1 - k) * 3);
+      let sx = p.s, flip = 1;
+      if (p.kind.startsWith("conf")) { flip = Math.cos(p.t * p.fl); p.vx += Math.sin(p.t * 3 + p.fl) * 30 * dt; }
+      g.globalCompositeOperation = p.add ? "lighter" : "source-over";
+      if (flip !== 1) { const m = ATLAS.map[p.kind]; if (ATLAS.ok) { g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.scale(1, Math.abs(flip) * 0.9 + 0.1); g.globalAlpha = a; g.drawImage(ATLAS.img, m[0], m[1], 64, 64, -sx / 2, -sx / 2, sx, sx); g.restore(); } }
+      else drawSprite(g, p.kind, p.x, p.y, sx * (p.kind === "coin" ? 0.75 + 0.25 * Math.abs(Math.cos(p.t * 9 + p.r)) : 1), a, p.kind === "coin" ? 0 : p.r);
+    }
+    g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
+    if (!ps.length) { FX.run = false; g.clearRect(0, 0, FX.w, FX.h); if (FX.cv.parentNode) FX.cv.parentNode.removeChild(FX.cv); FX.done.forEach((f) => f()); FX.done = []; return; }
+    FX.raf = requestAnimationFrame(fxTick);
+  };
+  FX.done = [];
+  const fxStart = () => new Promise((res) => { FX.done.push(res); if (!FX.run) { FX.run = true; FX.last = 0; FX.raf = requestAnimationFrame(fxTick); } });
+  const burst = (o) => {
+    fxEnsure();
+    const n = o.n || 20, at = rectOf(o.from), tgt = o.to ? rectOf(o.to) : null;
+    for (let i = 0; i < n; i++) {
+      const ang = (o.angle != null ? o.angle : -Math.PI / 2) + rnd(-1, 1) * (o.spread != null ? o.spread : 1.1);
+      const sp = rnd(0.55, 1) * (o.speed || 520);
+      const kind = Array.isArray(o.kind) ? pick(o.kind) : o.kind;
+      FX.parts.push({ kind, x: (o.x != null ? o.x : at.x) + rnd(-1, 1) * (o.jx || 6), y: (o.y != null ? o.y : at.y) + rnd(-1, 1) * (o.jy || 6), vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+        gr: o.gravity != null ? o.gravity : 900, drag: o.drag != null ? o.drag : 0.6, s: rnd(0.8, 1.2) * (o.size || 30), r: rnd(0, 6.28), vr: rnd(-6, 6), fl: rnd(4, 11),
+        t: -(o.stagger ? i * o.stagger : 0), life: rnd(0.8, 1.2) * (o.life || 1.6), add: !!o.add, tgt, seekAt: rnd(0.45, 0.75) * (o.seek || 1) });
+    }
+    return fxStart();
+  };
+  const banner = (big, small) => {
+    if (reduced()) { const b = el("div", "ss-banner"); b.style.animation = "ss-fade .3s ease both"; b.textContent = big; if (small) b.appendChild(el("small", "", "")).textContent = small; D.body.appendChild(b); setTimeout(() => b.remove(), 1500); return; }
+    const rays = el("div", "ss-rays"); D.body.appendChild(rays);
+    const b = el("div", "ss-banner"); b.textContent = big; if (small) { const s = el("small"); s.textContent = small; b.appendChild(s); }
+    b.setAttribute("dir", isRTL() ? "rtl" : "ltr"); D.body.appendChild(b);
+    setTimeout(() => { rays.remove(); b.remove(); }, 2000);
+  };
+  const confetti = (o) => {
+    o = o || {}; const w = W.innerWidth;
+    const kinds = ["conf0", "conf1", "conf2", "conf3", "conf4", "conf5"];
+    const a = burst({ kind: kinds, n: o.n || 70, x: w * 0.5, y: -20, jx: w * 0.5, jy: 10, angle: Math.PI / 2, spread: 0.6, speed: 260, gravity: 380, drag: 1.4, size: 16, life: 3.2, stagger: 0.008 });
+    burst({ kind: kinds, n: 26, x: 0, y: W.innerHeight * 0.75, angle: -Math.PI / 3.2, spread: 0.35, speed: 900, gravity: 650, drag: 1.2, size: 15, life: 2.6 });
+    burst({ kind: kinds, n: 26, x: w, y: W.innerHeight * 0.75, angle: -Math.PI + Math.PI / 3.2, spread: 0.35, speed: 900, gravity: 650, drag: 1.2, size: 15, life: 2.6 });
+    sfx("pop");
+    return a;
+  };
+  const coins = (o, gem) => {
+    const amt = +o.amount || 20, n = clamp(Math.round(amt / (gem ? 2 : 10)), 6, 28);
+    const to = o.to || (gem ? cfg.gemTarget : cfg.coinTarget);
+    burst({ kind: "sparkle", n: 8, from: o.from, speed: 300, gravity: 0, drag: 3, size: 26, life: 0.7, add: true });
+    sfx(gem ? "pop" : "coin");
+    return burst({ kind: gem ? "gem" : "coin", n, from: o.from, to, speed: 560, spread: 0.9, gravity: 1100, drag: 0.8, size: gem ? 30 : 32, life: 1.4, stagger: 0.02 });
+  };
+  const celebrate = (type, o) => {
+    o = o || {};
+    const rm = reduced();
+    switch (type) {
+      case "coins": case "gems":
+        if (rm) { sfx("coin"); haptic("success"); return Promise.resolve(); }
+        haptic("success"); return coins(o, type === "gems");
+      case "confetti":
+        if (rm) { sfx("pop"); return Promise.resolve(); }
+        return confetti(o);
+      case "levelup":
+        sfx("levelup"); haptic("reward"); banner(t("levelup"), o.level != null ? t("level_n", { n: o.level }) : ""); mascotCelebrate();
+        return rm ? Promise.resolve() : confetti(o);
+      case "reward": case "victory": case "record":
+        sfx("reward"); haptic("reward"); banner(t(type === "record" ? "new_record" : type), o.sub || "");
+        if (type === "victory") mascotCelebrate("win");
+        if (rm) return Promise.resolve();
+        return Promise.all([confetti({ n: 40 }), o.amount ? coins(o, false) : Promise.resolve()]);
+      case "chest": return chestOpen(o);
+      case "sparkle":
+        if (rm) return Promise.resolve();
+        return burst({ kind: ["sparkle", "sparkleW"], n: o.n || 12, from: o.from, speed: 260, gravity: 0, drag: 3, size: 24, life: 0.7, add: true, spread: 3.2 });
+      default: return Promise.resolve();
+    }
+  };
+
+  // ------------------------------------------------------------------ modal helper + chest + streak
+  const modal = (inner, o) => {
+    o = o || {};
+    const m = el("div", "ss-modal"); m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); m.setAttribute("dir", isRTL() ? "rtl" : "ltr");
+    const c = el("div", "ss-card" + (reduced() ? "" : " ss-in")); c.innerHTML = inner; m.appendChild(c);
+    if (o.transparent) { c.style.background = "transparent"; c.style.border = "0"; c.style.boxShadow = "none"; }
+    D.body.appendChild(m); sfx("open"); haptic("select");
+    const close = () => new Promise((res) => {
+      if (!m.parentNode) return res();
+      sfx("close"); if (reduced()) { m.remove(); return res(); }
+      c.classList.remove("ss-in"); c.classList.add("ss-out"); m.style.transition = "opacity .22s"; m.style.opacity = "0";
+      setTimeout(() => { m.remove(); res(); }, 230);
+    });
+    return { m, c, close };
+  };
+  const chestOpen = (o) => new Promise((resolve) => {
+    o = o || {}; const loot = o.loot || { coins: o.coins || 0, gems: o.gems || 0 };
+    const md = modal(`<div class="ss-chestwrap" data-soul-nojuice><div class="ss-cglow"></div><img alt="" src="${asset("chest_closed.webp")}"></div>
+      <p class="ss-sub" style="font-weight:800;font-size:16px;margin-top:6px">${t("tap_to_open")}</p><div class="ss-loot" dir="ltr"></div><div class="ss-row"><button type="button" class="ss-btn gold" style="visibility:hidden">${t("collect")}</button></div>`, { transparent: true });
+    const wrap = md.c.querySelector(".ss-chestwrap"), img = wrap.querySelector("img"), hint = md.c.querySelector(".ss-sub"), lootEl = md.c.querySelector(".ss-loot"), btn = md.c.querySelector(".ss-btn");
+    let taps = 0, opened = false;
+    const open = () => {
+      opened = true; hint.style.visibility = "hidden";
+      sfx("chest"); haptic("heavy"); img.src = asset("chest_open.webp"); wrap.classList.add("lit");
+      const r = wrap.getBoundingClientRect(), from = { x: r.left + r.width / 2, y: r.top + r.height * 0.45 };
+      if (!reduced()) {
+        burst({ kind: ["sparkle", "sparkleW", "glow"], n: 26, from, speed: 520, gravity: 120, drag: 2, size: 34, life: 1.1, add: true, spread: 3.2 });
+        burst({ kind: ["coin", "gem"], n: 18, from, speed: 640, gravity: 1300, drag: 0.6, size: 30, life: 1.3, spread: 0.8 });
+      }
+      const ci = icon("coin"), gi = icon("gem");
+      lootEl.innerHTML = (loot.coins ? `<span><i style="background-image:url(${ci})"></i>+${loot.coins}</span>` : "") + (loot.gems ? `<span style="animation-delay:.12s"><i style="background-image:url(${gi})"></i>+${loot.gems}</span>` : "") + (loot.text ? `<span style="animation-delay:.24s">${String(loot.text).replace(/[<>&]/g, "")}</span>` : "");
+      setTimeout(() => { btn.style.visibility = "visible"; sfx("reward"); mascotCelebrate(); }, 450);
+    };
+    wrap.addEventListener("click", () => {
+      if (opened) return; taps++;
+      wrap.classList.remove("shk"); void wrap.offsetWidth; wrap.classList.add("shk"); sfx("tap", { rate: 0.8 + taps * 0.15 }); haptic("tap");
+      if (taps >= (o.taps || 3)) setTimeout(open, 260);
+    }, { passive: true });
+    btn.addEventListener("click", () => {
+      btn.disabled = true;
+      const r = wrap.getBoundingClientRect(), from = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      const fly = [];
+      if (loot.coins) fly.push(celebrate("coins", { from, amount: loot.coins }));
+      if (loot.gems) fly.push(celebrate("gems", { from, amount: loot.gems }));
+      md.close().then(() => Promise.all(fly)).then(() => resolve(loot));
+    }, { passive: true });
+  });
+
+  const DEF_REWARDS = [{ coins: 50 }, { coins: 80 }, { gems: 5 }, { coins: 120 }, { gems: 10 }, { coins: 200 }, { chest: true, coins: 500, gems: 30 }];
+  const streakShow = (o) => new Promise((resolve) => {
+    o = o || {}; loadAtlas();
+    const rewards = o.rewards || DEF_REWARDS, day = clamp(o.day || 1, 1, 7); let claimed = !!o.claimed;
+    const build = () => rewards.map((r, i) => {
+      const n = i + 1, cls = ["ss-day"]; if (n < day || (n === day && claimed)) cls.push("done"); if (n === day && !claimed) cls.push("today"); if (r.chest) cls.push("big");
+      const ic = r.chest ? asset("chest_closed.webp") : icon(r.gems ? "gem" : "coin");
+      const lab = r.chest ? t("streak_chest") : "+" + (r.coins || r.gems);
+      return `<div class="${cls.join(" ")}" data-d="${n}"><span>${t("streak_day", { n })}</span><i class="ss-ri" style="background-image:url('${ic}')"></i><b dir="ltr">${lab}</b></div>`;
+    }).join("");
+    const md = modal(`<button type="button" class="ss-x" aria-label="${t("close")}">✕</button><h3>${t("streak_title")}</h3><p class="ss-sub">${t("streak_sub")} · <b>${t("streak_count", { n: Math.max(0, day - (claimed ? 0 : 1)) })}</b></p>
+      <div class="ss-days">${build()}</div><div class="ss-row"><button type="button" class="ss-btn" data-soul-sparkle ${claimed ? "disabled" : ""}>${claimed ? t("streak_tomorrow", { n: Math.min(7, day + 1) }) : t("streak_claim")}</button></div>`);
+    const btn = md.c.querySelector(".ss-btn"), x = md.c.querySelector(".ss-x");
+    const done = (v) => md.close().then(() => resolve(v));
+    x.addEventListener("click", () => done({ claimed }), { passive: true });
+    md.m.addEventListener("click", (e) => { if (e.target === md.m) done({ claimed }); }, { passive: true });
+    btn.addEventListener("click", () => {
+      if (claimed || btn.disabled) return; btn.disabled = true;
+      Promise.resolve(o.onClaim ? o.onClaim(day, rewards[day - 1]) : true).then((res) => {
+        if (res === false) throw new Error("rejected");
+        claimed = true; const cell = md.c.querySelector(`.ss-day[data-d="${day}"]`);
+        cell.classList.remove("today"); cell.classList.add("done", "stamp"); sfx("reward"); haptic("reward");
+        btn.textContent = t("streak_tomorrow", { n: Math.min(7, day + 1) });
+        md.c.querySelector(".ss-sub b").textContent = t("streak_count", { n: day });
+        cfg.streakDay = day;
+        const r = rewards[day - 1];
+        if (r.chest) return md.close().then(() => chestOpen({ loot: { coins: r.coins, gems: r.gems } })).then(() => { mascotSay("streak_hi", { day }); resolve({ claimed: true, day }); });
+        mascotCelebrate("streak_hi", { day });
+        return celebrate(r.gems ? "gems" : "coins", { from: cell, amount: r.gems || r.coins }).then(() => setTimeout(() => done({ claimed: true, day }), 500));
+      }).catch(() => { btn.disabled = false; sfx("error"); haptic("error"); btn.classList.remove("ss-shk"); void btn.offsetWidth; mAnim("ss-shake"); });
+    }, { passive: true });
+  });
+
+  // ------------------------------------------------------------------ transitions
+  const transition = (target, dir) => new Promise((res) => {
+    if (!target) return res();
+    if (reduced()) return res();
+    const cls = dir === "out" ? "ss-out" : "ss-in";
+    target.classList.remove("ss-in", "ss-out"); void target.offsetWidth; target.classList.add(cls);
+    let fin = false; const end = () => { if (fin) return; fin = true; target.removeEventListener("animationend", end); if (cls === "ss-in") target.classList.remove("ss-in"); res(); };
+    target.addEventListener("animationend", end); setTimeout(end, 520);
+  });
+  // Optional auto mode: animate game overlays (e.g. ".x-ov") when they lose their hidden class. One observer, class attribute only.
+  let ovObs = null;
+  const watchOverlays = (sel) => {
+    if (!sel || !W.MutationObserver) return;
+    const hidden = (e) => e.classList.contains("x-hide") || e.hidden;
+    const state = new WeakMap();
+    ovObs = new MutationObserver((recs) => {
+      for (let i = 0; i < recs.length; i++) {
+        const e = recs[i].target; const was = state.get(e), is = hidden(e); if (was === is) continue; state.set(e, is);
+        if (now() - lastGesture > 1200) continue; // only react to what the player just did
+        if (!is) { const p = e.querySelector(cfg.panelSelector) || e.firstElementChild; transition(p, "in"); sfx(e.dataset.soulSfx || "open"); }
+        else sfx("close");
+      }
+    });
+    D.querySelectorAll(sel).forEach((e) => { state.set(e, hidden(e)); ovObs.observe(e, { attributes: true, attributeFilter: ["class", "hidden"] }); });
+  };
+
+  // ------------------------------------------------------------------ button juice (event delegation)
+  let pressEl = null, px = 0, py = 0;
+  const release = (pop) => {
+    const e = pressEl; pressEl = null; if (!e) return;
+    e.classList.remove("ss-press");
+    if (pop && !reduced()) { e.classList.remove("ss-pop"); void e.offsetWidth; e.classList.add("ss-pop"); setTimeout(() => e.classList.remove("ss-pop"), 420); }
+  };
+  const onDown = (ev) => {
+    gesture();
+    if (ev.button > 0) return;
+    const tg = ev.target && ev.target.closest ? ev.target.closest(cfg.juiceSelector) : null;
+    if (!tg || tg.disabled || tg.closest(cfg.noJuiceSelector) && !tg.matches(".ss-btn")) return;
+    release(false); pressEl = tg; px = ev.clientX; py = ev.clientY;
+    tg.classList.add("ss-juice", "ss-press"); haptic("tap");
+  };
+  const onMove = (ev) => { if (pressEl && (Math.abs(ev.clientX - px) > 10 || Math.abs(ev.clientY - py) > 10)) release(false); };
+  const onUp = () => release(true);
+  const onCancel = () => release(false);
+  const onClick = (ev) => {
+    const tg = ev.target && ev.target.closest ? ev.target.closest(cfg.juiceSelector) : null; if (!tg || tg.closest(".ss-mascot")) return;
+    const s = tg.dataset.soulSfx || (tg.matches(cfg.backSelector) ? "close" : tg.matches(cfg.playSelector) ? "whoosh" : "tap");
+    if (s !== "none") sfx(s);
+    if (tg.matches(cfg.sparkleSelector) && !reduced()) burst({ kind: ["sparkle", "sparkleW"], n: 9, from: tg, speed: 240, gravity: 0, drag: 3.5, size: 22, life: 0.6, add: true, spread: 3.2, jx: 20, jy: 8 });
+  };
+  const onKey = () => gesture();
+  const onVis = () => {
+    if (D.hidden) { if (AU.ctx && AU.own) { try { AU.ctx.suspend(); } catch (e) { /* ignore */ } } }
+    else if (AU.ctx && AU.own && unlocked) { try { AU.ctx.resume(); } catch (e) { /* ignore */ } }
+    bgUpdate();
+  };
+
+  // ------------------------------------------------------------------ small UI helpers
+  const dot = (target, v) => {
+    if (!target) return; let d = target.querySelector(":scope > .ss-dot");
+    if (!v) { if (d) d.remove(); return; }
+    if (!d) { if (getComputedStyle(target).position === "static") target.style.position = "relative"; d = el("em", "ss-dot"); target.appendChild(d); }
+    d.textContent = v === true ? "" : +v > 99 ? "99+" : String(v);
+  };
+  const rotator = (host, o) => {
+    o = o || {}; if (!host) return null;
+    const slides = Array.from(host.children); if (slides.length < 2) return null;
+    host.classList.add("ss-rot"); const track = el("div", "ss-slides"); slides.forEach((s) => { s.classList.add("ss-slide"); track.appendChild(s); });
+    const pips = el("div", "ss-pips", slides.map(() => "<i></i>").join("")); host.appendChild(track); host.appendChild(pips);
+    let i = 0, tm = 0, sx = null;
+    const go = (n) => { i = (n + slides.length) % slides.length; const rtl = getComputedStyle(host).direction === "rtl"; track.style.transform = `translateX(${(rtl ? 1 : -1) * i * 100}%)`; Array.from(pips.children).forEach((p, k) => p.classList.toggle("on", k === i)); };
+    const arm = () => { clearInterval(tm); tm = setInterval(() => { if (!D.hidden && !reduced()) go(i + 1); }, o.interval || 5000); };
+    host.addEventListener("pointerdown", (e) => { sx = e.clientX; }, { passive: true });
+    host.addEventListener("pointerup", (e) => { if (sx == null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) { const rtl = getComputedStyle(host).direction === "rtl"; go(i + ((dx < 0) !== rtl ? 1 : -1)); arm(); } }, { passive: true });
+    go(0); arm();
+    return { go, stop: () => clearInterval(tm) };
+  };
+  const teaser = (host, o) => {
+    if (!host) return; o = o || {}; const pct = clamp((+o.value || 0) / (+o.max || 1), 0, 1);
+    host.classList.add("ss-teaser");
+    host.innerHTML = (o.icon ? `<img alt="" src="${o.icon}">` : "") + `<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:6px"><span>${o.label || t("next_unlock")}</span><span dir="ltr">${o.value || 0}/${o.max || 1}</span></div><div class="ss-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div></div>`;
+  };
+
+  // ------------------------------------------------------------------ settings panel
+  const renderSettings = (host) => {
+    if (!host) return null;
+    const seg = (key, opts) => `<span class="ss-seg" data-k="${key}">${opts.map(([v, l]) => `<button type="button" data-v="${v}" class="${String(prefs[key]) === String(v) ? "on" : ""}">${l}</button>`).join("")}</span>`;
+    const sl = (key, label) => `<label class="ss-sr"><span>${label}</span><input type="range" min="0" max="100" step="5" data-k="${key}" value="${Math.round(prefs[key] * 100)}"><output>${Math.round(prefs[key] * 100)}</output></label>`;
+    const onoff = [["true", t("on")], ["false", t("off")]];
+    host.innerHTML = `<div class="ss-set" dir="${isRTL() ? "rtl" : "ltr"}">${sl("master", t("set_master"))}${sl("music", t("set_music"))}${sl("sfx", t("set_sfx"))}
+      <div class="ss-sr"><span>${t("set_track")}</span>${seg("track", [["auto", t("trk_auto")], ["arena", t("trk_arena")], ["night", t("trk_night")]])}</div>
+      <div class="ss-sr"><span>${t("set_haptics")}</span>${seg("haptics", onoff)}</div>
+      <div class="ss-sr"><span>${t("set_motion")}</span>${seg("motion", [["auto", t("mot_auto")], ["full", t("mot_full")], ["reduced", t("mot_reduced")]])}</div>
+      <div class="ss-sr"><span>${t("set_fps")}</span>${seg("fps", [["30", "30"], ["60", "60"]])}</div>
+      <div class="ss-sr"><span>${t("set_livebg")}</span>${seg("livebg", onoff)}</div>
+      <div class="ss-sr"><span>${t("set_mascot")}</span>${seg("mascot", onoff)}</div></div>`;
+    host.querySelectorAll("input[type=range]").forEach((r) => {
+      r.addEventListener("input", () => { r.nextElementSibling.textContent = r.value; setPrefs({ [r.dataset.k]: r.value / 100 }); }, { passive: true });
+      r.addEventListener("change", () => { if (r.dataset.k !== "music") sfx("coin"); }, { passive: true });
+    });
+    host.querySelectorAll(".ss-seg").forEach((s) => s.addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return; const k = s.dataset.k; let v = b.dataset.v;
+      v = v === "true" ? true : v === "false" ? false : k === "fps" ? +v : v;
+      s.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); setPrefs({ [k]: v });
+      if (k === "haptics" && v) haptic("success");
+    }, { passive: true }));
+    return host;
+  };
+  const setPrefs = (p) => {
+    const prev = Object.assign({}, prefs); Object.assign(prefs, p || {}); savePrefs();
+    applyVolumes();
+    if (prev.track !== prefs.track) { AU.curName = ""; musicPlay(prefs.track); }
+    if (+prefs.music > 0 && !AU.cur && AU.want) musicPlay(AU.want);
+    D.documentElement.classList.toggle("ss-reduced", reduced());
+    if (prev.fps !== prefs.fps) bgResize();
+    bgUpdate();
+    if (MS.root) MS.root.style.display = prefs.mascot ? "" : "none";
+    if (typeof cfg.onPrefs === "function") safe(cfg.onPrefs)(Object.assign({}, prefs));
+  };
+
+  // ------------------------------------------------------------------ init / lifecycle
+  let inited = false;
+  const init = (opts) => {
+    Object.assign(cfg, opts || {});
+    AU.ext = pickExt();
+    if (!inited) {
+      inited = true;
+      D.addEventListener("pointerdown", onDown, { capture: true, passive: true });
+      D.addEventListener("pointermove", onMove, { capture: true, passive: true });
+      D.addEventListener("pointerup", onUp, { capture: true, passive: true });
+      D.addEventListener("pointercancel", onCancel, { capture: true, passive: true });
+      D.addEventListener("click", onClick, { capture: true, passive: true });
+      D.addEventListener("keydown", onKey, { capture: true, passive: true });
+      D.addEventListener("touchend", gesture, { capture: true, passive: true }); // iOS unlock needs touchend in some versions
+      D.addEventListener("visibilitychange", onVis);
+      if (mqReduce.addEventListener) mqReduce.addEventListener("change", () => setPrefs({}));
+      D.documentElement.classList.toggle("ss-reduced", reduced());
+      loadAtlas();
+    }
+    if (cfg.autoOverlays) watchOverlays(cfg.autoOverlays === true ? ".x-ov" : cfg.autoOverlays);
+    const strP = cfg.strings ? Promise.resolve(cfg.strings) : fetch(cfg.i18nUrl || cfg.base + "soul_i18n.json").then((r) => r.json()).catch(() => ({}));
+    return strP.then((s) => { STR = s || {}; if (cfg.music !== false) musicPlay(prefs.track); return api; });
+  };
+  const destroy = () => {
+    D.removeEventListener("pointerdown", onDown, true); D.removeEventListener("pointermove", onMove, true); D.removeEventListener("pointerup", onUp, true);
+    D.removeEventListener("pointercancel", onCancel, true); D.removeEventListener("click", onClick, true); D.removeEventListener("keydown", onKey, true);
+    D.removeEventListener("touchend", gesture, true); D.removeEventListener("visibilitychange", onVis);
+    if (ovObs) ovObs.disconnect(); unmountBackground(); unmountMascot(); musicStop(0.2); inited = false;
+  };
+
+  const api = {
+    version: VERSION, init: safe(init), destroy: safe(destroy), t,
+    sfx: safe(sfx), haptic: safe(haptic),
+    music: { play: safe(musicPlay), stop: safe(musicStop), scene: safe(musicScene) },
+    celebrate: (type, o) => { try { return celebrate(type, o) || Promise.resolve(); } catch (e) { return Promise.resolve(); } },
+    mascotSay: safe(mascotSay), mascot: { greet: safe(greet), pose: safe(mPose), say: safe(say), celebrate: safe(mascotCelebrate) },
+    mountBackground: safe(mountBackground), unmountBackground: safe(unmountBackground), mountMascot: safe(mountMascot), unmountMascot: safe(unmountMascot),
+    streak: { show: (o) => { try { return streakShow(o); } catch (e) { return Promise.resolve({ claimed: false }); } } },
+    chest: (o) => { try { return chestOpen(o); } catch (e) { return Promise.resolve(); } },
+    transition: safe(transition), dot: safe(dot), rotator: safe(rotator), teaser: safe(teaser), banner: safe(banner),
+    renderSettings: safe(renderSettings), setPrefs: safe(setPrefs), getPrefs: () => Object.assign({}, prefs),
+    setLang: (l) => { cfg.lang = l; }, setName: (n) => { cfg.name = n || ""; },
+    setHour: (h) => { forcedHour = h; bgApplyPhase(); if (BG.root) { seedParts(); if (!BG.run) bgDraw(0); } },
+    pause: () => { BG.paused = true; bgUpdate(); }, resume: () => { BG.paused = false; bgUpdate(); },
+    _state: () => ({ bgRunning: BG.run, fxParts: FX.parts.length, unlocked, ctx: AU.ctx && AU.ctx.state, track: AU.curName, prefs: Object.assign({}, prefs), ext: AU.ext }),
+  };
+  W.SSoul = api;
+})();
+
+</script>
 </body>
 </html>
