@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
     <meta name="referrer" content="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>Super Snake</title>
@@ -1421,9 +1421,9 @@
           <button data-v="1" data-i18n="showW">إظهار</button><button data-v="0" data-i18n="hideW">إخفاء</button></div></div>
         <div class="x-set"><p data-i18n="minHud">واجهة بسيطة</p><div class="x-seg" data-k="mini">
           <button data-v="1" data-i18n="on">تشغيل</button><button data-v="0" data-i18n="off">إيقاف</button></div></div>
-        <div class="x-set"><p data-i18n="camera">الكاميرا</p><div class="x-seg" data-k="cam">
+        <div class="x-set x-hide" hidden><p data-i18n="camera">الكاميرا</p><div class="x-seg" data-k="cam">
           <button data-v="auto" data-i18n="auto">تلقائي</button><button data-v="near" data-i18n="near">قريبة</button><button data-v="far" data-i18n="far">بعيدة</button><button data-v="top" data-i18n="top">من فوق</button><button data-v="cine" data-i18n="cine">سينمائية</button></div></div>
-        <div class="x-set"><p data-i18n="zoom">التقريب</p><input class="x-zoom" id="zoom" type="range" min="0.6" max="1.6" step="0.05" value="1" aria-label="التقريب" data-i18n-al="zoom" /></div>
+        <div class="x-set x-hide" hidden><p data-i18n="zoom">التقريب</p><input class="x-zoom" id="zoom" type="range" min="0.6" max="1.6" step="0.05" value="1" aria-label="التقريب" data-i18n-al="zoom" /></div>
         <div class="x-set"><p data-i18n="quality">الجودة</p><div class="x-seg" data-k="q">
           <button data-v="x" data-i18n="qx">فائقة</button><button data-v="u" data-i18n="uhigh">عالية جدا</button><button data-v="h" data-i18n="high">عالية</button><button data-v="m" data-i18n="mid">متوسطة</button><button data-v="l" data-i18n="nfLow">Low</button></div></div>
         <div class="x-set"><p data-i18n="fpsC">عداد الإطارات FPS</p><div class="x-seg" data-k="fps">
@@ -1591,6 +1591,28 @@
       <div class="x-ov x-hide" id="b13mis"><div class="x-box x-form on-box b13-box"><h2 class="x-cy">🎯 <span data-i18n="b13MisT">Hard missions</span></h2><p class="b13-sub" data-i18n="b13MisSub">Kill to win</p><div id="b13ml" class="b13-ml"></div><div class="b13-row2"><button class="x-btn x-sub" data-go="nfpass">👑 <span data-i18n="nfPass">Royal Pass</span></button><button class="x-btn x-sub" data-go="nfback" data-to="menu" data-i18n="back">Back</button></div></div></div>
       <div class="x-ov x-hide" id="b13gift"><div class="x-box x-form on-box b13-box"><h2 class="x-cy">🎁 <span id="b13gt"></span></h2><div class="x-seg b13-seg" id="b13gs"></div><div class="b13-gl" id="b13gl"></div><p class="x-err" id="b13gm" role="alert"></p><button class="x-btn x-sub" data-go="nfonfr" data-i18n="back">Back</button></div></div>
       <div class="x-ov x-hide" id="b13prem"><div class="x-box x-form on-box b13-box"><h2 class="x-cy">💵 <span data-i18n="b13PremT">Premium</span></h2><p class="b13-sub"><span class="on-test" data-i18n="onTest">TEST MODE</span> <span data-i18n="b13PremSub">Real-money items</span></p><div class="b13-gl" id="b13pl"></div><button class="x-btn x-sub" data-go="nfback" data-to="menu" data-i18n="back">Back</button></div></div>
+            <div class="x-ov x-hide" id="b13cps"><div class="x-box x-form on-box b13-box b13c-ps"><h2 class="x-cy">⚙️ <span data-i18n="b13cPsT">Profile settings</span></h2>
+        <section class="b13c-sec"><h3>🌐 <span data-i18n="b13cLang">Language</span></h3>
+          <div class="x-seg x-segw b13c-lang" data-k="lang" role="radiogroup" aria-label="Language"><button role="radio" data-v="ar" lang="ar">العربية</button><button role="radio" data-v="en" lang="en">English</button><button role="radio" data-v="tr" lang="tr">Türkçe</button><button role="radio" data-v="fr" lang="fr">Français</button><button role="radio" data-v="es" lang="es">Español</button><button role="radio" data-v="hi" lang="hi">हिन्दी</button></div></section>
+        <section class="b13c-sec"><h3>✏️ <span data-i18n="b13cName">Player name</span></h3>
+          <div class="x-row b13c-nmr"><input class="x-name" id="b13cnm" maxlength="20" spellcheck="false" autocomplete="off" dir="auto" aria-label="Player name" data-i18n-al="b13cName" /><button class="x-btn x-main" data-go="nfb13cren" data-i18n="save">Save</button></div>
+          <p class="x-err" id="b13cnmm" role="alert"></p><p class="b13-note" data-i18n="b13cNameN">You can change your name once a day.</p></section>
+        <section class="b13c-sec"><h3>🙂 <span data-i18n="b13cAv">Avatar</span></h3><div class="b13c-av" id="b13cav"></div>
+          <button class="x-btn x-sub b13c-ph" data-go="acct">📷 <span data-i18n="b13cPhoto">Profile photo</span></button></section>
+        <section class="b13c-sec"><h3>👤 <span data-i18n="b13cAcct">Account</span></h3><p class="b13c-id" id="b13cid"></p>
+          <div class="b13c-acts"><button class="x-btn x-sub" data-go="logout">⎋ <span data-i18n="logout">Log out</span></button><button class="x-btn x-sub b13c-del" id="b13cdelb" data-go="nfb13cdel">🗑️ <span data-i18n="b13cDel">Delete account</span></button></div>
+          <div class="b13c-dp x-hide" id="b13cdp" role="group" aria-labelledby="b13cdt"><h4 id="b13cdt" data-i18n="b13cDelT">Delete your account?</h4><p data-i18n="b13cDelTx">Your account is closed now and erased for good after 7 days. Sign in again within 7 days to restore it.</p>
+            <input class="x-name" id="b13cdc" maxlength="20" autocomplete="off" spellcheck="false" dir="auto" placeholder="Type your player name" data-i18n-ph="b13cDelPh" aria-label="Type your player name" data-i18n-al="b13cDelPh" />
+            <p class="x-err" id="b13cdm" role="alert"></p>
+            <div class="b13c-acts"><button class="x-btn x-sub" data-go="nfb13cdelx" data-i18n="b13cCancel">Cancel</button><button class="x-btn b13c-danger" data-go="nfb13cdelgo" data-i18n="b13cDelGo">Delete</button></div></div></section>
+        <section class="b13c-sec x-hide" id="b13cown"><h3>🛡️ <span data-i18n="b13cOwnT">Owner tools</span></h3><button class="x-btn x-main" data-go="nfb13cadm">🛡️ <span data-i18n="b13cAdm">Admin panel</span></button></section>
+        <p class="b13-note" id="b13cver"></p>
+        <button class="x-btn x-sub" data-go="nfback" data-to="acct" data-i18n="back">Back</button></div></div>
+      <div class="x-ov x-hide" id="b13cadm"><div class="x-box x-form on-box b13-box b13c-adm"><h2 class="x-cy">🛡️ <span data-i18n="b13cAdm">Admin panel</span></h2>
+        <div class="x-seg b13c-tabs"><button type="button" data-go="nfb13cat" data-at="u" data-i18n="admUsers">Users</button><button type="button" data-go="nfb13cat" data-at="r" data-i18n="b13cReports">Reports</button><button type="button" data-go="nfb13cat" data-at="c" data-i18n="admSet">Settings</button><button type="button" data-go="nfb13cat" data-at="l" data-i18n="admLog">Log</button></div>
+        <div id="b13cab" class="b13c-ab"></div>
+        <button class="x-btn x-sub" data-go="nfback" data-to="b13cps" data-i18n="back">Back</button></div></div>
+      <div id="b13cvg" aria-hidden="true"></div><div id="b13cup" class="x-hide" role="status"><span data-i18n="b13cUpd">A new version is available</span><button type="button" class="go" data-i18n="b13cUpdGo">Update</button><button type="button" class="x" aria-label="✕">✕</button></div>
       <div class="x-ov x-hide" id="onch"><div class="x-box x-form on-box">
         <div class="on-chh" id="onchh"></div>
         <div class="x-chl on-chl" id="onchl" role="log" aria-live="polite" tabindex="0"></div>
@@ -1850,6 +1872,51 @@
         b13FrPh: ["رقم اللاعب أو الاسم", "Player ID or username", "Oyuncu ID'si veya adı", "ID joueur ou pseudo", "ID de jugador o usuario", "प्लेयर ID या नाम"],
         b13Search: ["بحث", "Search", "Ara", "Chercher", "Buscar", "खोजें"],
         b13Invite: ["العب", "Play", "Oyna", "Jouer", "Jugar", "खेलें"],
+        b13cOwner: ["المالك", "Owner", "Sahip", "Propriétaire", "Dueño", "मालिक"],
+        b13cPsT: ["إعدادات الملف الشخصي", "Profile settings", "Profil ayarları", "Paramètres du profil", "Ajustes del perfil", "प्रोफ़ाइल सेटिंग्स"],
+        b13cLang: ["اللغة", "Language", "Dil", "Langue", "Idioma", "भाषा"],
+        b13cName: ["اسم اللاعب", "Player name", "Oyuncu adı", "Nom du joueur", "Nombre de jugador", "खिलाड़ी का नाम"],
+        b13cNameN: ["تقدر تغيّر اسمك مرة كل يوم.", "You can change your name once a day.", "Adını günde bir kez değiştirebilirsin.", "Tu peux changer de nom une fois par jour.", "Puedes cambiar tu nombre una vez al día.", "आप दिन में एक बार नाम बदल सकते हैं।"],
+        b13cAv: ["الصورة الرمزية", "Avatar", "Avatar", "Avatar", "Avatar", "अवतार"],
+        b13cPhoto: ["صورة الملف الشخصي", "Profile photo", "Profil fotoğrafı", "Photo de profil", "Foto de perfil", "प्रोफ़ाइल फ़ोटो"],
+        b13cAcct: ["الحساب", "Account", "Hesap", "Compte", "Cuenta", "खाता"],
+        b13cDel: ["حذف الحساب", "Delete account", "Hesabı sil", "Supprimer le compte", "Eliminar cuenta", "खाता हटाएँ"],
+        b13cDelT: ["تحذف حسابك؟", "Delete your account?", "Hesabın silinsin mi?", "Supprimer ton compte ?", "¿Eliminar tu cuenta?", "अपना खाता हटाएँ?"],
+        b13cDelTx: ["يُغلق حسابك الآن ويُمسح نهائيًا بعد 7 أيام. سجّل دخولك خلال 7 أيام لاستعادته.", "Your account is closed now and erased for good after 7 days. Sign in again within 7 days to restore it.", "Hesabın şimdi kapanır ve 7 gün sonra kalıcı olarak silinir. Geri almak için 7 gün içinde tekrar giriş yap.", "Ton compte est fermé maintenant et effacé définitivement après 7 jours. Reconnecte-toi dans les 7 jours pour le restaurer.", "Tu cuenta se cierra ahora y se borra para siempre a los 7 días. Inicia sesión en 7 días para recuperarla.", "आपका खाता अभी बंद होगा और 7 दिन बाद हमेशा के लिए मिट जाएगा। वापस पाने के लिए 7 दिन में फिर से साइन इन करें।"],
+        b13cDelPh: ["اكتب اسم اللاعب للتأكيد", "Type your player name to confirm", "Onaylamak için oyuncu adını yaz", "Tape ton nom de joueur pour confirmer", "Escribe tu nombre de jugador para confirmar", "पुष्टि के लिए अपना खिलाड़ी नाम लिखें"],
+        b13cDelGo: ["احذف", "Delete", "Sil", "Supprimer", "Eliminar", "हटाएँ"],
+        b13cCancel: ["إلغاء", "Cancel", "İptal", "Annuler", "Cancelar", "रद्द करें"],
+        b13cDelMis: ["الاسم ما يطابق اسم حسابك.", "That name doesn't match your account.", "Bu ad hesabınla eşleşmiyor.", "Ce nom ne correspond pas à ton compte.", "Ese nombre no coincide con tu cuenta.", "यह नाम आपके खाते से मेल नहीं खाता।"],
+        b13cDelOwn: ["حساب المالك محمي ولا يمكن حذفه.", "The owner account is protected and can't be deleted.", "Sahip hesabı korumalıdır, silinemez.", "Le compte propriétaire est protégé et ne peut pas être supprimé.", "La cuenta del dueño está protegida y no se puede eliminar.", "मालिक का खाता सुरक्षित है और हटाया नहीं जा सकता।"],
+        b13cDelDone: ["تم إغلاق الحساب. سجّل دخولك خلال 7 أيام لاستعادته.", "Account closed. Sign in within 7 days to restore it.", "Hesap kapatıldı. Geri almak için 7 gün içinde giriş yap.", "Compte fermé. Reconnecte-toi dans les 7 jours pour le restaurer.", "Cuenta cerrada. Inicia sesión en 7 días para recuperarla.", "खाता बंद हुआ। वापस पाने के लिए 7 दिन में साइन इन करें।"],
+        b13cRestored: ["أهلًا بعودتك! تم إلغاء حذف حسابك.", "Welcome back! Your account deletion was cancelled.", "Tekrar hoş geldin! Hesap silme işlemi iptal edildi.", "Bon retour ! La suppression de ton compte est annulée.", "¡Bienvenido de nuevo! Se canceló la eliminación de tu cuenta.", "वापसी पर स्वागत है! आपके खाते को हटाना रद्द कर दिया गया।"],
+        b13cGone: ["هذا الحساب حُذف نهائيًا.", "This account was permanently deleted.", "Bu hesap kalıcı olarak silindi.", "Ce compte a été supprimé définitivement.", "Esta cuenta se eliminó para siempre.", "यह खाता स्थायी रूप से हटा दिया गया।"],
+        b13cRenCd: ["تقدر تغيّر اسمك مرة كل 24 ساعة.", "You can change your name once every 24 hours.", "Adını 24 saatte bir değiştirebilirsin.", "Tu peux changer de nom une fois toutes les 24 heures.", "Puedes cambiar tu nombre una vez cada 24 horas.", "आप 24 घंटे में एक बार नाम बदल सकते हैं।"],
+        b13cSaved: ["تم الحفظ ✓", "Saved ✓", "Kaydedildi ✓", "Enregistré ✓", "Guardado ✓", "सहेजा गया ✓"],
+        b13cVer: ["الإصدار {v}", "Version {v}", "Sürüm {v}", "Version {v}", "Versión {v}", "संस्करण {v}"],
+        b13cOwnT: ["أدوات المالك", "Owner tools", "Sahip araçları", "Outils du propriétaire", "Herramientas del dueño", "मालिक के टूल"],
+        b13cAdm: ["لوحة الإدارة", "Admin panel", "Yönetim paneli", "Panneau d'admin", "Panel de administración", "एडमिन पैनल"],
+        b13cReports: ["البلاغات", "Reports", "Şikayetler", "Signalements", "Reportes", "रिपोर्ट"],
+        b13cSearchU: ["ابحث بالاسم أو الإيميل أو ID", "Search name, email or ID", "Ad, e-posta veya ID ara", "Nom, e-mail ou ID", "Nombre, correo o ID", "नाम, ईमेल या ID खोजें"],
+        b13cWhy: ["السبب", "Reason", "Sebep", "Raison", "Motivo", "कारण"],
+        b13cWhyReq: ["اكتب السبب.", "Enter a reason.", "Bir sebep yaz.", "Indique une raison.", "Escribe un motivo.", "कारण लिखें।"],
+        b13cAmtReq: ["اكتب الكمية.", "Enter an amount.", "Bir miktar yaz.", "Indique un montant.", "Escribe una cantidad.", "राशि लिखें।"],
+        b13cTooBig: ["الكمية كبيرة جدًا (حد 1,000,000 عملة / 10,000 جوهرة).", "Amount too large (max 1,000,000 coins / 10,000 gems).", "Miktar çok büyük (en fazla 1.000.000 coin / 10.000 elmas).", "Montant trop élevé (max 1 000 000 pièces / 10 000 gemmes).", "Cantidad demasiado alta (máx. 1.000.000 monedas / 10.000 gemas).", "राशि बहुत बड़ी है (अधिकतम 10,00,000 सिक्के / 10,000 रत्न)।"],
+        b13cDone: ["تم ✓", "Done ✓", "Tamam ✓", "Fait ✓", "Hecho ✓", "हो गया ✓"],
+        b13cBanned: ["محظور حتى", "Banned until", "Şu tarihe kadar yasaklı", "Banni jusqu'au", "Bloqueado hasta", "प्रतिबंधित तक"],
+        b13cUnban: ["فك الحظر", "Unban", "Yasağı kaldır", "Débannir", "Desbloquear", "प्रतिबंध हटाएँ"],
+        b13cOwnerSelf: ["حساب المالك: لا يمكن حظره.", "Owner account: can't be banned.", "Sahip hesabı: yasaklanamaz.", "Compte propriétaire : ne peut pas être banni.", "Cuenta del dueño: no se puede bloquear.", "मालिक खाता: प्रतिबंधित नहीं किया जा सकता।"],
+        b13cActioned: ["تم التعامل", "Actioned", "İşlem yapıldı", "Traité", "Atendido", "कार्रवाई हुई"],
+        b13cDismiss: ["تجاهل", "Dismiss", "Yoksay", "Ignorer", "Descartar", "खारिज"],
+        b13cNoUsers: ["ما فيه مستخدمين.", "No users found.", "Kullanıcı bulunamadı.", "Aucun utilisateur.", "No hay usuarios.", "कोई उपयोगकर्ता नहीं मिला।"],
+        b13cNoRep: ["ما فيه بلاغات مفتوحة.", "No open reports.", "Açık şikayet yok.", "Aucun signalement ouvert.", "No hay reportes abiertos.", "कोई खुली रिपोर्ट नहीं।"],
+        b13cNoLog: ["السجل فاضي.", "The log is empty.", "Kayıt boş.", "Le journal est vide.", "El registro está vacío.", "लॉग खाली है।"],
+        b13cLoading: ["جارٍ التحميل…", "Loading…", "Yükleniyor…", "Chargement…", "Cargando…", "लोड हो रहा है…"],
+        b13cNoAdm: ["هذه للمالك فقط.", "Owner only.", "Yalnızca sahip.", "Réservé au propriétaire.", "Solo para el dueño.", "केवल मालिक के लिए।"],
+        b13cNotAllowed: ["غير مسموح لهذا الحساب.", "Not allowed for this account.", "Bu hesap için izin yok.", "Non autorisé pour ce compte.", "No permitido para esta cuenta.", "इस खाते के लिए अनुमति नहीं।"],
+        b13cUpd: ["نسخة جديدة متوفرة", "A new version is available", "Yeni sürüm hazır", "Nouvelle version disponible", "Hay una nueva versión", "नया संस्करण उपलब्ध है"],
+        b13cUpdGo: ["حدّث", "Update", "Güncelle", "Mettre à jour", "Actualizar", "अपडेट करें"],
+        b13cPsBtn: ["إعدادات الملف", "Profile settings", "Profil ayarları", "Paramètres du profil", "Ajustes del perfil", "प्रोफ़ाइल सेटिंग्स"],
         p11Ph: ["صورة الملف", "Profile photo", "Profil fotoğrafı", "Photo de profil", "Foto de perfil", "प्रोफ़ाइल फ़ोटो"],
         p11Ch: ["اختر صورة", "Choose photo", "Fotoğraf seç", "Choisir une photo", "Elegir foto", "फ़ोटो चुनें"],
         p11Rm: ["إزالة الصورة", "Remove photo", "Fotoğrafı kaldır", "Retirer la photo", "Quitar foto", "फ़ोटो हटाएँ"],
@@ -4219,15 +4286,11 @@
             if (s.drop <= 0) { s.drop = 0.15; const t = s.seg[s.seg.length - 1]; addFood(t.x, t.y, 0.4, segColor(s.skin, s.seg.length - 1)); }
           }
           s.r = (8 + Math.sqrt(s.len) * 0.4 + (s.evo >= 3 ? 3 : 0)) * (s.boss ? 3 : 1) * (s.sw ? 0.7 : AD.sr);
-          const n = Math.floor(s.len);
+          const n = Math.max(2, Math.ceil(s.len));
           while (s.seg.length < n) { const t = s.seg[s.seg.length - 1]; s.seg.push({ x: t.x, y: t.y }); }
           while (s.seg.length > n) s.seg.pop();
           const gap = s.r * (s.boss ? 0.18 : 0.55);
-          for (let i = 1; i < s.seg.length; i++) {
-            const p = s.seg[i - 1], q = s.seg[i];
-            const dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy);
-            if (d > gap) { q.x = p.x + (dx / d) * gap; q.y = p.y + (dy / d) * gap; }
-          }
+          B13C.follow(s, gap); // build13c: segments ride the head's trail (no corner cutting / coiling)
         }
 
         function think0(b, dt) {
@@ -5053,22 +5116,7 @@
 
         function draw() {
           const focus = player && player.alive ? player : state === "menu" ? snakes.find((s) => s.alive) : null;
-          if (focus) {
-            const h = focus.seg[0], m = S.cam, bo = focus.boost && focus.len > 12 ? 1 : 0, dt = Math.max(0.001, fdt);
-            let dz = 0;
-            if (m === "auto") for (const o of snakes) {
-              if (o === focus || !o.alive) continue;
-              const d = Math.hypot(o.seg[0].x - h.x, o.seg[0].y - h.y) - o.r; if (d < 520) dz = Math.max(dz, 1 - d / 520);
-            }
-            let zs = (Math.min(W, H) < 700 ? 0.72 : 1) * Math.max(0.6, 1 - (focus.len - 20) / 1200) * S.zoom, tl = 0.95;
-            if (m === "auto") { zs *= 1 - 0.1 * bo - 0.15 * dz; tl = 0.95 + 0.1 * bo + 0.15 * dz; }
-            else if (m === "near") zs *= 1.3; else if (m === "far") zs *= 0.7; else if (m === "top") tl = 1.45; else if (m === "cine") { tl = 0.72; zs *= 1.1; }
-            zs = clamp(zs, 0.38, 1.7);
-            if (Math.hypot(h.x - cam.x, h.y - cam.y) > 900) { cam.x = h.x; cam.y = h.y; cam.vx = cam.vy = 0; }
-            damp(cam, "x", "vx", h.x + nfLead(focus, 0), 0.14, dt); damp(cam, "y", "vy", h.y + nfLead(focus, 1), 0.14, dt);
-            damp(cam, "s", "vs", zs, 0.7, dt); damp(cam, "t", "vt", tl, 0.6, dt);
-            cam.s = clamp(cam.s, 0.38, 1.7); cam.t = clamp(cam.t, 0.7, 1.45);
-          }
+          if (focus) B13C.cam(focus); // build13c: automatic camera (follow + look-ahead, zoom by length / boost)
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
           const M = MAPS[mapI], ak0 = A / A0; ctx.fillStyle = M.bg; ctx.fillRect(0, 0, W, H);
           ST = Math.sin(cam.t); CT = Math.cos(cam.t);
@@ -5128,7 +5176,7 @@
             preyPonds(vis); nfDrawFloor(vis);
           }
 
-          F13V = vis;
+          B13C.dim(); F13V = vis;
           for (const f of food) {
             if (!vis(f.x, f.y)) continue;
             const dk = F13.k(f), T = f.k && FT[f.k], r = (T ? T.r : f.d13 !== undefined ? 4 + Math.sqrt(f.v) * 4.2 : 3 + f.v * 4) * AD.fs * (0.25 + 0.75 * dk);
@@ -5250,14 +5298,14 @@
             while (oi < tall.length && tall[oi].y < sn.seg[0].y) drawOb(tall[oi++]);
             const n = sn.seg.length;
             const ga = sn.pg > 0 ? 0.45 : 1, bo = sn.boost && sn.len > 12, hc = sn.frz > 0 ? "#8fd8ff" : segColor(sn.skin, 0);
-            /* build12: body halo bands removed (looked like a dark shadow band) */ /* build9: dark outline tube removed */
+            /* build13c: contact shadow + outline (+ own-snake glow) */ B13C.under(sn, segR, ga);
             ctx.globalAlpha = ga;
             for (let i = n - 1; i > 0; i -= sn.st) {
               const px = sn.wx[i], py = sn.wy[i];
               if (!vis(px, py)) continue;
               const r = segR(sn, i, n), j0 = Math.max(0, i - 2), j1 = Math.min(n - 1, i + 2);
               const an = Math.atan2((sn.wy[j0] - sn.wy[j1]) * ST, sn.wx[j0] - sn.wx[j1]), c = Math.cos(an), s = Math.sin(an);
-              pr(px, py, r); const wd = r * 1.9 * PK, ln = wd * (sn.st > 1 ? 1.05 : 0.85);
+              pr(px, py, r); const wd = r * 1.9 * PK * Math.max(1, B13C.MW / Math.max(0.1, sn.r * 1.9 * PK)), ln = wd * (sn.st > 1 ? 1.05 : 0.85);
               ctx.setTransform(dpr * c, dpr * s, -dpr * s, dpr * c, dpr * PX, dpr * PY);
               ctx.drawImage(bodySz(sn.frz > 0 ? "#8fd8ff" : bodyKey(sn.skin, i), i % 4 < sn.st ? 1 : 0, wd * dpr), -ln * 0.5, -wd * 0.5, ln, wd);
               if (sn.ovs) { ctx.globalAlpha = ga * sn.ova; ctx.drawImage(sn.ovs[i % sn.ovs.length], -ln * 0.5, -wd * 0.5, ln, wd); ctx.globalAlpha = ga; }
@@ -5298,13 +5346,13 @@
             const blink = (time * 0.7 + sn.ph) % 3.5 < 0.13, look = sa + clamp(angDiff(sn.ta, sn.a), -0.7, 0.7) * 0.9;
             for (const side of [-1, 1]) {
               const ea = sn.a + side * 0.73, ex = h.x + Math.cos(ea) * r * 0.87, ey = h.y + Math.sin(ea) * r * 0.87;
-              pr(ex, ey, r * 1.1); const er = r * 0.27 * PK;
+              pr(ex, ey, r * 1.1); const er = Math.max(2, r * 0.3 * PK);
               if (blink) {
                 ctx.strokeStyle = "#05060d"; ctx.lineWidth = Math.max(1, er * 0.35); ctx.beginPath();
                 ctx.moveTo(PX - Math.cos(sa) * er, PY - Math.sin(sa) * er); ctx.lineTo(PX + Math.cos(sa) * er, PY + Math.sin(sa) * er); ctx.stroke();
                 continue;
               }
-              ctx.fillStyle = "#e9b829"; ctx.beginPath(); ctx.arc(PX, PY, er, 0, 6.283); ctx.fill();
+              ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(PX, PY, er * 1.24, 0, 6.283); ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,.8)"; ctx.lineWidth = Math.max(1, er * 0.22); ctx.stroke(); ctx.fillStyle = "#ffcf1f"; ctx.beginPath(); ctx.arc(PX, PY, er, 0, 6.283); ctx.fill();
               ctx.strokeStyle = "rgba(60,30,0,.6)"; ctx.lineWidth = Math.max(0.8, er * 0.18); ctx.stroke();
               const ox = Math.cos(look) * er * 0.3, oy = Math.sin(look) * er * 0.3;
               ctx.fillStyle = "#05060d"; ctx.beginPath(); ctx.ellipse(PX + ox, PY + oy, er * 0.2, er * 0.78, sa, 0, 6.283); ctx.fill();
@@ -5327,14 +5375,8 @@
               emo(g ? "🕶️" : "👑", PX, PY, hs);
             }
             pr(h.x, h.y, r * 2);
-            ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(0,0,0,.6)";
             const ny0 = PY - 8 - (sn.hat ? r * PK : 0);
-            if (sn === player && avReady()) { // name tag with the drawn avatar beside it
-              const tw = ctx.measureText(sn.name).width, ax = PX - tw / 2 - 12, ay = ny0 - 5;
-              ctx.strokeText(sn.name, PX + 10, ny0); ctx.fillText(sn.name, PX + 10, ny0);
-              ctx.save(); ctx.beginPath(); ctx.arc(ax + 2, ay, 9, 0, 6.283); ctx.clip(); ctx.drawImage(avImg, ax - 7, ay - 9, 18, 18); ctx.restore();
-            } else { ctx.strokeText(sn.name, PX, ny0); ctx.fillText(sn.name, PX, ny0); }
-            nfTag(PX, ny0, sn); B13.tag(PX, ny0, sn);
+            B13C.tag(sn, PX, ny0); // build13c: pill nametag with tier badge
           }
 
           ctx.globalAlpha = 1;
@@ -5435,7 +5477,7 @@
           if (html !== lbH) { lbH = html; $("lb").innerHTML = html; } // touch the DOM only on change
         }
 
-        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop", "nfedit", "nfstory", "onlb", "onfr", "onch", "ongems", "onmig", "b13ids", "b13mis", "b13gift", "b13prem"];
+        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop", "nfedit", "nfstory", "onlb", "onfr", "onch", "ongems", "onmig", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm"];
         // MANDATORY ACCOUNT: with nobody logged in, only the login and create-account screens can show
         function authView(imp, quiet) {
           $("logv").classList.toggle("x-hide", !!imp); $("impv").classList.toggle("x-hide", !imp);
@@ -7318,7 +7360,7 @@
         });
         document.addEventListener("pointerdown", (e) => { if (!e.target.closest("#xlang")) langClose(); });
         document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !LP.classList.contains("x-hide")) { e.stopPropagation(); langClose(true); } }, true);
-        const langVis = () => { const any = OV.some((o) => !$(o).classList.contains("x-hide")); $("xlang").classList.toggle("x-hide", !any); if (!any) langClose(); };
+        const langVis = () => { const any = ["login", "reg"].some((o) => !$(o).classList.contains("x-hide")); $("xlang").classList.toggle("x-hide", !any); if (!any) langClose(); };
         const langMO = new MutationObserver(langVis);
         OV.forEach((o) => langMO.observe($(o), { attributes: true, attributeFilter: ["class"] }));
         langVis();
@@ -7478,7 +7520,7 @@
         function nfSXP(n, why) { if (NFR && RP.add) RP.add(n, why); }
         var RP = { add: null };
         // one click router for every new button (data-go="nf...")
-        var NFG = {}, B13 = {}; // build13 module (filled at the end of the script)
+        var NFG = {}, B13 = {}, B13C = {}; // build13 module (filled at the end of the script)
         document.addEventListener("click", (e) => {
           const b = e.target.closest("[data-go]"); if (!b) return; const g = b.dataset.go;
           if (!g.startsWith("nf") || !NFG[g]) return;
@@ -8739,7 +8781,7 @@
         // ---------- PLAYER CARD (lobby chip and profile) ----------
         chipH = function () {
           const lv = lvInfo(), ta = P.title && ACH.find((a) => a[0] === P.title), pc = lv.n >= LV_MAX ? 100 : (lv.x / lv.need) * 100;
-          return `<i class="px-av">${avH(P)}<span class="px-lv b13-t${B13.tier(lv.n)}">${lv.n}</span></i><div class="px-pc"><b>${esc(P.name || "—")} ${B13.lv(lv.n)}</b><small>${ta ? "🏷️ " + aName(ta) + " · " : ""}${_t("lvl")} ${lv.n} · <bdi dir="ltr">${lv.x}/${lv.need}</bdi> ${_t("xp")}</small><div class="px-xp"><u style="width:${pc.toFixed(1)}%"></u></div></div>` +
+          return `<i class="px-av">${avH(P)}<span class="px-lv b13-t${B13.tier(lv.n)}">${lv.n}</span></i><div class="px-pc"><b>${esc(P.name || "—")} ${B13.lv(lv.n)}${B13C.ownB ? B13C.ownB(B13C.pid()) : ""}</b><small>${ta ? "🏷️ " + aName(ta) + " · " : ""}${_t("lvl")} ${lv.n} · <bdi dir="ltr">${lv.x}/${lv.need}</bdi> ${_t("xp")}</small><div class="px-xp"><u style="width:${pc.toFixed(1)}%"></u></div></div>` +
             `<div class="px-pills"><span class="px-pill">${num(P.coins)} 🪙</span>${ON.storeOk() && cur === "@on" ? `<button type="button" class="px-pill g on-plus" data-go="nfongems" aria-label="${esc(_t("onGemsT"))}">${num(P.gems)} 💎</button>` : `<span class="px-pill g">${num(P.gems)} 💎</span>`}</div>`;
         };
 
@@ -9673,7 +9715,7 @@
         {
           const BK = ["back", "menu", "nfonback", "nfback", "home", "stuX"];
           const P10_NOBACK = { over: 1, lgr: 1, mnt: 1, onmig: 1, login: 1, reg: 1, menu: 1, studio: 1 };
-          const P10_OV = ["acct", "shop", "set", "how", "maps", "league", "lgr", "achs", "inbox", "adm", "onlb", "onfr", "onch", "ongems", "onmig", "mnt", "chat", "nfmodes", "nfedit", "nfstory", "nfpass", "nfshop", "over", "reg", "b13ids", "b13mis", "b13gift", "b13prem"];
+          const P10_OV = ["acct", "shop", "set", "how", "maps", "league", "lgr", "achs", "inbox", "adm", "onlb", "onfr", "onch", "ongems", "onmig", "mnt", "chat", "nfmodes", "nfedit", "nfstory", "nfpass", "nfshop", "over", "reg", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm"];
           const ARW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
           const num2 = (n) => { try { return num(n); } catch (_) { return String(n || 0); } };
           const wallet = () => {
@@ -10338,6 +10380,375 @@
         }
         if (!B13.ios()) CATS.push(["us", "💵", "b13PremT"], ["id", "🆔", "b13IdsT"]);
         { const nc = NFG.nfcat; NFG.nfcat = (b) => { if (b.dataset.c === "id") return NFG.nfb13ids(); if (b.dataset.c === "us") return NFG.nfb13prem(); nc(b); }; }
+        // ===================== build13c =====================
+        // Automatic camera, snake visibility (outline, contact shadow, saturated colours, clear eyes, own-snake glow, dim + vignette),
+        // path-following bodies (no coiling / corner cutting, smooth growth), Profile Settings (language, name, avatar, account),
+        // owner badge + owner-only admin panel on the server, full in-match ranking, nametags, server-saved look, soft delete, update check.
+        {
+          const online = () => { try { return cur === "@on" && ON.on; } catch (_) { return false; } };
+          const prof = () => (online() && ON.st && ON.st.profile) || null;
+          const isOwner = () => { const p = prof(); return !!p && p.role === "owner"; };
+          B13C.pid = () => { const p = prof(); return p ? +p.player_id : 0; };
+          B13C.ownB = (pid) => (+pid === 1 ? `<span class="b13c-own" title="${esc(_t("b13cOwner"))}">👑 <b>${esc(_t("b13cOwner"))}</b></span>` : "");
+          { const idH0 = B13.idH; B13.idH = (pid, vip) => idH0(pid, vip) + B13C.ownB(pid); }
+
+          // ---------- 1. automatic camera: smooth follow with look-ahead, zoom out with length (a little on boost), eased ----------
+          S.cam = "auto"; S.zoom = 1;
+          B13C.hideCamRows = () => { for (const sel of ['.x-seg[data-k="cam"]', "#zoom"]) { const e = $("set").querySelector(sel), row = e && e.closest(".x-set"); if (row) { row.hidden = true; row.style.setProperty("display", "none", "important"); } } };
+          B13C.hideCamRows(); setTimeout(B13C.hideCamRows, 0);
+          const LK = { x: 0, y: 0, vx: 0, vy: 0 };
+          B13C.zoomFor = (len, bo, dz) => {
+            const sm = Math.min(W, H), base = clamp(sm / 410, 0.84, 1.05);
+            const lf = Math.max(0.5, Math.pow(1 + Math.max(0, len - 20) / 240, -0.34));
+            return clamp(base * lf * (1 - 0.06 * bo) * (1 - 0.06 * dz), 0.46, 1.2);
+          };
+          B13C.cam = (focus) => {
+            const h = focus.seg[0], dt = Math.min(0.1, Math.max(0.001, fdt)), bo = focus.boost && focus.len > 12 ? 1 : 0;
+            S.cam = "auto"; S.zoom = 1;
+            let dz = 0;
+            for (const o of snakes) {
+              if (o === focus || !o.alive) continue; const dx = o.seg[0].x - h.x, dy = o.seg[0].y - h.y;
+              if (dx > 640 || dx < -640 || dy > 640 || dy < -640) continue;
+              const d = Math.hypot(dx, dy) - o.r; if (d < 520) dz = Math.max(dz, 1 - d / 520);
+            }
+            const zs = B13C.zoomFor(focus.len, bo, dz), s = Math.max(0.3, cam.s), k = 0.85 + 0.3 * bo;
+            const lx = Math.cos(focus.a) * (W * 0.12 / s) * k, ly = Math.sin(focus.a) * (H * 0.1 / s) * k;
+            if (Math.hypot(h.x - cam.x, h.y - cam.y) > 900) { cam.x = h.x; cam.y = h.y; cam.vx = cam.vy = 0; LK.x = LK.y = LK.vx = LK.vy = 0; }
+            damp(LK, "x", "vx", lx, 0.45, dt); damp(LK, "y", "vy", ly, 0.45, dt);
+            damp(cam, "x", "vx", h.x + LK.x, 0.11, dt); damp(cam, "y", "vy", h.y + LK.y, 0.11, dt);
+            damp(cam, "s", "vs", zs, 0.85, dt); damp(cam, "t", "vt", 0.95, 0.6, dt);
+            cam.s = clamp(cam.s, 0.4, 1.3); cam.t = clamp(cam.t, 0.7, 1.45);
+          };
+
+          // ---------- 3. path-following body: every segment sits on the head's real trail at a fixed arc distance ----------
+          // (the old chain pull cut every corner, so a tightly turning snake shrank into a coil). Growth: the last segment sits at the
+          // fractional length, so the tail extends smoothly, and new segments unfurl along the trail kept behind the tail.
+          B13C.follow = (s, gap) => {
+            const seg = s.seg, n = seg.length, h = seg[0]; if (n < 2) return;
+            let X = s.pX, Y = s.pY;
+            if (!X || s.pR !== h || Math.abs(X[X.length - 1] - h.x) + Math.abs(Y[Y.length - 1] - h.y) > 400) {
+              X = s.pX = []; Y = s.pY = []; s.p0 = 0; s.pR = h;
+              for (let i = n - 1; i >= 0; i--) { X.push(seg[i].x); Y.push(seg[i].y); }
+            } else {
+              const ms = Math.max(1.5, gap * 0.3);
+              if (Math.abs(h.x - X[X.length - 1]) + Math.abs(h.y - Y[Y.length - 1]) >= ms) { X.push(h.x); Y.push(h.y); }
+            }
+            const full = Math.max(1, s.len - 1);
+            let px = h.x, py = h.y, k = X.length - 1, acc = 0;
+            for (let i = 1; i < n; i++) {
+              const tgt = Math.min(i, full) * gap; let ok = false;
+              while (k >= s.p0) {
+                const dx = X[k] - px, dy = Y[k] - py, d = Math.sqrt(dx * dx + dy * dy);
+                if (acc + d >= tgt) { const t = d > 0 ? (tgt - acc) / d : 0; seg[i].x = px + dx * t; seg[i].y = py + dy * t; ok = true; break; }
+                acc += d; px = X[k]; py = Y[k]; k--;
+              }
+              if (!ok) { seg[i].x = px; seg[i].y = py; }
+            }
+            const keep = k - 96; if (keep > s.p0) s.p0 = keep;
+            if (s.p0 > 2048 && s.p0 > X.length / 2) { X.splice(0, s.p0); Y.splice(0, s.p0); s.p0 = 0; }
+          };
+
+          // ---------- 2. snake visibility ----------
+          // saturated colours (memoised; sprites are cached per colour string)
+          const SATM = new Map();
+          const sat = (c) => {
+            if (typeof c !== "string" || c[0] === "F") return c;
+            let v = SATM.get(c); if (v) return v;
+            let r, g, b, m;
+            if ((m = /^#([0-9a-f]{6})$/i.exec(c))) { const n = parseInt(m[1], 16); r = n >> 16; g = (n >> 8) & 255; b = n & 255; }
+            else if ((m = /^#([0-9a-f]{3})$/i.exec(c))) { r = parseInt(m[1][0] + m[1][0], 16); g = parseInt(m[1][1] + m[1][1], 16); b = parseInt(m[1][2] + m[1][2], 16); }
+            else if ((m = /^hsla?\(\s*([\d.]+)[^\d.]+([\d.]+)%[^\d.]+([\d.]+)%/i.exec(c))) { v = `hsl(${m[1]},${Math.min(100, +m[2] * 1.15 + 6).toFixed(0)}%,${clamp(+m[3], 24, 66)}%)`; }
+            else if ((m = /^rgba?\(\s*(\d+)[^\d]+(\d+)[^\d]+(\d+)/i.exec(c))) { r = +m[1]; g = +m[2]; b = +m[3]; }
+            if (!v && r !== undefined) {
+              r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+              let hh = 0, ss = 0;
+              if (d > 0.0001) { ss = d / (1 - Math.abs(2 * l - 1)); hh = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; hh *= 60; if (hh < 0) hh += 360; }
+              const s2 = ss < 0.08 ? ss : Math.min(1, ss * 1.18 + 0.06), l2 = ss < 0.08 ? clamp(l, 0.14, 0.9) : clamp(l, 0.2, 0.68);
+              v = `hsl(${hh.toFixed(0)},${(s2 * 100).toFixed(0)}%,${(l2 * 100).toFixed(0)}%)`;
+            }
+            if (!v) v = c;
+            if (SATM.size > 4000) SATM.clear(); SATM.set(c, v); return v;
+          };
+          B13C.sat = sat;
+          { const sc0 = segColor; segColor = (k, i) => sat(sc0(k, i)); }
+          B13C.MW = 7; // minimum on-screen body width (CSS px)
+          // contact shadow + dark outline (+ a soft glow and light rim for the player's own snake), drawn under the body sprites
+          const BR2 = [0, 0.12, 0.5, 0.66, 0.8, 0.9, 1];
+          const tube = (sn, segR, z, ox, oy, wk, add) => {
+            const n = sn.seg.length, step = 2 * (sn.st || 1); if (n < 3) return;
+            for (let q = 0; q < BR2.length - 1; q++) {
+              const a = Math.floor(BR2[q] * (n - 1)), b = Math.floor(BR2[q + 1] * (n - 1)); if (b <= a) continue;
+              const m = (a + b) >> 1, rm = segR(sn, m, n); pr(sn.wx[m], sn.wy[m], rm * z);
+              const mz = Math.max(1, B13C.MW / Math.max(0.1, sn.r * 1.9 * PK)); // same minimum-width scale as the body sprites
+              ctx.lineWidth = Math.max(1, rm * wk * PK * mz + add); ctx.beginPath();
+              for (let i = a; ; i += step) {
+                if (i > b) i = b; const r = segR(sn, i, n); pr(sn.wx[i], sn.wy[i], r * z);
+                const X = PX + ox, Y = PY + oy; if (i === a) ctx.moveTo(X, Y); else ctx.lineTo(X, Y);
+                if (i === b) break;
+              }
+              ctx.stroke();
+            }
+          };
+          B13C.under = (sn, segR, ga) => {
+            if (!sn.wx || sn.seg.length < 3) return;
+            const me = sn === player && state === "play", lo = QL <= 0;
+            ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+            if (!lo) { ctx.strokeStyle = "rgba(0,0,0,1)"; ctx.globalAlpha = 0.16 * ga; tube(sn, segR, 0, 2, 4, 2.05, 0); } // soft contact shadow on the floor
+            if (me) { // own snake: soft gold glow
+              ctx.globalCompositeOperation = "lighter"; ctx.strokeStyle = "#ffd76a";
+              ctx.globalAlpha = 0.16 * ga; tube(sn, segR, 1, 0, 0, 1.9, 12);
+              ctx.globalAlpha = 0.2 * ga; tube(sn, segR, 1, 0, 0, 1.9, 6);
+              ctx.globalCompositeOperation = "source-over";
+            }
+            ctx.strokeStyle = me ? "#fff2b8" : "#05070d"; ctx.globalAlpha = (me ? 0.95 : 0.78) * ga; tube(sn, segR, 1, 0, 0, 1.9, me ? 3.4 : 2.6);
+            ctx.restore(); ctx.globalAlpha = ga;
+          };
+          // background dim before food and snakes, plus a CSS vignette while playing
+          let vgOn = null;
+          B13C.dim = () => {
+            ctx.fillStyle = "rgba(3,6,14,.16)"; ctx.fillRect(0, 0, W, H);
+            const on = state === "play"; if (on !== vgOn) { vgOn = on; document.body.classList.toggle("b13c-play", on); }
+          };
+
+          // ---------- 6. nametag: dark pill, tier level badge, name; own snake gold rim; owner crown ----------
+          const TCOL = ["#cd7f32", "#c9d3e0", "#ffcc33", "#36e0ff", "#3d7bff", "#b45cff", "#ff3b3b", "#ffffff"];
+          const rr = (x, y, w, h, r) => { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); };
+          B13C.lvOf = (sn) => {
+            if (sn === player) return level();
+            if (!sn.lv13) { const b = player ? level() : 5; sn.lv13 = Math.max(1, Math.min(100, Math.round(b + (Math.random() * 2 - 1) * Math.max(3, b * 0.35)))); }
+            return sn.lv13;
+          };
+          B13C.tag = (sn, tx, y0) => {
+            const me = sn === player, own = me && B13C.pid() === 1, nm = String(sn.name || ""), av = me && avReady();
+            const lv = sn.ad ? 0 : B13C.lvOf(sn), t = B13.tier(lv || 1), ls = String(lv);
+            ctx.save(); ctx.textBaseline = "middle"; ctx.textAlign = "left";
+            ctx.font = `${me ? 800 : 700} 12px system-ui, sans-serif`; const tw = Math.min(150, ctx.measureText(nm).width);
+            const bw = lv ? 9 + ls.length * 6.6 : 0, cw = own ? 15 : 0, h = 19, w = 6 + bw + (lv ? 5 : 0) + (av ? 19 : 0) + tw + cw + 8, x = Math.round(tx - w / 2), y = y0 - h + 4;
+            ctx.globalAlpha = sn.pg > 0 ? 0.5 : 0.94;
+            rr(x, y, w, h, h / 2); ctx.fillStyle = me ? "rgba(26,20,6,.78)" : "rgba(6,10,20,.66)"; ctx.fill();
+            const fr = me && typeof FRC === "object" && FRC[NX.eq.fr];
+            ctx.lineWidth = me ? 1.6 : 1; ctx.strokeStyle = fr ? fr[0] : me ? "#ffd45a" : sn.tm !== undefined && TC[sn.tm] ? TC[sn.tm][1] || "rgba(255,255,255,.18)" : "rgba(255,255,255,.18)"; ctx.stroke();
+            let cx = x + 6;
+            if (lv) { // tier level badge
+              const by = y + 3, bh = h - 6;
+              if (t === 7) { const g = ctx.createLinearGradient(cx, 0, cx + bw, 0); ["#ff3b3b", "#ffd21a", "#36ff7a", "#36c8ff", "#b45cff"].forEach((c, i) => g.addColorStop(((i / 4) + time * 0.4) % 1, c)); ctx.fillStyle = g; }
+              else ctx.fillStyle = TCOL[t];
+              if (t === 6) { ctx.shadowColor = "#ff3b3b"; ctx.shadowBlur = 6; }
+              rr(cx, by, bw, bh, 4); ctx.fill(); ctx.shadowBlur = 0;
+              ctx.fillStyle = t === 0 || (t >= 4 && t <= 6) ? "#fff" : "#1a1206"; ctx.font = "800 10px system-ui, sans-serif"; ctx.textAlign = "center";
+              ctx.fillText(ls, cx + bw / 2, by + bh / 2 + 0.5); ctx.textAlign = "left"; cx += bw + 5;
+            }
+            if (av) { ctx.save(); ctx.beginPath(); ctx.arc(cx + 8, y + h / 2, 8, 0, 6.283); ctx.clip(); ctx.drawImage(avImg, cx, y + h / 2 - 8, 16, 16); ctx.restore(); cx += 19; }
+            ctx.font = `${me ? 800 : 700} 12px system-ui, sans-serif`; ctx.fillStyle = own ? "#ffe08a" : me ? "#fff6d6" : "#fff";
+            ctx.fillText(nm, cx, y + h / 2 + 0.5, 150); cx += tw;
+            if (own) emo("👑", cx + 9, y + h / 2, 12);
+            if (fr && fr[1]) emo(fr[1], x + w, y + 2, 10);
+            ctx.restore();
+          };
+
+          // ---------- 6. in-match ranking: every snake (bots too), level badges; tap to see the full list ----------
+          { const h4 = $("lbx").querySelector("h4"); if (h4 && !$("pxlbn")) h4.insertAdjacentHTML("beforeend", '<em id="pxlbn" dir="ltr"></em>'); }
+          const MED = ["🥇", "🥈", "🥉"];
+          hud = function (dt) {
+            if ((lbT -= dt) > 0) return;
+            lbT = 0.25;
+            const mh = L.on ? "" : modeHud();
+            $("tm").classList.toggle("x-hide", !L.on && !mh);
+            if (mh) $("tm").textContent = mh;
+            if (L.on) { const t = Math.max(0, Math.ceil(L.t)); $("tm").textContent = `${_t("round")} ${L.round + 1}/3 · ${_t("map" + mapI)} · ${(t / 60) | 0}:${String(t % 60).padStart(2, "0")}`; }
+            if (player) {
+              $("len").textContent = "🐍 " + Math.floor(player.len); $("len").setAttribute("aria-label", _t("length") + ": " + Math.floor(player.len));
+              $("kc").textContent = "⚔️ " + player.kills; $("kc").setAttribute("aria-label", _t("kills") + ": " + player.kills);
+              const bf = Math.round(clamp((player.len - 12) / 88, 0, 1) * 100) + "%"; if (bf !== hud.bf) { hud.bf = bf; $("boost").style.setProperty("--bf", bf); }
+            }
+            const lbx = $("lbx"); lbx.classList.remove("x-lb0"); lbx.classList.toggle("b13c-full", lbS === 2);
+            const all = snakes.filter((s) => s.alive && !s.ad).sort((a, b) => b.len - a.len || b.kills - a.kills);
+            const xs = document.body.classList.contains("x-vshort"), top = lbS === 2 ? all : all.slice(0, xs ? 3 : 5);
+            const row = (s, i) => `<li class="${s === player ? "me" : ""}"><i>${i < 3 ? MED[i] : i + 1}</i>${B13.lv(B13C.lvOf(s))}<em>${s.tm === undefined ? "" : TC[s.tm][0] + " "}${esc(s.name)}</em><span dir="ltr">${Math.floor(s.len)}</span></li>`;
+            let html = top.map(row).join("");
+            if (player && player.alive && !top.includes(player)) html += `<li class="sep" aria-hidden="true">···</li>` + row(player, all.indexOf(player));
+            if (html !== lbH) {
+              lbH = html; const ol = $("lb"), st = ol.scrollTop; ol.innerHTML = html;
+              if (lbS === 2) { if (!hud.wasFull) { const me = ol.querySelector("li.me"); if (me) ol.scrollTop = Math.max(0, me.offsetTop - ol.clientHeight / 2); } else ol.scrollTop = st; }
+            }
+            hud.wasFull = lbS === 2;
+            const cn = "🐍" + all.length; if ($("pxlbn").textContent !== cn) $("pxlbn").textContent = cn;
+          };
+          $("lb").addEventListener("pointerdown", (e) => { if (lbS === 2) e.stopPropagation(); }, { passive: true });
+
+          // ---------- 7. equipped look saved on the server (Royal skin / trail / decor / frame / emotes) ----------
+          let lookT = 0, lookLast = "";
+          const lookNow = () => JSON.stringify({ sk: NX.eq.sk || "", tr: NX.eq.tr || "", de: NX.eq.de || "", fr: NX.eq.fr || "", em: (NX.eq.em || []).slice(0, 6) });
+          B13C.saveLook = (now) => {
+            if (!online()) return; const j = lookNow(); if (j === lookLast) return;
+            clearTimeout(lookT); lookT = setTimeout(() => { lookLast = j; ON.rpc("set_look", { p_look: JSON.parse(j) }).then((r) => { if (ON.st && ON.st.profile) ON.st.profile.look = r; }).catch(() => { lookLast = ""; }); }, now ? 0 : 600);
+          };
+          B13C.applyLook = (st) => {
+            const lk = st && st.profile && st.profile.look;
+            if (!lk || typeof lk !== "object" || !Object.keys(lk).length) { lookLast = ""; B13C.saveLook(true); return; } // first time: keep this device's look and store it
+            for (const k of ["sk", "tr", "de", "fr"]) { const v = typeof lk[k] === "string" ? lk[k] : ""; if (v === "" || (k === "sk" && v === "photo") || ENT.has(v)) NX.eq[k] = v; }
+            if (Array.isArray(lk.em)) NX.eq.em = lk.em.filter((x) => typeof x === "string" && ENT.has(x)).slice(0, 6);
+            lookLast = lookNow(); commit(); try { if (player) nfDress(player); paintShop2(); } catch (_) {}
+          };
+          { const ne = nfEquip; nfEquip = function (id) { ne(id); B13C.saveLook(); }; }
+
+          // ---------- 8. account: soft delete (7 days) with restore on login ----------
+          { const en = ON.enter; ON.enter = async (s) => {
+              const st = await en(s);
+              try {
+                if (st && st.profile && st.profile.deleted_at) {
+                  const r = await ON.rpc("restore_my_account"); if (r && r.restored) { st.profile.deleted_at = null; setTimeout(() => toast(_t("b13cRestored")), 1200); }
+                }
+              } catch (e) { if ((e.code || e.message) === "account_deleted") { toast(_t("b13cGone")); await ON.signOut(true); return st; } }
+              try { B13C.applyLook(st); } catch (_) {}
+              try { psPaint(); } catch (_) {}
+              return st;
+            }; }
+
+          // ---------- 4. Profile Settings (language, name, avatar, account); no floating globe outside the login screens ----------
+          const PS = { del: false };
+          function psPaint() {
+            const p = prof(), el = $("b13cps"); if (!el) return;
+            const nm = $("b13cnm"); if (nm && document.activeElement !== nm) nm.value = p ? p.username : P.name || "";
+            $("b13cid").innerHTML = p ? `<bdi dir="ltr">ID ${num(p.vip_id || p.player_id)}</bdi> ${B13C.ownB(p.player_id)}` : "";
+            $("b13cav").innerHTML = AV.map((a) => `<button type="button" data-go="nfb13cav" data-a="${a}" class="${P.av === a ? "on" : ""}" aria-label="${a}">${a}</button>`).join("");
+            $("b13cown").classList.toggle("x-hide", !isOwner());
+            $("b13cdp").classList.toggle("x-hide", !PS.del);
+            $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
+            $("b13cver").textContent = _t("b13cVer", { v: "13c" });
+            el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
+          }
+          B13C.psPaint = psPaint;
+          NFG.nfb13cps = (b) => { if (state === "play") return; PS.del = !!(b && b.dataset && b.dataset.del); show("b13cps"); psPaint(); if (PS.del) setTimeout(() => { const i = $("b13cdc"); if (i) i.focus({ preventScroll: true }); }, 50); };
+          NFG.nfb13cav = (b) => { const a = b.dataset.a; if (!AV.includes(a)) return; P.av = a; av = a; commit(); profile(); psPaint(); toast(_t("b13cSaved")); };
+          NFG.nfb13cren = async () => {
+            const v = $("b13cnm").value.trim(), m = $("b13cnmm"); m.textContent = "";
+            if (!online()) return; const p = prof(); if (!p || v === p.username) return;
+            try {
+              const r = await ON.rpc("set_username", { p_username: v });
+              p.username = r.username; P.name = r.username; if (ACC["@on"]) ACC["@on"].u = r.username; commit(); profile(); psPaint(); toast(_t("b13cSaved"));
+            } catch (e) { const c = e.code || e.message; m.textContent = c === "rename_cooldown" ? _t("b13cRenCd") : c === "username_taken" ? _t("taken") : c === "invalid_username" ? _t("unameBad") : ON.err(e); }
+          };
+          NFG.nfb13cdel = () => { PS.del = true; psPaint(); const i = $("b13cdc"); if (i) { i.value = ""; i.focus({ preventScroll: true }); } };
+          NFG.nfb13cdelx = () => { PS.del = false; psPaint(); };
+          NFG.nfb13cdelgo = async (b) => {
+            const p = prof(), m = $("b13cdm"); if (!p || B13C.delBusy) return; m.textContent = "";
+            const v = $("b13cdc").value.trim(); if (v.toLowerCase() !== String(p.username).toLowerCase()) { m.textContent = _t("b13cDelMis"); return; }
+            B13C.delBusy = true; b.disabled = true;
+            try { await ON.rpc("delete_my_account", { p_confirm: v }); PS.del = false; toast(_t("b13cDelDone")); await ON.signOut(false); }
+            catch (e) { const c = e.code || e.message; m.textContent = c === "owner_protected" ? _t("b13cDelOwn") : c === "confirm_mismatch" ? _t("b13cDelMis") : ON.err(e); }
+            finally { B13C.delBusy = false; b.disabled = false; }
+          };
+          ON.del = () => NFG.nfb13cps({ dataset: { del: "1" } });
+          { const oa = $("acct").querySelector(".on-acts"); if (oa) oa.insertAdjacentHTML("afterbegin", `<button class="x-btn x-sub b13c-psb" data-go="nfb13cps">⚙️ <span data-i18n="b13cPsBtn">${esc(_t("b13cPsBtn"))}</span></button>`);
+            const sb = $("set").querySelector(".x-set"); if (sb) sb.insertAdjacentHTML("beforebegin", `<div class="x-set b13c-setps"><p>🌐 <span data-i18n="b13cLang">${esc(_t("b13cLang"))}</span> · <span data-i18n="b13cAcct">${esc(_t("b13cAcct"))}</span></p><button class="x-btn x-sub" data-go="nfb13cps">⚙️ <span data-i18n="b13cPsBtn">${esc(_t("b13cPsBtn"))}</span> ›</button></div>`); }
+          $("b13cps").addEventListener("click", (e) => { const b = e.target.closest('.x-seg[data-k="lang"] button'); if (!b) return; try { KV.set("ss-lang", b.dataset.v); } catch (_) {} setTimeout(psPaint, 0); });
+          NFH.relang.push(() => { try { psPaint(); admPaint(); } catch (_) {} });
+          // ---------- 5. owner-only admin panel on the server RPCs ----------
+          const AD = { tab: "u", q: "", users: [], sel: null, rep: [], log: [], busy: false, msg: "" };
+          const adErr = (e) => { const c = (e && (e.code || e.message)) || ""; return c === "not_admin" ? _t("b13cNoAdm") : c === "not_allowed" ? _t("b13cNotAllowed") : c === "amount_too_large" ? _t("b13cTooBig") : c === "reason_required" ? _t("b13cWhyReq") : ON.err(e); };
+          const when = (s) => { try { return new Date(s).toLocaleString(LANG === "ar" ? "ar-u-nu-latn" : LANG, { dateStyle: "short", timeStyle: "short" }); } catch (_) { return String(s || ""); } };
+          function admPaint() {
+            const el = $("b13cadm"); if (!el || el.classList.contains("x-hide")) return;
+            el.querySelectorAll("[data-at]").forEach((b) => b.classList.toggle("on", b.dataset.at === AD.tab));
+            const bx = $("b13cab"); let h = "";
+            if (AD.tab === "u") {
+              h += `<div class="x-row b13c-q"><input class="x-name" id="b13caq" type="search" autocomplete="off" maxlength="40" placeholder="${esc(_t("b13cSearchU"))}" value="${esc(AD.q)}" /><button class="x-btn x-main" data-go="nfb13caq">🔍</button></div>`;
+              const u = AD.sel;
+              if (u) {
+                const ban = u.banned_until && new Date(u.banned_until) > new Date();
+                h += `<div class="b13c-ucard"><b><bdi>${esc(u.username)}</bdi> ${B13.lv(u.level || 1)} <small dir="ltr">#${num(u.player_id)}</small> ${B13C.ownB(u.player_id)}</b>
+                  <small dir="ltr">${esc(u.email || "")} · ${esc(u.role)}</small><small><bdi dir="ltr">${num(u.coins)} 🪙 · ${num(u.gems)} 💎</bdi>${ban ? ` · ⛔ ${esc(_t("b13cBanned"))} ${esc(when(u.banned_until))}` : ""}</small></div>`;
+                if (u.role === "owner") h += `<p class="x-note">${esc(_t("b13cOwnerSelf"))}</p>`;
+                h += `<div class="x-row b13c-amt"><input class="x-name" id="b13caa" type="number" inputmode="numeric" min="1" max="1000000" placeholder="${esc(_t("admAmt"))}" /><input class="x-name" id="b13caw" maxlength="60" placeholder="${esc(_t("b13cWhy"))}" /></div>
+                  <div class="b13c-acts"><button class="x-btn x-sub" data-go="nfb13cax" data-a="c+">+ 🪙</button><button class="x-btn x-sub" data-go="nfb13cax" data-a="c-">− 🪙</button><button class="x-btn x-sub" data-go="nfb13cax" data-a="g+">+ 💎</button><button class="x-btn x-sub" data-go="nfb13cax" data-a="g-">− 💎</button></div>`;
+                if (u.role !== "owner") h += `<div class="b13c-acts">${ban ? `<button class="x-btn x-sub" data-go="nfb13cax" data-a="unban">✅ ${esc(_t("b13cUnban"))}</button>` : `<button class="x-btn x-sub" data-go="nfb13cax" data-a="ban1">⛔ 24h</button><button class="x-btn x-sub" data-go="nfb13cax" data-a="ban7">⛔ 7d</button><button class="x-btn x-sub" data-go="nfb13cax" data-a="banp">⛔ ∞</button>`}</div>`;
+                h += `<button class="x-btn x-sub" data-go="nfb13cau" data-id="">‹ ${esc(_t("back"))}</button>`;
+              } else {
+                h += AD.users.length ? AD.users.map((x) => `<button type="button" class="b13c-urow" data-go="nfb13cau" data-id="${esc(x.id)}"><b><bdi>${esc(x.username)}</bdi> ${B13.lv(x.level || 1)} ${B13C.ownB(x.player_id)}</b><small dir="ltr">#${num(x.player_id)} · ${num(x.coins)} 🪙 · ${num(x.gems)} 💎${x.banned_until && new Date(x.banned_until) > new Date() ? " · ⛔" : ""}</small></button>`).join("") : `<p class="x-note">${esc(_t(AD.busy ? "b13cLoading" : "b13cNoUsers"))}</p>`;
+              }
+            } else if (AD.tab === "r") {
+              h += AD.rep.length ? AD.rep.map((r) => `<div class="b13c-rep"><b><bdi>${esc(r.reported || "?")}</bdi> <small>← <bdi>${esc(r.reporter || "?")}</bdi> · ${esc(when(r.created_at))}</small></b><small>${esc(r.reason || "")}${r.details ? " · " + esc(r.details) : ""}${r.message ? " · “" + esc(r.message) + "”" : ""}</small>
+                <div class="b13c-acts"><button class="x-btn x-sub" data-go="nfb13car" data-id="${num(r.id)}" data-s="actioned">✅ ${esc(_t("b13cActioned"))}</button><button class="x-btn x-sub" data-go="nfb13car" data-id="${num(r.id)}" data-s="dismissed">✕ ${esc(_t("b13cDismiss"))}</button></div></div>`).join("") : `<p class="x-note">${esc(_t(AD.busy ? "b13cLoading" : "b13cNoRep"))}</p>`;
+            } else if (AD.tab === "c") {
+              const c = ON.cfg || {}, xm = +c.xp_multiplier || 1, cm = +c.coin_multiplier || 1, mt = !!(c.maintenance && c.maintenance.on), an = !!(c.announcement && c.announcement.on);
+              const seg = (k, vals, cv) => `<div class="x-seg b13c-seg" dir="ltr">${vals.map((v) => `<button type="button" data-go="nfb13cac" data-k="${k}" data-v="${v}" class="${String(cv) === String(v) ? "on" : ""}">${k === "mt" || k === "an" ? esc(_t(v ? "on" : "off")) : v + "x"}</button>`).join("")}</div>`;
+              h += `<div class="b13c-cfg"><p>${esc(_t("setXp"))}</p>${seg("xm", [1, 1.5, 2, 3], xm)}<p>${esc(_t("setCo"))}</p>${seg("cm", [1, 1.5, 2, 3], cm)}
+                <p>${esc(_t("mnt"))}</p>${seg("mt", [1, 0], mt ? 1 : 0)}<input class="x-name" id="b13cmm" maxlength="120" dir="auto" placeholder="${esc(_t("mntPh"))}" value="${esc((c.maintenance && c.maintenance.message) || "")}" />
+                <p>${esc(_t("ann"))}</p>${seg("an", [1, 0], an ? 1 : 0)}<input class="x-name" id="b13cam" maxlength="120" dir="auto" placeholder="${esc(_t("annPh"))}" value="${esc((c.announcement && c.announcement.message) || "")}" /></div>`;
+            } else {
+              h += AD.log.length ? AD.log.map((l) => `<div class="b13c-log"><b>${esc(l.action)} <small>${esc(l.target_name || "")}</small></b><small>${esc(l.admin_name || "")} · ${esc(when(l.created_at))}</small></div>`).join("") : `<p class="x-note">${esc(_t(AD.busy ? "b13cLoading" : "b13cNoLog"))}</p>`;
+            }
+            h += `<p class="x-note b13c-am" role="status" aria-live="polite">${esc(AD.msg)}</p>`;
+            bx.innerHTML = h;
+          }
+          async function admLoad() {
+            AD.busy = true; AD.msg = ""; admPaint();
+            try {
+              if (AD.tab === "u") { AD.users = await ON.rpc("admin_search_users", { p_query: AD.q, p_limit: 60 }) || []; if (AD.sel) AD.sel = AD.users.find((x) => x.id === AD.sel.id) || AD.sel; }
+              else if (AD.tab === "r") AD.rep = await ON.rpc("admin_list_reports", { p_status: "open", p_limit: 60 }) || [];
+              else if (AD.tab === "l") AD.log = await ON.rpc("admin_get_log", { p_limit: 60 }) || [];
+              else if (AD.tab === "c") { const c = await ON.rpc("get_public_config"); if (c) ON.cfgApply(c); }
+            } catch (e) { AD.msg = adErr(e); }
+            AD.busy = false; admPaint();
+          }
+          B13C.admLoad = admLoad;
+          NFG.nfb13cadm = () => { if (state === "play") return; if (!isOwner()) { toast(_t("b13cNoAdm")); return; } AD.sel = null; show("b13cadm"); admLoad(); };
+          NFG.nfb13cat = (b) => { AD.tab = b.dataset.at; AD.sel = null; admLoad(); };
+          NFG.nfb13caq = () => { const i = $("b13caq"); AD.q = i ? i.value.trim() : ""; AD.sel = null; admLoad(); };
+          NFG.nfb13cau = (b) => { AD.sel = b.dataset.id ? AD.users.find((x) => x.id === b.dataset.id) || null : null; AD.msg = ""; admPaint(); };
+          NFG.nfb13cax = async (b) => {
+            const u = AD.sel; if (!u || AD.busy) return; const a = b.dataset.a; AD.msg = "";
+            try {
+              AD.busy = true;
+              if (/^[cg][+-]$/.test(a)) {
+                const n = Math.floor(+($("b13caa").value || 0)), why = ($("b13caw").value || "").trim();
+                if (!(n > 0)) { AD.msg = _t("b13cAmtReq"); return; } if (!why) { AD.msg = _t("b13cWhyReq"); return; }
+                const d = a[1] === "-" ? -n : n, r = await ON.rpc("admin_adjust_wallet", { p_user: u.id, p_coins: a[0] === "c" ? d : 0, p_gems: a[0] === "g" ? d : 0, p_reason: why });
+                u.coins = r.coins; u.gems = r.gems; AD.msg = _t("b13cDone");
+                if (u.id === ON.uid) ON.syncSoon(300);
+              } else {
+                const why = ($("b13caw").value || "").trim() || "admin";
+                const until = a === "unban" ? null : new Date(Date.now() + (a === "ban1" ? 864e5 : a === "ban7" ? 7 * 864e5 : 100 * 365 * 864e5)).toISOString();
+                const r = await ON.rpc("admin_set_ban", { p_user: u.id, p_until: until, p_reason: why }); u.banned_until = r.banned_until; AD.msg = _t("b13cDone");
+              }
+            } catch (e) { AD.msg = adErr(e); }
+            finally { AD.busy = false; admPaint(); }
+          };
+          NFG.nfb13car = async (b) => { try { await ON.rpc("admin_resolve_report", { p_report_id: +b.dataset.id, p_status: b.dataset.s, p_note: "" }); AD.rep = AD.rep.filter((r) => String(r.id) !== b.dataset.id); AD.msg = _t("b13cDone"); } catch (e) { AD.msg = adErr(e); } admPaint(); };
+          NFG.nfb13cac = async (b) => {
+            const k = b.dataset.k, v = +b.dataset.v; AD.msg = "";
+            try {
+              if (k === "xm") await ON.rpc("admin_set_config", { p_key: "xp_multiplier", p_value: v });
+              else if (k === "cm") await ON.rpc("admin_set_config", { p_key: "coin_multiplier", p_value: v });
+              else if (k === "mt") await ON.rpc("admin_set_config", { p_key: "maintenance", p_value: { on: !!v, message: ($("b13cmm").value || "").slice(0, 120) } });
+              else if (k === "an") await ON.rpc("admin_set_config", { p_key: "announcement", p_value: { on: !!v, message: ($("b13cam").value || "").slice(0, 120) } });
+              AD.msg = _t("b13cDone");
+            } catch (e) { AD.msg = adErr(e); }
+            await admLoad();
+          };
+          $("b13cadm").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "b13caq") NFG.nfb13caq(); });
+
+          // ---------- 9. automatic update check (same-origin HEAD; banner, never reloads in a match) ----------
+          const UP = { base: "", t: 0, shown: false };
+          const sig = async () => {
+            const u = location.origin + location.pathname + "?v=" + Date.now();
+            try { const r = await fetch(u, { method: "HEAD", cache: "no-store" }); if (r.ok) { const s = r.headers.get("etag") || r.headers.get("last-modified"); if (s) return s; } } catch (_) {}
+            const r = await fetch(u, { cache: "no-store" }); if (!r.ok) return ""; const t = await r.text(); if (t.length < 50000) return "";
+            let h = 0; for (let i = 0; i < t.length; i += 3) h = (Math.imul(h, 31) + t.charCodeAt(i)) | 0; return "h" + h + ":" + t.length;
+          };
+          B13C.updCheck = async () => {
+            if (UP.shown || !/^https?:$/.test(location.protocol) || B13.ios() || document.hidden) return;
+            try {
+              const s = await sig(); if (!s) return;
+              if (!UP.base) { UP.base = s; return; }
+              if (s !== UP.base) { UP.shown = true; $("b13cup").classList.remove("x-hide"); }
+            } catch (_) {}
+          };
+          $("b13cup").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; if (b.classList.contains("go")) { if (state !== "play") location.reload(); } else $("b13cup").classList.add("x-hide"); });
+          setTimeout(B13C.updCheck, 4000); setInterval(B13C.updCheck, 5 * 60 * 1000);
+          document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - UP.t > 60000) { UP.t = Date.now(); B13C.updCheck(); } });
+        }
         requestAnimationFrame(loop);
       })();
     </script>
@@ -11625,6 +12036,70 @@ button.b13-usd { background: linear-gradient(180deg, #7dff9a, #1fae55) !importan
 @media (max-height: 360px) { .b13-mcols { gap: 6px; } .b13-mi { padding: 3px 6px; margin-bottom: 3px; } .b13-gi { padding: 3px 6px; } .b13-sub { margin-bottom: 3px; } }
 @media (max-width: 700px) { .b13-mcols { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .b13-lv.t7, .b13-vip, .b13-ca, #nfpb .px-rw.ok { animation: none !important; } }
+
+</style>
+<style id="ss13c">
+/* ===== build13c ===== */
+.b13c-own { display: inline-flex; align-items: center; gap: 3px; height: 15px; padding: 0 5px; border-radius: 5px; vertical-align: middle; margin-inline-start: 3px;
+  font: 800 9.5px/1 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #2a1600; white-space: nowrap;
+  background: linear-gradient(180deg, #fff1a8, #e2a92a 55%, #b8780f); box-shadow: 0 0 0 1px rgba(255, 230, 150, .7), 0 0 8px rgba(255, 200, 60, .55); }
+.b13c-own b { font-weight: 900; }
+/* in-match ranking: every snake, level badge, tap to expand into a scrollable full list */
+#game .x-lb li .b13-lv { min-width: 17px; height: 13px; font-size: 8.5px; padding: 0 3px; border-radius: 4px; flex: none; align-self: center; }
+#game .x-lb li em { min-width: 0; }
+#game .x-lb.b13c-full { opacity: .96 !important; }
+#game .x-lb.b13c-full ol { max-height: min(62vh, calc(100vh - 120px)); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; touch-action: pan-y; }
+/* subtle vignette while playing (the canvas adds a light dim under food and snakes) */
+#b13cvg { position: fixed; inset: 0; pointer-events: none; z-index: 1; display: none;
+  background: radial-gradient(ellipse 75% 70% at 50% 52%, rgba(0, 0, 0, 0) 58%, rgba(2, 4, 10, .34) 100%); }
+body.b13c-play #b13cvg { display: block; }
+/* update banner */
+#b13cup { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); display: flex; align-items: center; gap: 10px;
+  padding: 6px 6px 6px 14px; border-radius: 999px; background: rgba(12, 18, 36, .94); border: 1px solid rgba(233, 193, 96, .6); color: #fff3c4; font: 700 12.5px/1.2 system-ui, sans-serif;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .5); max-width: calc(100vw - 24px); }
+#b13cup.x-hide { display: none; }
+#b13cup button { min-height: 32px; padding: 0 14px; border-radius: 999px; border: 0; font: 800 12.5px/1 system-ui, sans-serif; cursor: pointer; }
+#b13cup .go { background: linear-gradient(180deg, #ffe27a, #d9a032); color: #2a1600; }
+#b13cup .x { background: rgba(255, 255, 255, .1); color: #fff; padding: 0 10px; }
+body.b13c-play #b13cup { display: none; }
+/* Profile Settings */
+.b13c-ps { text-align: start; }
+.b13c-sec { margin: 0 0 8px; padding: 8px 10px; border-radius: 14px; background: rgba(10, 16, 34, .55); border: 1px solid rgba(120, 150, 220, .18); }
+.b13c-sec h3 { margin: 0 0 6px; font: 800 12px/1.2 system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #e9c160; }
+.b13c-lang { display: grid !important; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px !important; width: 100%; padding: 0 !important; background: none !important; border: 0 !important; }
+.b13c-lang button { min-height: 36px !important; border-radius: 10px !important; padding: 0 4px !important; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: rgba(255, 255, 255, .06) !important; border: 1px solid rgba(255, 255, 255, .12) !important; color: #e8ecf8 !important; }
+.b13c-lang button.on { background: linear-gradient(180deg, rgba(255, 216, 110, .3), rgba(120, 80, 10, .4)) !important; border-color: #e9c160 !important; color: #fff3c4 !important; }
+.b13c-nmr { gap: 8px; } .b13c-nmr .x-name { flex: 1; min-width: 0; } .b13c-nmr .x-btn { flex: none; min-width: 96px; }
+.b13c-av { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.b13c-av button { width: 40px; height: 40px; border-radius: 12px; font-size: 22px; line-height: 1; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .12); cursor: pointer; }
+.b13c-av button.on { border-color: #e9c160; box-shadow: 0 0 0 2px rgba(233, 193, 96, .45); background: rgba(233, 193, 96, .16); }
+.b13c-ph { width: 100%; }
+.b13c-id { margin: 0 0 6px; font: 700 13px/1.3 system-ui, sans-serif; color: #e8ecf8; }
+.b13c-acts { display: flex; flex-wrap: wrap; gap: 6px; } .b13c-acts > .x-btn { flex: 1 1 120px; min-width: 0; }
+.b13c-del { color: #ff9a9a !important; border-color: rgba(255, 100, 100, .35) !important; }
+.b13c-dp { margin-top: 8px; padding: 8px 10px; border-radius: 12px; background: rgba(80, 10, 14, .45); border: 1px solid rgba(255, 90, 90, .45); }
+.b13c-dp h4 { margin: 0 0 4px; color: #ffb4b4; font: 800 13px/1.2 system-ui, sans-serif; } .b13c-dp p { margin: 0 0 6px; font-size: 12px; color: #f2d6d6; }
+.b13c-dp .x-name { width: 100%; box-sizing: border-box; margin-bottom: 4px; }
+.b13c-danger { background: linear-gradient(180deg, #ff5a5a, #b81e1e) !important; color: #fff !important; border: 0 !important; }
+/* admin */
+.b13c-adm { text-align: start; }
+.b13c-tabs { display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 100%; margin-bottom: 8px; }
+.b13c-tabs button.on { background: rgba(233, 193, 96, .22) !important; color: #fff3c4 !important; box-shadow: inset 0 0 0 1px rgba(233, 193, 96, .6); }
+.b13c-q { gap: 6px; margin-bottom: 6px; } .b13c-q .x-name { flex: 1; min-width: 0; }
+.b13c-urow, .b13c-rep, .b13c-log, .b13c-ucard { display: flex; flex-direction: column; gap: 2px; width: 100%; box-sizing: border-box; margin: 0 0 5px; padding: 6px 10px; border-radius: 10px;
+  background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .1); color: #e8ecf8; text-align: start; font: 600 12px/1.3 system-ui, sans-serif; }
+.b13c-urow { cursor: pointer; } .b13c-urow:hover { border-color: rgba(233, 193, 96, .5); }
+.b13c-urow small, .b13c-rep small, .b13c-log small, .b13c-ucard small { color: #a9b6d6; font-weight: 600; }
+.b13c-ucard { border-color: rgba(233, 193, 96, .45); }
+.b13c-amt { gap: 6px; margin: 4px 0 6px; } .b13c-amt .x-name { flex: 1; min-width: 0; }
+.b13c-acts + .b13c-acts { margin-top: 6px; }
+.b13c-ab > .b13c-acts { margin-bottom: 6px; }
+.b13c-cfg p { margin: 6px 0 3px; font-size: 12px; color: #c9d3ee; } .b13c-cfg .x-seg { width: 100%; } .b13c-cfg .x-name { width: 100%; box-sizing: border-box; margin-top: 4px; }
+.b13c-am { min-height: 1em; }
+@media (max-height: 380px) { .b13c-sec { padding: 6px 8px; margin-bottom: 6px; } .b13c-lang button { min-height: 32px !important; } .b13c-av button { width: 34px; height: 34px; font-size: 19px; } }
+@media (max-width: 600px) { .b13c-lang { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+#set .x-set[hidden], #set .x-set.x-hide { display: none !important; }
 
 </style>
 </body>
