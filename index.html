@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en" dir="ltr">
-  <head>
+  <head><script>(function(){var Q=window.__ssEQ=window.__ssEQ||[];function p(k,m,s,l,c,st){if(Q.length<20)Q.push([k,String(m||"").slice(0,300),String(s||"").slice(0,200),l|0,c|0,String(st||"").slice(0,1500)]);}window.addEventListener("error",function(e){if(!(e instanceof ErrorEvent))return;p("error",e.message,e.filename,e.lineno,e.colno,e.error&&e.error.stack)},true);window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;p("rejection",r&&(r.message||r.code)||String(r),"",0,0,r&&r.stack)});})();</script>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co; media-src 'none'; object-src 'none'; frame-src 'self'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
     <meta name="referrer" content="no-referrer" />
@@ -3315,7 +3315,7 @@
         // team colors [marker, skin] (yours first), invited friend keys, bot count of a running team match, lobby tab
         const TC = [["🔵", 1], ["🔴", 4], ["🟡", 3], ["🟣", 2]];
         let TI = [], TN = 0, tTab = "l";
-        const TXK = ["boss", "gold", "gift", "match", "lvl", "buy", "chest", "wheel", "mis", "league", "daily", "team", "surv", "rank", "gx", "pack", "ach", "fgift", "tp", "rev", "myst", "lm", "rp", "shop2", "crate", "story", "word", "admin", "migrate", "iap", "iap_refund", "pass", "stripe", "stripe_refund", "apple_iap", "apple_iap_refund", "apple_iap_sandbox"];
+        const TXK = ["boss", "gold", "gift", "match", "lvl", "buy", "chest", "wheel", "mis", "league", "daily", "team", "surv", "rank", "gx", "pack", "ach", "fgift", "tp", "rev", "myst", "lm", "rp", "shop2", "crate", "story", "word", "admin", "migrate", "iap", "iap_refund", "pass", "stripe", "stripe_refund", "apple_iap", "apple_iap_refund", "apple_iap_sandbox", "offer"];
         const RT_T = [0, 1100, 1300, 1500, 1800], rtTier = (r) => RT_T.filter((x) => r >= x).length - 1;
         // every coin or gem change goes through pay(), which keeps the last 40 in the transaction log (P.tx: [unix s, reason, amount, "c"|"g"])
         function pay(c, w, g) {
@@ -10912,7 +10912,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13o" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13p" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -12709,7 +12709,7 @@
             (acts && b.active ? `<div class="k-inl"><button type="button" class="x-btn x-sub" data-ka="lift" data-id="${b.id}">${esc(_t("kaUnban"))}</button><button type="button" class="x-btn x-sub" data-ka="editban" data-id="${b.id}">${esc(_t("kaEditBan"))}</button></div>` : "") + `</div>`;
           const admPaintK = () => {
             const b = $("kadmb"); if (!b) return;
-            const tabs = [["dash", "kaDash"], ["players", "kaPlayers"], ["bans", "kaBans"], ["reports", "kaReports"], ["sup", "kaSupport"], ["log", "kaLog"], ["ann", "kaAnn"]];
+            const tabs0 = [["dash", "kaDash"], ["players", "kaPlayers"], ["bans", "kaBans"], ["reports", "kaReports"], ["sup", "kaSupport"], ["log", "kaLog"], ["ann", "kaAnn"]], tabs = window.__P13 && __P13.admTabs ? __P13.admTabs(tabs0) : tabs0;
             let h = `<div class="k-tabs k-atabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" role="tab" data-katab="${k}" class="${AD.tab === k ? "on" : ""}">${esc(_t(l))}</button>`).join("")}<button type="button" class="k-ref" data-ka="refresh" aria-label="${esc(_t("kaRefresh"))}">↻</button></div><div class="k-abody">`;
             if (AD.tab === "dash") { const d = AD.dash;
               h += d ? `<div class="k-dash">${[["kaDau", d.dau], ["kaWau", d.wau], ["kaPlayersN", d.players], ["kaMatches", d.matches_today], ["kaMatches7", d.matches_7d], ["kaSignups", d.signups_today], ["kaSignups7", d.signups_7d], ["kaRevTest", money(d.revenue_test_cents)], ["kaRevLive", money(d.revenue_live_cents)], ["kaActBans", d.active_bans], ["kaActMutes", d.active_mutes], ["kaOpenRep", d.open_reports]].map(([l, v]) => `<span class="k-st"><b dir="ltr">${typeof v === "number" ? nf(v) : esc(v)}</b><small>${esc(_t(l))}</small></span>`).join("")}</div><p class="k-note">${esc(fmtD(d.as_of, 1))}</p>` : "…";
@@ -12745,6 +12745,8 @@
                   `<div class="k-inl"><input id="ksr${r.id}" maxlength="1000" dir="auto" placeholder="${esc(_t("kaSupPh"))}"><button type="button" class="x-btn x-main" data-ka="supreply" data-id="${r.id}">${esc(_t("kaSupSend"))}</button></div>` +
                   `<div class="k-inl">${r.status === "open" ? `<button type="button" class="x-btn x-sub" data-ka="supdone" data-id="${r.id}">✓ ${esc(_t("kaSupDone"))}</button>` : `<button type="button" class="x-btn x-sub" data-ka="supopen" data-id="${r.id}">${esc(_t("kaSupReopen"))}</button>`}` +
                   `${r.user_id ? `<button type="button" class="x-btn x-sub" data-ka="user" data-id="${esc(r.user_id)}">${esc(_t("kaOpen"))}</button>` : ""}</div></div>`).join("") : `<p class="k-note">${esc(_t("kaSupNone"))}</p>`);
+            } else if (AD.tab === "p13mod" || AD.tab === "p13off") {
+              h += tv(() => __P13.admHTML(AD, fmtD), "…");
             } else if (AD.tab === "log") {
               h += AD.log === null ? "…" : `<div class="k-list">${AD.log.map((l) => `<div class="k-li"><span><b>${esc(l.action)}</b> <small dir="auto">${esc(l.admin || "")} → ${esc(l.target || "—")}</small><small dir="ltr" class="k-det">${esc(JSON.stringify(l.details || {}).slice(0, 180))}</small></span><small>${esc(fmtD(l.at, 1))}</small></div>`).join("")}</div>`;
             } else {
@@ -12757,7 +12759,8 @@
           const admLoadK = async () => {
             if (!isOwner()) return;
             try {
-              if (AD.tab === "dash") AD.dash = await ON.rpc("adm2_dashboard");
+              if ((AD.tab === "p13mod" || AD.tab === "p13off") && window.__P13) await __P13.admLoad(AD);
+              else if (AD.tab === "dash") AD.dash = await ON.rpc("adm2_dashboard");
               else if (AD.tab === "players") { if (AD.user) AD.user = await ON.rpc("adm2_user", { p_user: AD.user.id }); else AD.users = await ON.rpc("adm2_users", { p_query: AD.q, p_limit: 100 }); }
               else if (AD.tab === "bans") AD.bans = await ON.rpc("adm2_bans", { p_user: null, p_active: !AD.bansAll });
               else if (AD.tab === "reports") AD.reps = await ON.rpc("adm2_reports", { p_status: "open" });
@@ -12814,6 +12817,7 @@
             const sg = e.target.closest('[data-kseg="kabf"] button'); if (sg) { AD.bansAll = sg.dataset.v === "1"; AD.bans = null; admPaintK(); admLoadK(); return; }
             const b = e.target.closest("[data-ka]"); if (!b) return; const a = b.dataset.ka, u = AD.user;
             if (a === "refresh") admLoadK();
+            else if (/^p13/.test(a) && window.__P13) await __P13.admClick(a, b, (paintOnly) => { if (paintOnly) admPaintK(); else admLoadK(); }, aErr);
             else if (a === "search") { AD.q = $("kaq").value.trim(); AD.users = null; admPaintK(); admLoadK(); }
             else if (a === "user") { AD.tab = "players"; AD.user = { id: b.dataset.id }; admPaintK(); admLoadK(); }
             else if (a === "ulist") { AD.user = null; admPaintK(); admLoadK(); }
@@ -13490,6 +13494,166 @@
           // ---------- 7) admin: support inbox ----------
           window.__n13supAfterSend = () => { const m = document.getElementById("ksmine"); if (m) paintMine2(m); };
           const paintMine2 = (m) => { m.dataset.done = ""; window.__n13mine && window.__n13mine(); };
+        }
+        try { Object.assign(I18N, {"tx_offer": ["عرض شهري", "Monthly offer", "Aylık teklif", "Offre du mois", "Oferta mensual", "मासिक ऑफ़र"], "p13Offers": ["عروض الشهر", "Monthly offers", "Aylık teklifler", "Offres du mois", "Ofertas del mes", "मासिक ऑफ़र"], "p13Bought": ["تم الشراء", "Bought", "Alındı", "Acheté", "Comprado", "खरीदा"], "p13Sure": ["اضغط مرة ثانية للشراء", "Tap again to buy", "Almak için tekrar dokun", "Touche encore pour acheter", "Toca otra vez para comprar", "खरीदने के लिए फिर टैप करें"], "p13Got": ["{x} صار عندك (−{n})", "{x} is yours (−{n})", "{x} senin (−{n})", "{x} est à toi (−{n})", "{x} es tuyo (−{n})", "{x} आपका है (−{n})"], "p13E_offer_expired": ["انتهى هذا العرض", "This offer has ended", "Bu teklif sona erdi", "Cette offre est terminée", "Esta oferta terminó", "यह ऑफ़र खत्म हो गया"], "p13E_offer_not_started": ["العرض ما بدأ بعد", "This offer hasn't started yet", "Teklif henüz başlamadı", "L'offre n'a pas commencé", "La oferta aún no empieza", "ऑफ़र अभी शुरू नहीं हुआ"], "p13E_already_bought": ["اشتريت هذا العرض من قبل", "You already bought this offer", "Bu teklifi zaten aldın", "Déjà acheté", "Ya compraste esta oferta", "आप यह ऑफ़र पहले ही खरीद चुके हैं"], "p13E_already_owned": ["عندك كل أغراض هذا العرض", "You already own everything in this offer", "Hepsine zaten sahipsin", "Tu possèdes déjà tout", "Ya tienes todo", "आपके पास सब पहले से है"], "p13E_insufficient_funds": ["رصيدك ما يكفي", "Not enough balance", "Bakiye yetersiz", "Solde insuffisant", "Saldo insuficiente", "बैलेंस कम है"], "p13E_level_too_low": ["تحتاج المستوى {n}", "You need level {n}", "Seviye {n} gerekli", "Niveau {n} requis", "Necesitas nivel {n}", "लेवल {n} चाहिए"], "p13E_unknown_offer": ["العرض غير متاح", "Offer not available", "Teklif yok", "Offre indisponible", "Oferta no disponible", "ऑफ़र उपलब्ध नहीं"], "p13E_real_money_only": ["هذا العرض بالمال الحقيقي فقط", "Real-money offer", "Gerçek para teklifi", "Offre en argent réel", "Oferta con dinero real", "असली पैसे का ऑफ़र"], "p13E_rate_limited": ["بطّئ شوي وحاول بعد لحظة", "Slow down a moment and try again", "Biraz yavaşla", "Ralentis un peu", "Espera un momento", "थोड़ा रुकें"], "p13TabMod": ["🧹 المنظّف", "🧹 Cleaner", "🧹 Temizleyici", "🧹 Nettoyeur", "🧹 Limpiador", "🧹 क्लीनर"], "p13TabOff": ["🗓️ العروض", "🗓️ Offers", "🗓️ Teklifler", "🗓️ Offres", "🗓️ Ofertas", "🗓️ ऑफ़र"], "p13Flags": ["المؤشَّر", "Flagged", "İşaretli", "Signalés", "Marcados", "फ़्लैग"], "p13Actions": ["الإجراءات", "Actions taken", "Yapılanlar", "Actions", "Acciones", "कार्रवाई"], "p13Errors": ["سجل الأخطاء", "Error log", "Hata kaydı", "Erreurs", "Errores", "एरर लॉग"], "p13Scan": ["افحص الأسماء", "Scan names", "İsimleri tara", "Analyser les noms", "Revisar nombres", "नाम जाँचें"], "p13Scanned": ["تم الفحص: {n} اسم تغيّر، {b} نبذة نُظّفت", "Scan done: {n} names renamed, {b} bios cleaned", "Tarandı: {n} isim, {b} biyografi", "Fait : {n} noms, {b} bios", "Listo: {n} nombres, {b} bios", "हो गया: {n} नाम, {b} बायो"], "p13Sum": ["{o} مفتوح · {e} خطأ خلال 24 ساعة · {a} إجراء خلال 7 أيام", "{o} open · {e} client errors in 24h · {a} actions in 7 days", "{o} açık · {e} hata · {a} işlem", "{o} ouverts · {e} erreurs · {a} actions", "{o} abiertos · {e} errores · {a} acciones", "{o} खुले · {e} एरर · {a} कार्रवाई"], "p13Undo": ["تراجع", "Undo", "Geri al", "Annuler", "Deshacer", "वापस"], "p13Ban7": ["حظر 7 أيام", "Ban 7 days", "7 gün yasakla", "Bannir 7 j", "Banear 7 días", "7 दिन बैन"], "p13Mute": ["كتم 24 ساعة", "Mute 24h", "24s sustur", "Muet 24 h", "Silenciar 24 h", "24 घंटे म्यूट"], "p13Ok": ["سليم", "Looks fine", "Sorun yok", "OK", "Está bien", "ठीक है"], "p13Reopen": ["إعادة فتح", "Reopen", "Yeniden aç", "Rouvrir", "Reabrir", "फिर खोलें"], "p13S_undone": ["تم التراجع", "Undone", "Geri alındı", "Annulé", "Deshecho", "वापस लिया"], "p13S_banned": ["محظور", "Banned", "Yasaklı", "Banni", "Baneado", "बैन"], "p13S_muted": ["مكتوم", "Muted", "Susturuldu", "Muet", "Silenciado", "म्यूट"], "p13S_dismissed": ["سليم", "Dismissed", "Kapatıldı", "Ignoré", "Descartado", "खारिज"], "p13K_name": ["اسم", "Name", "İsim", "Nom", "Nombre", "नाम"], "p13K_text": ["نص", "Text", "Metin", "Texte", "Texto", "टेक्स्ट"], "p13K_score": ["نتيجة", "Score", "Skor", "Score", "Puntuación", "स्कोर"], "p13K_pattern": ["نمط غش", "Cheat pattern", "Hile deseni", "Triche", "Patrón de trampa", "चीट पैटर्न"], "p13NoFlags": ["ماكو شي يحتاج مراجعة 👌", "Nothing to review 👌", "İncelenecek bir şey yok 👌", "Rien à vérifier 👌", "Nada que revisar 👌", "कुछ नहीं 👌"], "p13NoErr": ["ماكو أخطاء مسجلة", "No client errors logged", "Hata yok", "Aucune erreur", "Sin errores", "कोई एरर नहीं"], "p13TestPh": ["جرّب كلمة أو اسم…", "Test a word or name…", "Bir kelime dene…", "Tester un mot…", "Prueba una palabra…", "कोई शब्द जाँचें…"], "p13Test": ["فحص", "Check", "Kontrol", "Vérifier", "Comprobar", "जाँचें"], "p13Clean": ["نظيف", "Clean", "Temiz", "Propre", "Limpio", "साफ़"], "p13OffNote": ["العروض تتجدد تلقائياً أول كل شهر. تقدر تغيّر السعر (بين 65٪ و100٪ من السعر الأصلي) أو تخفي عرض. عروض الشهر الجاي تظهر هنا قبل لا تبدأ.", "Offers renew automatically on the 1st of each month. You can change a price (65–100% of list) or hide an offer. Next month's offers show here before they start.", "Teklifler her ayın 1'inde yenilenir.", "Les offres se renouvellent le 1er du mois.", "Las ofertas se renuevan el día 1.", "ऑफ़र हर महीने की 1 तारीख को बदलते हैं।"], "p13Live": ["فعّال", "Live", "Aktif", "En cours", "Activa", "लाइव"], "p13Next": ["الشهر الجاي", "Next month", "Gelecek ay", "Mois prochain", "Próximo mes", "अगला महीना"], "p13Off": ["مخفي/منتهي", "Hidden / ended", "Gizli", "Masquée", "Oculta", "छिपा"], "p13Sold": ["انباع {n}", "{n} sold", "{n} satıldı", "{n} vendus", "{n} vendidos", "{n} बिके"], "p13Save": ["حفظ", "Save", "Kaydet", "Enregistrer", "Guardar", "सेव"], "p13Hide": ["إخفاء", "Hide", "Gizle", "Masquer", "Ocultar", "छिपाएँ"], "p13Show": ["إظهار", "Show", "Göster", "Afficher", "Mostrar", "दिखाएँ"], "p13Regen": ["أعد توليد عروض الشهر الجاي", "Regenerate next month", "Gelecek ayı yenile", "Régénérer le mois prochain", "Regenerar el próximo mes", "अगला महीना फिर बनाएँ"]}); } catch (_) {}
+        // ===================== build13p: smart cleaner (owner tab), client error log, monthly shop offers =====================
+        {
+          const P13 = (window.__P13 = window.__P13 || {});
+          const tv = (f, d) => { try { const v = f(); return v === undefined || v === null || Number.isNaN(v) ? d : v; } catch (_) { return d; } };
+          const nf = (v) => { try { return Number(v || 0).toLocaleString(LANG === "ar" ? "ar-u-nu-latn" : "en-US"); } catch (_) { return String(v | 0); } };
+          const online = () => tv(() => cur === "@on" && ON.on && !!ON.rpc, false);
+          const isOwner = () => tv(() => +ON.st.profile.player_id === 1 && ON.st.profile.role === "owner", false);
+          const T = (k, v) => (I18N[k] ? _t(k, v) : k);
+          const errT = (e) => { const c = (e && (e.code || e.message)) || ""; return I18N["p13E_" + c] ? _t("p13E_" + c, { n: (e && e.details) || "" }) : tv(() => ON.err(e), _t("onErr")); };
+
+          // ---------- 1) client error log (queue filled by the tiny head script, sent rate-limited) ----------
+          const EQ = (window.__ssEQ = window.__ssEQ || []), seenE = new Set(); let sentE = 0;
+          const ignoreE = (m) => !m || /ResizeObserver loop|^Script error\.?$|qa_blocked|WebSocket|Load failed|NetworkError|Failed to fetch|AbortError|rate_limited|not_authenticated/i.test(m);
+          const flushE = async () => {
+            if (!EQ.length || !online() || sentE >= 10) return;
+            for (let i = 0; i < 3 && EQ.length && sentE < 10; i++) {
+              const [k, m, s, l, c, st] = EQ.shift(); const key = m + "|" + s + "|" + l;
+              if (ignoreE(m) || seenE.has(key)) continue; seenE.add(key); sentE++;
+              try { await ON.rpc("log_client_error", { p_kind: k, p_msg: m, p_src: s || null, p_line: l || null, p_col: c || null, p_stack: st || null, p_build: "13p", p_url: location.pathname + location.search.slice(0, 60), p_ua: navigator.userAgent.slice(0, 200) }); } catch (_) {}
+            }
+          };
+          setInterval(() => { flushE(); }, 5000);
+
+          // ---------- 2) monthly offers in Shop › Featured ----------
+          const OF = { list: null, at: 0, busy: false, arm: null, armT: 0 };
+          const itemInfo = (id) => {
+            if (/^s\d+$/.test(id)) { const i = +id.slice(1), s = SKINS[i]; return { n: tv(() => s.n, id), sw: tv(() => [segColor(i, 0), segColor(i, 3)], ["#888", "#555"]) }; }
+            if (typeof ITEMS !== "undefined" && ITEMS[id]) return { n: tv(() => itName(id), id), e: ITEMS[id].e };
+            const h = tv(() => HATS.find((x) => "h" + x.id === id), null); if (h) return { n: tv(() => _t("hat_" + h.id), "") || id.slice(1), e: h.e };
+            return { n: id, e: "🎁" };
+          };
+          const ofLoad = async (force) => {
+            if (!online()) return; if (!force && OF.list && Date.now() - OF.at < 60000) return;
+            try { const r = await ON.rpc("get_offers"); OF.list = (r && r.offers) || []; OF.at = Date.now(); OF.skew = r && r.now ? Date.parse(r.now) - Date.now() : 0; } catch (_) { if (!OF.list) OF.list = []; }
+            ofPaint();
+          };
+          const ofLeft = (o) => tv(() => fmtLeft(Math.max(0, Date.parse(o.ends_at) - (Date.now() + (OF.skew || 0)))), "");
+          const ofCard = (o) => {
+            const ios = tv(() => B13.ios(), false); if (o.currency === "usd" && ios) return "";
+            const its = o.item_list || o.items.map((id) => ({ id }));
+            const allOwn = its.length && its.every((x) => x.owned), cur = o.currency === "coins" ? "🪙" : o.currency === "gems" ? "💎" : "";
+            const price = o.currency === "usd" ? "$" + (o.price / 100).toFixed(2) : nf(o.price) + " " + cur;
+            const title = LANG === "ar" ? o.title_ar : o.title_en;
+            const chips = its.map((x) => { const f = itemInfo(x.id); return `<span class="ofx-it${x.owned ? " own" : ""}">${f.sw ? `<i class="ofx-sw" style="--a:${esc(f.sw[0])};--b:${esc(f.sw[1])}"></i>` : `<i class="ofx-em">${esc(f.e)}</i>`}<bdi>${esc(f.n)}</bdi>${x.owned ? " ✓" : ""}</span>`; }).join("");
+            const armed = OF.arm === o.id && Date.now() - OF.armT < 4000;
+            const btn = o.bought ? `<button type="button" class="eq" disabled>✓ ${esc(T("p13Bought"))}</button>` : allOwn ? `<button type="button" class="eq" disabled>✓ ${esc(T("pxOwned"))}</button>` :
+              `<button type="button" class="buy${armed ? " ofx-arm" : ""}" data-ofb="${o.id}">${armed ? esc(T("p13Sure")) : `<bdi dir="ltr">${esc(price)}</bdi>`}</button>`;
+            return `<div class="ofx-c ofx-${esc(o.kind)}">${o.discount_pct > 0 ? `<span class="ofx-d">-${o.discount_pct | 0}%</span>` : o.kind === "spotlight" ? `<span class="ofx-d sp">★</span>` : ""}` +
+              `<b class="ofx-t">${esc(title)}</b><div class="ofx-its">${chips}</div>` +
+              `<div class="ofx-p">${o.discount_pct > 0 ? `<s dir="ltr">${esc(nf(o.list_price) + " " + cur)}</s>` : ""}<span class="ofx-l">⏳ ${esc(ofLeft(o))}</span></div><div class="px-bt">${btn}</div></div>`;
+          };
+          const ofHTML = () => {
+            if (!online() || !OF.list) return "";
+            const cards = OF.list.map(ofCard).filter(Boolean); if (!cards.length) return "";
+            return `<section class="ofx" id="ofx"><header><b>🗓️ ${esc(T("p13Offers"))}</b><span>⏳ ${esc(ofLeft(OF.list[0]))}</span></header><div class="ofx-g">${cards.join("")}</div></section>`;
+          };
+          const ofPaint = () => {
+            const el = $("nfsb"); if (!el || !el.isConnected) return;
+            const old = el.querySelector("#ofx"), h = ofHTML();
+            if (!h) { if (old) old.remove(); return; }
+            if (old) { old.outerHTML = h; return; }
+            const ft = el.querySelector(".px-feat"); if (ft) ft.insertAdjacentHTML("afterend", h);
+          };
+          if (typeof paintShop2 === "function") {
+            const _ps2 = paintShop2;
+            paintShop2 = function () { const r = _ps2.apply(this, arguments); try { ofPaint(); ofLoad(false); } catch (_) {} return r; };
+          }
+          setInterval(() => { const el = $("nfsb"); if (el && el.isConnected && el.offsetParent !== null && el.querySelector("#ofx")) ofPaint(); }, 30000);
+          const ofBuy = async (id, b) => {
+            const o = (OF.list || []).find((x) => x.id === id); if (!o || OF.busy) return;
+            if (o.currency === "usd") { const it = o.items[0]; if (it) B13.itemUsd(it); return; }
+            if (!(OF.arm === id && Date.now() - OF.armT < 4000)) { OF.arm = id; OF.armT = Date.now(); ofPaint(); return; }
+            OF.arm = null; OF.busy = true; if (b) b.disabled = true;
+            try {
+              const r = await ON.rpc("buy_offer", { p_offer: id });
+              toast("✓ " + T("p13Got", { x: LANG === "ar" ? o.title_ar : o.title_en, n: nf(r.paid) + (o.currency === "coins" ? " 🪙" : " 💎") }));
+              try { beep(784, 0.2, "triangle", 0.06, 1175); } catch (_) {}
+              try { await ON.sync(); } catch (_) {}
+              await ofLoad(true);
+              try { paintShop2(); } catch (_) {}
+            } catch (e) { toast(errT(e)); await ofLoad(true); }
+            OF.busy = false;
+          };
+          document.addEventListener("click", (e) => {
+            const b = e.target.closest && e.target.closest("[data-ofb]"); if (!b || b.disabled) return;
+            e.preventDefault(); e.stopPropagation(); ofBuy(+b.dataset.ofb, b);
+          }, true);
+          P13.offers = () => OF.list; P13.ofLoad = ofLoad;
+
+          // ---------- 3) owner admin: 🧹 Cleaner + 🗓️ Offers tabs (rendered inside the admin panel v2) ----------
+          const MS = { sec: "flags", st: "open", kind: "", data: null, err: null, off: null, test: null };
+          const kindL = { name: "p13K_name", text: "p13K_text", score: "p13K_score", pattern: "p13K_pattern" };
+          const flagRow = (f, fmtD) => {
+            const who = `<b><bdi>${esc(f.username || "?")}</bdi></b> ${f.player_id ? "#" + f.player_id : ""}${f.banned ? ` <span class="k-pill rd">⛔</span>` : ""}`;
+            const det = f.kind === "score" || f.kind === "pattern" ? `<small dir="ltr" class="k-det">${esc(JSON.stringify(f.details || {}).slice(0, 220))}</small>` :
+              `<p dir="auto" class="p13-orig">“${esc(f.original || "")}”</p>${f.cleaned ? `<p dir="auto" class="k-note">→ ${esc(f.cleaned)}</p>` : ""}`;
+            const canUndo = f.status === "open" && (f.kind === "name" || f.kind === "text");
+            const acts = f.status === "open" ? `<div class="k-inl">${canUndo ? `<button type="button" class="x-btn x-sub" data-ka="p13act" data-act="undo" data-id="${f.id}">↩ ${esc(T("p13Undo"))}</button>` : ""}` +
+              `<button type="button" class="x-btn k-redb" data-ka="p13act" data-act="ban" data-id="${f.id}">⛔ ${esc(T("p13Ban7"))}</button>` +
+              (f.kind === "text" ? `<button type="button" class="x-btn x-sub" data-ka="p13act" data-act="mute" data-id="${f.id}">🔇 ${esc(T("p13Mute"))}</button>` : "") +
+              `<button type="button" class="x-btn x-sub" data-ka="p13act" data-act="dismiss" data-id="${f.id}">✓ ${esc(T("p13Ok"))}</button>` +
+              (f.uid ? `<button type="button" class="x-btn x-sub" data-ka="user" data-id="${esc(f.uid)}">${esc(T("kaOpen"))}</button>` : "") + `</div>` :
+              `<div class="k-inl"><span class="k-pill">${esc(T("p13S_" + f.status))}</span><button type="button" class="x-btn x-sub" data-ka="p13act" data-act="reopen" data-id="${f.id}">${esc(T("p13Reopen"))}</button></div>`;
+            return `<div class="k-ban1"><div><span class="k-pill">${esc(T(kindL[f.kind] || f.kind))}</span> ${who} <small>· ${esc(f.source)} · ${esc(f.rule || "")} · ${esc(f.action)}</small></div>${det}<small>${esc(fmtD(f.created_at, 1))}</small>${acts}</div>`;
+          };
+          P13.admTabs = (tabs) => { if (!tabs.some((t) => t[0] === "p13mod")) tabs.splice(tabs.length - 2, 0, ["p13mod", "p13TabMod"], ["p13off", "p13TabOff"]); return tabs; };
+          P13.admHTML = (AD, fmtD) => {
+            if (AD.tab === "p13mod") {
+              const d = MS.data, s = d && d.summary;
+              let h = `<div class="k-inl k-supf">${[["flags", "p13Flags"], ["done", "p13Actions"], ["errors", "p13Errors"]].map(([k, l]) => `<button type="button" class="x-btn ${MS.sec === k ? "x-main" : "x-sub"}" data-ka="p13sec" data-s="${k}">${esc(T(l))}</button>`).join("")}` +
+                `<button type="button" class="x-btn x-sub" data-ka="p13scan">🧹 ${esc(T("p13Scan"))}</button></div>`;
+              if (s) h += `<p class="k-note">${esc(T("p13Sum", { o: nf(s.open), e: nf(s.errors_24h), a: nf(s.actions_7d) }))}</p>`;
+              if (MS.sec === "errors") {
+                h += MS.err === null ? "…" : MS.err.length ? `<div class="k-list">${MS.err.map((x) => `<div class="k-li"><span><b dir="ltr">${esc(x.msg)}</b><small dir="ltr" class="k-det">${esc((x.src || "") + (x.line ? ":" + x.line + ":" + (x.col || 0) : ""))} · ${esc(x.build || "")} · ×${x.n | 0}${x.username ? " · " + esc(x.username) + " #" + (x.player_id || "") : ""}</small>${x.stack ? `<small dir="ltr" class="k-det">${esc(String(x.stack).slice(0, 240))}</small>` : ""}</span><small>${esc(fmtD(x.last_at, 1))}</small></div>`).join("")}</div>` : `<p class="k-note">${esc(T("p13NoErr"))}</p>`;
+              } else {
+                h += `<div class="k-inl"><input id="p13t" maxlength="200" dir="auto" placeholder="${esc(T("p13TestPh"))}"><button type="button" class="x-btn x-sub" data-ka="p13test">${esc(T("p13Test"))}</button></div>` +
+                  (MS.test ? `<p class="k-note" dir="auto">${MS.test.hit ? "⚠️ " + esc(MS.test.hit) + " → " + esc(MS.test.masked) : "✓ " + esc(T("p13Clean"))}</p>` : "");
+                const fl = d ? (d.flags || []) : null;
+                h += fl === null ? "…" : fl.length ? fl.map((f) => flagRow(f, fmtD)).join("") : `<p class="k-note">${esc(T("p13NoFlags"))}</p>`;
+              }
+              return h;
+            }
+            if (AD.tab === "p13off") {
+              const L = MS.off;
+              if (L === null) return "…";
+              const now = Date.now();
+              return `<p class="k-note">${esc(T("p13OffNote"))}</p>` + (L.length ? L.map((o) => {
+                const live = o.live, fut = Date.parse(o.starts_at) > now, cur = o.currency === "coins" ? "🪙" : o.currency === "gems" ? "💎" : "$";
+                return `<div class="k-ban1"><div><b>${esc(o.title_en)}</b> <small>${esc(o.month.slice(0, 7))} · #${o.slot}</small> <span class="k-pill ${live ? "" : "gr"}">${esc(T(live ? "p13Live" : fut ? "p13Next" : "p13Off"))}</span>${o.override ? ` <span class="k-pill">✎</span>` : ""}</div>` +
+                  `<p dir="ltr" class="k-det">${esc(o.items.join(", "))} · list ${esc(o.currency === "usd" ? "$" + (o.list_price / 100).toFixed(2) : nf(o.list_price) + " " + cur)} · -${o.discount_pct | 0}% · ${esc(T("p13Sold", { n: o.sold | 0 }))}</p>` +
+                  `<div class="k-inl">${o.currency === "usd" ? `<span class="k-note" dir="ltr">$${(o.price / 100).toFixed(2)}</span>` : `<label class="k-lab">${cur} <input id="p13op${o.id}" type="number" dir="ltr" min="${Math.ceil(o.list_price * 0.65)}" max="${o.list_price}" value="${o.price}"></label><button type="button" class="x-btn x-main" data-ka="p13oset" data-id="${o.id}">${esc(T("p13Save"))}</button>`}` +
+                  `<button type="button" class="x-btn x-sub" data-ka="p13otog" data-id="${o.id}" data-on="${o.active ? 0 : 1}">${esc(T(o.active ? "p13Hide" : "p13Show"))}</button></div></div>`;
+              }).join("") : `<p class="k-note">—</p>`) + `<div class="k-inl"><button type="button" class="x-btn x-sub" data-ka="p13oregen">↻ ${esc(T("p13Regen"))}</button></div>`;
+            }
+            return null;
+          };
+          P13.admLoad = async (AD) => {
+            if (AD.tab === "p13mod") {
+              if (MS.sec === "errors") MS.err = await ON.rpc("adm3_errors", { p_limit: 150 });
+              MS.data = await ON.rpc("adm3_mod", { p_status: MS.sec === "done" ? "all" : "open", p_kind: null, p_limit: 150 });
+              if (MS.sec === "done" && MS.data) MS.data.flags = (MS.data.flags || []).filter((f) => f.status !== "open");
+              return true;
+            }
+            if (AD.tab === "p13off") { MS.off = await ON.rpc("adm3_offers", { p_month: null }); return true; }
+            return false;
+          };
+          P13.admClick = async (a, b, reload, aErr) => {
+            if (a === "p13sec") { MS.sec = b.dataset.s; MS.err = MS.sec === "errors" ? null : MS.err; reload(); return true; }
+            if (a === "p13act") { b.disabled = true; try { await ON.rpc("adm3_mod_act", { p_id: +b.dataset.id, p_action: b.dataset.act, p_hours: b.dataset.act === "mute" ? 24 : 168 }); toast(T("kaDone")); } catch (er) { toast(aErr(er)); } reload(); return true; }
+            if (a === "p13scan") { b.disabled = true; try { const r = await ON.rpc("adm3_mod_scan"); toast(T("p13Scanned", { n: nf((r && r.renamed) || 0), b: nf((r && r.bios_masked) || 0) })); } catch (er) { toast(aErr(er)); } reload(); return true; }
+            if (a === "p13test") { const v = ($("p13t") || {}).value || ""; if (!v.trim()) return true; try { MS.test = await ON.rpc("adm3_mod_test", { p_text: v }); } catch (er) { toast(aErr(er)); } reload(true); return true; }
+            if (a === "p13oset") { const v = +(($("p13op" + b.dataset.id) || {}).value || 0); b.disabled = true; try { await ON.rpc("adm3_offer_set", { p_id: +b.dataset.id, p_price: v, p_active: null }); toast(T("kaDone")); OF.at = 0; } catch (er) { toast(aErr(er)); } reload(); return true; }
+            if (a === "p13otog") { b.disabled = true; try { await ON.rpc("adm3_offer_set", { p_id: +b.dataset.id, p_price: null, p_active: b.dataset.on === "1" }); toast(T("kaDone")); OF.at = 0; } catch (er) { toast(aErr(er)); } reload(); return true; }
+            if (a === "p13oregen") { b.disabled = true; const d = new Date(); const nx = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString().slice(0, 10);
+              try { await ON.rpc("adm3_offers_regen", { p_month: nx }); toast(T("kaDone")); } catch (er) { toast(aErr(er)); } reload(); return true; }
+            return false;
+          };
+          P13.ok = true;
         }
         requestAnimationFrame(loop);
       })();
@@ -17269,6 +17433,33 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
 /* next-unlock strip: full label, never "Next unlock · Sh… L…" */
 #ssnx { width: max-content !important; max-width: min(330px, 64%) !important; }
 #ssnx span { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; line-height: 1.15; }
+</style>
+
+<style id="ss13p">
+#nfsb .ofx { width: 100%; box-sizing: border-box; margin: 8px 0; padding: 8px; border-radius: 14px; background: radial-gradient(80% 120% at 0% 0%, rgba(80, 200, 255, .18), transparent 60%), rgba(10, 18, 44, .72); border: 1px solid rgba(120, 200, 255, .35); }
+#nfsb .ofx header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+#nfsb .ofx header b { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: #9fe8ff; }
+#nfsb .ofx header span { font-size: 10.5px; font-weight: 700; color: #bfe9ff; font-variant-numeric: tabular-nums; }
+#nfsb .ofx-g { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+#nfsb .ofx-c { position: relative; display: flex; flex-direction: column; gap: 5px; min-width: 0; padding: 8px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .12); }
+#nfsb .ofx-c.ofx-spotlight { border-color: rgba(255, 216, 74, .5); }
+#nfsb .ofx-t { font-size: 12.5px; line-height: 1.2; padding-inline-end: 50px; }
+#nfsb .ofx-c .px-bt button.buy { width: 100%; border-radius: 10px !important; background: linear-gradient(180deg, #f9d870, #c88a1c) !important; color: #2a1600 !important; border: 1px solid #ffe9a8 !important; font-weight: 900; }
+#nfsb .ofx-c .px-bt button.buy:disabled { background: rgba(255, 255, 255, .08) !important; color: #c8d3f5 !important; border-color: rgba(255, 255, 255, .18) !important; }
+#nfsb .ofx-d { position: absolute; top: 6px; inset-inline-end: 6px; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 999px; background: #ff3b5c; color: #fff; }
+#nfsb .ofx-d.sp { background: #ffcc33; color: #1a1206; }
+#nfsb .ofx-its { display: flex; flex-wrap: wrap; gap: 4px; }
+#nfsb .ofx-it { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; font-size: 11px; padding: 2px 6px; border-radius: 8px; background: rgba(0, 0, 0, .28); }
+#nfsb .ofx-it bdi { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+#nfsb .ofx-it.own { opacity: .6; }
+#nfsb .ofx-sw { flex: none; width: 14px; height: 14px; border-radius: 50%; background: linear-gradient(135deg, var(--a), var(--b)); box-shadow: 0 0 0 1px rgba(255,255,255,.35) inset; }
+#nfsb .ofx-em { font-style: normal; flex: none; }
+#nfsb .ofx-p { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 2px 6px; min-width: 0; font-size: 11px; opacity: .9; margin-top: auto; }
+#nfsb .ofx-p s { opacity: .7; white-space: nowrap; }
+#nfsb .ofx-l { white-space: normal; min-width: 0; overflow-wrap: anywhere; }
+#nfsb .ofx-c .px-bt button { width: 100%; min-height: 34px; }
+#nfsb .ofx-c .px-bt button.ofx-arm { background: linear-gradient(180deg, #ffcc33, #f0a500) !important; color: #1a1206 !important; font-size: 11px; }
+.p13-orig { word-break: break-word; }
 </style>
 </body>
 </html>
