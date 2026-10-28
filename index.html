@@ -3879,7 +3879,7 @@
         function addFood(x, y, v, c, k) {
           if (obsNear(x, y).some((o) => oD(o, x, y) < o.r + 8)) return;
           food.push({ x: clamp(x, 20, A - 20), y: clamp(y, 20, A - 20), v: k ? FT[k].v : v || rnd(0.3, 1), k, a: R() * 6.28,
-            c: c || `hsl(${((R() * 36) | 0) * 10},100%,65%)`, ph: R() * 6.28 });
+            c: c || `hsl(${((R() * 36) | 0) * 10},100%,65%)`, ph: R() * 6.28, d13: v ? time : undefined }); // build12b: d13 = birth time of decaying food
         }
         function makeSnake(name, skin, bot) {
           let x, y, t = 0;
@@ -3899,9 +3899,9 @@
             s.a = s.ta = Math.atan2(A / 2 - h.y, A / 2 - h.x); beep(300, 0.3, "square", 0.06, 900); if (s === player) { shake(5); vib(25); } return;
           }
           s.alive = false; evoDrop(s); if (s.boss) xBossDie(s);
-          for (let i = 0; i < s.seg.length; i += 2) {
+          for (let i = 0; i < s.seg.length; i += 6) { // build12b: fewer, larger remains (they decay, see F13)
             const p = s.seg[i];
-            addFood(p.x + rnd(-8, 8), p.y + rnd(-8, 8), rnd(0.8, 1.6), segColor(s.skin, i));
+            addFood(p.x + rnd(-10, 10), p.y + rnd(-10, 10), rnd(2.4, 4.4), segColor(s.skin, i));
           }
           if (s === player) { sDeath(); shake(11); nfDeath(s); if (revOk()) revOpen(); else gameOver(); }
           else { s.respawn = 2; if (player && player.alive && Math.hypot(s.seg[0].x - player.seg[0].x, s.seg[0].y - player.seg[0].y) < 600) pendImp = true; }
@@ -4266,9 +4266,34 @@
           for (let k = 0; k < 20; k++) { const x = rnd(150, A - 150), y = rnd(150, A - 150);
             if (!obsNear(x, y).some((o) => oD(o, x, y) < o.r + 40)) { pups.push({ x, y, t: PW[(R() * 4) | 0], ph: R() * 6.28 }); return; } }
         }
+        // build12b food budget: natural food refills to the baseline density (fMin, scaled to arena area); decaying food (remains, drops)
+        // lives F13.LIFE s and shrinks + fades over the last F13.FADE s; total is capped at 1.25 x baseline by removing the oldest pieces
+        // that are OFF-SCREEN (never something the player can see). Runs a light pass every frame and a trim pass every 0.25 s.
+        var F13V = null;
+        const F13 = { LIFE: 25, FADE: 5, t: 0, nat: 0,
+          DENS: 0.6, // natural food density vs the old fMin table (the old full density carpeted the screen once a long snake zoomed the camera out)
+          base() { return fMin() * this.DENS * (state === "play" ? AD.food || 1 : 1); },
+          cap() { return Math.round(this.base() * 1.25); },
+          off(f) { if (F13V) return !F13V(f.x, f.y, 260); if (!cam) return true; return Math.abs(f.x - cam.x) > 1700 || Math.abs(f.y - cam.y) > 1300; },
+          tick(dt) {
+            if ((this.t -= dt) > 0 && food.length <= this.cap() + 40) { this.fill(); return; }
+            this.t = 0.25;
+            const now = time, cap = this.cap(); let nat = 0, dead = false;
+            for (const f of food) { if (f.d13 !== undefined) { if (now - f.d13 >= this.LIFE) { f.dead = true; dead = true; } } else nat++; }
+            if (dead) food = food.filter((f) => !f.dead);
+            let ex = food.length - cap;
+            if (ex > 0) { // oldest first (array order), decaying pieces before natural ones, off-screen only
+              for (const pass of [1, 0]) { if (ex <= 0) break; for (const f of food) { if (ex <= 0) break; if (f.dead || (pass && f.d13 === undefined) || !this.off(f)) continue; f.dead = true; ex--; if (f.d13 === undefined) nat--; } }
+              food = food.filter((f) => !f.dead);
+            }
+            this.nat = nat; this.fill();
+          },
+          fill() { const b = this.base(), cap = this.cap(); let n = 0; while (this.nat < b && food.length < cap && n++ < 60) { const l = food.length; addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood()); if (food.length > l) this.nat++; } },
+          k(f) { if (f.d13 === undefined) return 1; const a = time - f.d13, s = this.LIFE - this.FADE; return a <= s ? 1 : Math.max(0, 1 - (a - s) / this.FADE); },
+        };
         function xCombo(w) {
           if (!player || !player.alive) return;
-          cN = time - cT < 1.5 ? cN + 1 : 1; cT = time;
+          cN = time - cT < 1.2 && cN < 25 ? cN + 1 : 1; cT = time; // build12b: shorter window, chains end at 25
           if (cN < 2) return;
           player.len += Math.min(cN, 20) * 0.04 * w;
           xBan(_t("combo") + cN + "!");
@@ -4595,13 +4620,13 @@
               const dx = h.x - f.x, dy = h.y - f.y, d = dx * dx + dy * dy;
               if (d < er * er) {
                 s.len += f.v * 0.15 * AD.fv; f.dead = 1; ate = true;
-                if (s === player) { M.eat++; xCombo(1); nfEat(f); const T = f.k && FT[f.k]; if (T && T.tier) xBan(`${fNm(T)} +${T.v}`); }
+                if (s === player) { M.eat++; if (f.d13 !== undefined || f.k || f.v >= 1) xCombo(1); nfEat(f); const T = f.k && FT[f.k]; if (T && T.tier) xBan(`${fNm(T)} +${T.v}`); }
                 if (s === player && time - eatT > 0.08) { eatT = time; sEat(); eatFx(f); }
               }
               else if (d < pull * pull) { const k = mg ? Math.min(0.18, 900 / d + 0.04) : 0.18; f.x += dx * k; f.y += dy * k; }
             } });
           }
-          if (ate) food = food.filter((f) => !f.dead);
+          if (ate) { food = food.filter((f) => !f.dead); F13.nat = food.reduce((n, f) => n + (f.d13 === undefined ? 1 : 0), 0); }
           // mice wander, and run from nearby snake heads
           for (const f of food) {
             if (f.k !== "mouse") continue;
@@ -4631,8 +4656,7 @@
           }
           evoUpdate(dt); xUpdate(dt); preyUpdate(dt); adUpdate(dt); modeTick(); nfUpdate(dt);
           if (pendImp) { pendImp = false; if (killT !== time) sImpact(0.45); }
-          while (food.length < fMin() * (state === "play" ? AD.food : 1)) addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood());
-          const fCap = Math.round(2200 * Math.max(1, (A / 6600) * (A / 6600))); if (food.length > fCap) { let ex = food.length - fCap; const cx = cam.x, cy = cam.y; food = food.filter((f) => { if (ex > 0 && Math.abs(f.x - cx) > 1600 || ex > 0 && Math.abs(f.y - cy) > 1200) { ex--; return false; } return true; }); if (ex > 0) food.splice(0, ex); }
+          F13.tick(dt);
         }
 
         // 3D: tilted perspective camera over the floor, projected onto the 2D canvas
@@ -5018,10 +5042,11 @@
             preyPonds(vis); nfDrawFloor(vis);
           }
 
+          F13V = vis;
           for (const f of food) {
             if (!vis(f.x, f.y)) continue;
-            const T = f.k && FT[f.k], r = (T ? T.r : 3 + f.v * 4) * AD.fs;
-            const z = T ? r * 0.9 + (f.k === "mouse" ? 0 : 3) : r + 4; if (f.ft === undefined) f.ft = time; const fa = Math.min(1, Math.max(0, (time - f.ft) / 0.6));
+            const dk = F13.k(f), T = f.k && FT[f.k], r = (T ? T.r : f.d13 !== undefined ? 4 + Math.sqrt(f.v) * 4.2 : 3 + f.v * 4) * AD.fs * (0.25 + 0.75 * dk);
+            const z = T ? r * 0.9 + (f.k === "mouse" ? 0 : 3) : r + 4; if (f.ft === undefined) f.ft = time; const fa = Math.min(1, Math.max(0, (time - f.ft) / 0.6)) * dk;
             pr(f.x, f.y, 0); const sw = r * 2.3 * PK;
             ctx.globalAlpha = 0.35; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); ctx.globalAlpha = 1;
             pr(f.x, f.y, z);
@@ -5932,7 +5957,7 @@
         }
 
         setMap(mapI); genFood(); // applies the arena size of the starting map
-        while (food.length < fMin()) addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood());
+        while (food.length < fMin() * 0.6) addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood()); // build12b
 
         const skinsEl = $("skins");
         SKINS.forEach((s, i) => {
