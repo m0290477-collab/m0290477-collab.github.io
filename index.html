@@ -16747,7 +16747,7 @@ body.b13h-low #ssnx { opacity: 1; }
       return `<div class="${cls.join(" ")}" data-d="${n}"><span>${t("streak_day", { n })}</span><i class="ss-ri" style="background-image:url('${ic}')"></i><b dir="ltr">${lab}</b></div>`;
     }).join("");
     const md = modal(`<button type="button" class="ss-x" aria-label="${t("close")}">✕</button><h3>${t("streak_title")}</h3><p class="ss-sub">${t("streak_sub")} · <b>${t("streak_count", { n: Math.max(0, day - (claimed ? 0 : 1)) })}</b></p>
-      <div class="ss-days">${build()}</div><div class="ss-row"><button type="button" class="ss-btn" data-soul-sparkle ${claimed ? "disabled" : ""}>${claimed ? t("streak_tomorrow", { n: Math.min(7, day + 1) }) : t("streak_claim")}</button></div>`);
+      <div class="ss-days">${build()}</div><div class="ss-row"><button type="button" class="ss-btn" data-soul-sparkle ${claimed ? "disabled" : ""}>${claimed ? t("streak_tomorrow", { n: (day % 7) + 1 }) : t("streak_claim")}</button></div>`);
     const btn = md.c.querySelector(".ss-btn"), x = md.c.querySelector(".ss-x");
     const done = (v) => md.close().then(() => resolve(v));
     x.addEventListener("click", () => done({ claimed }), { passive: true });
@@ -16758,7 +16758,7 @@ body.b13h-low #ssnx { opacity: 1; }
         if (res === false) throw new Error("rejected");
         claimed = true; const cell = md.c.querySelector(`.ss-day[data-d="${day}"]`);
         cell.classList.remove("today"); cell.classList.add("done", "stamp"); sfx("reward"); haptic("reward");
-        btn.textContent = t("streak_tomorrow", { n: Math.min(7, day + 1) });
+        btn.textContent = t("streak_tomorrow", { n: (day % 7) + 1 });
         md.c.querySelector(".ss-sub b").textContent = t("streak_count", { n: day });
         cfg.streakDay = day;
         const r = rewards[day - 1];
