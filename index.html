@@ -1597,7 +1597,7 @@
         <section class="b13c-sec"><h3>✏️ <span data-i18n="b13cName">Player name</span></h3>
           <div class="x-row b13c-nmr"><input class="x-name" id="b13cnm" maxlength="20" spellcheck="false" autocomplete="off" dir="auto" aria-label="Player name" data-i18n-al="b13cName" /><button class="x-btn x-main" data-go="nfb13cren" data-i18n="save">Save</button></div>
           <p class="x-err" id="b13cnmm" role="alert"></p><p class="b13-note" data-i18n="b13cNameN">You can change your name once a day.</p></section>
-        <section class="b13c-sec"><h3>🙂 <span data-i18n="b13cAv">Avatar</span></h3><div class="b13c-av" id="b13cav"></div>
+        <section class="b13c-sec"><h3>🙂 <span data-i18n="b13cAv">Avatar</span></h3><div class="b13g-wrap" id="b13cav"></div>
           <button class="x-btn x-sub b13c-ph" data-go="acct">📷 <span data-i18n="b13cPhoto">Profile photo</span></button></section>
         <section class="b13c-sec"><h3>👤 <span data-i18n="b13cAcct">Account</span></h3><p class="b13c-id" id="b13cid"></p>
           <div class="b13c-acts"><button class="x-btn x-sub" data-go="logout">⎋ <span data-i18n="logout">Log out</span></button><button class="x-btn x-sub b13c-del" id="b13cdelb" data-go="nfb13cdel">🗑️ <span data-i18n="b13cDel">Delete account</span></button></div>
@@ -2004,12 +2004,32 @@
         b13dT6: ["أسطورة", "Legend", "Efsane", "Légende", "Leyenda", "लीजेंड"],
         b13fBossLen: ["الطول {n}", "Length {n}", "Uzunluk {n}", "Longueur {n}", "Longitud {n}", "लंबाई {n}"],
         b13dLeader: ["متصدر الدوري", "League leader", "Lig lideri", "En tête de la ligue", "Líder de la liga", "लीग में सबसे आगे"],
+        b13gR0: ["عادي", "Common", "Sıradan", "Commun", "Común", "साधारण"],
+        b13gR1: ["نادر", "Rare", "Nadir", "Rare", "Raro", "दुर्लभ"],
+        b13gR2: ["ملحمي", "Epic", "Destansı", "Épique", "Épico", "महाकाव्य"],
+        b13gR3: ["أسطوري", "Legendary", "Efsanevi", "Légendaire", "Legendario", "पौराणिक"],
+        b13gFree: ["مجاني", "Free", "Ücretsiz", "Gratuit", "Gratis", "मुफ़्त"],
+        b13gLv: ["يُفتح عند المستوى {n}", "Unlocks at level {n}", "{n}. seviyede açılır", "Débloqué au niveau {n}", "Se desbloquea en el nivel {n}", "लेवल {n} पर खुलेगा"],
+        b13gLvS: ["Lv {n}", "Lv {n}", "Lv {n}", "Lv {n}", "Lv {n}", "Lv {n}"],
+        b13gCoins: ["افتحه مقابل {n} 🪙", "Unlock for {n} 🪙", "{n} 🪙 karşılığında aç", "Débloquer pour {n} 🪙", "Desbloquear por {n} 🪙", "{n} 🪙 में खोलें"],
+        b13gConfirm: ["تأكيد الشراء {n} 🪙", "Confirm {n} 🪙", "Onayla {n} 🪙", "Confirmer {n} 🪙", "Confirmar {n} 🪙", "पुष्टि करें {n} 🪙"],
+        b13gPass: ["حصري لـ Royal Pass", "Royal Pass exclusive", "Royal Pass'e özel", "Exclusif Royal Pass", "Exclusivo del Royal Pass", "Royal Pass एक्सक्लूसिव"],
+        b13gPassBtn: ["افتح Royal Pass", "Get Royal Pass", "Royal Pass al", "Obtenir le Royal Pass", "Conseguir Royal Pass", "Royal Pass लें"],
+        b13gEquip: ["استخدمه", "Equip", "Kuşan", "Équiper", "Equipar", "लगाएँ"],
+        b13gEquipped: ["مستخدم ✓", "Equipped ✓", "Kuşanıldı ✓", "Équipé ✓", "Equipado ✓", "लगा हुआ ✓"],
+        b13gUnlocked: ["مفتوح", "Unlocked", "Açık", "Débloqué", "Desbloqueado", "खुला"],
+        b13gBought: ["تم فتح الصورة الرمزية ✓", "Avatar unlocked ✓", "Avatar açıldı ✓", "Avatar débloqué ✓", "Avatar desbloqueado ✓", "अवतार खुल गया ✓"],
+        b13gOwnerAll: ["المالك: كل الصور الرمزية مفتوحة", "Owner: every avatar unlocked", "Sahip: tüm avatarlar açık", "Propriétaire : tous les avatars débloqués", "Dueño: todos los avatares desbloqueados", "मालिक: सभी अवतार खुले"],
+        b13gCount: ["{a} من {b} مفتوحة", "{a} of {b} unlocked", "{b} avatardan {a} açık", "{a} sur {b} débloqués", "{a} de {b} desbloqueados", "{b} में से {a} खुले"],
+        b13gPhotoOn: ["صورة ملفك الشخصي ظاهرة الآن بدل الصورة الرمزية", "Your profile photo is showing instead of an avatar", "Avatar yerine profil fotoğrafın görünüyor", "Ta photo de profil s'affiche à la place de l'avatar", "Tu foto de perfil se muestra en lugar del avatar", "अवतार की जगह आपकी प्रोफ़ाइल फ़ोटो दिख रही है"],
+        b13gLocked: ["مقفل", "Locked", "Kilitli", "Verrouillé", "Bloqueado", "लॉक"],
+        avatar_locked: ["هذه الصورة الرمزية مقفلة", "That avatar is locked", "Bu avatar kilitli", "Cet avatar est verrouillé", "Ese avatar está bloqueado", "यह अवतार लॉक है"],
         p11Ph: ["صورة الملف", "Profile photo", "Profil fotoğrafı", "Photo de profil", "Foto de perfil", "प्रोफ़ाइल फ़ोटो"],
         p11Ch: ["اختر صورة", "Choose photo", "Fotoğraf seç", "Choisir une photo", "Elegir foto", "फ़ोटो चुनें"],
         p11Rm: ["إزالة الصورة", "Remove photo", "Fotoğrafı kaldır", "Retirer la photo", "Quitar foto", "फ़ोटो हटाएँ"],
         p11Ok: ["تم تحديث صورتك", "Photo updated", "Fotoğraf güncellendi", "Photo mise à jour", "Foto actualizada", "फ़ोटो अपडेट हो गई"],
         p11Err: ["تعذّرت قراءة هذه الصورة", "Couldn't read that photo", "Bu fotoğraf okunamadı", "Impossible de lire cette photo", "No se pudo leer esa foto", "यह फ़ोटो पढ़ी नहीं जा सकी"],
-        p11Emo: ["أو استخدم إيموجي", "Or use an emoji", "Ya da bir emoji kullan", "Ou utilise un emoji", "O usa un emoji", "या कोई इमोजी चुनें"],
+        p11Emo: ["أو اختر صورة رمزية", "Or choose an avatar", "Ya da bir avatar seç", "Ou choisis un avatar", "O elige un avatar", "या कोई अवतार चुनें"],
         p11Chg: ["تغيير الصورة", "Change photo", "Fotoğrafı değiştir", "Changer la photo", "Cambiar foto", "फ़ोटो बदलें"],
         p11Hint: ["تظهر صورتك بشكل دائري في ملفك والترتيب", "Shown as a round photo on your profile and in the rankings", "Profilinde ve sıralamada yuvarlak görünür", "Affichée en rond sur ton profil et dans le classement", "Se muestra redonda en tu perfil y en la clasificación", "आपकी प्रोफ़ाइल और रैंकिंग में गोल फ़ोटो के रूप में दिखेगी"],
         p11RegWait: ["أنشأت حساباً على هذا الجهاز قبل قليل. انتظر بضع دقائق قبل إنشاء حساب آخر.", "You just created an account on this device. Please wait a few minutes before making another.", "Bu cihazda az önce hesap oluşturdun. Yenisi için birkaç dakika bekle.", "Tu viens de créer un compte sur cet appareil. Attends quelques minutes avant d'en créer un autre.", "Acabas de crear una cuenta en este dispositivo. Espera unos minutos antes de crear otra.", "आपने अभी इस डिवाइस पर खाता बनाया है। दूसरा बनाने से पहले कुछ मिनट रुकें।"],
@@ -3137,7 +3157,63 @@
         const TRAILS = [{ id: "spark", e: "✨", p: 240 }, { id: "fire", e: "🔥", p: 360 }];
         const BOOSTS = [{ id: "mag", e: "🧲", p: 50 }, { id: "big", e: "🐍", p: 40 }, { id: "shield", e: "🛡️", p: 60 }];
         const AV = ["🐍", "🦊", "🐯", "🦁", "🐸", "🐼", "🐵", "🦄", "🐲", "👽", "🤖", "😎"];
-        const P = { name: "", av: "🐍", xp: 0, coins: 0, own: {}, hat: "", trail: "", bst: {}, dg: { d: -1, s: 0 }, gems: 0, tx: [], rt: 1000, dc: -1, ach: {}, title: "",
+        // ---------- build13g: premium avatar portraits (avatars/<id>.webp, 160 px, lazy) replace the 12 emoji; legacy emoji map to a portrait ----------
+        var B13G = (() => {
+          // [id, rarity 0-3, unlock f(ree)/l(evel)/c(oins)/p(ass), requirement, legacy emoji, names ar/en/tr/fr/es/hi]
+          const L = [
+            ["viper", 0, "f", 0, "🐍", ["الأفعى اليشمية", "Jade Viper", "Yeşim Engerek", "Vipère de jade", "Víbora de jade", "जेड वाइपर"]],
+            ["fox", 0, "f", 0, "🦊", ["الثعلب المحتال", "Rogue Fox", "Haydut Tilki", "Renard voleur", "Zorro pícaro", "चालाक लोमड़ी"]],
+            ["tiger", 0, "f", 0, "🐯", ["النمر الفولاذي", "Steel Tiger", "Çelik Kaplan", "Tigre d'acier", "Tigre de acero", "स्टील टाइगर"]],
+            ["lion", 0, "f", 0, "🦁", ["الأسد الفارس", "Lion Knight", "Aslan Şövalye", "Chevalier lion", "Caballero león", "शेर योद्धा"]],
+            ["frog", 0, "f", 0, "🐸", ["الضفدع الساموراي", "Frog Ronin", "Kurbağa Ronin", "Grenouille rōnin", "Rana ronin", "मेंढक रोनिन"]],
+            ["panda", 0, "f", 0, "🐼", ["الباندا الراهب", "Panda Monk", "Panda Keşiş", "Panda moine", "Panda monje", "पांडा भिक्षु"]],
+            ["monkey", 0, "f", 0, "🐵", ["القرد المقاتل", "Monkey Brawler", "Dövüşçü Maymun", "Singe bagarreur", "Mono luchador", "बंदर पहलवान"]],
+            ["unicorn", 0, "f", 0, "🦄", ["الحصان البلوري", "Crystal Unicorn", "Kristal Tek Boynuz", "Licorne de cristal", "Unicornio de cristal", "क्रिस्टल यूनिकॉर्न"]],
+            ["drake", 0, "f", 0, "🐲", ["التنين الصغير", "Ember Drake", "Kor Ejder", "Dragonnet de braise", "Draco de brasas", "अंगार ड्रेक"]],
+            ["alien", 0, "f", 0, "👽", ["الفضائي الطيار", "Star Pilot", "Yıldız Pilotu", "Pilote stellaire", "Piloto estelar", "स्टार पायलट"]],
+            ["robot", 0, "f", 0, "🤖", ["الروبوت المقاتل", "Combat Bot", "Savaş Robotu", "Robot de combat", "Robot de combate", "कॉम्बैट बॉट"]],
+            ["ace", 0, "f", 0, "😎", ["الأفعى الأنيقة", "Snake Ace", "As Yılan", "Serpent as", "Serpiente as", "स्नेक ऐस"]],
+            ["ninja", 1, "l", 5, "", ["أفعى الظل النينجا", "Shadow Ninja", "Gölge Ninja", "Ninja de l'ombre", "Ninja sombrío", "छाया निंजा"]],
+            ["wolf", 1, "l", 10, "", ["ذئب الصقيع", "Frost Wolf", "Ayaz Kurt", "Loup du givre", "Lobo de escarcha", "हिम भेड़िया"]],
+            ["eagle", 1, "l", 15, "", ["نسر العاصفة", "Storm Eagle", "Fırtına Kartalı", "Aigle de tempête", "Águila de tormenta", "तूफ़ानी बाज़"]],
+            ["shark", 1, "l", 20, "", ["قرش الأعماق", "Abyss Shark", "Derinlik Köpekbalığı", "Requin des abysses", "Tiburón abisal", "गहराई का शार्क"]],
+            ["panther", 1, "c", 2500, "", ["الفهد الساموراي", "Panther Samurai", "Panter Samuray", "Panthère samouraï", "Pantera samurái", "पैंथर समुराई"]],
+            ["bear", 1, "c", 2500, "", ["الدب الحديدي", "Iron Bear", "Demir Ayı", "Ours de fer", "Oso de hierro", "लौह भालू"]],
+            ["cobra", 2, "l", 30, "", ["الكوبرا الملكية", "King Cobra", "Kral Kobra", "Cobra royal", "Cobra real", "किंग कोबरा"]],
+            ["phoenix", 2, "l", 40, "", ["العنقاء", "Phoenix", "Anka", "Phénix", "Fénix", "फ़ीनिक्स"]],
+            ["warlord", 2, "l", 50, "", ["أمير الحرب الفضائي", "Void Warlord", "Boşluk Savaş Lordu", "Seigneur du vide", "Señor del vacío", "शून्य सरदार"]],
+            ["knight", 2, "c", 8000, "", ["الفارس السيبراني", "Cyber Knight", "Siber Şövalye", "Cyber chevalier", "Caballero cíber", "साइबर नाइट"]],
+            ["sorceress", 2, "c", 8000, "", ["ملكة الأفاعي الساحرة", "Viper Queen", "Engerek Kraliçe", "Reine vipère", "Reina víbora", "वाइपर रानी"]],
+            ["dragon", 3, "l", 60, "", ["التنين الأعظم", "Elder Dragon", "Kadim Ejderha", "Dragon ancestral", "Dragón ancestral", "प्राचीन ड्रैगन"]],
+            ["hydra", 3, "l", 80, "", ["الهيدرا الذهبية", "Golden Hydra", "Altın Hidra", "Hydre dorée", "Hidra dorada", "स्वर्ण हाइड्रा"]],
+            ["conqueror", 3, "l", 100, "", ["الفاتح", "Conqueror", "Fatih", "Conquérant", "Conquistador", "विजेता"]],
+            ["emperor", 3, "p", 0, "", ["إمبراطور الأفاعي", "Snake Emperor", "Yılan İmparator", "Empereur serpent", "Emperador serpiente", "सर्प सम्राट"]],
+            ["celestial", 3, "p", 0, "", ["الأفعى السماوية", "Celestial Serpent", "Göksel Yılan", "Serpent céleste", "Serpiente celestial", "दिव्य सर्प"]],
+          ].map((a, i) => ({ id: a[0], r: a[1], u: a[2], q: a[3], e: a[4], n: a[5], i }));
+          const BY = {}, LEG = {};
+          for (const a of L) { BY[a.id] = a; if (a.e) LEG[a.e] = a.id; }
+          const V = "?v=13g1";
+          const src = (v) => "avatars/" + id(v) + ".webp" + V;
+          function id(v) { return typeof v === "string" ? (BY[v] ? v : LEG[v] || "viper") : "viper"; }
+          const known = (v) => typeof v === "string" && !!(BY[v] || LEG[v]);
+          const free = (v) => known(v) && BY[id(v)].u === "f";
+          const name = (v) => { const a = BY[id(v)]; return a.n[["ar", "en", "tr", "fr", "es", "hi"].indexOf(LANG)] || a.n[1]; };
+          // frame + portrait markup for any avatar value (portrait id, legacy emoji, or unknown → Jade Viper)
+          const h = (v, cls) => { const a = BY[id(v)]; return `<i class="b13g-f r${a.r}${cls ? " " + cls : ""}"><img src="${src(a.id)}" alt="" loading="lazy" decoding="async" draggable="false"></i>`; };
+          // canvas use (in-match name tag): one Image per portrait, loaded on first use
+          const IM = {};
+          const img = (v) => { const k = id(v); if (!IM[k]) { const m = new Image(); m.decoding = "async"; m.src = src(k); IM[k] = m; } return IM[k]; };
+          const ready = (v) => { const m = img(v); return !!(m.complete && m.naturalWidth); };
+          // unlock state for the signed-in player (the server checks again on save / purchase)
+          const st = () => (typeof ON === "object" && ON && ON.st) || null;
+          const staff = () => { const s = st(); return !!(s && s.profile && (s.profile.role === "owner" || s.profile.role === "admin")); };
+          const lvl = () => { try { return level(); } catch (_) { return 1; } };
+          const pass = () => { const s = st(); return !!(s && (s.entitlements || []).some((e) => /^royal_pass_premium:/.test(String(e)))); };
+          const owned = (a) => { const s = st(); return !!(s && s.inventory && (s.inventory["av_" + a.id] | 0) > 0); };
+          const open = (v) => { const a = BY[id(v)]; if (a.u === "f" || staff()) return true; if (a.u === "l") return lvl() >= a.q; if (a.u === "c") return owned(a); if (a.u === "p") return pass(); return false; };
+          return { L, BY, id, known, free, name, h, src, img, ready, open, staff, pass };
+        })();
+        const P = { name: "", av: "viper", xp: 0, coins: 0, own: {}, hat: "", trail: "", bst: {}, dg: { d: -1, s: 0 }, gems: 0, tx: [], rt: 1000, dc: -1, ach: {}, title: "",
           fr: [], gs: { d: -1, n: [] }, inb: [], gcl: [], dv: { i: "", e: 0, r: [] }, // friends (account keys), gifts sent today, inbox, claimed gift ids, drawn avatar
           ri: [], ro: [], bl: [], ch: {}, tr: 1000, tg: 0, tu: 0 }; // tu legacy field from older saves (never shown, nothing adds to it); tr team rating, tg team matches played; friend requests in / out [{ k, ts ms }], blocked keys, chats { key: [{ o 1 mine, t text, ts ms, r read }] }
         // DRAWN AVATAR (P.dv): i a 128×128 png/webp data URL up to 40KB, e 1 = also the snake head emblem, r rare-tool markers used in it
@@ -3166,7 +3242,7 @@
           } catch (e) { return false; }
         }
         const avSafe = (p) => !!p && !!p.dv && typeof p.dv.i === "string" && p.dv.i.length < 60000 && /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(p.dv.i);
-        const avH = (p) => (avSafe(p) ? `<img class="x-avi" src="${p.dv.i}" alt="" />` : p && AV.includes(p.av) ? p.av : "❔");
+        const avH = (p) => (avSafe(p) ? `<img class="x-avi" src="${p.dv.i}" alt="" />` : p ? B13G.h(p.av) : "❔");
         // rare tools: rb rainbow (level 20), ng neon (level 40), gp gold palette (10 achievements), ss star stamp (Diamond in ranked or league)
         function rareOk(k, lv, achN, rt, tier) {
           const q = Object.prototype.hasOwnProperty.call(RARE, k) && RARE[k]; if (!q) return false;
@@ -6295,7 +6371,7 @@
         }
         let av = P.av, rav = P.av;
         const emoEl = $("emo"), remoEl = $("remo");
-        for (const el of [emoEl, remoEl]) AV.forEach((e) => { const b = document.createElement("button"); b.textContent = e; b.setAttribute("aria-label", e); b.dataset.e = e; el.appendChild(b); });
+        for (const el of [emoEl, remoEl]) B13G.L.filter((a) => a.u === "f").forEach((a) => { const b = document.createElement("button"); b.type = "button"; b.innerHTML = B13G.h(a.id); b.setAttribute("aria-label", B13G.name(a.id)); b.dataset.e = a.id; el.appendChild(b); });
         const paintEmo = () => [...emoEl.children].forEach((b) => b.classList.toggle("on", b.dataset.e === av));
         const paintR = () => [...remoEl.children].forEach((b) => b.classList.toggle("on", b.dataset.e === rav));
         emoEl.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { av = b.dataset.e; paintEmo(); } });
@@ -6333,7 +6409,7 @@
             L.tier = Number.isInteger(d.L.tier) ? clamp(d.L.tier, 0, 4) : 0; L.tro = num(d.L.tro); best = num(d.best);
             // skin ids are checked against the known list: unknown owned ids are dropped, and an unknown or unowned equipped skin falls back to the first one
             if (isObj(P.own)) { for (const k of Object.keys(P.own)) if (k[0] === "s" && !(/^\d+$/.test(k.slice(1)) && SKINS[+k.slice(1)] && SKINS[+k.slice(1)].p)) delete P.own[k]; } else P.own = {};
-            skin = Number.isInteger(d.skin) && SKINS[d.skin] && (!SKINS[d.skin].p || P.own["s" + d.skin]) ? d.skin : 0; if (!AV.includes(P.av)) P.av = AV[0]; av = P.av;
+            skin = Number.isInteger(d.skin) && SKINS[d.skin] && (!SKINS[d.skin].p || P.own["s" + d.skin]) ? d.skin : 0; P.av = B13G.id(P.av); av = P.av;
             if (typeof P.name !== "string") P.name = "";
             S.tf = 2; S.music = 1; if (d.S) for (const k in S) if (k in d.S) S[k] = d.S[k];
             nfLoad(d.X);
@@ -6401,7 +6477,7 @@
           try { const t0 = +localStorage.getItem("ss-reg-t") || 0; if (Date.now() - t0 < 600000) return err("p11RegWait"); } catch (_) {} // build11: one new account per device per 10 minutes
           busy = true; err("working");
           try {
-            const s = await ON.signup(u, em, p1, AV.includes(rav) ? rav : AV[0]);
+            const s = await ON.signup(u, em, p1, B13G.free(rav) ? B13G.id(rav) : "viper");
             await ON.enter(s);
             ["ru", "re", "rp", "rp2"].forEach((id) => { $(id).value = ""; }); err("");
             toast(`${_t("welcome")} ${P.name}`); show("menu"); try { localStorage.setItem("ss-reg-t", String(Date.now())); } catch (_) {}
@@ -6638,7 +6714,7 @@
             if (![d, d && d.P, d && d.M, d && d.L, d && d.PST, d && d.S].every(isObj)) return false;
             const p = d.P, m = d.M, l = d.L, st = d.PST;
             if (!keysIn(p, DEF.P) || !keysIn(m, DEF.M) || !keysIn(st, DEF.PST)) return false;
-            if (p.name !== a.u || !AV.includes(p.av) || !isInt(p.xp, 0, 2e8) || !isInt(p.coins, 0, 1e7)) return false;
+            if (p.name !== a.u || !B13G.known(p.av) || !isInt(p.xp, 0, 2e8) || !isInt(p.coins, 0, 1e7)) return false;
             const lv = lvOf(p.xp);
             if (!isObj(p.own) || !isObj(p.bst) || typeof p.hat !== "string" || typeof p.trail !== "string") return false;
             for (const k in p.own) {
@@ -9136,7 +9212,7 @@
             const me = player, rk = me ? 1 + snakes.filter((s) => s !== me && s.alive && s.len > me.len).length : 0, tot = snakes.length;
             _gameOver();
             if (!me) return;
-            $("pxrank").innerHTML = `<i aria-hidden="true">${rk <= 3 ? PX_MED[rk - 1] : "🏅"}</i><span><small>${esc(_t("pxRank"))}</small><b dir="ltr">#${rk}</b></span><span><small>${esc(_t("pxOf", { n: tot }))}</small></span>`;
+            $("pxrank").innerHTML = `<span class="b13g-go" aria-hidden="true">${avH(P)}</span><i aria-hidden="true">${rk <= 3 ? PX_MED[rk - 1] : "🏅"}</i><span><small>${esc(_t("pxRank"))}</small><b dir="ltr">#${rk}</b></span><span><small>${esc(_t("pxOf", { n: tot }))}</small></span>`;
             const parts = $("earn").textContent.split(" · ").filter(Boolean);
             $("pxrews").innerHTML = parts.map((p, i) => `<span dir="auto" style="animation-delay:${(0.55 + i * 0.12).toFixed(2)}s">${esc(p)}</span>`).join("");
             $("earn").classList.add("px-gone");
@@ -9230,7 +9306,7 @@
           const rpc = async (fn, args) => (await call("/rest/v1/rpc/" + fn, args || {})).j;
           o.rpc = rpc; o.call = call;
           // server error code -> i18n key
-          const EK = { unknown_item: "p12EUnk", not_authenticated: "p12EAuth", no_profile: "p12EAuth", insufficient_funds: "onE_funds", already_claimed: "onE_claimed", not_reached: "onE_reach", not_ready: "onE_reach", rate_limited: "onE_rate", banned: "onE_banned",
+          const EK = { avatar_locked: "avatar_locked", invalid_avatar: "avatar_locked", unknown_item: "p12EUnk", not_authenticated: "p12EAuth", no_profile: "p12EAuth", insufficient_funds: "onE_funds", already_claimed: "onE_claimed", not_reached: "onE_reach", not_ready: "onE_reach", rate_limited: "onE_rate", banned: "onE_banned",
             maintenance: "onE_maint", level_too_low: "onE_level", already_owned: "onE_owned", invalid_login: "onE_login", user_not_found: "onE_nouser", cannot_add_self: "onE_self",
             already_friends: "onE_already", friends_full: "onE_full", their_friends_full: "onE_full", gift_limit: "onE_giftlim", already_sent: "onE_giftsent", not_friends: "onE_notfr",
             blocked: "onE_notfr", purchases_disabled: "onE_off", pass_disabled: "onE_off", season_not_active: "onE_off", premium_required: "onE_off", net: "onNet",
@@ -9242,7 +9318,7 @@
           // ---------- server state -> local display state ----------
           function fill(d, st) {
             const p = d.P, m = d.M, ps = d.PST, s = st.stats || {}, pr = st.profile || {}, w = st.wallet || {}, inv = st.inventory || {}, cf = st.config || o.cfg || {}, td = today();
-            p.name = pr.username || p.name; if (AV.includes(pr.avatar)) p.av = pr.avatar;
+            p.name = pr.username || p.name; p.av = B13G.id(pr.avatar);
             p.coins = w.coins | 0; p.gems = w.gems | 0; p.xp = s.xp | 0;
             p.own = {}; p.bst = {};
             for (const k in inv) { if (/^b(mag|big|shield)$/.test(k)) p.bst[k.slice(1)] = inv[k] | 0; else if (/^[sht][^_]*$/.test(k)) p.own[k] = 1; }
@@ -9310,7 +9386,7 @@
           o.signup = async (username, email, password, avatar) => {
             const a = (await call("/rest/v1/rpc/username_available", { p_username: username }, { auth: false })).j;
             if (!a || !a.ok) throw Object.assign(new Error(a && a.reason === "taken" ? "username_taken" : "invalid_username"), { code: a && a.reason === "taken" ? "username_taken" : "invalid_username" });
-            const r = (await call("/auth/v1/signup", { email, password, data: { username, avatar: AV.includes(avatar) ? avatar : "🐍" } }, { auth: false })).j;
+            const r = (await call("/auth/v1/signup", { email, password, data: { username, avatar: B13G.free(avatar) ? B13G.id(avatar) : "viper" } }, { auth: false })).j;
             if (!r || !r.access_token) throw Object.assign(new Error("onErr"), { code: "onErr" });
             return r;
           };
@@ -9348,7 +9424,7 @@
             if (!o.prof) return;
             const n = profSnap(), ch = {};
             if (n.skin !== o.prof.skin) ch.p_skin = n.skin; if (n.hat !== o.prof.hat) ch.p_hat = n.hat || ""; if (n.trail !== o.prof.trail) ch.p_trail = n.trail || "";
-            if (n.av !== o.prof.av && AV.includes(n.av)) ch.p_avatar = n.av; if (n.title !== o.prof.title) ch.p_title = n.title || "";
+            if (n.av !== o.prof.av && B13G.known(n.av)) ch.p_avatar = n.av; if (n.title !== o.prof.title) ch.p_title = n.title || "";
             if (!Object.keys(ch).length) return;
             o.prof = n;
             clearTimeout(o.profT); o.profT = setTimeout(() => { rpc("set_profile", ch).catch((e) => { toast(o.err(e)); o.sync(); }); }, 500);
@@ -9467,7 +9543,7 @@
             try {
               const r = await rpc("get_leaderboard", { p_board: LB.b, p_period: LB.p, p_limit: 50 }); if (n !== LB.n) return;
               const med = ["🥇", "🥈", "🥉"];
-              l.innerHTML = (r.rows || []).length ? r.rows.map((x) => `<li class="${x.me ? "me" : ""}"><i>${x.rank <= 3 ? med[x.rank - 1] : x.rank}</i><span class="on-av">${AV.includes(x.avatar) ? x.avatar : "🐍"}</span><b><span class="b13-nm"><bdi>${esc(x.username)}</bdi> ${B13.lv(x.level || 1)}</span><small dir="ltr">${B13.idH(x.player_id, x.vip_id)}</small></b><em dir="ltr">${num(x.value).toLocaleString("en")}</em></li>`).join("")
+              l.innerHTML = (r.rows || []).length ? r.rows.map((x) => `<li class="${x.me ? "me" : ""}"><i>${x.rank <= 3 ? med[x.rank - 1] : x.rank}</i><span class="on-av">${B13G.h(x.avatar)}</span><b><span class="b13-nm"><bdi>${esc(x.username)}</bdi> ${B13.lv(x.level || 1)}</span><small dir="ltr">${B13.idH(x.player_id, x.vip_id)}</small></b><em dir="ltr">${num(x.value).toLocaleString("en")}</em></li>`).join("")
                 : `<li class="on-empty">${esc(_t("onLbEmpty"))}</li>`;
               $("onlbme").innerHTML = r.me ? `${esc(_t("onLbMe"))}: <b dir="ltr">#${num(r.me.rank)}</b> · <bdi dir="ltr">${num(r.me.value).toLocaleString("en")}</bdi>` : "";
             } catch (e) { if (n === LB.n) l.innerHTML = `<li class="on-empty">${esc(o.err(e))}</li>`; }
@@ -9493,13 +9569,13 @@
                 `</div><button type="button" class="x-btn x-sub" data-fa="repx" data-id="">${esc(_t("onCancel"))}</button>`;
             } else if (FR.t === "f") {
               h = d.friends.length ? d.friends.map((f) => { const st = f.in_match ? "m" : f.online ? "on" : "", more = FR.more === f.id;
-                return `<div class="on-fr b13-frr${more ? " more" : ""}"><span class="on-av">${AV.includes(f.avatar) ? f.avatar : "🐍"}<i class="b13-dot ${st}"></i></span><b><span class="b13-nm"><bdi>${esc(f.username)}</bdi> ${B13.lv(f.level)}</span><small>${B13.idH(f.player_id, f.vip_id)} · ${esc(_t(st === "m" ? "b13InMatch" : st ? "b13Online" : "b13Offline"))}</small></b>` +
+                return `<div class="on-fr b13-frr${more ? " more" : ""}"><span class="on-av">${B13G.h(f.avatar)}<i class="b13-dot ${st}"></i></span><b><span class="b13-nm"><bdi>${esc(f.username)}</bdi> ${B13.lv(f.level)}</span><small>${B13.idH(f.player_id, f.vip_id)} · ${esc(_t(st === "m" ? "b13InMatch" : st ? "b13Online" : "b13Offline"))}</small></b>` +
                 (more ? ib("cgift", f.id, f.gift_sent_today ? "✓🪙" : "🪙", f.gift_sent_today ? "dim" : "") + ib("rep", f.id + "|" + f.username, "⚑") + ib("block", f.id, "⛔", arm("b" + f.id)) + ib("rm", f.id, "✕", arm("r" + f.id))
                   : ib("inv", f.id, "🎮 " + esc(_t("b13Invite")), "b13-inv") + ib("gift", f.id, "🎁") + ib("chat", f.id, "💬" + (f.unread ? `<sup>${num(f.unread)}</sup>` : ""), f.unread ? "hot" : "")) +
                 ib("more", f.id, more ? "‹" : "⋯") + `</div>`; }).join("") : `<p class="x-note">${esc(_t("onFrNone"))}</p>`;
             } else if (FR.t === "r") {
-              h = d.incoming.map((f) => `<div class="on-fr"><span class="on-av">${AV.includes(f.avatar) ? f.avatar : "🐍"}</span><b><span class="b13-nm"><bdi>${esc(f.username)}</bdi>${f.level ? " " + B13.lv(f.level) : ""}</span><small>${f.player_id ? B13.idH(f.player_id, f.vip_id) + " · " : ""}${esc(_t("onFrIn"))}</small></b>${ib("acc", f.id, "✓ " + esc(_t("onAccept")), "ok")}${ib("dec", f.id, esc(_t("onDecline")))}${ib("block", f.id, "⛔", arm("b" + f.id))}</div>`).join("") +
-                d.outgoing.map((f) => `<div class="on-fr dim"><span class="on-av">${AV.includes(f.avatar) ? f.avatar : "🐍"}</span><b>${esc(f.username)}<small>${esc(_t("onFrOut"))}</small></b>${ib("can", f.id, esc(_t("onCancel")))}</div>`).join("") ||
+              h = d.incoming.map((f) => `<div class="on-fr"><span class="on-av">${B13G.h(f.avatar)}</span><b><span class="b13-nm"><bdi>${esc(f.username)}</bdi>${f.level ? " " + B13.lv(f.level) : ""}</span><small>${f.player_id ? B13.idH(f.player_id, f.vip_id) + " · " : ""}${esc(_t("onFrIn"))}</small></b>${ib("acc", f.id, "✓ " + esc(_t("onAccept")), "ok")}${ib("dec", f.id, esc(_t("onDecline")))}${ib("block", f.id, "⛔", arm("b" + f.id))}</div>`).join("") +
+                d.outgoing.map((f) => `<div class="on-fr dim"><span class="on-av">${B13G.h(f.avatar)}</span><b>${esc(f.username)}<small>${esc(_t("onFrOut"))}</small></b>${ib("can", f.id, esc(_t("onCancel")))}</div>`).join("") ||
                 `<p class="x-note">${esc(_t("onFrNoReq"))}</p>`;
             } else {
               h = d.blocked.length ? d.blocked.map((f) => `<div class="on-fr"><span class="on-av">⛔</span><b>${esc(f.username)}</b>${ib("unb", f.id, esc(_t("onUnblock")))}</div>`).join("") : `<p class="x-note">${esc(_t("onFrNoBl"))}</p>`;
@@ -9533,7 +9609,7 @@
           $("onfrn").addEventListener("keydown", (e) => { if (e.key === "Enter") frAdd(); });
           function openChat(f) {
             FR.chat = f; FR.last = 0; $("onche").textContent = ""; $("onchi").value = ""; B13.chatUn = 0; B13.badges();
-            $("onchh").innerHTML = `<span class="on-av">${AV.includes(f.avatar) ? f.avatar : "🐍"}</span><b>${esc(f.username)}</b><button type="button" class="on-ib" id="onchrep">⚑ ${esc(_t("onReport"))}</button>`;
+            $("onchh").innerHTML = `<span class="on-av">${B13G.h(f.avatar)}</span><b>${esc(f.username)}</b><button type="button" class="on-ib" id="onchrep">⚑ ${esc(_t("onReport"))}</button>`;
             $("onchl").innerHTML = ""; show("onch"); loadChat(true);
             clearInterval(FR.chT); FR.chT = setInterval(() => { if (!vis("onch")) { clearInterval(FR.chT); return; } loadChat(false); }, 4000);
           }
@@ -10023,7 +10099,7 @@
           md.innerHTML = `<div class="p11-phc"><h3 id="p11pht"></h3><div class="p11-php" id="p11php"></div><button type="button" class="x-btn x-main" id="p11ch"></button><button type="button" class="x-btn x-sub" id="p11rm"></button><small id="p11hint"></small><button type="button" class="x-btn x-sub" id="p11x"></button></div>`;
           document.body.appendChild(md);
           const has = () => avSafe(P);
-          const prevH = () => (has() ? `<img src="${P.dv.i}" alt="" />` : esc(AV.includes(P.av) ? P.av : "🐍"));
+          const prevH = () => (has() ? `<img src="${P.dv.i}" alt="" />` : B13G.h(P.av));
           const mPaint = () => {
             $("p11pht").textContent = _t("p11Ph"); $("p11ch").textContent = "📷 " + _t("p11Ch"); $("p11rm").textContent = _t("p11Rm"); $("p11x").textContent = _t("back");
             $("p11hint").textContent = _t("p11Hint"); $("p11php").innerHTML = prevH(); $("p11rm").classList.toggle("x-hide", !has());
@@ -10329,7 +10405,7 @@
             const st = p.in_match ? `<em class="b13-st m">${esc(_t("b13InMatch"))}</em>` : p.online ? `<em class="b13-st on">${esc(_t("b13Online"))}</em>` : `<em class="b13-st">${esc(_t("b13Offline"))}</em>`;
             const act = p.is_self ? `<span class="b13-tagx">${esc(_t("tYou"))}</span>` : p.is_friend ? `<span class="b13-tagx">✓ ${esc(_t("b13IsFriend"))}</span>` : p.requested ? `<span class="b13-tagx">${esc(_t("onFrOut"))}</span>` :
               `<button type="button" class="x-btn x-main" data-b13add="${esc(p.id)}" data-q="${esc(String(p.vip_id || p.player_id))}">＋ ${esc(_t(p.incoming ? "onAccept" : "b13Add"))}</button>`;
-            return `<div class="b13-fc"><span class="on-av">${AV.includes(p.avatar) ? p.avatar : "🐍"}</span><b><bdi>${esc(p.username)}</bdi> ${B13.lv(p.level)}<small>${B13.idH(p.player_id, p.vip_id)} · ${st}</small></b>${act}</div>`;
+            return `<div class="b13-fc"><span class="on-av">${B13G.h(p.avatar)}</span><b><bdi>${esc(p.username)}</bdi> ${B13.lv(p.level)}<small>${B13.idH(p.player_id, p.vip_id)} · ${st}</small></b>${act}</div>`;
           };
           B13.find = async () => {
             const i = $("onfrn"), q = i.value.replace(CTRL0g, "").trim().slice(0, 20), box = $("b13fcx"); if (!q) { box.innerHTML = ""; return; }
@@ -10627,7 +10703,7 @@
             return sn.lv13;
           };
           B13C.tag = (sn, tx, y0) => {
-            const me = sn === player, own = me && B13C.pid() === 1, nm = String(sn.name || ""), av = me && avReady();
+            const me = sn === player, own = me && B13C.pid() === 1, nm = String(sn.name || ""), av = me && (avReady() || B13G.ready(P.av));
             const lv = sn.ad ? 0 : B13C.lvOf(sn), t = B13.tier(lv || 1), ls = String(lv);
             ctx.save(); ctx.textBaseline = "middle"; ctx.textAlign = "left";
             ctx.font = `${me ? 800 : 700} 12px system-ui, sans-serif`; const tw = Math.min(150, ctx.measureText(nm).width);
@@ -10646,7 +10722,7 @@
               ctx.fillStyle = t === 0 || (t >= 4 && t <= 6) ? "#fff" : "#1a1206"; ctx.font = "800 10px system-ui, sans-serif"; ctx.textAlign = "center";
               ctx.fillText(ls, cx + bw / 2, by + bh / 2 + 0.5); ctx.textAlign = "left"; cx += bw + 5;
             }
-            if (av) { ctx.save(); ctx.beginPath(); ctx.arc(cx + 8, y + h / 2, 8, 0, 6.283); ctx.clip(); ctx.drawImage(avImg, cx, y + h / 2 - 8, 16, 16); ctx.restore(); cx += 19; }
+            if (av) { ctx.save(); ctx.beginPath(); ctx.arc(cx + 8, y + h / 2, 8, 0, 6.283); ctx.clip(); ctx.drawImage(avReady() ? avImg : B13G.img(P.av), cx, y + h / 2 - 8, 16, 16); ctx.restore(); cx += 19; }
             ctx.font = `${me ? 800 : 700} 12px system-ui, sans-serif`; ctx.fillStyle = own ? "#ffe08a" : me ? "#fff6d6" : "#fff";
             ctx.fillText(nm, cx, y + h / 2 + 0.5, 150); cx += tw;
             if (own) emo("👑", cx + 9, y + h / 2, 12);
@@ -10720,16 +10796,15 @@
             const p = prof(), el = $("b13cps"); if (!el) return;
             const nm = $("b13cnm"); if (nm && document.activeElement !== nm) nm.value = p ? p.username : P.name || "";
             $("b13cid").innerHTML = p ? `<bdi dir="ltr">ID ${num(p.vip_id || p.player_id)}</bdi> ${B13C.ownB(p.player_id)}` : "";
-            $("b13cav").innerHTML = AV.map((a) => `<button type="button" data-go="nfb13cav" data-a="${a}" class="${P.av === a ? "on" : ""}" aria-label="${a}">${a}</button>`).join("");
+            B13G.grid();
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13f" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13g" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
           NFG.nfb13cps = (b) => { if (state === "play") return; PS.del = !!(b && b.dataset && b.dataset.del); show("b13cps"); psPaint(); if (PS.del) setTimeout(() => { const i = $("b13cdc"); if (i) i.focus({ preventScroll: true }); }, 50); };
-          NFG.nfb13cav = (b) => { const a = b.dataset.a; if (!AV.includes(a)) return; P.av = a; av = a; commit(); profile(); psPaint(); toast(_t("b13cSaved")); };
           NFG.nfb13cren = async () => {
             const v = $("b13cnm").value.trim(), m = $("b13cnmm"); m.textContent = "";
             if (!online()) return; const p = prof(); if (!p || v === p.username) return;
@@ -10964,7 +11039,7 @@
           // ---------- league state ----------
           let LG = null, lgAt = 0, lgBusy = false;
           const photoH = (p, cls) => { const ok = p && typeof p.photo === "string" && /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(p.photo);
-            return `<span class="b13d-av ${cls || ""}">${ok ? `<img src="${p.photo}" alt="">` : esc(p && AV.includes(p.avatar) ? p.avatar : "🐍")}</span>`; };
+            return `<span class="b13d-av ${cls || ""}">${ok ? `<img src="${p.photo}" alt="">` : B13G.h(p && p.avatar)}</span>`; };
           const idOf = (p) => `<bdi dir="ltr">#${num(p.vip_id || p.player_id)}</bdi>`;
           const dur = (ms) => { const m = Math.max(0, Math.floor(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60; return d ? _t("b13dDH", { d, h }) : _t("b13dHM", { h, m: mm }); };
           const left = () => (LG ? LG.ends_ms - (Date.now() - LG._skew) : 0);
@@ -11053,6 +11128,68 @@
             for (const s of snakes) if (s.boss && s.alive && !s.b13fa) { s.b13fa = 1; if (s !== player) B13F.bossAlert(s); }
           });
           NFH.home.push(() => { bb.classList.remove("on"); });
+        }
+        // ---------- build13g: avatar grid in Profile settings (rarity frames, locks, unlock rules, coin unlock, equip) ----------
+        {
+          B13G.sel = ""; B13G.cf = ""; let busy = false;
+          const RN = (r) => _t("b13gR" + r), fmtN = (v) => Number(v).toLocaleString("en-US"), onl = () => { try { return cur === "@on" && ON.on && !!ON.rpc; } catch (_) { return false; } };
+          const reqS = (a) => (a.u === "l" ? _t("b13gLvS", { n: a.q }) : a.u === "c" ? fmtN(a.q) + "🪙" : a.u === "p" ? "👑 Pass" : "");
+          const why = (a) => (a.u === "l" ? _t("b13gLv", { n: a.q }) : a.u === "c" ? _t("b13gCoins", { n: fmtN(a.q) }) : a.u === "p" ? _t("b13gPass") : "");
+          const phOn = () => { try { return avSafe(P); } catch (_) { return false; } };
+          function det(a) {
+            const cur = B13G.id(P.av), op = B13G.open(a.id), eq = a.id === cur && !phOn();
+            let stt, btn = "";
+            if (eq) stt = `<em class="ok">${esc(_t("b13gEquipped"))}</em>`;
+            else if (op) { stt = `<em class="ok">${esc(_t(a.u === "f" ? "b13gFree" : "b13gUnlocked"))}</em>`; btn = `<button type="button" class="x-btn x-main" data-go="nfb13gq" data-a="${a.id}">${esc(_t("b13gEquip"))}</button>`; }
+            else {
+              stt = `<em class="lk">🔒 ${esc(a.u === "c" ? _t("b13gLocked") : why(a))}</em>`;
+              if (a.u === "c") btn = `<button type="button" class="x-btn ${B13G.cf === a.id ? "x-main b13g-cf" : "x-sub b13g-gold"}" data-go="nfb13gb" data-a="${a.id}"${busy ? " disabled" : ""}>${esc(_t(B13G.cf === a.id ? "b13gConfirm" : "b13gCoins", { n: fmtN(a.q) }))}</button>`;
+              else if (a.u === "p") btn = `<button type="button" class="x-btn x-sub b13g-gold" data-go="nfpass">👑 ${esc(_t("b13gPassBtn"))}</button>`;
+            }
+            return `<div class="b13g-det r${a.r}">${B13G.h(a.id, "b13g-big" + (op ? "" : " lk"))}<div class="b13g-dt"><b>${esc(B13G.name(a.id))}</b><span class="b13g-rr r${a.r}">${esc(RN(a.r))}</span>${stt}</div>${btn}` +
+              (phOn() ? `<small class="b13g-phn">📷 ${esc(_t("b13gPhotoOn"))}</small>` : "") + `</div>`;
+          }
+          B13G.grid = () => {
+            const el = $("b13cav"); if (!el) return;
+            const cur = B13G.id(P.av), sel = B13G.BY[B13G.sel] ? B13G.sel : cur, n = B13G.L.filter((a) => B13G.open(a.id)).length;
+            el.innerHTML = det(B13G.BY[sel]) + `<div class="b13g-side"><p class="b13g-hd"><span>${esc(_t("b13gCount", { a: n, b: B13G.L.length }))}</span>` +
+              (B13G.staff() ? `<span class="b13g-own">👑 ${esc(_t("b13gOwnerAll"))}</span>` : "") + `</p><div class="b13g-grid">` +
+              B13G.L.map((a) => { const op = B13G.open(a.id);
+                return `<button type="button" data-go="nfb13cav" data-a="${a.id}" class="b13g-c r${a.r}${a.id === cur && !phOn() ? " on" : ""}${a.id === sel ? " sel" : ""}${op ? "" : " lk"}" aria-label="${esc(B13G.name(a.id) + " · " + RN(a.r) + (op ? "" : " · " + why(a)))}" aria-pressed="${a.id === sel}">${B13G.h(a.id)}` +
+                  (op ? "" : `<b class="b13g-lki" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffe39a" d="M7 10V7a5 5 0 0 1 10 0v3h1.2c.7 0 1.3.6 1.3 1.3v8.4c0 .7-.6 1.3-1.3 1.3H5.8c-.7 0-1.3-.6-1.3-1.3v-8.4c0-.7.6-1.3 1.3-1.3H7zm2.4 0h5.2V7a2.6 2.6 0 0 0-5.2 0v3z"/></svg></b><small class="b13g-req" dir="ltr">${esc(reqS(a))}</small>`) + `</button>`; }).join("") + `</div></div>`;
+          };
+          const equip = (id, clearPhoto) => {
+            if (!B13G.open(id)) { toast(_t("avatar_locked")); return; }
+            if (clearPhoto && phOn()) { // the player chose a portrait over their photo: same as picking an emoji in the account panel
+              P.dv = { i: "", e: 0, r: [] };
+              try { localStorage.removeItem("ss-photo:" + (cur === "@on" ? ON.uid || "" : cur || "guest")); } catch (_) {}
+              if (cur === "@on" && ON.call) ON.call("/auth/v1/user", { data: { photo: "" } }, { method: "PUT" }).catch(() => {});
+            }
+            P.av = id; av = id; commit(); profile(); try { avSync(); } catch (_) {}
+            if (B13C.psPaint) B13C.psPaint(); toast(_t("b13cSaved"));
+          };
+          NFG.nfb13cav = (b) => {
+            const a = b && b.dataset.a; if (!B13G.BY[a]) return;
+            if (B13G.cf !== a) B13G.cf = "";
+            B13G.sel = a;
+            if (B13G.open(a) && !phOn() && a !== B13G.id(P.av)) { equip(a); return; } // one tap equips (as before) when no photo is in use
+            B13G.grid();
+          };
+          NFG.nfb13gq = (b) => { const a = b && b.dataset.a; if (B13G.BY[a]) { B13G.sel = a; equip(a, true); } };
+          NFG.nfb13gb = async (b) => {
+            const a = b && b.dataset.a, it = B13G.BY[a]; if (!it || it.u !== "c" || busy) return;
+            if (B13G.open(a)) { B13G.grid(); return; }
+            if (B13G.cf !== a) { B13G.cf = a; B13G.grid(); return; } // second tap confirms the coin spend
+            if (!onl()) { toast(_t("p12EAuth")); return; }
+            busy = true; B13G.grid();
+            try {
+              const r = await ON.rpc("buy_avatar", { p_id: a });
+              if (r && r.wallet && Number.isInteger(r.wallet.coins)) { P.coins = r.wallet.coins; P.gems = r.wallet.gems | 0; }
+              if (ON.st) { ON.st.inventory = ON.st.inventory || {}; ON.st.inventory["av_" + a] = 1; }
+              busy = false; B13G.cf = ""; toast(_t("b13gBought")); equip(a);
+              if (ON.syncSoon) ON.syncSoon(1500);
+            } catch (e) { busy = false; B13G.cf = ""; B13G.grid(); toast(ON.err ? ON.err(e) : _t("onErr")); }
+          };
         }
         requestAnimationFrame(loop);
       })();
@@ -12608,6 +12745,86 @@ body.x-vshort .b13f-bb i { font-size: 18px; }
 #game .x-lb li i.b13f-rk.r3 { color: #2e1404 !important; background: linear-gradient(180deg, #ffd2a6, #c27a3e); }
 #game .x-lb li.me i.b13f-rk:not(.r1):not(.r2):not(.r3) { color: #062a33 !important; background: #4fe3ff; }
 body.x-vshort #game .x-lb li i.b13f-rk { min-width: 13px; height: 13px; font-size: 9px !important; }
+
+</style>
+<style id="ss13g">
+/* build13g: premium avatar portraits */
+.b13g-f { --rc: rgba(205, 216, 235, .85); position: relative; display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; font-style: normal; line-height: 0;
+  background: radial-gradient(circle at 50% 35%, #2a3f86, #0b1233); }
+.b13g-f img { width: 100%; height: 100%; display: block; object-fit: cover; border-radius: 50%; -webkit-user-drag: none; user-select: none; }
+.b13g-f::after { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--rc); pointer-events: none; }
+.b13g-f.r1 { --rc: #5fb4ff; } .b13g-f.r2 { --rc: #c07bff; } .b13g-f.r3 { --rc: #ffd25a; }
+/* every place an avatar shows */
+.on-av .b13g-f, .px-av .b13g-f, .b13d-av .b13g-f, .p11-php .b13g-f, .x-it > i .b13g-f, #chh > i .b13g-f { width: 100%; height: 100%; }
+.on-av:has(> .b13g-f) { position: relative; display: inline-block; flex: none; width: 30px; height: 30px; vertical-align: middle; font-size: 0 !important; }
+.on-lb li .on-av:has(> .b13g-f) { width: 24px; height: 24px; }
+.b13-fc .on-av:has(> .b13g-f) { width: 36px; height: 36px; }
+.x-it > i:has(> .b13g-f) { width: 36px; height: 36px; flex: none; }
+.b13d-av { position: relative; }
+.p11-php .b13g-f::after { box-shadow: none; }
+/* register / account pickers (free portraits) */
+.x-emo button { display: grid; place-items: center; padding: 2px !important; }
+.x-emo button .b13g-f { width: 34px; height: 34px; }
+.x-emo button.on .b13g-f::after { box-shadow: inset 0 0 0 2px #ffd25a; }
+
+/* Profile settings: detail card + grid */
+.b13g-wrap { display: flex; flex-wrap: nowrap; align-items: stretch; gap: 10px; margin-bottom: 8px; }
+.b13g-det { --rg: linear-gradient(160deg, rgba(205, 216, 235, .16), rgba(20, 30, 60, .5)); flex: 0 0 168px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  padding: 10px 8px; border-radius: 16px; background: var(--rg); border: 1px solid rgba(255, 255, 255, .12); align-self: flex-start; }
+.b13g-det.r1 { --rg: linear-gradient(160deg, rgba(95, 180, 255, .22), rgba(10, 25, 70, .55)); border-color: rgba(95, 180, 255, .35); }
+.b13g-det.r2 { --rg: linear-gradient(160deg, rgba(192, 123, 255, .24), rgba(30, 10, 70, .55)); border-color: rgba(192, 123, 255, .4); }
+.b13g-det.r3 { --rg: linear-gradient(160deg, rgba(255, 210, 90, .26), rgba(70, 40, 5, .55)); border-color: rgba(255, 210, 90, .5); }
+.b13g-big { width: 84px !important; height: 84px !important; flex: none; box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
+.b13g-big::after { box-shadow: inset 0 0 0 3px var(--rc) !important; }
+.b13g-det.r3 .b13g-big { box-shadow: 0 0 0 2px rgba(255, 210, 90, .35), 0 0 22px rgba(255, 200, 70, .55); }
+.b13g-big.lk img { filter: grayscale(.45) brightness(.7); }
+.b13g-dt { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; max-width: 100%; }
+.b13g-dt b { font-size: 14px; font-weight: 800; color: #fff; line-height: 1.15; overflow-wrap: anywhere; }
+.b13g-rr { font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; color: #0b1233; background: #cfd8e6; }
+.b13g-rr.r1 { background: #5fb4ff; } .b13g-rr.r2 { background: #c07bff; color: #fff; } .b13g-rr.r3 { background: linear-gradient(90deg, #ffe07a, #e7a51e); color: #3a2200; }
+.b13g-dt em { font-style: normal; font-size: 11.5px; line-height: 1.25; color: #9fb2d6; }
+.b13g-dt em.ok { color: #7dffb0; } .b13g-dt em.lk { color: #ffd98a; }
+.b13g-det .x-btn { width: 100%; min-height: 34px !important; padding: 6px 8px !important; font-size: 12.5px !important; white-space: normal; line-height: 1.15; }
+#b13cav .b13g-gold { background: linear-gradient(180deg, #ffe07a, #d99a1c) !important; color: #3a2200 !important; border-color: #ffe9a6 !important; font-weight: 800 !important; }
+.b13g-cf { animation: b13g-pulse 1s ease-in-out infinite; }
+@keyframes b13g-pulse { 50% { box-shadow: 0 0 0 3px rgba(125, 255, 176, .45); } }
+.b13g-phn { font-size: 10.5px; color: #8ea6d6; line-height: 1.25; }
+.b13g-side { flex: 1 1 auto; min-width: 0; }
+.b13g-hd { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; justify-content: space-between; margin: 0 0 6px; font-size: 11.5px; color: #9fb2d6; }
+.b13g-own { color: #ffd25a; font-weight: 700; }
+.b13g-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; }
+.b13g-c { --ring: linear-gradient(145deg, #eef3fa, #7d8aa3 55%, #c9d2e0); position: relative; aspect-ratio: 1; width: 100%; max-width: 64px; justify-self: center; padding: 3px; border: 0; border-radius: 50%;
+  background: var(--ring); cursor: pointer; box-shadow: 0 3px 8px rgba(0, 0, 0, .4); transition: transform .12s ease; -webkit-tap-highlight-color: transparent; }
+.b13g-c.r1 { --ring: linear-gradient(145deg, #bfe3ff, #2b78e4 55%, #8cc8ff); }
+.b13g-c.r2 { --ring: linear-gradient(145deg, #f0c8ff, #7b2fe0 55%, #d59bff); }
+.b13g-c.r3 { --ring: conic-gradient(from var(--b13g-a, 0deg), #fff3b0, #e7a51e, #ffdf6e, #b8740c, #fff3b0); animation: b13g-spin 4s linear infinite; }
+@property --b13g-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes b13g-spin { to { --b13g-a: 360deg; } }
+.b13g-c .b13g-f::after { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .45); }
+.b13g-c:active { transform: scale(.94); }
+.b13g-c.sel { box-shadow: 0 0 0 2px #0b1233, 0 0 0 4px #4fe3ff, 0 0 14px rgba(79, 227, 255, .55); }
+.b13g-c.on::before { content: "✓"; position: absolute; z-index: 2; right: -2px; bottom: -2px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center;
+  font: 900 11px/1 system-ui, sans-serif; color: #062b14; background: #6dffa4; box-shadow: 0 0 0 2px #0b1233; }
+.b13g-c.lk .b13g-f img { filter: grayscale(.55) brightness(.62) contrast(.95); }
+.b13g-lki { position: absolute; z-index: 2; inset: 0; display: grid; place-items: center; pointer-events: none; padding-bottom: 6px; }
+.b13g-lki svg { width: 16px; height: 16px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.9)); }
+.b13g-req { position: absolute; z-index: 2; left: 50%; bottom: -3px; transform: translateX(-50%); white-space: nowrap; font: 800 9px/1 system-ui, sans-serif; color: #fff; padding: 2px 5px;
+  border-radius: 999px; background: rgba(8, 12, 30, .92); border: 1px solid rgba(255, 255, 255, .25); pointer-events: none; }
+.b13g-c.r3 .b13g-req { border-color: rgba(255, 210, 90, .7); color: #ffe39a; }
+/* game over: your portrait beside the rank */
+.b13g-go { display: block; width: 52px; height: 52px; flex: none; border-radius: 50%; box-shadow: 0 0 0 2px #ffd25a, 0 0 16px rgba(255, 200, 70, .5); }
+.b13g-go > .b13g-f, .b13g-go > .x-avi { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+@media (max-height: 380px) {
+  .b13g-det { flex-basis: 150px; padding: 8px 6px; gap: 4px; }
+  .b13g-big { width: 64px !important; height: 64px !important; }
+  .b13g-grid { grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 7px; }
+  .b13g-go { width: 42px; height: 42px; }
+}
+@media (max-width: 700px) {
+  .b13g-det { flex-basis: 136px; }
+  .b13g-dt b { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) { .b13g-c.r3, .b13g-cf { animation: none; } }
 
 </style>
 </body>
