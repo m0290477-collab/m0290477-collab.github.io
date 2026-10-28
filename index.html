@@ -1316,7 +1316,7 @@
         <p class="x-note x-hide" id="avdn" data-i18n="avDrawn">صورتك المرسومة مفعّلة. احذفها من الاستوديو لترجع للإيموجي.</p>
         <button class="x-btn x-hide" id="stub" data-go="studio">🎨 <span data-i18n="studio">استوديو الرسم</span></button>
         <button class="x-btn x-main" data-go="save" data-i18n="save">حفظ</button>
-        <div class="x-col x-hide" id="xsec">
+        <div class="x-col x-hide p11-gone" id="xsec">
           <p class="x-warn x-hide" id="prem" role="status" data-i18n="saveRem">انسخ كود الحفظ حتى ما يضيع تقدمك</p>
           <button class="x-btn" data-go="export"><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4M5 14v6h14v-6" /></svg><span data-i18n="exportCode">تصدير كود الحفظ</span></button>
           <textarea class="x-code x-hide" id="xcode" readonly rows="4" aria-label="كود الحفظ" data-i18n-al="saveCode"></textarea>
@@ -1362,7 +1362,6 @@
         <h1 class="x-logo" dir="ltr">SUPER <br />SNAKE</h1>
         <h2 class="x-cy" data-i18n="login" tabindex="-1">Log in</h2>
         <p class="x-note" data-i18n="needAcct">Log in or create an account to play.</p>
-        <button class="x-btn on-gbtn" data-go="nfonguest">▶ <span data-i18n="onGuest">Play as guest</span></button>
         <input class="x-name" id="lu" maxlength="254" spellcheck="false" autocapitalize="off" placeholder="Username or email" data-i18n-ph="idPh" autocomplete="off" aria-label="Username or email" data-i18n-al="idPh" />
         <input class="x-name" id="lp" type="password" maxlength="128" placeholder="Password" data-i18n-ph="password" autocomplete="current-password" aria-label="Password" data-i18n-al="password" />
         <label class="x-chk"><input type="checkbox" id="rem" /><span data-i18n="remember">Remember me</span></label>
@@ -1370,7 +1369,7 @@
         <button class="x-btn x-main" data-go="dologin" data-i18n="login">Log in</button>
         <div class="x-row x-arow">
         <button class="x-btn x-sub" data-go="reg" data-i18n="register">Sign up</button>
-        <button class="x-btn x-sub" id="impgo" aria-controls="impv"><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4M5 14v6h14v-6" /></svg><span data-i18n="importCode">Import save code</span></button>
+        <button class="x-btn x-sub x-hide" id="impgo" aria-controls="impv" hidden><svg class="x-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4M5 14v6h14v-6" /></svg><span data-i18n="importCode">Import save code</span></button>
         </div>
         <p class="x-note" data-i18n="memNote">Accounts are kept while the game stays open. A save code brings yours back after reopening.</p>
         </div>
@@ -1692,7 +1691,7 @@
         exitNo: ["كمّل اللعب", "Keep playing", "Oynamaya devam", "Continuer", "Seguir jugando", "खेलते रहें"],
         mute: ["كتم الصوت", "Mute", "Sesi kapat", "Couper le son", "Silenciar", "म्यूट करें"],
         unmute: ["تشغيل الصوت", "Unmute", "Sesi aç", "Activer le son", "Activar sonido", "आवाज़ चालू करें"],
-        needAcct: ["سجّل دخول أو أنشئ حساب عشان تلعب.", "Log in or create an account to play.", "Oynamak için giriş yap ya da hesap oluştur.", "Connecte-toi ou crée un compte pour jouer.", "Inicia sesión o crea una cuenta para jugar.", "खेलने के लिए लॉग इन करें या खाता बनाएँ।"],
+        needAcct: ["سجّل دخولك أو أنشئ حساباً لتلعب.", "Sign in or create an account to play.", "Oynamak için giriş yap ya da hesap oluştur.", "Connecte-toi ou crée un compte pour jouer.", "Inicia sesión o crea una cuenta para jugar.", "खेलने के लिए साइन इन करें या खाता बनाएँ।"],
         exportCode: ["تصدير كود الحفظ", "Export save code", "Kayıt kodunu dışa aktar", "Exporter le code de sauvegarde", "Exportar código de guardado", "सेव कोड निर्यात करें"],
         importCode: ["استيراد كود الحفظ", "Import save code", "Kayıt kodunu içe aktar", "Importer un code de sauvegarde", "Importar código de guardado", "सेव कोड आयात करें"],
         saveCode: ["كود الحفظ", "Save code", "Kayıt kodu", "Code de sauvegarde", "Código de guardado", "सेव कोड"],
@@ -1754,6 +1753,19 @@
         p10Cat: ["الأقسام", "Categories", "Kategoriler", "Catégories", "Categorías", "श्रेणियाँ"],
         p10Gems: ["باقات الجواهر", "Gem packs", "Mücevher paketleri", "Packs de gemmes", "Packs de gemas", "जेम पैक"],
         p10Wel: ["أهلاً بك في الساحة الأسطورية", "Welcome to the Legendary Arena", "Efsanevi Arenaya hoş geldin", "Bienvenue dans l'Arène légendaire", "Bienvenido a la Arena legendaria", "लेजेंडरी एरीना में स्वागत है"],
+        p11Ph: ["صورة الملف", "Profile photo", "Profil fotoğrafı", "Photo de profil", "Foto de perfil", "प्रोफ़ाइल फ़ोटो"],
+        p11Ch: ["اختر صورة", "Choose photo", "Fotoğraf seç", "Choisir une photo", "Elegir foto", "फ़ोटो चुनें"],
+        p11Rm: ["إزالة الصورة", "Remove photo", "Fotoğrafı kaldır", "Retirer la photo", "Quitar foto", "फ़ोटो हटाएँ"],
+        p11Ok: ["تم تحديث صورتك", "Photo updated", "Fotoğraf güncellendi", "Photo mise à jour", "Foto actualizada", "फ़ोटो अपडेट हो गई"],
+        p11Err: ["تعذّرت قراءة هذه الصورة", "Couldn't read that photo", "Bu fotoğraf okunamadı", "Impossible de lire cette photo", "No se pudo leer esa foto", "यह फ़ोटो पढ़ी नहीं जा सकी"],
+        p11Emo: ["أو استخدم إيموجي", "Or use an emoji", "Ya da bir emoji kullan", "Ou utilise un emoji", "O usa un emoji", "या कोई इमोजी चुनें"],
+        p11Chg: ["تغيير الصورة", "Change photo", "Fotoğrafı değiştir", "Changer la photo", "Cambiar foto", "फ़ोटो बदलें"],
+        p11Hint: ["تظهر صورتك بشكل دائري في ملفك والترتيب", "Shown as a round photo on your profile and in the rankings", "Profilinde ve sıralamada yuvarlak görünür", "Affichée en rond sur ton profil et dans le classement", "Se muestra redonda en tu perfil y en la clasificación", "आपकी प्रोफ़ाइल और रैंकिंग में गोल फ़ोटो के रूप में दिखेगी"],
+        p11RegWait: ["أنشأت حساباً على هذا الجهاز قبل قليل. انتظر بضع دقائق قبل إنشاء حساب آخر.", "You just created an account on this device. Please wait a few minutes before making another.", "Bu cihazda az önce hesap oluşturdun. Yenisi için birkaç dakika bekle.", "Tu viens de créer un compte sur cet appareil. Attends quelques minutes avant d'en créer un autre.", "Acabas de crear una cuenta en este dispositivo. Espera unos minutos antes de crear otra.", "आपने अभी इस डिवाइस पर खाता बनाया है। दूसरा बनाने से पहले कुछ मिनट रुकें।"],
+        p11NoG: ["الجواهر ما تكفي — تحتاج {n} 💎 إضافية", "Not enough gems — you need {n} more 💎", "Yeterli mücevher yok — {n} 💎 daha lazım", "Pas assez de gemmes — il t'en faut {n} 💎 de plus", "No tienes gemas suficientes — te faltan {n} 💎", "जेम्स कम हैं — {n} 💎 और चाहिए"],
+        p11NoC: ["العملات ما تكفي — بدّل جواهر بعملات هنا", "Not enough coins — swap gems for coins here", "Yeterli altın yok — burada mücevheri altına çevir", "Pas assez de pièces — échange des gemmes ici", "No tienes monedas suficientes — cambia gemas aquí", "सिक्के कम हैं — यहाँ जेम्स को सिक्कों में बदलें"],
+        p11NoC2: ["العملات ما تكفي — احصل على جواهر وبدّلها بعملات", "Not enough coins — get gems to swap for coins", "Yeterli altın yok — altına çevirmek için mücevher al", "Pas assez de pièces — prends des gemmes à échanger", "No tienes monedas suficientes — consigue gemas para cambiarlas", "सिक्के कम हैं — बदलने के लिए जेम्स लें"],
+        p11NoE: ["الرصيد ما يكفي — اجمع المزيد من المكافآت والمهام", "Not enough yet — earn more from Rewards and missions", "Henüz yetmiyor — Ödüller ve görevlerden kazan", "Pas encore assez — gagne-en avec les récompenses et missions", "Aún no alcanza — gana más con recompensas y misiones", "अभी कम है — इनाम और मिशन से और कमाएँ"],
         p10Res: ["النتائج", "Results", "Sonuçlar", "Résultats", "Resultados", "नतीजे"],
         sens: ["حساسية التحكم", "Control sensitivity", "Kontrol hassasiyeti", "Sensibilité des commandes", "Sensibilidad del control", "कंट्रोल संवेदनशीलता"],
         sensL: ["منخفضة", "Low", "Düşük", "Basse", "Baja", "कम"], sensN: ["متوسطة", "Normal", "Normal", "Normale", "Normal", "सामान्य"], sensH: ["عالية", "High", "Yüksek", "Haute", "Alta", "ज़्यादा"],
@@ -2630,7 +2642,7 @@
         tx_stripe: ["شراء جواهر", "Gem purchase", "Mücevher alımı", "Achat de gemmes", "Compra de gemas", "रत्न खरीद"],
         tx_stripe_refund: ["استرجاع شراء", "Purchase refund", "Satın alma iadesi", "Remboursement d'achat", "Reembolso de compra", "खरीद रिफ़ंड"],
         memNote: ["حسابك محفوظ أونلاين ويشتغل على أي جهاز.", "Your account is saved online and works on any device.", "Hesabın çevrimiçi kayıtlı, her cihazda çalışır.", "Ton compte est enregistré en ligne et marche sur tout appareil.", "Tu cuenta se guarda online y funciona en cualquier dispositivo.", "आपका खाता ऑनलाइन सहेजा है और हर डिवाइस पर चलता है।"],
-        needAcct: ["سجّل دخولك لحفظ تقدمك أونلاين — أو العب كضيف.", "Sign in to save your progress online — or play as a guest.", "İlerlemeni çevrimiçi kaydetmek için giriş yap — ya da misafir oyna.", "Connecte-toi pour sauvegarder en ligne — ou joue en invité.", "Inicia sesión para guardar tu progreso online — o juega como invitado.", "प्रगति ऑनलाइन सहेजने को साइन इन करें — या अतिथि बनकर खेलें।"],
+        needAcct: ["سجّل دخولك أو أنشئ حساباً لتلعب.", "Sign in or create an account to play.", "Oynamak için giriş yap ya da hesap oluştur.", "Connecte-toi ou crée un compte pour jouer.", "Inicia sesión o crea una cuenta para jugar.", "खेलने के लिए साइन इन करें या खाता बनाएँ।"],
         codeOk: ["تم استيراد الكود. سجّل دخولك بنفس الحساب لنقل تقدمه أونلاين.", "Code imported. Sign in with that account to move its progress online.", "Kod içe aktarıldı. İlerlemeyi taşımak için o hesapla giriş yap.", "Code importé. Connecte-toi avec ce compte pour transférer sa progression.", "Código importado. Inicia sesión con esa cuenta para pasar su progreso.", "कोड आयात हुआ। प्रगति ऑनलाइन ले जाने के लिए उसी खाते से साइन इन करें।"],
       });
       let LANG = "en"; // default language: English, left to right (a saved choice replaces it below)
@@ -2882,11 +2894,12 @@
         // checked from the bytes, not the label: the header must match the declared type and the image must be 128×128
         function avOk(s) {
           try {
-            const m = typeof s === "string" && s.length < 60000 && /^data:image\/(png|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(s); if (!m) return false;
+            const m = typeof s === "string" && s.length < 60000 && /^data:image\/(png|webp|jpeg);base64,([A-Za-z0-9+/]+={0,2})$/.exec(s); if (!m) return false;
             const b64s = m[2], n = Math.floor((b64s.length * 3) / 4) - (b64s.endsWith("==") ? 2 : b64s.endsWith("=") ? 1 : 0);
             if (n > AV_MAX || n < 40) return false;
             const h = Uint8Array.from(atob(b64s.slice(0, 64)), (c) => c.charCodeAt(0)), tx = (a, b) => String.fromCharCode(...h.subarray(a, b));
             let w = 0, ht = 0;
+            if (m[1] === "jpeg") return h[0] === 0xff && h[1] === 0xd8 && h[2] === 0xff; // build11: photo avatars (drawn 128x128 on our own canvas)
             if (m[1] === "png") {
               if (![137, 80, 78, 71, 13, 10, 26, 10].every((v, i) => h[i] === v) || tx(12, 16) !== "IHDR") return false;
               w = (h[16] << 24 | h[17] << 16 | h[18] << 8 | h[19]) >>> 0; ht = (h[20] << 24 | h[21] << 16 | h[22] << 8 | h[23]) >>> 0;
@@ -2901,7 +2914,7 @@
             return w === 128 && ht === 128;
           } catch (e) { return false; }
         }
-        const avSafe = (p) => !!p && !!p.dv && typeof p.dv.i === "string" && p.dv.i.length < 60000 && /^data:image\/(png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(p.dv.i);
+        const avSafe = (p) => !!p && !!p.dv && typeof p.dv.i === "string" && p.dv.i.length < 60000 && /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(p.dv.i);
         const avH = (p) => (avSafe(p) ? `<img class="x-avi" src="${p.dv.i}" alt="" />` : p && AV.includes(p.av) ? p.av : "❔");
         // rare tools: rb rainbow (level 20), ng neon (level 40), gp gold palette (10 achievements), ss star stamp (Diamond in ranked or league)
         function rareOk(k, lv, achN, rt, tier) {
@@ -3910,7 +3923,7 @@
               c: `hsl(${hue + ((R() * 4) | 0) * 15},100%,${R() < 0.4 ? 85 : 60}%)` }); }
         }
         function gainDna(s) {
-          if (s.evo >= 4) { s.len += 1.5; return; }
+          if (s.evo >= 4) { s.len += 0.75; return; }
           if (s.evo >= evoCap(s)) return; // locked by level: DNA does nothing
           if (s === player) sDna();
           if (++s.dna < NEED) return;
@@ -4106,7 +4119,7 @@
             s.drop -= dt;
             if (s.drop <= 0) { s.drop = 0.15; const t = s.seg[s.seg.length - 1]; addFood(t.x, t.y, 0.4, segColor(s.skin, s.seg.length - 1)); }
           }
-          s.r = (8 + Math.sqrt(s.len) * 0.55 + (s.evo >= 3 ? 3 : 0)) * (s.boss ? 3 : 1) * (s.sw ? 0.7 : AD.sr);
+          s.r = (8 + Math.sqrt(s.len) * 0.4 + (s.evo >= 3 ? 3 : 0)) * (s.boss ? 3 : 1) * (s.sw ? 0.7 : AD.sr);
           const n = Math.floor(s.len);
           while (s.seg.length < n) { const t = s.seg[s.seg.length - 1]; s.seg.push({ x: t.x, y: t.y }); }
           while (s.seg.length > n) s.seg.pop();
@@ -4176,7 +4189,7 @@
           if (!player || !player.alive) return;
           cN = time - cT < 1.5 ? cN + 1 : 1; cT = time;
           if (cN < 2) return;
-          player.len += Math.min(cN, 20) * 0.075 * w;
+          player.len += Math.min(cN, 20) * 0.04 * w;
           xBan(_t("combo") + cN + "!");
           if (cN === 5 || cN % 10 === 0) { shake(cN >= 10 ? 5 : 3); vib(15, 0.4); }
         }
@@ -4267,7 +4280,7 @@
               if (dx * dx + dy * dy < er * er) { eaten = s; return false; }
             } });
             if (eaten) {
-              eaten.len += T.v * 0.3 * AD.fv; prey.splice(i, 1);
+              eaten.len += T.v * 0.15 * AD.fv; prey.splice(i, 1);
               if (eaten === player) { M.eat++; xCombo(1); floats.push({ x: q.x, y: q.y, t: "+" + T.v, l: 1.2 }); if (time - eatT > 0.08) { eatT = time; sEat(); } }
               continue;
             }
@@ -4502,7 +4515,7 @@
               if (f.dead) continue;
               const dx = h.x - f.x, dy = h.y - f.y, d = dx * dx + dy * dy;
               if (d < er * er) {
-                s.len += f.v * 0.3 * AD.fv; f.dead = 1; ate = true;
+                s.len += f.v * 0.15 * AD.fv; f.dead = 1; ate = true;
                 if (s === player) { M.eat++; xCombo(1); nfEat(f); const T = f.k && FT[f.k]; if (T && T.tier) xBan(`${fNm(T)} +${T.v}`); }
                 if (s === player && time - eatT > 0.08) { eatT = time; sEat(); eatFx(f); }
               }
@@ -6047,12 +6060,13 @@
           if (!emailOk(em)) return err("emailBad");
           if (p1.length < PW_MIN || p1.length > PW_MAX) return err("weakPw");
           if (p1 !== $("rp2").value) return err("pwMismatch");
+          try { const t0 = +localStorage.getItem("ss-reg-t") || 0; if (Date.now() - t0 < 600000) return err("p11RegWait"); } catch (_) {} // build11: one new account per device per 10 minutes
           busy = true; err("working");
           try {
             const s = await ON.signup(u, em, p1, AV.includes(rav) ? rav : AV[0]);
             await ON.enter(s);
             ["ru", "re", "rp", "rp2"].forEach((id) => { $(id).value = ""; }); err("");
-            toast(`${_t("welcome")} ${P.name}`); show("menu"); ON.offerMig();
+            toast(`${_t("welcome")} ${P.name}`); show("menu"); try { localStorage.setItem("ss-reg-t", String(Date.now())); } catch (_) {}
           } catch (e) { err(ON.ek(e)); } finally { busy = false; }
         }
         // username or email + password -> server. A device account that is not online yet is created online with the same
@@ -6068,7 +6082,7 @@
             let s = null, okLocal = false;
             try { s = await ON.login(idv, pw); }
             catch (e) {
-              if (e.code === "invalid_login" && k && SUB && (await pwCheck(pw, ACC[k]))) { okLocal = true; s = await ON.signup(ACC[k].u, ACC[k].email, pw, ACC[k].d && ACC[k].d.P ? ACC[k].d.P.av : AV[0]); }
+              if (false) { /* build11: no device-account fallback; sign-in is online only */ }
               else if (e.code === "banned") return err("banMsg", { r: e.reason || "" });
               else throw e;
             }
@@ -6076,7 +6090,7 @@
             if (!okLocal && k && SUB) okLocal = await pwCheck(pw, ACC[k]);
             if ($("rem").checked) KV.set("ss-rem", idv.slice(0, 254)); else KV.del("ss-rem");
             $("lp").value = ""; if (!$("rem").checked) $("lu").value = ""; err("");
-            toast(`${_t("welcome")} ${P.name}`); show("menu"); ON.offerMig(okLocal ? k : "", okLocal ? pw : "");
+            toast(`${_t("welcome")} ${P.name}`); show("menu");
           } catch (e) { err(e.code === "rate_limited" ? "onE_rate" : ON.ek(e)); } finally { busy = false; }
         }
 
@@ -6737,7 +6751,7 @@
           const s = SKINS[i], lv = skinLv(s);
           if (skOwn(i)) return `<button data-k="s${i}" class="${skin === i ? "eq" : ""}">${_t(skin === i ? "equipped" : "equip")}</button>`;
           if (level() < lv) return `<button disabled>🔒 ${_t("lvl")} ${lv}</button>`;
-          return `<button data-k="s${i}" ${(s.cur ? P.gems : P.coins) < s.p ? "disabled" : ""}>${_t("buy")} ${skCost(s)}</button>`;
+          return `<button data-k="s${i}"${s.cur ? p11N(0, s.p) : p11N(s.p, 0)}>${_t("buy")} ${skCost(s)}</button>`;
         }
         function skIds() { // the ids the current category and filters show, in order
           const q = nrm(SF.q.trim()), own = (i) => SF.o === "a" || (SF.o === "o") === skOwn(i);
@@ -6807,7 +6821,7 @@
           $("coins").textContent = P.coins;
           const it = (key, icon, n, sub, p, owned, eq, cnt) => `<div class="x-it${owned ? " own" : ""}">${icon}<b>${n}<small>${sub}</small></b>` +
             (cnt === undefined && owned ? `<button data-k="${key}" class="${eq ? "eq" : ""}">${_t(eq ? "equipped" : "equip")}</button>`
-              : `<button data-k="${key}" ${P.coins < p ? "disabled" : ""}>${_t("buy")} ${p} 🪙</button>`) + `</div>`;
+              : `<button data-k="${key}"${p11N(p, 0)}>${_t("buy")} ${p} 🪙</button>`) + `</div>`;
           const k = SF.sel < 0 ? skin : SF.sel, s = SKINS[k], r = skR(s);
           const sel = (id, opts, v, al) => `<select id="${id}" aria-label="${al}">` + opts.map(([x, n]) => `<option value="${x}"${x === v ? " selected" : ""}>${n}</option>`).join("") + `</select>`;
           const fc = SF.cat === "f", ph = _t(fc ? "flSearch" : "skSearch");
@@ -6829,8 +6843,8 @@
           h += `<h3>${_t("boostsH")}</h3>`;
           BOOSTS.forEach((x) => { const c = P.bst[x.id] || 0; h += it("b" + x.id, `<i>${x.e}</i>`, _t("b_" + x.id), _t("bd_" + x.id) + (c ? ` · ${_t("have")} ${c}` : ""), x.p, c > 0, false, c); });
           h += `<h3>💎 ${_t("gemShop")}</h3><p class="x-note">${_t("gemHow")}</p>` +
-            `<div class="x-it"><i>🪙</i><b>${_t("gx")}<small>${_t("gxSub")}</small></b><button data-g="gx" ${P.gems < 1 ? "disabled" : ""}>1 💎</button></div>` +
-            `<div class="x-it"><i>🎁</i><b>${_t("pack")}<small>${_t("packSub")}</small></b><button data-g="pack" ${P.gems < 3 ? "disabled" : ""}>3 💎</button></div>`;
+            `<div class="x-it"><i>🪙</i><b>${_t("gx")}<small>${_t("gxSub")}</small></b><button data-g="gx"${p11N(0, 1)}>1 💎</button></div>` +
+            `<div class="x-it"><i>🎁</i><b>${_t("pack")}<small>${_t("packSub")}</small></b><button data-g="pack"${p11N(0, 3)}>3 💎</button></div>`;
           if (ON.storeOk() && cur === "@on") h += `<div class="x-it"><i>💎</i><b>${esc(_t("onGemsT"))}<small>${esc(_t("onGemsSub"))}</small></b><button data-go="nfongems">${esc(_t("onGemsBtn"))} ＋</button></div>`;
           $("items").innerHTML = h; $("gems").textContent = P.gems; skLazy();
         }
@@ -7336,7 +7350,7 @@
           else if (NFS.df >= 0 && best !== NFS.df && dm[best] >= 60 && dm[best] > dm[NFS.df] + 20) { NFS.df = best; xBan(DIET[best].e + " " + _t("nfDietOn", { x: _t(DIET[best].n) })); }
           const df = NFS.df;
           if (df >= 0) {
-            if (df === 2) player.len += dt * 1.2; // venom: slow regeneration
+            if (df === 2) player.len += dt * 0.6; // venom: slow regeneration (build11: halved)
             if ((NFS.dpt -= dt) <= 0) {
               NFS.dpt = 0.1; const t = player.seg[Math.min(player.seg.length - 1, 6)];
               dPat.push({ x: t.x, y: t.y, k: df, l: 3, r: 26 + player.r * 0.8 });
@@ -7396,7 +7410,7 @@
           if (!on) return;
           NFS.bt = NFS.t; NFS.bc++;
           const m = 1 + Math.min(4, Math.floor(NFS.bc / 4)) * (wide ? 2 : 1);
-          if (m > 1) player.len += f.v * 0.3 * AD.fv * (m - 1) * 0.5;
+          if (m > 1) player.len += f.v * 0.15 * AD.fv * (m - 1) * 0.5;
           if (m > NFS.bm) { const h = player.seg[0]; floats.push({ x: h.x, y: h.y, t: "♪ x" + m, l: 1.2 }); beep(880 + m * 110, 0.08, "sine", 0.04, 1760); }
           NFS.bm = m;
           if (QL >= 1) { const h = player.seg[0]; parts.push({ x: h.x, y: h.y, z: player.r * 1.5, l: 0.35, vz: 30, c: "#fff6a8" }); }
@@ -7418,7 +7432,7 @@
           setTimeout(() => { if (state === "play" && NFS.my) xBan(`❓ ${_t("nfMyst")}: ${r.e} ${mystName(r)}`); }, 1800);
         });
         NFH.wx.push(() => { if (NFS.my === "night" && state === "play") xN = 1; });
-        NFH.upd.push((dt) => { if (NFS.my === "free" && player && player.alive && player.boost && player.len > 12 && !(player.spd > 0)) player.len += dt * 3; });
+        NFH.upd.push((dt) => { if (NFS.my === "free" && player && player.alive && player.boost && player.len > 12 && !(player.spd > 0)) player.len += dt * 1.5; });
         NFH.hud.push(() => (NFS.my ? MYST.find((r) => r.k === NFS.my).e : ""));
         NFH.over.push(() => {
           if (NFM.m !== "myst") return "";
@@ -7811,7 +7825,7 @@
               let btn;
               if (own) btn = `<button data-go="nfeq" data-id="${id}" class="${eqd ? "eq" : ""}">${esc(_t(eqd ? (cat === "em" ? "nfOnW" : "equipped") : cat === "em" ? "nfAddW" : "equip"))}</button>`;
               else if (it.ex) btn = `<button disabled>👑 ${esc(_t("nfPassOnly"))}</button>`;
-              else btn = `<button data-go="nfbuy" data-id="${id}" ${WALLET.can(it.pc, it.pg) ? "" : "disabled"}>${priceTxt(it)}</button>`;
+              else btn = `<button data-go="nfbuy" data-id="${id}" ${p11N(it.pc, it.pg)}>${priceTxt(it)}</button>`;
               rows += `<div class="x-it${own ? " own" : ""}"><i>${it.e}</i><b>${esc(itName(id))}<small style="color:${RARC[it.r]}">${esc(_t(RAR[it.r]))}</small></b>${btn}</div>`;
             }
           }
@@ -8475,8 +8489,8 @@
             const l = WL[i]; if (Math.abs(l.x - h.x) > er || Math.abs(l.y - h.y) > er) continue;
             WL.splice(i, 1);
             if (l.ch === NFS.wch[NFS.wi]) {
-              NFS.wi++; player.len += 3; beep(660 + NFS.wi * 90, 0.12, "triangle", 0.05, 990 + NFS.wi * 90); floats.push({ x: l.x, y: l.y, t: l.ch, l: 1 });
-              if (NFS.wi >= NFS.wch.length) { NFS.wc++; player.len += 25; xBan("🔤 " + NFS.wd + "! +25"); shake(4); vib([20, 30, 20]); burst(h.x, h.y, 24, 120); wdNew(); }
+              NFS.wi++; player.len += 1.5; beep(660 + NFS.wi * 90, 0.12, "triangle", 0.05, 990 + NFS.wi * 90); floats.push({ x: l.x, y: l.y, t: l.ch, l: 1 });
+              if (NFS.wi >= NFS.wch.length) { NFS.wc++; player.len += 12; xBan("🔤 " + NFS.wd + "! +12"); shake(4); vib([20, 30, 20]); burst(h.x, h.y, 24, 120); wdNew(); }
               else wdFill(false);
             } else beep(220, 0.08, "square", 0.03);
           }
@@ -8619,7 +8633,7 @@
           let btn;
           if (own) btn = `<button data-go="nfeq" data-id="${id}" class="${eqd ? "eq" : ""}">${esc(_t(eqd ? (cat === "em" ? "nfOnW" : "equipped") : cat === "em" ? "nfAddW" : "equip"))}</button>`;
           else if (it.ex) btn = `<button data-go="nfpass">🔒 ${esc(ti ? _t("pxTierAt", { n: ti.t }) : _t("nfPassOnly"))}</button>`;
-          else btn = `<button class="buy" data-go="nfbuy" data-id="${id}" ${WALLET.can(it.pc, it.pg) ? "" : "disabled"}><bdi dir="ltr">${priceTxt(it)}</bdi></button>`;
+          else btn = `<button class="buy" data-go="nfbuy" data-id="${id}" ${p11N(it.pc, it.pg)}><bdi dir="ltr">${priceTxt(it)}</bdi></button>`;
           const badge = own ? `<span class="px-badge own">✓ ${esc(_t("pxOwned"))}</span>` : it.ex ? `<span class="px-badge">👑 ${esc(ti && ti.p ? _t("pxPremOnly") : _t("nfPass"))}</span>` : "";
           const pv = cat === "sk" || cat === "tr" || cat === "de" ? `<canvas data-pv="${id}" aria-hidden="true"></canvas>` : `<span class="px-e" aria-hidden="true">${it.e}</span>`;
           return `<div class="px-card r${it.r}${own ? " own" : ""}${eqd ? " eqd" : ""}" style="--rc:${RARC[it.r]}">${badge}<div class="px-pv">${pv}</div><b>${it.e} ${esc(itName(id))}</b><span class="px-r">${esc(_t(RAR[it.r]))}</span><div class="px-bt">${btn}</div></div>`;
@@ -8877,7 +8891,7 @@
             return { status: r.status, j };
           }
           const rpc = async (fn, args) => (await call("/rest/v1/rpc/" + fn, args || {})).j;
-          o.rpc = rpc;
+          o.rpc = rpc; o.call = call;
           // server error code -> i18n key
           const EK = { insufficient_funds: "onE_funds", already_claimed: "onE_claimed", not_reached: "onE_reach", not_ready: "onE_reach", rate_limited: "onE_rate", banned: "onE_banned",
             maintenance: "onE_maint", level_too_low: "onE_level", already_owned: "onE_owned", invalid_login: "onE_login", user_not_found: "onE_nouser", cannot_add_self: "onE_self",
@@ -8985,7 +8999,7 @@
           o.signOut = async (silent) => {
             const s = o.sess;
             if (s && !silent) { try { await fetch(SBU + "/auth/v1/logout", { method: "POST", headers: { apikey: SBK, Authorization: "Bearer " + s.access_token } }); } catch (e) {} }
-            o.dropSess(); o.on = false; o.st = null; o.uid = ""; o.mid = null; WALLET.src = "local"; WALLET.rpc = async (fn) => { throw new Error("server wallet not connected: " + fn); };
+            try { if (o.uid) { KV.del("ss-on-" + o.uid); localStorage.removeItem("ss-photo:" + o.uid); } } catch (e) {} o.dropSess(); o.on = false; o.st = null; o.uid = ""; o.mid = null; WALLET.src = "local"; WALLET.rpc = async (fn) => { throw new Error("server wallet not connected: " + fn); };
             document.body.classList.remove("on-in");
             if (cur === K) { logout(); }
             delete ACC[K];
@@ -9298,7 +9312,7 @@
           // ---------- one-time migration of a local (device) account ----------
           const MIG = { ok: "", pw: "" };
           o.locals = () => Object.keys(ACC).filter((k) => k[0] !== "@" && !KV.get("ss-mig-" + k));
-          o.offerMig = (k, pw) => {
+          o.offerMig = (k, pw) => { return; // build11: the progress-migration screen is gone
             if (!o.on || !o.st || o.st.profile.migrated_at) return;
             const ks = o.locals(); if (!ks.length) return;
             if (!k && KV.get("ss-migskip-" + o.uid)) return;
@@ -9341,7 +9355,7 @@
             nfonchsend: chatSend,
             nfongems: (b) => { if (state === "play") return; o.openGems(vis("nfshop") ? "nfshop" : vis("shop") ? "shop" : "menu"); },
             nfonsignin: () => show("login"),
-            nfonguest: () => { o.guest = true; document.body.classList.add("on-guest"); show("menu"); toast(_t("onGuestNote")); },
+            nfonguest: () => { show("login"); }, // build11: guest play removed; the gate needs a sign-in
             nfonmiggo: () => o.migGo(),
             nfonmigno: () => { if (o.uid) KV.set("ss-migskip-" + o.uid, "1"); show("menu"); },
             nfoncelex: () => { $("oncele").classList.add("x-hide"); },
@@ -9532,6 +9546,266 @@
           const mapPics = () => [...mapl.children].forEach((it, i) => { const pic = it.querySelector(":scope > i"); if (pic && !pic.dataset.p10) { pic.dataset.p10 = 1; pic.style.background = ""; pic.style.setProperty("--tx", `var(--p10-tx${i})`); pic.classList.add("p10-mp"); } });
           new MutationObserver(mapPics).observe(mapl, { childList: true }); mapPics();
         }
+        // ---------- build11: tidy home (compact difficulty, ID in the profile chip, Story tab), skin cards, compact rewards ----------
+        {
+          const mn = $("menu"), hc = $("diffs").parentElement, diffs = $("diffs");
+          // A) one compact options row under the mode row: Difficulty ▾ · Map · How to play (the 5-button selector stays hidden as the source of truth)
+          const opt = document.createElement("div"); opt.className = "p11-opt";
+          opt.innerHTML = `<label class="p11-dl"><span class="p11-dk"></span><select id="p11diff"></select></label>`;
+          hc.insertBefore(opt, $("mdi"));
+          const how = hc.querySelector('.x-lnk[data-go="how"]'); if (how) { how.classList.add("p11-how"); opt.appendChild(how); }
+          opt.insertBefore($("mapq"), how || null);
+          const dsel = $("p11diff");
+          const dPaint = () => {
+            opt.querySelector(".p11-dk").textContent = _t("diff");
+            dsel.setAttribute("aria-label", _t("diff"));
+            const bs = [...diffs.children], h = bs.map((b, i) => `<option value="${i}">${esc(b.textContent)}</option>`).join("");
+            if (dsel.innerHTML !== h) dsel.innerHTML = h;
+            dsel.value = String(S.diff);
+          };
+          new MutationObserver(dPaint).observe(diffs, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
+          dsel.addEventListener("change", () => { const b = diffs.children[+dsel.value]; if (b) b.click(); dsel.value = String(S.diff); });
+          dPaint();
+          // team mode needs extra controls: shrink the logo so Play stays on screen
+          const tmSync = () => mn.classList.toggle("p11-tm", S.mode === "t");
+          document.querySelectorAll('.x-seg[data-k="mode"]').forEach((g) => g.addEventListener("click", () => setTimeout(tmSync, 0)));
+          tmSync();
+          // B) player ID: a small chip next to the name in the profile card (with a copy button), not floating in the middle
+          const chip = $("chip");
+          const CPY = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 10.5H3A1.5 1.5 0 0 1 1.5 9V3A1.5 1.5 0 0 1 3 1.5h6A1.5 1.5 0 0 1 10.5 3v.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+          const idPaint = () => {
+            const b = chip.querySelector(".px-pc > b"); if (!b) return;
+            let v = 0; try { v = myPid(); } catch (_) {}
+            let id = b.querySelector(".p11-id");
+            if (!v) { if (id) id.remove(); return; }
+            if (!b.querySelector(".p11-nm")) { const nm = document.createElement("span"); nm.className = "p11-nm"; while (b.firstChild) nm.appendChild(b.firstChild); b.appendChild(nm); }
+            if (!id) { id = document.createElement("span"); id.className = "p11-id"; id.dir = "ltr"; id.innerHTML = `<bdi></bdi><button type="button" data-go="pidcopy">${CPY}</button>`; b.appendChild(id); }
+            id.querySelector("bdi").textContent = `ID ${v}`;
+            id.querySelector("button").setAttribute("aria-label", _t("pidCopy"));
+          };
+          new MutationObserver(idPaint).observe(chip, { childList: true });
+          { const _pp = paintPid; paintPid = function () { _pp(); idPaint(); }; }
+          idPaint();
+          // C) the bottom "Skins" tab duplicated the "New skins" card: it becomes Story (the 12-stage campaign, not on the home screen otherwise)
+          const tb = document.querySelector('.hm-tabs [data-hm="sk"]');
+          if (tb) {
+            tb.removeAttribute("data-hm"); tb.removeAttribute("aria-controls"); tb.removeAttribute("aria-expanded"); tb.dataset.go = "nfstoryo";
+            tb.querySelector(".hm-ic").style.setProperty("--i", "var(--p11-book)");
+            const sp = tb.querySelector("span"); sp.dataset.i18n = "nfStoryT"; sp.textContent = _t("nfStoryT");
+          }
+          // D) skins drawer: each skin is a small card (mini snake render, rarity glow, name, equipped / lock / price badge)
+          const RC = ["#b9c6e6", "#5ad1ff", "#c77dff", "#ffd84a", "#ff5a8a"];
+          const sks = [...skinsEl.children];
+          const mini = (cv, k) => {
+            const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return false;
+            const dp = Math.min(2, window.devicePixelRatio || 1), g = cv.getContext("2d");
+            cv.width = Math.round(w * dp); cv.height = Math.round(h * dp);
+            g.setTransform(dp, 0, 0, dp, 0, 0); g.clearRect(0, 0, w, h);
+            const R0 = Math.min(5.5, h * 0.19), gap = R0 * 0.62, n = clamp(Math.floor((w - R0 * 4) / gap), 8, 22), amp = h * 0.2;
+            const X = (i) => w / 2 + (n * gap) / 2 - R0 - i * gap, Y = (i) => h / 2 + Math.sin(1.2 - i * 0.45) * amp * Math.min(1, i / 4);
+            try {
+              for (let i = n - 1; i > 0; i--) {
+                const t = i / (n - 1), r = R0 * (t < 0.5 ? 1 : 1 - (t - 0.5) * 1.6), an = Math.atan2(Y(i - 1) - Y(Math.min(n - 1, i + 1)), 2 * gap);
+                const c = Math.cos(an), sn = Math.sin(an), wd = r * 1.9, ln = wd * 0.85;
+                g.setTransform(dp * c, dp * sn, -dp * sn, dp * c, dp * X(i), dp * Y(i));
+                g.drawImage(bodySpr(bodyKey(k, i), i % 4 === 0 ? 1 : 0), -ln / 2, -wd / 2, ln, wd);
+              }
+              g.setTransform(dp, 0, 0, dp, 0, 0);
+              const ha = Math.atan2(Y(0) - Y(1), gap), hw = R0 * 3;
+              g.save(); g.translate(X(0), Y(0)); g.rotate(ha); g.drawImage(headSpr(segColor(k, 0)), -hw * 0.45, -hw * 0.37, hw, hw * 0.74);
+              if (SKINS[k].fl) { const fr = R0 * 0.85; g.drawImage(flagSpr(SKINS[k].fl), -R0 * 0.3 - fr, -fr, fr * 2, fr * 2); }
+              g.restore();
+            } catch (_) { g.setTransform(1, 0, 0, 1, 0, 0); }
+            return true;
+          };
+          const io = typeof IntersectionObserver === "function" ? new IntersectionObserver((es) => {
+            for (const e of es) if (e.isIntersecting) { const b = e.target, i = sks.indexOf(b), cv = b.querySelector(".p11-mc"); if (cv && !cv.dataset.ok && mini(cv, i)) { cv.dataset.ok = 1; io.unobserve(b); } }
+          }, { root: skinsEl, rootMargin: "120px" }) : null;
+          sks.forEach((b, i) => {
+            const s = SKINS[i], r = Math.max(0, Math.min(4, skR(s) | 0));
+            b.style.setProperty("--rc", RC[r]);
+            b.innerHTML = `<canvas class="p11-mc" aria-hidden="true"></canvas><span class="p11-sn"><bdi>${esc(s.n)}</bdi></span><em class="p11-bg"></em>`;
+            b.title = s.n;
+            if (io) io.observe(b);
+          });
+          const redraw = (i) => { const cv = sks[i] && sks[i].querySelector(".p11-mc"); if (cv) { delete cv.dataset.ok; mini(cv, i); } };
+          ["cc1", "cc2"].forEach((id) => $(id).addEventListener("input", () => redraw(CUST)));
+          const _ps = paintSkins;
+          paintSkins = function () {
+            _ps();
+            sks.forEach((b, i) => {
+              const s = SKINS[i], own = skOwn(i), lock = !own, lv = skinLv(s);
+              b.classList.toggle("x-hide", lock && !!s.fl); // unowned flags stay in the shop (197 of them); unowned classic skins show as locked cards
+              b.classList.toggle("p11-lk", lock);
+              b.setAttribute("aria-pressed", String(i === skin));
+              const bg = b.querySelector(".p11-bg");
+              if (bg) bg.innerHTML = i === skin ? "✓" : lock ? (level() < lv ? `🔒 ${esc(_t("lvl"))} ${lv}` : skCost(s)) : "";
+              b.setAttribute("aria-label", s.n + (lock ? " · " + bg.textContent : ""));
+            });
+            if (mn.classList.contains("hm-sko")) sks.forEach((b, i) => { const cv = b.querySelector(".p11-mc"); if (cv && !cv.dataset.ok && !b.classList.contains("x-hide") && b.getBoundingClientRect().top < innerHeight) { if (mini(cv, i)) cv.dataset.ok = 1; } });
+          };
+          // a locked card opens the shop on that skin
+          skinsEl.addEventListener("click", (e) => {
+            const b = e.target.closest("button"); if (!b || !b.classList.contains("p11-lk")) return;
+            e.stopImmediatePropagation(); e.preventDefault();
+            const i = sks.indexOf(b); if (i < 0) return;
+            SF.sel = i; SF.cat = "c"; SF.q = ""; SF.r = -1; SF.o = "a";
+            const all = $("hmsk").querySelector('[data-go="shop"]'); if (all) all.click();
+            setTimeout(() => { const row = $("skl") && $("skl").querySelector(`[data-sv="${i}"]`); if (row) row.scrollIntoView({ block: "center" }); }, 120);
+          }, true);
+          new MutationObserver(() => { if (mn.classList.contains("hm-sko")) paintSkins(); }).observe(mn, { attributes: true, attributeFilter: ["class"] });
+          paintSkins();
+          // E) Rewards tab: missions as horizontal rows (icon · text + progress bar · reward · button)
+          const pts = $("pts");
+          const ptsPaint = () => {
+            pts.querySelectorAll('.x-it:has(> button[data-p^="m"])').forEach((it) => {
+              if (it.querySelector(".p11-pg")) return;
+              const sm = it.querySelector("b small"); if (!sm) return;
+              const m = sm.textContent.match(/(\d[\d,]*)\s*\/\s*(\d[\d,]*)/); if (!m) return;
+              const a = +m[1].replace(/,/g, ""), z = +m[2].replace(/,/g, "") || 1;
+              sm.insertAdjacentHTML("afterend", `<span class="p11-pg" aria-hidden="true"><u style="width:${Math.min(100, (a / z) * 100).toFixed(1)}%"></u></span>`);
+            });
+          };
+          new MutationObserver(ptsPaint).observe(pts, { childList: true });
+          ptsPaint();
+          if (typeof NFH === "object" && NFH && NFH.relang) NFH.relang.push(() => { dPaint(); idPaint(); paintSkins(); });
+        }
+        // ---------- build11: profile photo (tap the avatar → Choose photo; centred square, 128 px JPEG in P.dv.i) ----------
+        {
+          const PH_LS = () => "ss-photo:" + (cur === "@on" ? (ON.uid || "") : (cur || "guest"));
+          const okPh = (s) => typeof s === "string" && s.length < 60000 && /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(s);
+          const fi = document.createElement("input"); fi.type = "file"; fi.accept = "image/*"; fi.id = "p11file"; fi.className = "x-hide"; fi.setAttribute("aria-hidden", "true"); document.body.appendChild(fi);
+          const md = document.createElement("div"); md.className = "p11-phm x-hide"; md.id = "p11phm"; md.setAttribute("role", "dialog");
+          md.innerHTML = `<div class="p11-phc"><h3 id="p11pht"></h3><div class="p11-php" id="p11php"></div><button type="button" class="x-btn x-main" id="p11ch"></button><button type="button" class="x-btn x-sub" id="p11rm"></button><small id="p11hint"></small><button type="button" class="x-btn x-sub" id="p11x"></button></div>`;
+          document.body.appendChild(md);
+          const has = () => avSafe(P);
+          const prevH = () => (has() ? `<img src="${P.dv.i}" alt="" />` : esc(AV.includes(P.av) ? P.av : "🐍"));
+          const mPaint = () => {
+            $("p11pht").textContent = _t("p11Ph"); $("p11ch").textContent = "📷 " + _t("p11Ch"); $("p11rm").textContent = _t("p11Rm"); $("p11x").textContent = _t("back");
+            $("p11hint").textContent = _t("p11Hint"); $("p11php").innerHTML = prevH(); $("p11rm").classList.toggle("x-hide", !has());
+            const ap = $("p11acp"); if (ap) ap.innerHTML = prevH();
+            const ab = $("p11acb"); if (ab) ab.textContent = "📷 " + _t(has() ? "p11Chg" : "p11Ch");
+            const sm = document.querySelector("#acct .p11-emd > summary"); if (sm) sm.textContent = _t("p11Emo");
+          };
+          const openM = () => { mPaint(); md.classList.remove("x-hide"); };
+          const closeM = () => md.classList.add("x-hide");
+          md.addEventListener("click", (e) => { if (e.target === md || e.target.closest("#p11x")) closeM(); else if (e.target.closest("#p11ch")) fi.click(); else if (e.target.closest("#p11rm")) setPh(""); });
+          // remote copy: auth user metadata (no new SQL), only for small photos
+          const push = (s) => { if (cur !== "@on" || !ON.call || (s && s.length > 30000)) return; ON.call("/auth/v1/user", { data: { photo: s || "" } }, { method: "PUT" }).catch(() => {}); };
+          function setPh(s) {
+            P.dv = s ? { i: s, e: 0, r: [] } : { i: "", e: 0, r: [] };
+            try { if (s) localStorage.setItem(PH_LS(), s); else localStorage.removeItem(PH_LS()); } catch (_) {}
+            push(s); profile(); try { pxLobby(); } catch (_) {} mPaint(); paintLbMe();
+            toast(_t(s ? "p11Ok" : "p11Rm"));
+          }
+          window.p11SetPh = setPh;
+          const toPh = (file) => new Promise((res, rej) => {
+            const u = URL.createObjectURL(file), im = new Image();
+            im.onload = () => {
+              try {
+                const S0 = 128, c = document.createElement("canvas"); c.width = c.height = S0; const g = c.getContext("2d");
+                const m = Math.min(im.naturalWidth, im.naturalHeight); if (!m) throw new Error("empty");
+                g.fillStyle = "#0b1a44"; g.fillRect(0, 0, S0, S0); g.imageSmoothingQuality = "high";
+                g.drawImage(im, (im.naturalWidth - m) / 2, (im.naturalHeight - m) / 2, m, m, 0, 0, S0, S0);
+                let q = 0.82, s = c.toDataURL("image/jpeg", q);
+                while (s.length > 30000 && q > 0.4) { q -= 0.12; s = c.toDataURL("image/jpeg", q); }
+                URL.revokeObjectURL(u); res(s);
+              } catch (e) { URL.revokeObjectURL(u); rej(e); }
+            };
+            im.onerror = () => { URL.revokeObjectURL(u); rej(new Error("decode")); };
+            im.src = u;
+          });
+          fi.addEventListener("change", async () => {
+            const f = fi.files && fi.files[0]; fi.value = ""; if (!f) return;
+            try { const s = await toPh(f); if (!okPh(s)) throw new Error("bad"); setPh(s); closeM(); } catch (_) { toast(_t("p11Err")); }
+          });
+          // home chip: the avatar opens the picker (the rest of the chip still opens the account)
+          $("chip").addEventListener("click", (e) => { if (e.target.closest(".px-av")) { e.stopPropagation(); e.preventDefault(); openM(); } }, true);
+          // account panel: photo row first, emoji grid folded away as a secondary choice
+          {
+            const box = $("acct").querySelector(".x-box"), emo = $("emo"), lbl = emo.previousElementSibling;
+            const row = document.createElement("div"); row.className = "p11-acph";
+            row.innerHTML = `<div class="p11-php" id="p11acp"></div><button type="button" class="x-btn" id="p11acb"></button>`;
+            const pc = $("pidP") || $("pcard"); pc.after(row);
+            const det = document.createElement("details"); det.className = "p11-emd"; det.innerHTML = "<summary></summary>";
+            emo.before(det); if (lbl && lbl.matches('p[data-i18n="pickAv"]')) lbl.classList.add("x-hide"); det.appendChild(emo);
+            row.addEventListener("click", (e) => { if (e.target.closest("#p11acb, #p11acp")) openM(); });
+            // picking an emoji (then Save) switches back from the photo to that emoji
+            let emoPick = false;
+            emo.addEventListener("click", (e) => { if (e.target.closest("button")) emoPick = true; });
+            $("acct").addEventListener("click", (e) => { const b = e.target.closest('[data-go="save"]'); if (b && emoPick && has()) { emoPick = false; P.dv = { i: "", e: 0, r: [] }; try { localStorage.removeItem(PH_LS()); } catch (_) {} push(""); } else if (b) emoPick = false; }, true);
+            new MutationObserver(() => { if (!$("acct").classList.contains("x-hide")) { emoPick = false; mPaint(); } }).observe($("acct"), { attributes: true, attributeFilter: ["class"] });
+          }
+          // restore: device copy first, then the account's metadata copy (once per sign-in)
+          let pulled = "";
+          const restore = () => {
+            if (has()) return false;
+            let s = null; try { s = localStorage.getItem(PH_LS()); } catch (_) {}
+            if (okPh(s)) { P.dv = { i: s, e: 0, r: [] }; return true; }
+            if (cur === "@on" && ON.uid && ON.call && pulled !== ON.uid) {
+              pulled = ON.uid;
+              ON.call("/auth/v1/user", undefined, { method: "GET" }).then((r) => {
+                const p = r && r.j && r.j.user_metadata && r.j.user_metadata.photo;
+                if (okPh(p) && !has()) { P.dv = { i: p, e: 0, r: [] }; try { localStorage.setItem(PH_LS(), p); } catch (_) {} profile(); try { pxLobby(); } catch (_) {} }
+              }).catch(() => {});
+            }
+            return false;
+          };
+          { const _pr = profile; profile = function () { restore(); _pr(); }; }
+          // leaderboard: your own row shows your photo
+          function paintLbMe() {
+            const l = document.querySelector("#onlb .on-lb"); if (!l || !has()) return;
+            const me = myPid(); if (!me) return;
+            l.querySelectorAll("li").forEach((li) => { const sm = li.querySelector("b small"), av = li.querySelector(".on-av"); if (sm && av && sm.textContent.trim() === "#" + me && !av.querySelector("img")) av.innerHTML = `<img class="x-avi" src="${P.dv.i}" alt="" />`; });
+          }
+          new MutationObserver(paintLbMe).observe($("onlb"), { childList: true, subtree: true });
+          if (typeof NFH === "object" && NFH && NFH.relang) NFH.relang.push(mPaint);
+          mPaint();
+        }
+        // ---------- build11: not enough gems / coins → take the player to a top-up instead of a dead button ----------
+        function p11N(pc, pg) {
+          let c = 0, g = 0; try { c = P.coins || 0; g = P.gems || 0; } catch (_) {}
+          const sg = Math.max(0, (pg || 0) - g), sc = Math.max(0, (pc || 0) - c);
+          return sg ? ` data-p11n="g:${sg}"` : sc ? ` data-p11n="c:${sc}"` : "";
+        }
+        function p11Go(g) { const b = document.createElement("button"); b.type = "button"; b.dataset.go = g; b.hidden = true; document.body.appendChild(b); b.click(); b.remove(); }
+        function p11Hl(find, tries) {
+          let n = 0; const t = setInterval(() => { const el = find(); if (el || ++n > (tries || 30)) { clearInterval(t); if (el) { el.classList.add("p11-hl"); el.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" }); setTimeout(() => el.classList.remove("p11-hl"), 3600); } } }, 120);
+        }
+        function p11Need(c, short) {
+          let ios = false, store = false;
+          try { ios = !!(ON.isIOSApp && ON.isIOSApp()); store = !ios && !!(ON.storeOk && ON.storeOk()) && cur === "@on"; } catch (_) {}
+          const gemStore = (need) => {
+            p11Go("nfongems");
+            p11Hl(() => {
+              const ps = [...document.querySelectorAll("#ongems .on-pack")]; if (!ps.length) return null;
+              const amt = (el) => { const m = (el.textContent || "").replace(/[,\s.]/g, "").match(/\d+/); return m ? +m[0] : 0; };
+              const ok = ps.filter((el) => amt(el) >= need).sort((a, b) => amt(a) - amt(b));
+              return ok[0] || ps[ps.length - 1];
+            });
+          };
+          const rewards = () => { p11Go("shop"); setTimeout(() => { const t = document.querySelector('#tabs [data-t="pts"]'); if (t) t.click(); p11Hl(() => document.querySelector('#pts .x-it:has(button[data-p^="m"])') || document.querySelector("#pts .x-it")); }, 60); };
+          if (c === "g") {
+            if (store) { toast(_t("p11NoG", { n: short })); gemStore(short); }
+            else { toast(_t("p11NoE")); rewards(); }
+            return;
+          }
+          let gems = 0; try { gems = P.gems || 0; } catch (_) {}
+          if (gems >= 1) { toast(_t("p11NoC")); p11Go("shop"); setTimeout(() => { const t = document.querySelector('#tabs [data-t="items"]'); if (t) t.click(); p11Hl(() => { const b = document.querySelector('#items button[data-g="gx"]'); return b && b.closest(".x-it"); }); }, 60); }
+          else if (store) { toast(_t("p11NoC2")); gemStore(Math.ceil(short / 100)); }
+          else { toast(_t("p11NoE")); rewards(); }
+        }
+        window.addEventListener("click", (e) => {
+          const b = e.target && e.target.closest ? e.target.closest("button") : null; if (!b) return;
+          let n = b.dataset.p11n || "";
+          try {
+            if (!n && (b.dataset.go === "nfcrate" || b.dataset.go === "nfbundle")) { const x = (b.dataset.go === "nfcrate" ? CRATES : BUNDLES).find((q) => q.id === b.dataset.id); if (x) { const a = p11N(x.pc, x.pg).match(/"([^"]+)"/); if (a) n = a[1]; } }
+            if (!n && b.dataset.go === "nfprem" && (P.gems || 0) < RP_PREM) n = "g:" + (RP_PREM - (P.gems || 0));
+          } catch (_) {}
+          if (!n) return;
+          e.stopImmediatePropagation(); e.preventDefault();
+          const [c, v] = n.split(":"); p11Need(c, Math.max(1, +v || 1));
+        }, true);
         requestAnimationFrame(loop);
       })();
     </script>
@@ -10228,6 +10502,379 @@ body { font-family: var(--sans); }
 .x-hud.x-q .x-btn.x-sub { background: linear-gradient(180deg, rgba(60, 200, 255, .38), rgba(18, 70, 150, .85)) !important; border: 1px solid rgba(120, 235, 255, .8) !important; color: #fff !important; }
 .x-hud.x-q .x-btn:not(.x-sub):not(.x-main) { background: linear-gradient(180deg, #ff7a8a, #d42a48) !important; border: 1px solid #ffc0c8 !important; color: #fff !important; }
 .x-hud.x-q p { color: #e8f1ff !important; }
+
+</style>
+<style id="ss11">
+:root { --p11-book: url("data:image/webp;base64,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"); }
+/* ===== build11 · tidy, smaller layout: pinned panel headers, compact home, skins cards, compact shop + Royal Pass ===== */
+
+/* ---------------------------------------------------------------- 1) panel header pinned at the very top of every panel */
+.x-ov:not(#menu):not(.x-stu) { padding-top: 0 !important; scroll-padding-top: 60px; }
+.x-ov:not(#menu):not(.x-stu) > .x-box.p10b, #nfpb.p10b, #nfsb.p10b { margin-top: 0 !important; border-top: 0 !important; border-top-left-radius: 0 !important; border-top-right-radius: 0 !important; }
+.x-ov:not(#menu):not(.x-stu) > .x-box.p10b::before { border-top-left-radius: 0; border-top-right-radius: 0; }
+.p10-hd { position: sticky !important; top: 0 !important; z-index: 30 !important; min-height: 0 !important; padding-top: calc(5px + env(safe-area-inset-top)) !important; padding-bottom: 5px !important;
+  background: linear-gradient(180deg, #17316c, #0b1a44) !important; border-radius: 0 !important; box-shadow: 0 6px 14px rgba(0, 0, 0, .45) !important; margin-bottom: 0 !important; }
+/* a solid strip above the header so nothing can ever show between it and the screen edge (rubber-band scroll) */
+.p10-hd::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 120px; background: #17316c; pointer-events: none; }
+.p10-bk { width: 30px !important; height: 30px !important; }
+.p10-bk svg { width: 17px !important; height: 17px !important; }
+.p10-ht h2, .p10-ht h2.x-cy { font-size: clamp(15px, 2.2vw, 19px) !important; }
+.p10-pl { height: 23px !important; font-size: 11.5px !important; padding: 0 8px 0 3px !important; }
+.p10-pl i { width: 17px !important; height: 17px !important; }
+.p10-plus { width: 18px !important; height: 18px !important; font-size: 13px !important; line-height: 18px !important; }
+.x-ov:not(#menu):not(.x-stu) > .x-box.p10b, #nfpb.p10b, #nfsb.p10b { gap: 7px !important; padding: 0 12px 10px !important; }
+.p10-hd { margin-left: -12px !important; margin-right: -12px !important; }
+#shop .p10-side { top: 46px !important; }
+
+/* ---------------------------------------------------------------- 2) HOME: smaller, on one grid, nothing overlapping */
+#menu .hm-c { overflow-y: auto !important; gap: 4px !important; justify-content: center !important; }
+#menu .hm-c > #diffs, #menu .hm-c > #pidM, #menu .hm-c > .nf-row, #menu .hm-c > .x-tag, #menu .hm-tl { display: none !important; }
+.p11-opt { display: flex !important; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 1px 0 0 !important; }
+.p11-opt > * { flex: none; }
+.p11-dl { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 4px 0 10px; border-radius: 13px; background: rgba(3, 9, 26, .78); border: 1px solid rgba(242, 199, 90, .55); color: #ffe08a; font: 800 11px/1 var(--sans); cursor: pointer; }
+[dir="rtl"] .p11-dl { padding: 0 10px 0 4px; }
+.p11-dl select { appearance: none; -webkit-appearance: none; height: 20px; border: 0; border-radius: 10px; padding: 0 20px 0 8px; font: 800 11px/20px var(--sans); color: #fff; cursor: pointer;
+  background: linear-gradient(180deg, #2a4c9a, #13275e) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ffe08a' stroke-width='1.6'/%3E%3C/svg%3E") right 6px center / 9px 6px no-repeat; }
+[dir="rtl"] .p11-dl select { padding: 0 8px 0 20px; background-position: left 6px center; }
+.p11-dl select option { color: #fff; background: #0b1a44; }
+#menu .p11-opt .x-lnk { height: 26px; display: inline-flex !important; align-items: center; gap: 4px; padding: 0 10px !important; border-radius: 13px; background: rgba(3, 9, 26, .78) !important; border: 1px solid rgba(79, 227, 255, .4) !important;
+  text-decoration: none !important; color: #bff0ff !important; font: 700 11px/1 var(--sans) !important; white-space: nowrap; }
+#menu .p11-opt .p11-how::before { content: "?"; display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #4fe3ff; color: #062033; font: 900 10px/1 var(--sans); }
+#menu .hm-c #mdi:empty { display: none; }
+#menu .hm-c #mdi { font-size: 10.5px !important; }
+/* ID lives in the profile chip, next to the name */
+#menu .hm-top .x-chip .px-pc > b { display: flex !important; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; }
+#menu .hm-top .x-chip .p11-nm, #menu .hm-top .x-chip .p11-id, #menu .hm-top .x-chip .p11-id bdi { font-family: var(--sans) !important; }
+#menu .hm-top .x-chip .px-pc > b > .p11-nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.p11-id { flex: none; display: inline-flex; align-items: center; gap: 3px; height: 15px; padding: 0 2px 0 6px; border-radius: 8px; background: rgba(79, 227, 255, .14); border: 1px solid rgba(79, 227, 255, .4);
+  font: 800 9.5px/1 var(--sans); color: #bff0ff; font-variant-numeric: tabular-nums; }
+.p11-id button { width: 13px; height: 13px; padding: 0; margin: 0; border: 0; border-radius: 4px; display: grid; place-items: center; background: none; color: #ffe08a; cursor: pointer; }
+.p11-id button svg { width: 11px; height: 11px; }
+.p11-id button:active { transform: scale(.85); }
+
+@media (max-height: 500px) {
+  #menu > .x-box.hm { grid-template-columns: 52px minmax(0, 1fr) minmax(178px, 26%) !important; gap: 6px 9px !important; }
+  #menu .hm-top, #menu .hm-top .x-chip { min-height: 34px !important; }
+  #menu .hm-top .x-chip { padding: 2px 8px 2px 3px !important; gap: 10px !important; }
+  #menu .hm-top .x-chip .px-av { width: 28px !important; height: 28px !important; font-size: 16px !important; }
+  #menu .hm-top .x-chip .px-av .px-lv { font-size: 8.5px !important; padding: 0 4px !important; min-width: 18px !important; bottom: -5px !important; }
+  #menu .hm-top .x-chip .px-pc { flex-basis: 170px !important; }
+  #menu .hm-top .x-chip .px-pc b { font-size: 11.5px !important; }
+  #menu .hm-top .x-chip .px-pc small { font-size: 9px !important; }
+  #menu .hm-top .x-chip .px-xp { height: 4px !important; }
+  #menu .hm-top .x-chip .px-pill { font-size: 10.5px !important; padding: 2px 8px !important; min-height: 20px !important; }
+  #menu .hm-ib { width: 32px !important; height: 32px !important; border-radius: 10px !important; }
+  #menu .hm-ib .hm-ic { width: 22px !important; height: 22px !important; }
+  #menu .hm-rail { gap: 6px !important; }
+  #menu .hm-rb { max-height: 50px !important; border-radius: 11px !important; }
+  #menu .hm-rb .hm-ic { width: 23px !important; height: 23px !important; }
+  #menu .hm-rb > span:not(#achn) { font-size: 8.5px !important; }
+  #menu .hm .x-logo.p10-logo { height: clamp(58px, 25vh, 150px) !important; width: min(100%, 330px) !important; }
+  #menu .hm .x-btn.x-play { width: min(100%, 260px) !important; min-height: clamp(32px, 10.5vh, 46px) !important; font-size: clamp(16px, 4.6vh, 22px) !important; border-radius: 13px !important; }
+  #menu .hm .x-mode { max-width: 440px !important; }
+  #menu .hm .x-mode button { min-height: 23px !important; font-size: 10.5px !important; padding: 0 8px !important; }
+  #menu .hm-r { gap: 6px !important; }
+  #menu .hm-r .px-rpb { min-height: 56px !important; padding: 6px 54px 6px 8px !important; gap: 8px !important; }
+  [dir="rtl"] #menu .hm-r .px-rpb { padding: 6px 8px 6px 54px !important; }
+  #menu .hm-r .px-rpb::before { width: 46px !important; height: 42px !important; }
+  #menu .hm-r .px-rpb .px-cr { width: 30px !important; height: 30px !important; font-size: 18px !important; }
+  #menu .hm-r .px-rpb b { font-size: 12.5px !important; }
+  #menu .hm-r .px-rpb small { font-size: 9.5px !important; }
+  #menu .hm-r .px-rpb .px-bar { height: 4px !important; }
+  #menu .hm-r .px-rpb .px-go { font-size: 9px !important; padding: 1px 5px !important; }
+  .p10-ns { min-height: 56px !important; max-height: 116px !important; padding: 6px 8px !important; border-radius: 14px !important; }
+  .p10-ns > b { font-size: 12px !important; }
+  .p10-nsa { inset: 20px 4px 2px !important; }
+  .p10-bot { gap: 6px !important; }
+  .p10-ev { flex: 0 0 clamp(122px, 18%, 190px) !important; border-radius: 12px !important; }
+  .p10-evt small { font-size: 8.5px !important; } .p10-evt b { font-size: 10.5px !important; } .p10-evt em { font-size: 8.5px !important; }
+  #menu .hm-tabs { gap: 5px !important; }
+  #menu .hm-t { height: clamp(38px, 12vh, 52px) !important; border-radius: 12px !important; }
+  #menu .hm-t .hm-ic { width: clamp(19px, 6.2vh, 28px) !important; height: clamp(19px, 6.2vh, 28px) !important; }
+  #menu .hm-t > span { font-size: 9.5px !important; }
+}
+@media (max-height: 320px) {
+  #menu .hm .x-logo.p10-logo { height: clamp(50px, 22vh, 90px) !important; }
+  #menu .hm-top .x-chip .px-pc small { display: none !important; }
+}
+/* team mode adds its own controls under the mode row: give them room by shrinking the logo, Play always stays visible */
+#menu.p11-tm .hm .x-logo.p10-logo { height: clamp(40px, 14vh, 90px) !important; }
+#menu.p11-tm .hm-c { justify-content: flex-start !important; }
+
+/* ---------------------------------------------------------------- 3) SKINS drawer: preview + name + colours on the left, a scrolling grid of skin cards on the right */
+#menu .hm-sk { grid-template-columns: minmax(150px, 30%) minmax(0, 1fr) !important; grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+  grid-template-areas: "h h" "pv sk" "nk sk" "cu sk" !important; gap: 7px 12px !important; padding: 0 12px 10px !important; }
+#menu .hm-sk > .hm-skh { grid-area: h !important; grid-column: 1 / -1 !important; grid-row: 1 !important; margin: 0 -12px !important; padding: 5px 54px 5px 12px !important; }
+[dir="rtl"] #menu .hm-sk > .hm-skh { padding: 5px 12px 5px 54px !important; }
+#menu .hm-skh h2 { font-size: 17px !important; }
+#menu .hm-skh .hm-x { width: 30px !important; height: 30px !important; min-height: 0 !important; }
+#menu .hm-skh .p10-all { min-height: 26px !important; font-size: 11px !important; padding: 0 10px !important; }
+#menu .hm-sk > .x-prev { grid-area: pv !important; grid-column: 1 !important; grid-row: 2 !important; min-height: 70px !important; height: 100% !important; }
+#menu .hm-sk > #skn { grid-area: pv !important; grid-column: 1 !important; grid-row: 2 !important; font-size: 11px !important; padding: 2px 10px !important; margin: 0 0 6px !important; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#menu .hm-sk > #nick { grid-area: nk !important; grid-column: 1 !important; grid-row: 3 !important; min-height: 30px !important; height: 30px !important; font-size: 12.5px !important; padding: 0 10px !important; border-radius: 10px !important; }
+#menu .hm-sk > .x-cust { grid-area: cu !important; grid-column: 1 !important; grid-row: 4 !important; margin: 0 !important; padding: 4px 8px !important; gap: 8px !important; font-size: 11px !important; min-height: 0 !important; justify-content: space-between !important; }
+#menu .hm-sk > .x-cust span { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #cfe2ff; }
+#menu .hm-sk .x-cust input[type="color"] { flex: none; width: 24px !important; height: 24px !important; }
+#menu .hm-sk { overflow: hidden !important; }
+#menu .hm-sk > #skins { grid-area: sk !important; grid-column: 2 !important; grid-row: 2 / 5 !important; height: 100% !important; max-height: 100% !important; min-height: 0 !important; align-self: stretch !important;
+  display: grid !important; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)) !important; grid-auto-rows: 70px !important; gap: 7px !important; align-content: start !important;
+  overflow-y: auto !important; overflow-x: hidden !important; padding: 4px 4px 8px !important; margin: 0 !important; overscroll-behavior: contain; }
+#menu .hm-sk #skins > button:not(.x-hide) { position: relative; display: flex !important; flex-direction: column; align-items: center; justify-content: flex-end; gap: 1px; width: 100% !important; height: 70px !important; min-height: 0 !important;
+  aspect-ratio: auto !important; padding: 0 3px 4px !important; margin: 0 !important; overflow: hidden; cursor: pointer; border-radius: 11px !important; border: 1px solid color-mix(in srgb, var(--rc, #4fe3ff) 70%, transparent) !important;
+  background: radial-gradient(90% 70% at 50% 38%, color-mix(in srgb, var(--rc, #4fe3ff) 26%, transparent), transparent 72%), linear-gradient(180deg, #16295a, #070f2a) !important;
+  box-shadow: 0 0 9px color-mix(in srgb, var(--rc, #4fe3ff) 32%, transparent), inset 0 1px 0 rgba(255, 255, 255, .1) !important; }
+#menu .hm-sk #skins > button::after, #menu .hm-sk #skins > button::before { content: none !important; display: none !important; }
+#menu .hm-sk #skins > button.on { border-color: #f2c75a !important; box-shadow: 0 0 0 1.5px #f2c75a, 0 0 14px rgba(255, 200, 60, .55) !important; }
+#menu .hm-sk #skins > button.p11-lk { order: 1; }
+#menu .hm-sk #skins > button.p11-lk .p11-mc { filter: saturate(.55) brightness(.75); }
+.p11-mc { position: absolute; left: 3px; right: 3px; top: 5px; width: calc(100% - 6px); height: 34px; pointer-events: none; }
+.p11-sn { position: relative; display: block; max-width: 100%; font: 700 9px/1.15 var(--sans); color: #eaf3ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px #000; }
+.p11-bg { position: absolute; top: 3px; inset-inline-end: 3px; font: 800 8px/1 var(--sans); font-style: normal; padding: 2px 4px; border-radius: 6px; background: rgba(3, 9, 26, .85); color: #ffe08a; white-space: nowrap; max-width: calc(100% - 6px); overflow: hidden; }
+.p11-bg:empty { display: none; }
+#skins > button.on .p11-bg { background: linear-gradient(180deg, #6bff7a, #1fae3a); color: #032a0b; }
+.p11-rr { position: relative; display: block; font: 900 7px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--rc, #9fb0d0); }
+@media (max-height: 360px) {
+  #menu .hm-sk { inset: 4px max(8px, env(safe-area-inset-right)) 4px max(8px, env(safe-area-inset-left)) !important; }
+}
+
+/* ---------------------------------------------------------------- 4) SHOP: smaller sidebar, compact cards in a real grid */
+#shop .x-box.p10b { grid-template-columns: 126px minmax(0, 1fr) !important; column-gap: 10px !important; }
+.p10-cat { font-size: 9.5px !important; }
+#shop .p10-side { gap: 4px !important; }
+#shop .p10-side .x-tabs { gap: 4px !important; }
+#shop .p10-side .x-tabs button, #shop .p10-side .p10-sb { min-height: 30px !important; padding: 2px 7px !important; gap: 6px !important; border-radius: 9px !important; font-size: 11px !important; }
+#shop .p10-side .p10-si { width: 19px !important; height: 19px !important; }
+#shop .x-shop { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important; gap: 6px !important; align-content: start; }
+#shop .x-shop > h3, #shop .x-shop > .x-wrap, #shop .x-shop > p, #shop .x-shop > .x-note, #shop .x-shop > .x-sk { grid-column: 1 / -1 !important; }
+#shop .x-shop > h3 { margin: 4px 0 0 !important; font-size: 10.5px !important; letter-spacing: .08em; }
+#shop .x-it { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 8px !important; min-width: 0; min-height: 0 !important; padding: 5px 8px !important; border-radius: 11px !important; text-align: start !important; }
+#shop .x-it > i { flex: none; width: 28px !important; height: 28px !important; margin: 0 !important; font-size: 19px !important; font-style: normal; display: grid; place-items: center; border-radius: 8px; line-height: 1; }
+#shop .x-it > b { flex: 1 1 auto; min-width: 0; font-size: 11.5px !important; line-height: 1.2; display: flex; flex-direction: column; gap: 1px; overflow-wrap: normal; word-break: normal; }
+#shop .x-it > b small { font-size: 9.5px !important; line-height: 1.25; white-space: normal; overflow-wrap: normal; word-break: normal; color: #9fb6e2; }
+#shop .x-it > button { flex: none; min-height: 26px !important; padding: 0 9px !important; font-size: 10.5px !important; white-space: nowrap; border-radius: 8px !important; width: auto !important; }
+#shop #pts .x-it:has(> button[data-p="chest"]), #shop #pts .x-it:has(> button[data-p="wheel"]) { grid-column: 1 / -1; }
+#shop #pts .x-wrap { display: flex; justify-content: center; margin: 0 !important; }
+#shop #pts .x-wheel { width: 110px !important; height: 110px !important; }
+.p11-pg { display: block; height: 5px; margin-top: 3px; border-radius: 3px; background: rgba(255, 255, 255, .1); overflow: hidden; }
+.p11-pg u { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3cff6a, #b6ff4a); }
+.p11-rw { flex: none; font: 800 10.5px/1 var(--sans); color: #ffe08a; white-space: nowrap; }
+/* skins tab */
+#shop .x-skpv { min-height: 0 !important; padding: 5px 10px !important; gap: 10px !important; }
+#shop .x-skpv canvas { height: 72px !important; }
+#shop .x-skpv > div { gap: 4px !important; }
+#shop .x-skpv > div > bdi { font-size: 14px !important; }
+#shop .x-skpv button { min-height: 28px !important; font-size: 11.5px !important; padding: 0 12px !important; }
+#shop .x-skcat button { min-height: 26px !important; font-size: 11.5px !important; }
+#shop .x-skf { gap: 5px !important; }
+#shop .x-skf input, #shop .x-skf select { min-height: 28px !important; height: 28px !important; font-size: 11.5px !important; padding: 0 8px !important; }
+#shop .x-skl { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important; gap: 6px !important; }
+#shop .x-skl > .x-it > i { width: 26px !important; height: 26px !important; border-radius: 50% !important; }
+#shop .x-it .x-rb { align-self: flex-start; }
+#shop .x-skl .x-rb { font-size: 8.5px !important; padding: 1px 5px !important; }
+#shop .x-skmore { grid-column: 1 / -1; }
+/* transactions */
+#shop #txl { font-size: 11.5px; }
+
+/* ---------------------------------------------------------------- 5) ROYAL SHOP + GEM PACKS: 25-30% smaller cards */
+#nfsb .px-feat { padding: 8px !important; border-radius: 14px !important; }
+#nfsb .px-feat header { margin-bottom: 6px !important; }
+#nfsb .px-feat header b { font-size: 10.5px !important; }
+#nfsb .px-feat header span { font-size: 10.5px !important; }
+#nfsb .px-grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)) !important; gap: 7px !important; }
+#nfsb .px-feat .px-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+#nfsb .px-card { padding: 0 0 6px !important; gap: 2px !important; border-radius: 12px !important; }
+#nfsb .px-pv { height: 56px !important; }
+#nfsb .px-pv .px-e { font-size: 30px !important; }
+#nfsb .px-card b { font-size: 11px !important; padding: 0 6px !important; }
+#nfsb .px-card .px-r { font-size: 8px !important; }
+#nfsb .px-card .px-bt { margin: 1px 6px 0 !important; }
+#nfsb .px-card button { min-height: 26px !important; font-size: 11px !important; border-radius: 9px !important; }
+#nfsb .px-card.bn { padding: 6px 8px !important; gap: 8px !important; }
+#nfsb .px-card.bn .px-pv { width: 84px !important; height: 52px !important; font-size: 19px !important; }
+#nfsb .px-card.bn small { font-size: 9.5px !important; }
+#nfsb .px-card.bn .px-bt { width: 92px !important; }
+#nfsb .px-tabs2 { gap: 5px !important; }
+#nfsb .px-tabs2 button { min-height: 28px !important; padding: 0 10px !important; font-size: 11px !important; border-radius: 9px !important; }
+#nfsb .px-wide { grid-column: 1 / -1; }
+#nfsb .x-it { padding: 5px 8px !important; gap: 8px !important; }
+#nfsb .x-it > i { font-size: 19px !important; font-style: normal; }
+#nfsb .x-it > b { font-size: 11.5px !important; min-width: 0; }
+#nfsb .x-it > b small { font-size: 9.5px !important; }
+#nfsb .x-it > button { min-height: 26px !important; font-size: 10.5px !important; white-space: nowrap; }
+#ongems .on-gbox > p, #ongems .on-gbox .x-note, #ongems p { font-size: 11.5px !important; margin: 2px 0 !important; }
+#ongems .on-packs { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)) !important; gap: 7px !important; }
+#ongems .on-pack { padding: 66px 6px 7px !important; border-radius: 13px !important; }
+#ongems .on-pack::before { width: 64px !important; height: 56px !important; top: 6px !important; }
+#ongems .on-pack b, #ongems .on-pack .on-gn { font-size: 14px !important; }
+#ongems .on-pack small { font-size: 9.5px !important; }
+#ongems .on-pack .on-price { min-height: 26px !important; font-size: 11.5px !important; }
+
+/* ---------------------------------------------------------------- 6) ROYAL PASS: ~28% smaller hero, perks, track and labels */
+#nfpb .px-ph { padding: 6px 10px !important; gap: 10px !important; border-radius: 14px !important; }
+#nfpb .px-ph h2 { font-size: 17px !important; }
+#nfpb .px-ph .px-meta { margin-top: 3px !important; gap: 4px !important; }
+#nfpb .px-ph .px-tag2 { font-size: 10px !important; padding: 2px 7px !important; }
+#nfpb .px-emb { transform: scale(.72); margin: -6px -4px !important; }
+#nfpb .px-tier { transform: scale(.78); transform-origin: center; margin: -6px 0 !important; }
+#nfpb .px-xpb { font-size: 10.5px !important; gap: 8px !important; }
+#nfpb .px-xpb > div { height: 8px !important; }
+#nfpb .px-prem { padding: 6px 10px !important; gap: 8px !important; border-radius: 13px !important; }
+#nfpb .px-prem h3 { font-size: 9.5px !important; }
+#nfpb .px-prem ul { gap: 2px 10px !important; }
+#nfpb .px-prem li { font-size: 10.5px !important; gap: 5px !important; line-height: 1.25 !important; }
+#nfpb .px-cta { min-height: 38px !important; padding: 0 14px !important; font-size: 13px !important; border-radius: 12px !important; }
+#nfpb .px-trk { gap: 6px !important; }
+#nfpb .px-lbl { width: 52px !important; grid-template-rows: 1fr 19px 1fr !important; gap: 4px !important; }
+#nfpb .px-lbl div { border-radius: 10px !important; font-size: 8px !important; gap: 2px !important; padding: 2px !important; letter-spacing: .06em !important; }
+#nfpb .px-lbl i { font-size: 14px !important; }
+#nfpb .px-row { gap: 6px !important; }
+#nfpb .px-col { width: 64px !important; grid-template-rows: 1fr 19px 1fr !important; gap: 4px !important; }
+#nfpb .px-node::before { left: -6px !important; right: -6px !important; height: 3px !important; margin-top: -1.5px !important; }
+#nfpb .px-node b { min-width: 20px !important; height: 16px !important; padding: 0 4px !important; font-size: 9px !important; border-radius: 8px !important; }
+#nfpb .px-rw { height: 68px !important; padding: 5px 3px 4px !important; border-radius: 10px !important; }
+#nfpb .px-rw .px-ri { top: 6px !important; font-size: 21px !important; }
+#nfpb .px-rw.ok .px-ri { top: 13px !important; }
+#nfpb .px-rw .px-ri svg { width: 30px !important; height: 30px !important; }
+#nfpb .px-rw small { font-size: 9px !important; }
+#nfpb .px-rw .px-rr { font-size: 7px !important; }
+#nfpb .px-rw.ok::before { font-size: 7.5px !important; padding: 1px 0 !important; }
+#nfpb .px-rw.lock::after { font-size: 9px !important; top: 3px !important; right: 3px !important; }
+#nfpb .px-rw.got::after { width: 14px !important; height: 14px !important; font-size: 9px !important; top: 3px !important; }
+#nfpb .px-scr { padding-bottom: 4px !important; }
+#nfpb .px-ms, #nfpb [class*="px-m"] .x-it { font-size: 11px; }
+#nfpb .px-m { padding: 5px 8px !important; min-height: 0 !important; gap: 8px !important; border-radius: 11px !important; }
+#nfpb .px-m b { font-size: 11.5px !important; }
+#nfpb .px-m small { font-size: 9.5px !important; }
+#nfpb .px-m button { min-height: 26px !important; font-size: 10.5px !important; padding: 0 9px !important; }
+#nfpb h3 { font-size: 11px !important; }
+
+/* team mode controls: compact */
+#menu .hm-c #tml { gap: 4px !important; }
+#menu .hm-c #tml .x-seg button { min-height: 23px !important; font-size: 10.5px !important; }
+#menu .hm-c #tml #tmc { font-size: 11px; }
+
+/* ---------------------------------------------------------------- 7) other panels: tighter rows, buttons and inputs (about 20% smaller) */
+@media (max-height: 500px) {
+  .x-ov:not(#menu) .x-box.p10b .x-btn { min-height: 34px !important; font-size: 13px !important; }
+  .x-ov:not(#menu) .x-box.p10b .x-btn.x-main { min-height: 38px !important; font-size: 15px !important; border-radius: 12px !important; }
+  .x-ov:not(#menu) .x-box.p10b .x-name, .x-ov:not(#menu) .x-box.p10b input[type="text"], .x-ov:not(#menu) .x-box.p10b input[type="search"], .x-ov:not(#menu) .x-box.p10b input:not([type]) { min-height: 34px !important; font-size: 13px !important; }
+  .x-ov:not(#menu) .x-box.p10b .x-seg button { min-height: 28px !important; font-size: 12px !important; }
+  .x-ov:not(#menu) .x-box.p10b .x-it { padding-top: 6px !important; padding-bottom: 6px !important; }
+  .x-ov:not(#menu) .x-box.p10b .x-it > b { font-size: 12.5px !important; }
+  .x-ov:not(#menu) .x-box.p10b .x-it > b small { font-size: 10.5px !important; }
+  .x-ov:not(#menu) .x-box.p10b .x-it > button { min-height: 30px !important; font-size: 11.5px !important; padding: 0 10px !important; }
+  #set .x-box.p10b > .x-set { min-height: 36px !important; padding: 4px 9px !important; }
+  #set .x-set > p { font-size: 11.5px !important; }
+  #set .x-set .x-seg button { min-height: 24px !important; font-size: 10.5px !important; }
+  #acct .x-st > *, #acct #pst > * { padding-top: 5px !important; padding-bottom: 5px !important; }
+  #acct .x-emo button { min-height: 0 !important; height: 40px !important; font-size: 22px !important; }
+  #achl .x-it, #nfstl .x-it, #nfml .x-it, #lgl .x-it { min-height: 0 !important; }
+  .x-ov:not(#menu) .x-box.p10b > p, .x-ov:not(#menu) .x-box.p10b li { font-size: 12.5px !important; }
+}
+
+/* ---------------------------------------------------------------- 8) every section's content ~30% denser (owner: "make everything inside the sections smaller") */
+@media (max-height: 500px) {
+  /* gem packs: all 6 on one row, art ~64px */
+  #ongems .on-packs { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 6px !important; }
+  #ongems .on-pack { padding: 64px 5px 6px !important; border-radius: 12px !important; gap: 2px !important; }
+  #ongems .on-pack::before { width: 66px !important; height: 56px !important; top: 5px !important; }
+  #ongems .on-pack * { font-size: 10px !important; }
+  #ongems .on-pack b, #ongems .on-pack strong, #ongems .on-pack .on-gn { font-size: 14px !important; }
+  #ongems .on-pack .on-price, #ongems .on-pack button { min-height: 24px !important; font-size: 11px !important; padding: 0 4px !important; }
+  #ongems .on-pack .on-tag { font-size: 7.5px !important; padding: 1px 5px !important; }
+  /* maps */
+  #mapl { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)) !important; gap: 6px !important; }
+  #mapl .x-it { padding: 0 0 5px !important; gap: 3px !important; border-radius: 11px !important; }
+  #mapl .x-it > i, #mapl .x-it > i.p10-mp { height: 52px !important; font-size: 24px !important; }
+  #mapl .x-it > b { font-size: 11.5px !important; padding: 0 6px !important; }
+  #mapl .x-it > b small { font-size: 9px !important; }
+  #mapl .x-it > button { min-height: 24px !important; font-size: 10.5px !important; margin: 0 6px !important; max-width: calc(100% - 12px) !important; }
+  #mapl .mp-lk { font-size: 13px !important; top: 4px !important; }
+  /* list rows used by modes, story, achievements, league, inbox, friends */
+  #nfml, #nfstl, #achl, #inbl, #inbq, #lgl, #frl { gap: 5px !important; }
+  #nfml .x-it, #nfstl .x-it, #achl .x-it, #lgl .x-it, #inbl .x-it, #inbq .x-it, #frl .x-it, #nfmodes .x-it, #nfstory .x-it, #achs .x-it, #league .x-it, #inbox .x-it { min-height: 0 !important; padding: 4px 8px !important; gap: 8px !important; border-radius: 10px !important; }
+  #nfmodes .x-it > i, #nfstory .x-it > i, #achs .x-it > i, #league .x-it > i, #inbox .x-it > i { font-size: 18px !important; width: 26px !important; height: 26px !important; flex: none; display: grid; place-items: center; font-style: normal; }
+  #nfmodes .x-it > b, #nfstory .x-it > b, #achs .x-it > b, #league .x-it > b, #inbox .x-it > b { font-size: 11.5px !important; line-height: 1.2 !important; }
+  #nfmodes .x-it > b small, #nfstory .x-it > b small, #achs .x-it > b small, #league .x-it > b small, #inbox .x-it > b small { font-size: 9.5px !important; }
+  #nfmodes .x-it > button, #nfstory .x-it > button, #achs .x-it > button, #league .x-it > button, #inbox .x-it button { min-height: 25px !important; font-size: 10.5px !important; padding: 0 9px !important; }
+  #achs .x-it .x-lvb, #achs .x-it progress, #achs .x-it [class*="bar"] { height: 4px !important; }
+  #achs h3, #league h3, #nfstory h3, #nfmodes h3 { font-size: 10.5px !important; margin: 2px 0 !important; }
+  /* leaderboard + friends */
+  .on-lb { gap: 4px !important; }
+  .on-lb li { min-height: 0 !important; padding: 3px 8px !important; font-size: 12px !important; gap: 8px !important; }
+  .on-lb li > i { font-size: 15px !important; }
+  .on-lb li .on-av { font-size: 16px !important; width: 24px; height: 24px; display: inline-grid; place-items: center; }
+  .on-lb li .on-av .x-avi { width: 24px !important; height: 24px !important; }
+  .on-lb li b { font-size: 12px !important; } .on-lb li b small { font-size: 9.5px !important; } .on-lb li em { font-size: 11.5px !important; }
+  #onlb .on-me { padding: 4px 10px !important; font-size: 12px !important; }
+  #onlb .x-seg button, #onfr .x-seg button, #onlb .on-tabs button, #onfr .on-tabs button { min-height: 26px !important; font-size: 11.5px !important; }
+  #onfr .on-list > * { padding: 4px 8px !important; min-height: 0 !important; font-size: 12px !important; }
+  #onfr .x-row, #onfr .on-add { gap: 6px !important; }
+  #onfr input { min-height: 32px !important; height: 32px !important; font-size: 12.5px !important; }
+  #onfr .x-btn.x-main { min-height: 32px !important; font-size: 13px !important; }
+  #onfr .on-list > p, #onfr .x-note { font-size: 11px !important; }
+  /* league */
+  #league .x-box.p10b > .x-btn.x-main { min-height: 34px !important; min-width: 180px !important; font-size: 14px !important; }
+  /* inbox */
+  #inbox .x-row .x-btn { min-height: 30px !important; font-size: 12px !important; }
+  #inbox .x-note, #inbox p { font-size: 11px !important; }
+  /* settings */
+  #set .x-box.p10b { gap: 5px 8px !important; }
+  #set .x-box.p10b > .x-set { min-height: 32px !important; padding: 3px 8px !important; border-radius: 10px !important; }
+  #set .x-set > p { font-size: 10.5px !important; }
+  #set .x-box.p10b .x-set .x-seg button { min-height: 22px !important; font-size: 10px !important; padding: 0 5px !important; }
+  #set .x-sens b { font-size: 10.5px !important; }
+  #set .x-box.p10b > #privL { padding: 5px 14px !important; min-height: 28px !important; font-size: 11.5px !important; }
+  /* account */
+  #acct #pst { gap: 6px !important; }
+  #acct #pst > div { padding: 4px 4px !important; border-radius: 10px !important; min-height: 0 !important; }
+  #acct #pst > div b { font-size: 15px !important; }
+  #acct #pst > div span { font-size: 8.5px !important; }
+  #acct #pst > div::before { transform: scale(.75); }
+  #acct .x-emo { gap: 4px !important; }
+  #acct .x-emo button { height: 32px !important; font-size: 18px !important; border-radius: 8px !important; }
+  #acct #pcard { min-height: 0 !important; padding: 4px 8px !important; }
+  #acct .x-btn { min-height: 30px !important; font-size: 12px !important; }
+  #acct .x-btn.x-main { min-height: 34px !important; font-size: 14px !important; }
+  #acct p { font-size: 11.5px !important; margin: 2px 0 !important; }
+  #acct .x-pid { font-size: 11px !important; }
+  /* game over */
+  #over .x-box.p10b { row-gap: 5px !important; column-gap: 10px !important; }
+  #over .p10-hd h2 { font-size: 18px !important; }
+  #over .px-rank { transform: scale(.8); margin: -6px 0 !important; }
+  #over .x-res { gap: 5px !important; }
+  #over .x-res > div { padding: 4px 3px !important; border-radius: 10px !important; }
+  #over .x-res b { font-size: 17px !important; }
+  #over .x-res span, #over .x-res small { font-size: 9.5px !important; }
+  #over #pxrews > * { padding: 4px 9px !important; font-size: 11.5px !important; }
+  #over .x-btn.x-main { min-height: 36px !important; font-size: 15px !important; }
+  #over .x-btn.x-sub { min-height: 30px !important; font-size: 12px !important; }
+  #over p, #over small { font-size: 11px !important; }
+  /* royal shop extra */
+  #nfsb .px-feat .px-pv { height: 50px !important; }
+}
+
+/* ---------------------------------------------------------------- 9) profile photo picker */
+.p11-phm { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgba(2, 6, 20, .72); padding: 10px; }
+.p11-phm.x-hide { display: none !important; }
+.p11-phc { width: min(320px, 100%); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 14px 14px; border-radius: 16px; background: var(--p10-pn); border: 1px solid var(--p10-bd); box-shadow: var(--p10-gl); color: #fff; text-align: center; }
+.p11-phc h3 { margin: 0; font: 800 15px/1.2 var(--sans); color: #fff3d0; }
+.p11-php { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; font-size: 40px; overflow: hidden; background: radial-gradient(circle at 40% 30%, #2a4c9a, #0b1a44); box-shadow: 0 0 0 2px #0a1a3a, 0 0 0 4px #4fe3ff, 0 0 16px rgba(79, 227, 255, .5); }
+.p11-php img { width: 100%; height: 100%; object-fit: cover; }
+.p11-phc .x-btn { width: 100% !important; min-height: 36px !important; font-size: 14px !important; margin: 0 !important; }
+.p11-phc .x-btn.x-sub { min-height: 30px !important; font-size: 12px !important; }
+.p11-phc small { font-size: 10.5px; color: #8ea6d6; }
+#menu .hm-top .x-chip .px-av { cursor: pointer; }
+#menu .hm-top .x-chip .px-av::after { content: ""; position: absolute; right: -3px; top: -3px; width: 13px; height: 13px; border-radius: 50%; background: #4fe3ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 5h2l1-1.5h4L11 5h2v7H3z' fill='none' stroke='%23062033' stroke-width='1.5'/%3E%3Ccircle cx='8' cy='8.5' r='2' fill='none' stroke='%23062033' stroke-width='1.5'/%3E%3C/svg%3E") center / 10px no-repeat; box-shadow: 0 0 0 1.5px #0a1a3a; }
+.p11-acph { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 10px; box-sizing: border-box; border-radius: 12px; background: var(--p10-cd); border: 1px solid rgba(79, 227, 255, .25); }
+.p11-acph .p11-php { width: 44px; height: 44px; font-size: 24px; flex: none; }
+.p11-acph .x-btn { flex: 1 1 auto; width: auto !important; min-height: 32px !important; font-size: 13px !important; margin: 0 !important; }
+.p11-emd { width: 100%; }
+.p11-emd > summary { cursor: pointer; font: 700 11.5px/1.3 var(--sans); color: #9fe8ff; padding: 4px 0; list-style: none; }
+.p11-emd > summary::-webkit-details-marker { display: none; }
+.p11-emd > summary::before { content: "▸ "; } .p11-emd[open] > summary::before { content: "▾ "; }
+#xsec.p11-gone, #impgo, #impv, #onmig, #login .x-note[data-i18n="memNote"] { display: none !important; }
+.p11-hl { outline: 2px solid #ffe08a !important; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(255, 224, 138, .25), 0 0 22px rgba(255, 210, 80, .7) !important; }
 
 </style>
 </body>
