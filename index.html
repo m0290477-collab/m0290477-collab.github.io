@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co; media-src 'none'; object-src 'none'; frame-src 'self'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
     <meta name="referrer" content="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>Super Snake</title>
@@ -252,7 +252,7 @@
       .x-segw button { flex: 1 1 30%; }
       .x-langpop .x-seg { padding: 4px; gap: 4px; border-radius: var(--r-s); background: rgba(16, 19, 18, .97); border: 1px solid var(--x-ln); }
       .x-langpop .x-segw button { flex-basis: 100%; border-radius: 8px; color: var(--x-tx); font-weight: 500; text-align: start; padding: 0 12px; }
-      .x-langpop .x-segw button:hover { background: rgba(230, 225, 210, .1); }
+      @media (hover: hover) and (pointer: fine) { .x-langpop .x-segw button:hover { background: rgba(230, 225, 210, .1); } }
       .x-langpop .x-segw button.on { background: #2f2a1c; color: #e3c46e; box-shadow: inset 0 0 0 1px rgba(201, 165, 74, .5); }
       .x-lang.x-hide .x-globe, .x-lang.x-hide .x-langpop { display: none; }
       .x-stu .x-sbar { padding-inline-end: 60px; }
@@ -275,11 +275,11 @@
       .x-btn { border: 1px solid var(--x-ln); background: var(--x-ch); color: var(--x-tx); box-shadow: none; font-size: 16px; font-weight: 500; border-radius: var(--r-s);
         display: inline-flex; align-items: center; justify-content: center; gap: 10px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
         transition: transform var(--dur-quick, .15s) var(--ease-out, ease-out), border-color .2s, background .2s; }
-      .x-btn:hover { border-color: rgba(201, 165, 74, .55); background: rgba(30, 36, 33, .75); }
+      @media (hover: hover) and (pointer: fine) { .x-btn:hover { border-color: rgba(201, 165, 74, .55); background: rgba(30, 36, 33, .75); } }
       .x-btn:active { transform: scale(.97); background: rgba(46, 91, 69, .5); }
       .x-btn.x-sub { font-size: 15px; background: rgba(16, 19, 18, .45); border-color: var(--x-ln); }
       .x-btn.x-main { min-height: 56px; font-size: 18px; font-weight: 600; letter-spacing: .06em; border-color: var(--x-gold); background: linear-gradient(180deg, #2f5a45, #1d3a2c); box-shadow: 0 8px 30px rgba(0, 0, 0, .35); }
-      .x-btn.x-main:hover { background: linear-gradient(180deg, #376a51, #224434); }
+      @media (hover: hover) and (pointer: fine) { .x-btn.x-main:hover { background: linear-gradient(180deg, #376a51, #224434); } }
       .x-btn.x-play { min-height: 72px; font-size: 22px; letter-spacing: .2em; }
       .x-ic { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
       .x-ov .x-seg, .x-ov .x-tabs button, .x-ov .x-name, .x-ov .x-it, .x-ov .x-chip, .x-ov .x-res div, .x-ov .x-emo button, .x-ov .x-prev, .x-globe, .x-glass {
@@ -290,7 +290,7 @@
       .x-ov .x-name { font-size: 16px; color: var(--x-tx); }
       .x-ov .x-name:focus { border-color: var(--x-gold); box-shadow: 0 0 0 3px rgba(201, 165, 74, .15); }
       .x-ov .x-tabs button { color: var(--x-tx); font-weight: 500; transition: border-color .2s, transform var(--dur-quick, .15s); }
-      .x-ov .x-tabs button.on, .x-ov .x-tabs button:hover { border-color: var(--x-gold); box-shadow: none; }
+      .x-ov .x-tabs button.on { border-color: var(--x-gold); box-shadow: none; }
       .x-ov .x-tabs button:active { transform: scale(.97); }
       .x-ltabs { display: grid; grid-template-columns: repeat(4, 1fr); }
       .x-ltabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 64px; font-size: 12px; }
@@ -953,7 +953,7 @@
       #menu .x-prev { height: 84px; border-radius: 16px; background: radial-gradient(120% 140% at 50% 120%, rgba(231, 198, 106, .18), transparent 60%), linear-gradient(180deg, rgba(20, 24, 22, .85), rgba(8, 10, 9, .85)); border: 1px solid rgba(255, 220, 130, .22); }
       #menu .x-glass { border: 1px solid rgba(255, 226, 160, .16); background: linear-gradient(180deg, rgba(20, 23, 22, .72), rgba(10, 12, 11, .78)); box-shadow: 0 20px 50px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .06); }
       #menu .x-ltabs button { border-radius: 14px; background: linear-gradient(180deg, rgba(36, 40, 38, .85), rgba(14, 16, 15, .85)); }
-      #menu .x-ltabs button:hover { border-color: rgba(255, 216, 110, .6); }
+      @media (hover: hover) and (pointer: fine) { #menu .x-ltabs button:hover { border-color: rgba(255, 216, 110, .6); } }
       @media (min-width: 600px) and (orientation: landscape) {
         .x-ov .x-box.x-lob { column-gap: 28px; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); align-items: start; }
       }
@@ -1636,8 +1636,9 @@
         <p class="on-gsub" data-i18n="onGemsSub">Instant gems for your account — secure checkout</p>
         <div class="on-gbal" id="ongbal"></div>
         <div class="on-packs" id="ongp"></div>
-        <p class="on-gnote x-hide" id="ongtn" data-i18n="onTestNote">Test mode</p>
-        <p class="on-gnote" data-i18n="onSecure">Payments by Stripe</p>
+        <p class="on-gnote x-hide" id="ongtn" hidden></p>
+        <p class="on-gnote on-terms" data-i18n="onSecure2">🔒 Secure payment by Stripe.</p>
+        <p class="on-glinks"><button type="button" data-legal="terms" data-i18n="n13Terms">Terms</button><span aria-hidden="true">·</span><button type="button" data-legal="privacy" data-i18n="n13Privacy">Privacy</button><span aria-hidden="true">·</span><button type="button" data-legal="support" data-i18n="n13Support">Support</button></p>
         <p class="x-err" id="ongm" role="alert"></p>
         <button class="x-btn x-sub" data-go="nfonback" data-i18n="back">Back</button>
       </div></div>
@@ -9722,7 +9723,7 @@
           const money = (c, cur) => { try { return new Intl.NumberFormat(LANG === "ar" ? "ar-u-nu-latn" : LANG, { style: "currency", currency: (cur || "usd").toUpperCase() }).format(c / 100); } catch (e) { return "$" + (c / 100).toFixed(2); } };
           function paintGems() {
             const pk = (o.packs && o.packs.packs) || [], test = o.packs && o.packs.mode === "test";
-            $("ongtest").classList.toggle("x-hide", !test); $("ongtn").classList.toggle("x-hide", !test);
+            $("ongtest").classList.toggle("x-hide", !(test && !!(o.st && o.st.profile && +o.st.profile.player_id === 1))); $("ongtn").classList.add("x-hide");
             $("ongbal").innerHTML = o.on ? `<span class="px-pill g">${num(P.gems)} 💎</span>` : `<button type="button" class="x-btn x-sub" data-go="nfonsignin">${esc(_t("onSignBuy"))}</button>`;
             const gems = ["💎", "💎💎", "💰", "🧰", "👑", "🏰"];
             $("ongp").innerHTML = pk.map((p, i) => `<button type="button" class="on-pack r${Math.min(5, i)}${i === 2 ? " pop" : ""}${i === pk.length - 1 ? " best" : ""}" data-pid="${esc(p.product_id)}" style="--d:${(i * 0.06).toFixed(2)}s">` +
@@ -10865,7 +10866,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13m" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13n" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -11381,7 +11382,7 @@
           function pPlate() {
             const id = tryv(() => NX.eq.sk, ""), it = id && id !== "photo" ? tryv(() => ITEMS[id], null) : null;
             let nm, r;
-            if (it) { nm = _t(id); if (nm === id) nm = _t("nfI_" + id); r = it.r | 0; } else { nm = tryv(() => SKINS[skin].n, ""); r = tryv(() => (SKINS[skin].p ? (SKINS[skin].p > 1500 ? 2 : 1) : 0), 0); }
+            if (id === "photo") { nm = _t("nfPhT"); r = 0; } else if (it) { nm = _t(id); if (nm === id) nm = _t("nfI_" + id); r = it.r | 0; } else { nm = tryv(() => SKINS[skin].n, ""); r = tryv(() => (SKINS[skin].p ? (SKINS[skin].p > 1500 ? 2 : 1) : 0), 0); }
             $("b13hpl").innerHTML = `<span class="h-rar r${r}">${esc(_t("nfR" + r))}</span><b class="h-nmk">${esc(nm)}</b>`;
           }
           // build13j: premium living hero snake (equipped skin, shaded tube, breathing + S-sway, coil drift, blink, tongue flick,
@@ -12382,11 +12383,11 @@
           $("kprof").addEventListener("click", async (e) => {
             const t = e.target.closest("[data-ktab]"); if (t) { PF.tab = t.dataset.ktab; PF.pick = null; pfPaint(); toTop("kprof"); return; }
             const m = e.target.closest("[data-km]");
-            if (m && PF.pick) { const id = m.dataset.km, i = PF.pick.indexOf(id); if (i >= 0) PF.pick.splice(i, 1); else if (PF.pick.length < 6) PF.pick.push(id); pfPaint(); return; }
+            if (m && PF.pick) { const id = m.dataset.km, i = PF.pick.indexOf(id); if (i >= 0) PF.pick.splice(i, 1); else if (PF.pick.length < 12) PF.pick.push(id); else toast(_t("kPickMax")); pfPaint(); return; }
             if (m) { const id = m.dataset.km, at = tv(() => PF.md.earned.find((x) => x.id === id).at, null);
               B13.pop(`<div class="k-mdd">${mImg(id, "big")}<h3 class="h-disp">${esc(_t("km_" + id))}</h3><p>${esc(_t("km_" + id + "_d"))}</p><p class="${at ? "ok" : "lk"}">${at ? esc(_t("kEarned", { d: fmtD(at) })) : "🔒 " + esc(_t("kLocked"))}</p><button type="button" class="x-btn x-sub" data-b13x="1">${esc(_t("back"))}</button></div>`); return; }
             const g = e.target.closest("[data-kgo]"); if (!g) return; const a = g.dataset.kgo;
-            if (a === "manage") { PF.tab = "m"; PF.pick = (tv(() => PF.md.shown, []) || []).slice(0, 6); pfPaint(); }
+            if (a === "manage") { PF.tab = "m"; PF.pick = (tv(() => PF.md.shown, []) || []).slice(0, 12); pfPaint(); }
             else if (a === "cancelpick") { PF.pick = null; pfPaint(); }
             else if (a === "savepick") { g.disabled = true; try { const r = await ON.rpc("set_medals_shown", { p_ids: PF.pick }); PF.md.shown = r.shown || PF.pick; PF.pick = null; toast(_t("kSaved")); } catch (er) { toast(errT(er)); } pfPaint(); }
             else if (a === "set") K.openSettings();
@@ -12491,8 +12492,8 @@
               const pr = ST.purch, lg = ST.ledger;
               h += (window.__SM && __SM.on ? __SM.moreHTML() : "") + `<section class="k-sec"><h4>${esc(_t("kPurch"))}</h4><div class="k-list">${pr === null ? "…" : pr.length ? pr.map((x) => `<div class="k-li"><span><b>${esc(String(x.product || "").replace(/^web\./, ""))}</b><small>${esc(fmtD(x.at, 1))}${x.env && x.env !== "live" ? " · TEST" : ""}</small></span><span dir="ltr">${x.amount_cents ? "$" + (x.amount_cents / 100).toFixed(2) : ""} · ${esc(x.status)}</span></div>`).join("") : `<p class="k-note">${esc(_t("kNoPurch"))}</p>`}</div>` +
                 `<h4>${esc(_t("kWalletLog"))}</h4><div class="k-list">${lg === null ? "…" : (lg || []).slice(0, 25).map((x) => `<div class="k-li"><span><b>${esc(I18N["tx_" + x.reason] ? _t("tx_" + x.reason) : x.reason)}</b><small>${esc(fmtD(x.created_at || x.at, 1))}</small></span><span dir="ltr" class="${x.delta < 0 ? "neg" : "pos"}">${x.delta > 0 ? "+" : ""}${nf(x.delta)} ${x.currency === "gems" ? "💎" : "🪙"}</span></div>`).join("")}</div></section>` +
-                `<section class="k-sec"><h4>${esc(_t("kHelp"))}</h4><textarea id="kshelp" rows="3" maxlength="500" dir="auto" placeholder="${esc(_t("kHelpPh"))}"></textarea><div class="k-inl"><button type="button" class="x-btn x-main" data-kset="help">${esc(_t("kSend"))}</button></div><p class="x-err" id="kshm" role="alert"></p></section>` +
-                `<section class="k-sec"><div class="k-inl"><a class="x-btn x-sub" href="/privacy.html" target="_blank" rel="noopener">${esc(_t("kTerms"))} ↗</a>${isOwner() ? `<button type="button" class="x-btn x-sub" data-kset="adm">🛡️ ${esc(_t("kAdmin"))}</button>` : ""}</div></section>`;
+                `<section class="k-sec"><h4>${esc(_t("kHelp"))}</h4><textarea id="kshelp" rows="3" maxlength="500" dir="auto" placeholder="${esc(_t("kHelpPh"))}"></textarea><div class="k-inl"><button type="button" class="x-btn x-main" data-kset="help">${esc(_t("kSend"))}</button></div><p class="x-err" id="kshm" role="alert"></p><div id="ksmine"></div></section>` +
+                `<section class="k-sec"><div class="k-inl"><button type="button" class="x-btn x-sub" data-legal="terms">${esc(_t("n13Terms"))} ↗</button><button type="button" class="x-btn x-sub" data-legal="privacy">${esc(_t("n13Privacy"))} ↗</button>${isOwner() ? `<button type="button" class="x-btn x-sub" data-kset="adm">🛡️ ${esc(_t("kAdmin"))}</button>` : ""}</div></section>`;
             }
             b.innerHTML = h + "</div>";
             try { window.__SM && __SM.on && __SM.setPainted(ST.sec); } catch (_) {}
@@ -12548,7 +12549,7 @@
             else if (a === "bio") busy(async () => { msg("ksbiom", ""); try { const r = await ON.rpc("set_profile_extra", { p_bio: $("ksbio").value }); const p = me(); if (p) p.bio = r.bio; $("ksbio").value = r.bio; toast(_t("kSaved")); } catch (er) { const c = er.code || er.message; msg("ksbiom", c === "bio_links" ? _t("kBioLinks") : c === "bio_too_long" ? "150" : errT(er)); } });
             else if (a === "cc") busy(async () => { try { const r = await ON.rpc("set_profile_extra", { p_country: $("kscc").value }); const p = me(); if (p) p.country = r.country; toast(_t("kSaved")); } catch (er) { toast(errT(er)); } });
             else if (a === "unb") busy(async () => { try { await ON.rpc("unblock_user", { p_user: b.dataset.id }); ST.blocked = ST.blocked.filter((x) => x.id !== b.dataset.id); setPaint(); } catch (er) { toast(errT(er)); } });
-            else if (a === "help") busy(async () => { const t = $("kshelp").value.trim(); msg("kshm", ""); try { await ON.rpc("support_request", { p_text: t }); $("kshelp").value = ""; msg("kshm", _t("kHelpSent"), 1); } catch (er) { msg("kshm", errT(er)); } });
+            else if (a === "help") busy(async () => { const t = $("kshelp").value.trim(); msg("kshm", ""); try { await ON.rpc("support_request", { p_text: t }); $("kshelp").value = ""; msg("kshm", _t("kHelpSent"), 1); try { window.__n13supAfterSend && __n13supAfterSend(); } catch (_) {} } catch (er) { msg("kshm", errT(er)); } });
             else if (a === "controls") { back = "menu"; show("set"); }
             else if (a === "prof") K.openProfile("p");
             else if (a === "adm") K.openAdmin();
@@ -12641,7 +12642,7 @@
             (acts && b.active ? `<div class="k-inl"><button type="button" class="x-btn x-sub" data-ka="lift" data-id="${b.id}">${esc(_t("kaUnban"))}</button><button type="button" class="x-btn x-sub" data-ka="editban" data-id="${b.id}">${esc(_t("kaEditBan"))}</button></div>` : "") + `</div>`;
           const admPaintK = () => {
             const b = $("kadmb"); if (!b) return;
-            const tabs = [["dash", "kaDash"], ["players", "kaPlayers"], ["bans", "kaBans"], ["reports", "kaReports"], ["log", "kaLog"], ["ann", "kaAnn"]];
+            const tabs = [["dash", "kaDash"], ["players", "kaPlayers"], ["bans", "kaBans"], ["reports", "kaReports"], ["sup", "kaSupport"], ["log", "kaLog"], ["ann", "kaAnn"]];
             let h = `<div class="k-tabs k-atabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" role="tab" data-katab="${k}" class="${AD.tab === k ? "on" : ""}">${esc(_t(l))}</button>`).join("")}<button type="button" class="k-ref" data-ka="refresh" aria-label="${esc(_t("kaRefresh"))}">↻</button></div><div class="k-abody">`;
             if (AD.tab === "dash") { const d = AD.dash;
               h += d ? `<div class="k-dash">${[["kaDau", d.dau], ["kaWau", d.wau], ["kaPlayersN", d.players], ["kaMatches", d.matches_today], ["kaMatches7", d.matches_7d], ["kaSignups", d.signups_today], ["kaSignups7", d.signups_7d], ["kaRevTest", money(d.revenue_test_cents)], ["kaRevLive", money(d.revenue_live_cents)], ["kaActBans", d.active_bans], ["kaActMutes", d.active_mutes], ["kaOpenRep", d.open_reports]].map(([l, v]) => `<span class="k-st"><b dir="ltr">${typeof v === "number" ? nf(v) : esc(v)}</b><small>${esc(_t(l))}</small></span>`).join("")}</div><p class="k-note">${esc(fmtD(d.as_of, 1))}</p>` : "…";
@@ -12669,6 +12670,14 @@
             } else if (AD.tab === "reports") {
               h += AD.reps === null ? "…" : AD.reps.length ? AD.reps.map((r) => `<div class="k-ban1"><div><b>${esc(r.reason === "support" ? _t("kaSupport") : r.reason)}</b> <small dir="auto">${esc(r.reporter || "?")} → ${esc(r.reported || "?")} ${r.reported_pid ? "#" + r.reported_pid : ""}</small></div><p dir="auto">${esc(r.details || "")}${r.message ? ` <i>“${esc(r.message)}”</i>` : ""}</p><small>${esc(fmtD(r.at, 1))}</small>` +
                 `<div class="k-inl">${r.reported_id && r.reason !== "support" ? `<button type="button" class="x-btn x-sub" data-ka="user" data-id="${esc(r.reported_id)}">${esc(_t("kaOpen"))}</button>` : ""}<button type="button" class="x-btn x-sub" data-ka="rep" data-st="actioned" data-id="${r.id}">✓ ${esc(_t("kaActioned"))}</button><button type="button" class="x-btn x-sub" data-ka="rep" data-st="dismissed" data-id="${r.id}">${esc(_t("kaDismiss"))}</button></div></div>`).join("") : `<p class="k-note">${esc(_t("kaNoRep"))}</p>`;
+            } else if (AD.tab === "sup") {
+              const sst = AD.supSt || "open";
+              h += `<div class="k-inl k-supf">${["open", "done", "all"].map((k) => `<button type="button" class="x-btn ${sst === k ? "x-main" : "x-sub"}" data-ka="supst" data-st="${k}">${esc(_t("kaSup_" + k))}</button>`).join("")}</div>` +
+                (AD.sup == null ? "…" : AD.sup.length ? AD.sup.map((r) => `<div class="k-ban1 k-sup"><div><b><bdi>${esc(r.username || "?")}</bdi></b> ${r.player_id ? tv(() => J.rid(r.player_id), "#" + r.player_id) : ""} <span class="k-pill">${esc(_t(r.status === "open" ? "kaSup_open" : "kaSup_done"))}</span></div>` +
+                  `<p dir="auto">${esc(r.text || "")}</p><small>${esc(fmtD(r.at, 1))}</small>${r.reply ? `<p class="k-cur" dir="auto">↩ ${esc(r.reply)}</p>` : ""}` +
+                  `<div class="k-inl"><input id="ksr${r.id}" maxlength="1000" dir="auto" placeholder="${esc(_t("kaSupPh"))}"><button type="button" class="x-btn x-main" data-ka="supreply" data-id="${r.id}">${esc(_t("kaSupSend"))}</button></div>` +
+                  `<div class="k-inl">${r.status === "open" ? `<button type="button" class="x-btn x-sub" data-ka="supdone" data-id="${r.id}">✓ ${esc(_t("kaSupDone"))}</button>` : `<button type="button" class="x-btn x-sub" data-ka="supopen" data-id="${r.id}">${esc(_t("kaSupReopen"))}</button>`}` +
+                  `${r.user_id ? `<button type="button" class="x-btn x-sub" data-ka="user" data-id="${esc(r.user_id)}">${esc(_t("kaOpen"))}</button>` : ""}</div></div>`).join("") : `<p class="k-note">${esc(_t("kaSupNone"))}</p>`);
             } else if (AD.tab === "log") {
               h += AD.log === null ? "…" : `<div class="k-list">${AD.log.map((l) => `<div class="k-li"><span><b>${esc(l.action)}</b> <small dir="auto">${esc(l.admin || "")} → ${esc(l.target || "—")}</small><small dir="ltr" class="k-det">${esc(JSON.stringify(l.details || {}).slice(0, 180))}</small></span><small>${esc(fmtD(l.at, 1))}</small></div>`).join("")}</div>`;
             } else {
@@ -12685,6 +12694,7 @@
               else if (AD.tab === "players") { if (AD.user) AD.user = await ON.rpc("adm2_user", { p_user: AD.user.id }); else AD.users = await ON.rpc("adm2_users", { p_query: AD.q, p_limit: 100 }); }
               else if (AD.tab === "bans") AD.bans = await ON.rpc("adm2_bans", { p_user: null, p_active: !AD.bansAll });
               else if (AD.tab === "reports") AD.reps = await ON.rpc("adm2_reports", { p_status: "open" });
+              else if (AD.tab === "sup") AD.sup = await ON.rpc("adm2_support", { p_status: AD.supSt || "open" });
               else if (AD.tab === "log") AD.log = await ON.rpc("adm2_log", { p_limit: 150 });
               else if (AD.tab === "ann") AD.ann = await ON.rpc("get_announcement");
             } catch (e) { toast(aErr(e)); }
@@ -12747,6 +12757,10 @@
             else if (a === "photo" && u) askDialog(_t("kaResetPh"), "", (r) => ON.rpc("adm2_reset_photo", { p_user: u.id, p_reason: r }));
             else if (a === "grant" && u) askDialog(_t("kaGrant"), `<div class="k-inl"><label class="k-lab">🪙 <input id="kagc" type="number" value="0" dir="ltr"></label><label class="k-lab">💎 <input id="kagg" type="number" value="0" dir="ltr"></label></div>`, (r) => ON.rpc("adm2_grant", { p_user: u.id, p_coins: +$("kagc").value || 0, p_gems: +$("kagg").value || 0, p_reason: r }));
             else if (a === "vip" && u) askDialog(_t("kaVip"), `<div class="k-inl"><input id="kavn" type="number" min="2" max="50" placeholder="2–50" dir="ltr" value="${u.vip_id || ""}"><small class="k-note">${esc(_t("kaVipRm"))}: 0</small></div>`, (r) => { const n = +$("kavn").value || 0; return ON.rpc("adm2_vip", { p_user: u.id, p_num: n >= 2 ? n : null, p_reason: r }); });
+            else if (a === "supst") { AD.supSt = b.dataset.st; AD.sup = null; admPaintK(); admLoadK(); }
+            else if (a === "supreply" || a === "supdone" || a === "supopen") { const id = +b.dataset.id, inp = $("ksr" + id), txt = a === "supreply" ? (inp ? inp.value.trim() : "") : null;
+              if (a === "supreply" && !txt) { if (inp) inp.focus(); return; } b.disabled = true;
+              try { await ON.rpc("adm2_support_reply", { p_id: id, p_reply: txt, p_done: a !== "supopen" }); if (a === "supreply") toast(_t("kaSupSent")); admLoadK(); } catch (er) { toast(aErr(er)); b.disabled = false; } }
             else if (a === "rep") { b.disabled = true; try { await ON.rpc("adm2_resolve", { p_report: +b.dataset.id, p_status: b.dataset.st, p_resolution: "" }); admLoadK(); } catch (er) { toast(aErr(er)); b.disabled = false; } }
             else if (a === "annon" || a === "annoff") { b.disabled = true; try { await ON.rpc("adm2_announce", { p_message: $("kaannt").value, p_hours: +$("kaannh").value || 24, p_on: a === "annon" }); toast(_t("kaDone")); annAt = 0; admLoadK(); } catch (er) { toast(aErr(er)); } b.disabled = false; }
           });
@@ -13267,6 +13281,148 @@
             if (LANG !== lang0) { lang0 = LANG; so.setLang(LANG); evPaint(); }
             try { paintDots(); } catch (_) {}
           }, 1000);
+        }
+        try { Object.assign(I18N, {"n13Terms": ["الشروط", "Terms", "Şartlar", "Conditions", "Términos", "शर्तें"], "n13Privacy": ["الخصوصية", "Privacy", "Gizlilik", "Confidentialité", "Privacidad", "गोपनीयता"], "n13Support": ["الدعم", "Support", "Destek", "Assistance", "Soporte", "सहायता"], "n13OpenTab": ["افتح في تبويب جديد", "Open in a new tab", "Yeni sekmede aç", "Ouvrir dans un nouvel onglet", "Abrir en una pestaña nueva", "नए टैब में खोलें"], "n13MyMsgs": ["رسائلك", "Your messages", "Mesajların", "Tes messages", "Tus mensajes", "आपके संदेश"], "n13StOpen": ["قيد المراجعة", "Open", "Açık", "En cours", "Abierto", "खुला"], "n13StDone": ["تمت", "Done", "Tamamlandı", "Traité", "Resuelto", "पूरा"], "onE_support_too_short": ["اكتب حرفين على الأقل", "Please write at least 2 characters", "En az 2 karakter yaz", "Écris au moins 2 caractères", "Escribe al menos 2 caracteres", "कम से कम 2 अक्षर लिखें"], "onE_support_too_long": ["الرسالة أطول من 500 حرف", "Your message is longer than 500 characters", "Mesajın 500 karakterden uzun", "Ton message dépasse 500 caractères", "Tu mensaje supera los 500 caracteres", "आपका संदेश 500 अक्षरों से लंबा है"], "onE_bad_text": ["اكتب حرفين على الأقل", "Please write at least 2 characters", "En az 2 karakter yaz", "Écris au moins 2 caractères", "Escribe al menos 2 caracteres", "कम से कम 2 अक्षर लिखें"], "kHelpPh": ["اكتب رسالتك أو المشكلة (2–500 حرف)", "Write your message or the problem (2–500 characters)", "Mesajını veya sorunu yaz (2–500 karakter)", "Écris ton message ou le problème (2–500 caractères)", "Escribe tu mensaje o el problema (2–500 caracteres)", "अपना संदेश या समस्या लिखें (2–500 अक्षर)"], "kPick": ["اختر حتى 12 وساماً لعرضها في ملفك", "Choose up to 12 medals to show on your profile", "Profilinde göstermek için en fazla 12 madalya seç", "Choisis jusqu'à 12 médailles pour ton profil", "Elige hasta 12 medallas para tu perfil", "प्रोफ़ाइल पर दिखाने के लिए 12 तक पदक चुनें"], "kTerms": ["الشروط والخصوصية", "Terms & privacy", "Şartlar ve gizlilik", "Conditions et confidentialité", "Términos y privacidad", "शर्तें और गोपनीयता"], "kaSupport": ["الدعم", "Support", "Destek", "Support", "Soporte", "सहायता"], "kaSup_open": ["مفتوحة", "Open", "Açık", "Ouverts", "Abiertos", "खुले"], "kaSup_done": ["تمت", "Done", "Tamam", "Traités", "Resueltos", "पूरे"], "kaSup_all": ["الكل", "All", "Tümü", "Tous", "Todos", "सभी"], "kaSupPh": ["اكتب ردك…", "Write a reply…", "Yanıt yaz…", "Écrire une réponse…", "Escribe una respuesta…", "जवाब लिखें…"], "kaSupSend": ["أرسل الرد", "Send reply", "Yanıtla", "Répondre", "Responder", "जवाब भेजें"], "kaSupDone": ["تمت", "Mark done", "Tamamlandı", "Marquer traité", "Marcar resuelto", "पूरा करें"], "kaSupReopen": ["أعد فتحها", "Reopen", "Yeniden aç", "Rouvrir", "Reabrir", "फिर खोलें"], "kaSupNone": ["لا توجد رسائل", "No messages", "Mesaj yok", "Aucun message", "No hay mensajes", "कोई संदेश नहीं"], "kaSupSent": ["تم إرسال الرد", "Reply sent", "Yanıt gönderildi", "Réponse envoyée", "Respuesta enviada", "जवाब भेजा गया"], "onSecure2": ["🔒 دفع آمن عبر Stripe. الجواهر عناصر افتراضية بلا قيمة نقدية وتصل إلى حسابك مباشرة بعد الدفع. جميع المشتريات نهائية إلا حيث يفرض القانون غير ذلك. الأسعار بالدولار الأمريكي.", "🔒 Secure payment by Stripe. Gems are virtual items with no cash value and land in your account right after payment. All purchases are final except where required by law. Prices in USD.", "🔒 Stripe ile güvenli ödeme. Mücevherler nakit değeri olmayan sanal öğelerdir ve ödemeden hemen sonra hesabına eklenir. Yasanın gerektirdiği durumlar dışında tüm satın almalar kesindir. Fiyatlar USD cinsindendir.", "🔒 Paiement sécurisé par Stripe. Les gemmes sont des objets virtuels sans valeur monétaire, ajoutés à ton compte juste après le paiement. Tous les achats sont définitifs, sauf si la loi l'exige. Prix en USD.", "🔒 Pago seguro con Stripe. Las gemas son objetos virtuales sin valor monetario y llegan a tu cuenta justo después del pago. Todas las compras son definitivas, salvo cuando la ley exija lo contrario. Precios en USD.", "🔒 Stripe द्वारा सुरक्षित भुगतान। जेम्स आभासी वस्तुएँ हैं जिनका कोई नकद मूल्य नहीं है और भुगतान के तुरंत बाद आपके खाते में आ जाते हैं। कानून द्वारा आवश्यक मामलों को छोड़कर सभी खरीदारी अंतिम हैं। कीमतें USD में।"], "kNoShown": ["اختر حتى 12 وساماً لعرضها", "Pick up to 12 medals to show", "Göstermek için 12 madalyaya kadar seç", "Choisis jusqu'à 12 médailles à afficher", "Elige hasta 12 medallas para mostrar", "दिखाने के लिए 12 तक पदक चुनें"], "kPickMax": ["الحد الأقصى 12 وساماً", "You can show up to 12 medals", "En fazla 12 madalya gösterebilirsin", "12 médailles maximum", "Máximo 12 medallas", "अधिकतम 12 पदक"], "kPickN": ["{n}/12 مختارة", "{n}/12 selected", "{n}/12 seçildi", "{n}/12 choisies", "{n}/12 elegidas", "{n}/12 चुने गए"]}); } catch (_) {}
+        // ===================== build13n =====================
+        {
+          const n13esc = (s) => String(s ?? "").replace(/[&<>"'`]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "`": "&#96;" })[c]);
+          const n13K = () => window.__K || {};
+          const n13try = (f, d) => { try { return f(); } catch (_) { return d; } };
+
+          // static markup that uses 13n strings was translated before they were added: translate it again now
+          n13try(() => document.querySelectorAll('[data-i18n^="n13"], [data-i18n="onSecure2"]').forEach((e) => { e.textContent = _t(e.dataset.i18n); }), 0);
+
+          // ---------- 1) tap safety net for iOS Safari ----------
+          // iOS Safari can drop the click after a touch (its "hover first" content-change rule, or a DOM/style change during the touch).
+          // For a short, still touch on a button we wait for the native click; if none arrives within 350 ms we click the element under
+          // the finger ourselves. A native click always wins, so nothing ever fires twice.
+          {
+            const SEL = 'button, [role="button"], [role="tab"], [role="option"], [data-go], [data-kgo], [data-kset], [data-ksec], [data-ktab], [data-katab], [data-ka], [data-kshop], [data-km], [data-legal], [data-b13x], .h-card, .h-mini, .h-mode, .h-mapc, .x-btn, .b13d-c';
+            const SKIP = 'input, textarea, select, label, a[href], canvas, [contenteditable], #game, .x-ctl, [data-nofast]';
+            let st = null, lastNative = 0, stats = { fallback: 0 };
+            window.__n13tap = stats;
+            let lastFb = null; // de-dup: a late native click right after our fallback click on the same element is swallowed
+            document.addEventListener("click", (e) => {
+              if (!e.isTrusted) return;
+              const now = performance.now();
+              if (lastFb && now - lastFb.t < 1000 && e.target && (lastFb.el === e.target || (lastFb.el.contains && lastFb.el.contains(e.target)))) { lastFb = null; stats.deduped = (stats.deduped || 0) + 1; e.stopImmediatePropagation(); e.preventDefault(); return; }
+              lastNative = now;
+            }, { capture: true });
+            document.addEventListener("pointerdown", (e) => {
+              st = null; if (e.pointerType !== "touch" || !e.isPrimary || !e.target || !e.target.closest) return;
+              const el = e.target.closest(SEL); if (!el || el.closest(SKIP)) return;
+              st = { el, x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId };
+            }, { capture: true, passive: true });
+            document.addEventListener("pointermove", (e) => { if (st && e.pointerId === st.id && (Math.abs(e.clientX - st.x) > 10 || Math.abs(e.clientY - st.y) > 10)) st = null; }, { capture: true, passive: true });
+            document.addEventListener("pointercancel", () => { st = null; }, { capture: true, passive: true });
+            document.addEventListener("pointerup", (e) => {
+              const s = st; st = null; if (!s || e.pointerId !== s.id || performance.now() - s.t > 800) return;
+              const tUp = performance.now(), x = e.clientX, y = e.clientY;
+              setTimeout(() => {
+                if (lastNative >= tUp - 5) return; // the browser delivered its own click
+                let el = s.el;
+                if (!el.isConnected) { const h = document.elementFromPoint(x, y); el = h && h.closest ? h.closest(SEL) : null; } // re-rendered under the finger
+                if (!el || el.disabled || el.closest(SKIP) || el.closest(".x-hide")) return;
+                stats.fallback++; stats.last = (el.id || el.className || el.tagName) + ""; lastFb = { el, t: performance.now() };
+                try { el.click(); } catch (_) {}
+              }, 350);
+            }, { capture: true, passive: true });
+          }
+
+          // ---------- 2) pinned panel headers: sticky tab rows sit right below the header (never underneath it) ----------
+          {
+            const ro = window.ResizeObserver ? new ResizeObserver((es) => es.forEach((en) => { const h = en.target, bx = h.parentElement; if (bx) bx.style.setProperty("--p10h", Math.ceil(h.getBoundingClientRect().height) + "px"); })) : null;
+            const scan = () => document.querySelectorAll(".x-box > .p10-hd").forEach((h) => { if (h.__n13) return; h.__n13 = 1; if (ro) ro.observe(h); else h.parentElement.style.setProperty("--p10h", (h.offsetHeight || 44) + "px"); });
+            scan(); setTimeout(scan, 1500); setTimeout(scan, 5000);
+            document.addEventListener("click", () => setTimeout(scan, 60), { capture: true, passive: true });
+          }
+
+          // ---------- 3) Terms / Privacy / Support (in-app panel; works the same in iOS Safari) ----------
+          const n13legal = (which) => {
+            const url = which === "privacy" ? "/privacy.html" : "/terms.html";
+            if (typeof B13 !== "undefined" && B13.pop) {
+              B13.pop(`<div class="j-pcw n13-legal"><iframe src="${url}?l=${n13esc(typeof LANG !== "undefined" ? LANG : "en")}" title="${n13esc(_t(which === "privacy" ? "n13Privacy" : "n13Terms"))}" loading="eager" referrerpolicy="no-referrer"></iframe>` +
+                `<div class="b13-row2"><a class="x-btn x-sub" href="${url}" target="_blank" rel="noopener">${n13esc(_t("n13OpenTab"))} ↗</a><button type="button" class="x-btn x-main" data-b13x="1">${n13esc(_t("back"))}</button></div></div>`);
+            } else { try { window.open(url, "_blank", "noopener"); } catch (_) { location.assign(url); } }
+          };
+          window.__n13legal = n13legal;
+          const n13support = () => {
+            const K = n13K(); if (!K.openSettings) return;
+            try { if (typeof B13 !== "undefined" && B13.popX) B13.popX(); } catch (_) {}
+            K.openSettings("more");
+            setTimeout(() => { const t = document.getElementById("kshelp"); if (t) { t.scrollIntoView({ block: "center" }); try { t.focus({ preventScroll: true }); } catch (_) {} } }, 450);
+          };
+          document.addEventListener("click", (e) => {
+            const b = e.target && e.target.closest && e.target.closest("[data-legal]"); if (!b) return;
+            e.preventDefault(); e.stopImmediatePropagation();
+            const w = b.dataset.legal; if (w === "support") n13support(); else n13legal(w);
+          }, true);
+
+          // ---------- 4) ID badge -> Shop › VIP IDs (own profile header, home profile chip, public cards) ----------
+          document.addEventListener("click", (e) => {
+            const j = e.target && e.target.closest && e.target.closest(".jid"); if (!j) return;
+            if (!j.closest("#kprof .k-ids, #b13hpc, #b13pb, .j-pc, .k-hero")) return;
+            if (typeof state !== "undefined" && state === "play") return;
+            const K = n13K(); if (!K.openShop) return;
+            e.preventDefault(); e.stopImmediatePropagation();
+            try { if (typeof B13 !== "undefined" && B13.popX && j.closest("#b13pb")) B13.popX(); } catch (_) {}
+            K.openShop("b13ids");
+          }, true);
+
+          // ---------- 5) one equipped skin everywhere ----------
+          // Classic skin = `skin` (saved on the server as profiles.skin). A Royal pattern / photo is an overlay (NX.eq.sk, profiles.look.sk).
+          // Picking a classic skin in Skins removes any overlay, so the home showcase, Skins, profile and the match all draw the same snake.
+          {
+            let lastSk = n13try(() => skin, 0), ready = false;
+            const sync = () => { lastSk = n13try(() => skin, 0); ready = true; };
+            n13try(() => NFH.load.push(() => { sync(); setTimeout(n13skfix, 400); }), 0);
+            const _commit = commit;
+            commit = function () {
+              try {
+                if (ready && !loading && skin !== lastSk) {
+                  lastSk = skin;
+                  if (NX.eq.sk) { NX.eq.sk = ""; n13try(() => B13C.saveLook(), 0); try { if (player) nfDress(player); } catch (_) {} }
+                }
+              } catch (_) {}
+              return _commit.apply(this, arguments);
+            };
+            // one-time repair (build13n): the photo pattern only lives on the device that uploaded it, while the server kept look.sk = "photo",
+            // so other devices showed the classic skin and this one the photo. Players who picked a classic skin keep that skin everywhere.
+            const n13skfix = () => {
+              try {
+                if (!cur || NX.eq.sk !== "photo" || !(skin > 0)) return;
+                const k = "ss-13n-skfix-" + cur; if (KV.get(k)) return; KV.set(k, "1");
+                NX.eq.sk = ""; n13try(() => B13C.saveLook(), 0); commit();
+              } catch (_) {}
+            };
+            setTimeout(() => { if (!ready) sync(); }, 4000);
+            // tapping the classic skin that is already the base skin (while a Royal pattern / photo is drawn over it) also takes the overlay off
+            document.addEventListener("click", (e) => {
+              const b = e.target && e.target.closest && e.target.closest("#skins > button"); if (!b) return;
+              const had = n13try(() => NX.eq.sk, ""); if (!had) return;
+              setTimeout(() => { try { if (NX.eq.sk) { NX.eq.sk = ""; n13try(() => B13C.saveLook(), 0); try { if (player) nfDress(player); } catch (_) {} commit(); } } catch (_) {} }, 0);
+            }, true);
+          }
+
+          // ---------- 6) Help & report: clear messages + your messages with the owner's reply ----------
+          {
+            const paintMine = async (box) => {
+              if (!box || box.dataset.busy) return; box.dataset.busy = "1";
+              let rows = []; try { rows = await ON.rpc("my_support"); } catch (_) { rows = []; }
+              box.dataset.busy = "";
+              if (!rows || !rows.length) { box.innerHTML = ""; return; }
+              const fd = (s) => { try { return new Date(s).toLocaleString(typeof LANG !== "undefined" && LANG === "ar" ? "ar-u-nu-latn" : "en", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); } catch (_) { return ""; } };
+              box.innerHTML = `<h4>${n13esc(_t("n13MyMsgs"))}</h4><div class="k-list">` + rows.slice(0, 10).map((r) => `<div class="k-li n13-sm"><span><b dir="auto">${n13esc(r.text)}</b><small>${n13esc(fd(r.at))} · ${n13esc(_t(r.status === "open" ? "n13StOpen" : "n13StDone"))}</small>` +
+                (r.reply ? `<em class="n13-rep" dir="auto">↩ ${n13esc(r.reply)}</em>` : "") + `</span></div>`).join("") + `</div>`;
+            };
+            window.__n13mine = () => paintMine(document.getElementById("ksmine"));
+            const kb = document.getElementById("kset");
+            if (kb) new MutationObserver(() => { const m = document.getElementById("ksmine"); if (m && !m.dataset.done) { m.dataset.done = "1"; paintMine(m); } }).observe(kb, { childList: true, subtree: true });
+          }
+
+          // ---------- 7) admin: support inbox ----------
+          window.__n13supAfterSend = () => { const m = document.getElementById("ksmine"); if (m) paintMine2(m); };
+          const paintMine2 = (m) => { m.dataset.done = ""; window.__n13mine && window.__n13mine(); };
         }
         requestAnimationFrame(loop);
       })();
@@ -16178,6 +16334,79 @@ body.b13h-low #ssnx { opacity: 1; }
 #b13h #b13hmi > .ss-dot { top: 4px; inset-inline-end: 4px; }
 /* build13m QA: on short screens the selected-stage card covered stage node 11 (EN + AR); keep it clear of the map path */
 @media (max-height: 360px) { #b13hsm .h-sc { width: 236px !important; } #b13hsm .h-sc .h-goal span { font-size: 11.5px; } }
+
+/* ===================== build13n ===================== */
+/* sticky tab rows sit right below the pinned panel header (Settings, Profile, Admin, Shop) */
+.k-tabs, .k-shtabs { position: sticky; top: var(--p10h, 44px); z-index: 25; }
+.k-ov .k-tabs, .k-shtabs { background: rgba(8, 14, 46, .97) !important; box-shadow: 0 6px 12px rgba(0, 0, 0, .35); }
+.x-box > .p10-hd { z-index: 30; }
+/* last rows of long screens are fully reachable */
+.k-ov .x-box { padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important; }
+.k-tb { padding-bottom: 12px; }
+
+/* inputs never stretch (a column-flex parent turned flex-basis 160px into a 160px+ height); 16px text so iOS never zooms on focus */
+.k-rcv input, .k-bd input, .j-pcw input, .k-sec > input, .k-sec > textarea, .ss-modal input { flex: 0 0 auto !important; height: 44px !important; min-height: 44px; max-height: 44px; box-sizing: border-box; }
+.k-sec > textarea, .k-bd textarea { height: auto !important; max-height: none; min-height: 72px; }
+.k-inl input { height: 40px !important; flex: 1 1 140px; }
+input[type="text"], input[type="password"], input[type="email"], input[type="search"], input[type="number"], input:not([type]), textarea, select { font-size: max(16px, 1em) !important; }
+.k-rcv { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; }
+
+/* profile header: name / ID pill / tier chip / flag / bio without overlap */
+.k-hid { gap: 6px !important; padding: 2px 0; }
+.k-nm { line-height: 1.3 !important; padding-bottom: 1px; }
+.k-ids { row-gap: 6px; column-gap: 8px; min-height: 26px; position: relative; z-index: 1; }
+.k-ids .jid { flex: none; cursor: pointer; }
+.jid { position: relative; overflow: hidden; isolation: isolate; }
+.k-ids .k-idt, .k-ids .k-cc { flex: none; position: relative; z-index: 1; }
+.k-bio { position: relative; z-index: 0; margin-top: 1px; }
+.jid[data-p] { cursor: pointer; }
+
+/* header action buttons (settings / copy ID / admin): icon centred and contained */
+.k-ib { overflow: hidden; padding: 0 !important; box-sizing: border-box; }
+.k-ib .h-ic, .k-ib .j-ic, .k-ib .k-ic, .k-ib i { width: 62% !important; height: 62% !important; background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; margin: 0 !important; display: block; }
+
+/* medal showcase: up to 12 = 2 neat rows of 6; every medal centred and contained in a fixed square frame */
+.k-mrow { align-items: center; }
+.k-mrow .k-mm { margin-inline-start: auto; }
+.k-mrs { display: grid !important; grid-template-columns: repeat(6, 46px); grid-auto-rows: 46px; gap: 6px; overflow: visible !important; flex: 0 1 auto !important; justify-content: start; }
+.k-mrs .k-mb0 { grid-column: 1 / -1; align-self: center; justify-self: start; }
+.k-mb { width: 46px !important; height: 46px !important; padding: 4px !important; box-sizing: border-box; border-radius: 12px !important; overflow: hidden; display: grid !important; place-items: center;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 214, 89, .16), rgba(8, 14, 44, .55)) !important; border: 1px solid rgba(255, 214, 89, .35) !important; animation: none !important; }
+.k-mb .k-mi, .k-mb img { width: 100% !important; height: 100% !important; object-fit: contain; background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; margin: 0 !important; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .5)); }
+.k-cmd { display: grid !important; grid-template-columns: repeat(6, 38px); grid-auto-rows: 38px; gap: 5px; justify-content: start; align-items: center; }
+.k-cmd > span { width: 38px; height: 38px; display: grid; place-items: center; padding: 3px; box-sizing: border-box; border-radius: 10px; overflow: hidden; background: rgba(8, 14, 44, .45); border: 1px solid rgba(255, 214, 89, .25); }
+.k-cmd > span .k-mi, .k-cmd > span img { width: 100% !important; height: 100% !important; object-fit: contain; background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5)); }
+.k-cmd small { grid-column: 1 / -1; margin-inline-start: 0 !important; line-height: 1.2; }
+@media (max-height: 400px) {
+  .k-mrs { grid-template-columns: repeat(6, 36px); grid-auto-rows: 36px; gap: 5px; }
+  .k-mb { width: 36px !important; height: 36px !important; padding: 3px !important; border-radius: 10px !important; }
+  .k-cmd { grid-template-columns: repeat(6, 32px); grid-auto-rows: 32px; gap: 4px; } .k-cmd > span { width: 32px; height: 32px; }
+}
+/* compact header (Medals / Skins tabs): the showcase stays visible as one tidy strip of up to 12 */
+.k-hero.cmp .k-mrow { display: flex !important; margin-top: 6px; padding-top: 6px; }
+.k-hero.cmp .k-mrl, .k-hero.cmp .k-mm { display: none; }
+.k-hero.cmp .k-mrs { grid-template-columns: repeat(12, 28px); grid-auto-rows: 28px; gap: 4px; }
+.k-hero.cmp .k-mb { width: 28px !important; height: 28px !important; padding: 2px !important; border-radius: 8px !important; }
+.k-hero.cmp .k-mrs .k-mb0 { font-size: 12px; }
+
+/* Gem Store: every pack's art centred and contained in its card; purchase-terms footer */
+#ongems .on-pack::before { left: 50% !important; right: auto !important; top: 10px !important; width: 92px !important; height: 82px !important; transform: translateX(-50%) !important;
+  background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; margin: 0 !important; }
+#ongems .on-terms { font-size: 12px; line-height: 1.45; color: #aab6e0; margin: 10px 2px 4px; }
+#ongems .on-glinks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 2px 8px; font-size: 12px; color: #7d89b8; }
+#ongems .on-glinks button { border: 0; background: none; padding: 4px 2px; color: #9fc4ff; font: 700 12px/1.2 var(--sans, system-ui); text-decoration: underline; cursor: pointer; }
+#ongtest { font-size: 10px !important; padding: 2px 6px !important; }
+
+/* Terms / Privacy in-app panel */
+.n13-legal { display: flex; flex-direction: column; gap: 8px; width: min(760px, 92vw); height: min(560px, calc(100dvh - 40px)); }
+.n13-legal iframe { flex: 1 1 auto; width: 100%; min-height: 0; border: 1px solid rgba(255, 214, 89, .35); border-radius: 12px; background: #0b1235; }
+.n13-legal .b13-row2 { display: flex; gap: 8px; } .n13-legal .b13-row2 .x-btn { flex: 1 1 0; height: 40px !important; min-height: 0 !important; margin: 0 !important; display: grid; place-items: center; text-decoration: none; }
+
+/* support: player's messages + admin inbox */
+.n13-sm em.n13-rep { display: block; margin-top: 4px; font-style: normal; color: #9dffa6; font-size: 13px; }
+.n13-sm b { white-space: normal !important; font-weight: 700; }
+.k-sup .k-inl input { min-width: 0; }
+.k-supf { margin-bottom: 8px; }
 
 </style>
 <script id="ss13m-soul-js">
