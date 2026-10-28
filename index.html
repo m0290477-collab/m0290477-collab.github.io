@@ -1618,6 +1618,11 @@
         <footer class="b13d-ft"><div class="b13d-sel" id="b13dsel" aria-live="polite"></div><button type="button" class="x-btn x-main x-play b13d-go" id="b13dgo"><span data-i18n="p10Play">Play now</span></button></footer>
       </div></div>
       
+<div class="x-ov x-hide" id="b13dlg" role="dialog" aria-modal="true" aria-labelledby="b13dlgt"><div class="b13d-mp b13d-lgw">
+        <header class="b13d-hd"><button type="button" class="b13d-bk" data-go="back" aria-label="Back" data-i18n-al="back">‹</button><h2 class="x-cy" id="b13dlgt">🏆 <span data-i18n="b13dLg">Weekly League</span></h2><span class="b13d-cnt" id="b13dlgc"></span></header>
+        <div class="b13d-lgb" id="b13dlgb"></div>
+      </div></div>
+      
 <div id="b13cvg" aria-hidden="true"></div><div id="b13cup" class="x-hide" role="status"><span data-i18n="b13cUpd">A new version is available</span><button type="button" class="go" data-i18n="b13cUpdGo">Update</button><button type="button" class="x" aria-label="✕">✕</button></div>
       <div class="x-ov x-hide" id="onch"><div class="x-box x-form on-box">
         <div class="on-chh" id="onchh"></div>
@@ -1967,6 +1972,36 @@
         b13dPick: ["اختر الساحة", "Choose your arena", "Arenanı seç", "Choisis ton arène", "Elige tu arena", "अपना एरीना चुनें"],
         b13dNew: ["جديد", "NEW", "YENİ", "NOUVEAU", "NUEVO", "नया"],
         b13dCnt: ["{n} ساحة", "{n} arenas", "{n} arena", "{n} arènes", "{n} arenas", "{n} एरीना"],
+        b13dLg: ["الدوري الأسبوعي", "Weekly League", "Haftalık Lig", "Ligue hebdo", "Liga semanal", "साप्ताहिक लीग"],
+        b13dChamp: ["بطل الأسبوع", "Champion of the Week", "Haftanın Şampiyonu", "Champion de la semaine", "Campeón de la semana", "सप्ताह का चैंपियन"],
+        b13dLead: ["المتصدر هذا الأسبوع", "Leading this week", "Bu hafta lider", "En tête cette semaine", "Líder esta semana", "इस हफ़्ते आगे"],
+        b13dLast: ["الأسبوع الماضي", "last week", "geçen hafta", "semaine dernière", "semana pasada", "पिछला हफ़्ता"],
+        b13dCrowned: ["يُتوَّج أول بطل يوم الاثنين 00:00 UTC. اجمع النقاط الآن!", "The first champion is crowned Monday 00:00 UTC. Score points now!", "İlk şampiyon Pazartesi 00:00 UTC'de taç giyer. Şimdi puan topla!", "Le premier champion est couronné lundi 00:00 UTC. Marque des points !", "El primer campeón se corona el lunes 00:00 UTC. ¡Suma puntos ya!", "पहला चैंपियन सोमवार 00:00 UTC को चुना जाएगा। अभी अंक जुटाओ!"],
+        b13dReset: ["يتجدد بعد {x}", "Resets in {x}", "{x} sonra sıfırlanır", "Remise à zéro dans {x}", "Se reinicia en {x}", "{x} में रीसेट"],
+        b13dDH: ["{d}ي {h}س", "{d}d {h}h", "{d}g {h}s", "{d}j {h}h", "{d}d {h}h", "{d}दि {h}घं"],
+        b13dHM: ["{h}س {m}د", "{h}h {m}m", "{h}s {m}dk", "{h}h {m}min", "{h}h {m}min", "{h}घं {m}मि"],
+        b13dPts: ["{n} نقطة", "{n} pts", "{n} puan", "{n} pts", "{n} pts", "{n} अंक"],
+        b13dRank: ["المركز #{n}", "Rank #{n}", "Sıra #{n}", "Rang #{n}", "Puesto #{n}", "रैंक #{n}"],
+        b13dYourTier: ["فئتك هذا الأسبوع", "Your tier this week", "Bu haftaki ligin", "Ton rang cette semaine", "Tu liga esta semana", "इस हफ़्ते आपका टियर"],
+        b13dNext: ["{n} نقطة للوصول إلى {t}", "{n} pts to {t}", "{t} için {n} puan", "{n} pts pour {t}", "{n} pts para {t}", "{t} तक {n} अंक"],
+        b13dMax: ["وصلت لأعلى فئة!", "Top tier reached!", "En üst lige ulaştın!", "Rang maximum atteint !", "¡Liga máxima alcanzada!", "सबसे ऊँचा टियर!"],
+        b13dHow: ["النقاط: 10 لكل قتل · +25 للفوز · مكافأة المراكز الأولى · حتى 200 للمباراة. الغرف الخاصة لا تُحتسب.", "Points: 10 per kill · +25 for a win · bonus for top finishes · up to 200 a match. Private rooms don't count.", "Puan: öldürme başına 10 · galibiyete +25 · üst sıralara bonus · maç başına en çok 200. Özel odalar sayılmaz.", "Points : 10 par élimination · +25 par victoire · bonus de classement · 200 max par partie. Salons privés exclus.", "Puntos: 10 por eliminación · +25 por victoria · bonus por buenos puestos · hasta 200 por partida. Las salas privadas no cuentan.", "अंक: हर किल 10 · जीत +25 · ऊँचे स्थान पर बोनस · हर मैच अधिकतम 200। प्राइवेट रूम नहीं गिने जाते।"],
+        b13dTop: ["ترتيب هذا الأسبوع", "This week's standings", "Bu haftanın sıralaması", "Classement de la semaine", "Clasificación de la semana", "इस हफ़्ते की रैंकिंग"],
+        b13dTiers: ["الفئات", "Tiers", "Ligler", "Rangs", "Ligas", "टियर"],
+        b13dEmpty: ["لا نقاط بعد هذا الأسبوع — كن الأول!", "No points yet this week — be the first!", "Bu hafta henüz puan yok — ilk sen ol!", "Aucun point cette semaine — sois le premier !", "Aún no hay puntos esta semana — ¡sé el primero!", "इस हफ़्ते अभी कोई अंक नहीं — पहले बनो!"],
+        b13dLoad: ["جارٍ التحميل…", "Loading…", "Yükleniyor…", "Chargement…", "Cargando…", "लोड हो रहा है…"],
+        b13dLegM: ["أسطورة الشهر", "Legend of the Month", "Ayın Efsanesi", "Légende du mois", "Leyenda del mes", "महीने का लीजेंड"],
+        b13dLegLead: ["المتصدر هذا الشهر", "Leading this month", "Bu ay lider", "En tête ce mois-ci", "Líder este mes", "इस महीने आगे"],
+        b13dLegNone: ["لم يُتوَّج أسطورة بعد", "No Legend crowned yet", "Henüz efsane yok", "Aucune légende pour l'instant", "Aún no hay leyenda", "अभी कोई लीजेंड नहीं"],
+        b13dLegHow: ["صاحب أعلى نقاط في الشهر يحصل على شارة وإطار حصريين للأبد.", "The month's top scorer gets an exclusive badge and frame, kept forever.", "Ayın en çok puan alanı sonsuza dek kalan özel rozet ve çerçeve kazanır.", "Le meilleur du mois gagne un badge et un cadre exclusifs, pour toujours.", "El mejor del mes gana una insignia y un marco exclusivos para siempre.", "महीने के टॉप स्कोरर को हमेशा के लिए खास बैज और फ़्रेम।"],
+        b13dTop3: ["المركز {r} في الأسبوع", "Weekly #{r} finish", "Haftalık {r}. sıra", "{r}e de la semaine", "Puesto {r} semanal", "साप्ताहिक #{r}"],
+        b13dT0: ["برونزي", "Bronze", "Bronz", "Bronze", "Bronce", "कांस्य"],
+        b13dT1: ["فضي", "Silver", "Gümüş", "Argent", "Plata", "रजत"],
+        b13dT2: ["ذهبي", "Gold", "Altın", "Or", "Oro", "स्वर्ण"],
+        b13dT3: ["بلاتيني", "Platinum", "Platin", "Platine", "Platino", "प्लैटिनम"],
+        b13dT4: ["ماسي", "Diamond", "Elmas", "Diamant", "Diamante", "हीरा"],
+        b13dT5: ["ماستر", "Master", "Usta", "Maître", "Maestro", "मास्टर"],
+        b13dT6: ["أسطورة", "Legend", "Efsane", "Légende", "Leyenda", "लीजेंड"],
         p11Ph: ["صورة الملف", "Profile photo", "Profil fotoğrafı", "Photo de profil", "Foto de perfil", "प्रोफ़ाइल फ़ोटो"],
         p11Ch: ["اختر صورة", "Choose photo", "Fotoğraf seç", "Choisir une photo", "Elegir foto", "फ़ोटो चुनें"],
         p11Rm: ["إزالة الصورة", "Remove photo", "Fotoğrafı kaldır", "Retirer la photo", "Quitar foto", "फ़ोटो हटाएँ"],
@@ -5547,7 +5582,7 @@
           if (html !== lbH) { lbH = html; $("lb").innerHTML = html; } // touch the DOM only on change
         }
 
-        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop", "nfedit", "nfstory", "onlb", "onfr", "onch", "ongems", "onmig", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm", "b13dmp"];
+        const OV = ["menu", "set", "how", "over", "acct", "shop", "maps", "league", "lgr", "reg", "login", "achs", "inbox", "studio", "chat", "adm", "mnt", "nfmodes", "nfpass", "nfshop", "nfedit", "nfstory", "onlb", "onfr", "onch", "ongems", "onmig", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm", "b13dmp", "b13dlg"];
         // MANDATORY ACCOUNT: with nobody logged in, only the login and create-account screens can show
         function authView(imp, quiet) {
           $("logv").classList.toggle("x-hide", !!imp); $("impv").classList.toggle("x-hide", !imp);
@@ -9785,7 +9820,7 @@
         {
           const BK = ["back", "menu", "nfonback", "nfback", "home", "stuX"];
           const P10_NOBACK = { over: 1, lgr: 1, mnt: 1, onmig: 1, login: 1, reg: 1, menu: 1, studio: 1 };
-          const P10_OV = ["acct", "shop", "set", "how", "maps", "league", "lgr", "achs", "inbox", "adm", "onlb", "onfr", "onch", "ongems", "onmig", "mnt", "chat", "nfmodes", "nfedit", "nfstory", "nfpass", "nfshop", "over", "reg", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm", "b13dmp"];
+          const P10_OV = ["acct", "shop", "set", "how", "maps", "league", "lgr", "achs", "inbox", "adm", "onlb", "onfr", "onch", "ongems", "onmig", "mnt", "chat", "nfmodes", "nfedit", "nfstory", "nfpass", "nfshop", "over", "reg", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm", "b13dmp", "b13dlg"];
           const ARW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
           const num2 = (n) => { try { return num(n); } catch (_) { return String(n || 0); } };
           const wallet = () => {
@@ -10866,6 +10901,136 @@
             e.preventDefault(); e.stopImmediatePropagation(); B13D.mapOpen();
           }, true);
           NFH.relang.push(() => { if (!$("b13dmp").classList.contains("x-hide")) paint(); });
+        }
+        // ===================== build13e: Weekly League (Bronze → Legend, resets Monday 00:00 UTC), Champion of the Week, Legend of the Month =====================
+        {
+          const online = () => { try { return cur === "@on" && ON.on && !!ON.rpc; } catch (_) { return false; } };
+          const TN = ["b13dT0", "b13dT1", "b13dT2", "b13dT3", "b13dT4", "b13dT5", "b13dT6"];
+          const TH = [0, 100, 300, 600, 1000, 1600, 2500];
+          // ---------- badge art: one shared SVG sprite (gradients + 7 tier shields + crown + laurel), referenced with <use> ----------
+          const C = [["#ffd2a6", "#c7783e", "#6b3313"], ["#ffffff", "#b9c4d3", "#5d6b80"], ["#fff3a6", "#f0b52a", "#8a5800"], ["#e6fffb", "#5fd8cf", "#11645f"],
+                     ["#e3f6ff", "#4fb4ff", "#123d9c"], ["#f6dcff", "#b45cff", "#4a127a"], ["#fff6b0", "#ff9a1f", "#a3160a"]];
+          const SH = "M32 3 L57 12 V31 C57 46 46 56 32 62 C18 56 7 46 7 31 V12 Z";
+          const EMB = [
+            '<path d="M20 30 L32 22 L44 30 L44 36 L32 28 L20 36Z" fill="#fff" opacity=".9"/>',
+            '<path d="M20 26 L32 18 L44 26 L44 32 L32 24 L20 32Z M20 37 L32 29 L44 37 L44 43 L32 35 L20 43Z" fill="#fff" opacity=".92"/>',
+            '<path d="M32 15 L36 26 L48 26 L38.5 33 L42 44 L32 37 L22 44 L25.5 33 L16 26 L28 26Z" fill="#fff8d8" stroke="#8a5800" stroke-width="1.2"/>',
+            '<path d="M32 14 L40 24 L32 46 L24 24Z" fill="#f2fffe" stroke="#11645f" stroke-width="1.2"/><path d="M24 24 L40 24" stroke="#11645f" stroke-width="1.2"/>',
+            '<path d="M22 22 L42 22 L48 29 L32 48 L16 29Z" fill="#eaf8ff" stroke="#123d9c" stroke-width="1.3"/><path d="M16 29 L48 29 M26 22 L32 29 L38 22 M32 29 L32 48" stroke="#4fb4ff" stroke-width="1.1" fill="none"/>',
+            '<path d="M32 12 L37 23 L49 24 L40 32 L43 44 L32 38 L21 44 L24 32 L15 24 L27 23Z" fill="#fbefff" stroke="#4a127a" stroke-width="1.2"/><circle cx="32" cy="29" r="4" fill="#b45cff"/>',
+            '<path d="M18 22 L24 30 L32 16 L40 30 L46 22 L44 40 L20 40Z" fill="#fff4b8" stroke="#a3160a" stroke-width="1.4"/><circle cx="32" cy="15" r="2.4" fill="#ffd34d"/><circle cx="18" cy="21" r="2" fill="#ffd34d"/><circle cx="46" cy="21" r="2" fill="#ffd34d"/><path d="M22 45 L42 45" stroke="#fff4b8" stroke-width="3" stroke-linecap="round"/>'];
+          const WING = '<path d="M7 18 C-1 22 -2 34 4 42 C4 34 7 28 9 25Z M57 18 C65 22 66 34 60 42 C60 34 57 28 55 25Z" fill="url(#b13dg$)" stroke="rgba(0,0,0,.35)" stroke-width=".8"/>';
+          const sprite = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          sprite.setAttribute("aria-hidden", "true"); sprite.setAttribute("width", "0"); sprite.setAttribute("height", "0");
+          sprite.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none";
+          sprite.innerHTML = "<defs>" + C.map((c, i) => `<linearGradient id="b13dg${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".55" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient>`).join("") +
+            '<linearGradient id="b13dgcr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c2"/><stop offset="1" stop-color="#e0a020"/></linearGradient>' +
+            '<linearGradient id="b13dgcs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#9aa8bb"/></linearGradient>' +
+            '<linearGradient id="b13dgcb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd2a6"/><stop offset="1" stop-color="#b0632c"/></linearGradient>' +
+            '<radialGradient id="b13dgl" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#fff7c8"/><stop offset=".6" stop-color="#ffb52e"/><stop offset="1" stop-color="#9a2a00"/></radialGradient>' +
+            "</defs>" +
+            C.map((c, i) => `<symbol id="b13dt${i}" viewBox="-2 0 68 66">${i >= 5 ? WING.replace("$", i) : ""}<path d="${SH}" fill="url(#b13dg${i})" stroke="${c[2]}" stroke-width="2.4"/>` +
+              `<path d="M32 8 L52 15 V31 C52 43 43 51 32 56 C21 51 12 43 12 31 V15 Z" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.3"/>${EMB[i]}</symbol>`).join("") +
+            ["cr", "cs", "cb"].map((k) => `<symbol id="b13d${k}" viewBox="0 0 40 32"><path d="M3 9 L12 18 L20 4 L28 18 L37 9 L34 28 L6 28Z" fill="url(#b13dg${k})" stroke="rgba(60,30,0,.65)" stroke-width="1.6" stroke-linejoin="round"/><circle cx="20" cy="4" r="2.6" fill="#fff"/><circle cx="3" cy="9" r="2.2" fill="#fff"/><circle cx="37" cy="9" r="2.2" fill="#fff"/></symbol>`).join("") +
+            '<symbol id="b13dlau" viewBox="0 0 64 64"><circle cx="32" cy="32" r="29" fill="url(#b13dgl)" stroke="#5a1a00" stroke-width="2"/><circle cx="32" cy="32" r="24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.2"/>' +
+            '<path d="M14 40 C12 30 16 20 24 15 M50 40 C52 30 48 20 40 15" stroke="#3a7a20" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M14 34 l-5 -3 M15 28 l-5 -4 M18 22 l-4 -5 M50 34 l5 -3 M49 28 l5 -4 M46 22 l4 -5" stroke="#5fae2e" stroke-width="3" stroke-linecap="round"/>' +
+            '<path d="M32 18 L36 28 L46 28 L38 34 L41 44 L32 38 L23 44 L26 34 L18 28 L28 28Z" fill="#fffbe0" stroke="#7a2a00" stroke-width="1.3"/></symbol>';
+          document.body.appendChild(sprite);
+          B13D.badge = (t, cls) => { t = Math.max(0, Math.min(6, t | 0)); return `<span class="b13d-bd b13d-t${t}${cls ? " " + cls : ""}" role="img" aria-label="${esc(_t(TN[t]))}" title="${esc(_t(TN[t]))}"><svg viewBox="-2 0 68 66" aria-hidden="true"><use href="#b13dt${t}"/></svg></span>`; };
+          B13D.crown = (r, n) => `<span class="b13d-cr b13d-cr${r}" role="img" aria-label="${esc(_t("b13dTop3", { r }))}" title="${esc(_t("b13dTop3", { r }))}"><svg viewBox="0 0 40 32" aria-hidden="true"><use href="#b13d${["", "cr", "cs", "cb"][r]}"/></svg>${n > 1 ? `<i>×${n}</i>` : ""}</span>`;
+          B13D.legend = (n) => `<span class="b13d-lgd" role="img" aria-label="${esc(_t("b13dLegM"))}" title="${esc(_t("b13dLegM"))}"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#b13dlau"/></svg>${n > 1 ? `<i>×${n}</i>` : ""}</span>`;
+          // ---------- badge placeholders next to every player ID (leaderboards, friends, search, profile, home chip), filled in batches ----------
+          const BC = new Map(); // player_id -> { t, c1, c, best, lg, at }
+          B13D.ph = (pid) => (pid ? `<i class="b13d-lb" data-lp="${+pid}"></i>` : "");
+          { const ob0 = B13C.ownB; B13C.ownB = (pid) => ob0(pid) + B13D.ph(pid); }
+          const mini = (b) => { if (!b) return ""; let h = B13D.badge(b.t, "b13d-sm"); if (b.best) h += B13D.crown(b.best, b.c); if (b.lg) h += B13D.legend(b.lg); return h; };
+          const fill = () => document.querySelectorAll("i.b13d-lb[data-lp]").forEach((e) => { const b = BC.get(+e.dataset.lp); if (b && e.dataset.f !== String(b.at)) { e.innerHTML = mini(b); e.dataset.f = String(b.at); } });
+          let swT = 0, busy = false;
+          const sweep = async () => {
+            swT = 0; if (state === "play") return; if (!online() || busy) { fill(); return; }
+            const now = Date.now(), need = new Set();
+            document.querySelectorAll("i.b13d-lb[data-lp]").forEach((e) => { const p = +e.dataset.lp, b = BC.get(p); if (p > 0 && (!b || now - b.at > 300000)) need.add(p); });
+            if (need.size) {
+              busy = true;
+              try { const r = await ON.rpc("league_badges", { p_players: [...need].slice(0, 100) }); const at = Date.now(); for (const p of need) { const b = r && r[String(p)]; BC.set(p, b ? { ...b, at } : { t: 0, at }); } } catch (_) {}
+              busy = false;
+            }
+            fill();
+          };
+          new MutationObserver(() => { if (!swT) swT = setTimeout(sweep, 160); }).observe(document.body, { childList: true, subtree: true });
+          // ---------- league state ----------
+          let LG = null, lgAt = 0, lgBusy = false;
+          const photoH = (p, cls) => { const ok = p && typeof p.photo === "string" && /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(p.photo);
+            return `<span class="b13d-av ${cls || ""}">${ok ? `<img src="${p.photo}" alt="">` : esc(p && AV.includes(p.avatar) ? p.avatar : "🐍")}</span>`; };
+          const idOf = (p) => `<bdi dir="ltr">#${num(p.vip_id || p.player_id)}</bdi>`;
+          const dur = (ms) => { const m = Math.max(0, Math.floor(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60; return d ? _t("b13dDH", { d, h }) : _t("b13dHM", { h, m: mm }); };
+          const left = () => (LG ? LG.ends_ms - (Date.now() - LG._skew) : 0);
+          async function lgLoad(force) {
+            if (!online() || lgBusy || (!force && LG && Date.now() - lgAt < 90000)) return LG;
+            lgBusy = true;
+            try { const r = await ON.rpc("league_state", {}); if (r && r.week) { r._skew = Date.now() - r.now_ms; LG = r; lgAt = Date.now(); if (LG.me) { const p = B13C.pid(); if (p) BC.delete(p); } } } catch (_) {}
+            lgBusy = false; paintBanner(); if (!$("b13dlg").classList.contains("x-hide")) paintLg(); return LG;
+          }
+          B13D.load = lgLoad;
+          // ---------- HOME: Champion of the Week banner (last week's #1; before the first Monday it shows this week's leader) ----------
+          const hr = document.querySelector("#menu .hm-r"), rpb = $("pxrpb");
+          const ban = document.createElement("button"); ban.type = "button"; ban.className = "b13d-ch x-hide"; ban.id = "b13dch"; ban.dataset.go = "nfb13dlg";
+          if (hr) { if (rpb && rpb.parentElement === hr) rpb.after(ban); else hr.prepend(ban); }
+          function paintBanner() {
+            const on = online() && !!LG; ban.classList.toggle("x-hide", !on); document.body.classList.toggle("b13d-hasch", on); if (!on) return;
+            const c = (LG.champions || [])[0], p = c || LG.leader;
+            const lab = c ? _t("b13dChamp") : _t("b13dLg");
+            let body;
+            if (p) body = `${photoH(p, "b13d-avl")}<span class="b13d-cht"><b><bdi>${esc(p.username)}</bdi></b><small>${idOf(p)} · ${B13D.badge(p.tier, "b13d-sm")} ${esc(_t(TN[p.tier | 0]))}</small><small class="b13d-chs">${c ? esc(_t("b13dPts", { n: num(c.points) })) + " · " + esc(_t("b13dLast")) : esc(_t("b13dLead")) + " · " + esc(_t("b13dPts", { n: num(p.points) }))}</small></span>`;
+            else body = `<span class="b13d-av b13d-avl">🏆</span><span class="b13d-cht"><b>${esc(_t("b13dLg"))}</b><small>${esc(_t("b13dEmpty"))}</small></span>`;
+            ban.classList.toggle("b13d-chc", !!c);
+            ban.innerHTML = `<span class="b13d-chl"><i aria-hidden="true">🏆</i> ${esc(lab)}</span><span class="b13d-chb">${body}</span>${c ? '<i class="b13d-chr" aria-hidden="true"></i>' : ""}`;
+            ban.setAttribute("aria-label", lab + (p ? ": " + p.username : ""));
+          }
+          NFG.nfb13dlg = () => { if (!online()) return; back = "menu"; paintLg(); show("b13dlg"); lgLoad(true); };
+          NFH.home.push(() => { lgLoad(false); });
+          setInterval(() => { if (state === "menu" && !$("menu").classList.contains("x-hide")) lgLoad(false); else if (!online() && LG) { LG = null; paintBanner(); } }, 3000);
+          setInterval(() => { if (LG && !$("b13dlg").classList.contains("x-hide")) { const e = $("b13dlgc"); if (e) e.textContent = _t("b13dReset", { x: dur(left()) }); if (left() <= 0) lgLoad(true); } }, 20000);
+          // ---------- Weekly League screen ----------
+          const ladder = () => TH.map((v, i) => `<li class="${LG && LG.me && (LG.me.tier | 0) === i ? "on" : ""}">${B13D.badge(i, "b13d-md")}<b>${esc(_t(TN[i]))}</b><small dir="ltr">${num(v)}+</small></li>`).join("");
+          function paintLg() {
+            const el = $("b13dlgb"); if (!el) return;
+            $("b13dlgc").textContent = LG ? _t("b13dReset", { x: dur(left()) }) : "";
+            if (!LG) { el.innerHTML = `<p class="b13d-ld">${esc(_t(online() ? "b13dLoad" : "onSignNeed"))}</p>`; return; }
+            const me = LG.me || { points: 0, tier: 0 }, t = me.tier | 0, nx = t < 6 ? TH[t + 1] : 0, pc = t < 6 ? Math.min(100, ((me.points - TH[t]) / (nx - TH[t])) * 100) : 100;
+            const hon = LG.honors || { crowns: [], legends: [] }, cr = [1, 2, 3].map((r) => [r, hon.crowns.filter((c) => c.rank === r).length]).filter((x) => x[1]);
+            const meCard = `<section class="b13d-me">${B13D.badge(t, "b13d-xl")}<div class="b13d-met"><small>${esc(_t("b13dYourTier"))}</small><b>${esc(_t(TN[t]))}</b>` +
+              `<span class="b13d-mep"><bdi>${esc(_t("b13dPts", { n: num(me.points) }))}</bdi>${me.rank ? ` · ${esc(_t("b13dRank", { n: me.rank }))}` : ""}</span>` +
+              `<span class="b13d-bar" aria-hidden="true"><u style="width:${pc.toFixed(1)}%"></u></span><small>${esc(t < 6 ? _t("b13dNext", { n: num(nx - me.points), t: _t(TN[t + 1]) }) : _t("b13dMax"))}</small>` +
+              (cr.length || hon.legends.length ? `<span class="b13d-hon">${cr.map(([r, n]) => B13D.crown(r, n)).join("")}${hon.legends.length ? B13D.legend(hon.legends.length) : ""}</span>` : "") + `</div></section>`;
+            const champs = LG.champions || [];
+            const pod = champs.length ? `<section class="b13d-pod"><h3>🏆 ${esc(_t("b13dChamp"))} <small>${esc(_t("b13dLast"))}</small></h3><ol class="n${champs.length}">` + champs.map((c) =>
+              `<li class="r${c.rank}${c.me ? " me" : ""}">${B13D.crown(c.rank, 1)}${photoH(c, "b13d-avm")}<b><bdi>${esc(c.username)}</bdi></b><small>${idOf(c)}</small><small>${B13D.badge(c.tier, "b13d-sm")} ${esc(_t("b13dPts", { n: num(c.points) }))}</small></li>`).join("") + `</ol></section>`
+              : `<section class="b13d-pod b13d-pod0"><h3>🏆 ${esc(_t("b13dChamp"))}</h3><p>${esc(_t("b13dCrowned"))}</p></section>`;
+            const L0 = LG.legend, ML = LG.month_leader;
+            const leg = `<section class="b13d-leg${L0 ? " has" : ""}">${B13D.legend(1)}<div><h3>${esc(_t("b13dLegM"))}</h3>` +
+              (L0 ? `<p class="b13d-legw">${photoH(L0, "b13d-avs b13d-lgf")}<b><bdi>${esc(L0.username)}</bdi></b> ${idOf(L0)}</p><small>${esc(_t("b13dPts", { n: num(L0.points) }))}</small>` : `<small>${esc(_t("b13dLegNone"))}</small>`) +
+              (ML ? `<small>${esc(_t("b13dLegLead"))}: <bdi>${esc(ML.username)}</bdi> · ${esc(_t("b13dPts", { n: num(ML.points) }))}</small>` : "") + `<small class="b13d-note">${esc(_t("b13dLegHow"))}</small></div></section>`;
+            const rows = (LG.top || []).map((r) => `<li class="${r.me ? "me" : ""}"><em dir="ltr">${r.rank}</em>${B13D.badge(r.tier, "b13d-sm")}<span class="b13d-rn"><b><bdi>${esc(r.username)}</bdi></b><small>${idOf(r)} · ${esc(_t(TN[r.tier | 0]))}</small></span><span class="b13d-rp"><b dir="ltr">${num(r.points)}</b><small>⚔ ${num(r.kills)}</small></span></li>`).join("");
+            el.innerHTML = `<div class="b13d-lc">${meCard}${pod}${leg}<p class="b13d-note">${esc(_t("b13dHow"))}</p></div>` +
+              `<div class="b13d-lc"><section class="b13d-std"><h3>${esc(_t("b13dTop"))}</h3>${rows ? `<ol>${rows}</ol>` : `<p class="b13d-ld">${esc(_t("b13dEmpty"))}</p>`}</section>` +
+              `<section class="b13d-lad"><h3>${esc(_t("b13dTiers"))}</h3><ul>${ladder()}</ul></section></div>`;
+          }
+          // ---------- profile: big badge + honours, Legend frame on the avatar ----------
+          const pf = document.createElement("div"); pf.id = "b13dpf"; pf.className = "b13d-pf x-hide"; pf.dataset.go = "nfb13dlg"; pf.setAttribute("role", "button"); pf.tabIndex = 0;
+          const pc0 = $("pcard"); if (pc0) pc0.after(pf);
+          const paintPf = () => {
+            const on = online() && LG; pf.classList.toggle("x-hide", !on); if (!on) return;
+            const me = LG.me || { tier: 0, points: 0 }, hon = LG.honors || { crowns: [], legends: [] };
+            const cr = [1, 2, 3].map((r) => [r, hon.crowns.filter((c) => c.rank === r).length]).filter((x) => x[1]);
+            pf.innerHTML = `${B13D.badge(me.tier, "b13d-md")}<span><b>${esc(_t("b13dLg"))} · ${esc(_t(TN[me.tier | 0]))}</b><small>${esc(_t("b13dPts", { n: num(me.points) }))}${me.rank ? " · " + esc(_t("b13dRank", { n: me.rank })) : ""}</small></span><span class="b13d-hon">${cr.map(([r, n]) => B13D.crown(r, n)).join("")}${hon.legends.length ? B13D.legend(hon.legends.length) : ""}</span>`;
+            const lgw = hon.legends.length > 0; document.body.classList.toggle("b13d-legend", lgw);
+          };
+          new MutationObserver(() => { if (!$("acct").classList.contains("x-hide")) { paintPf(); lgLoad(false); } }).observe($("acct"), { attributes: true, attributeFilter: ["class"] });
+          const pb0 = paintBanner; paintBanner = function () { pb0(); paintPf(); };
+          pf.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); NFG.nfb13dlg(); } });
+          NFH.relang.push(() => { BC.forEach((b) => { b.at = b.at + 1; }); fill(); paintBanner(); if (!$("b13dlg").classList.contains("x-hide")) paintLg(); });
+          setTimeout(() => lgLoad(false), 2500);
         }
         requestAnimationFrame(loop);
       })();
@@ -12253,6 +12418,125 @@ body.b13c-play #b13cup { display: none; }
 .b13d-go { flex: none; width: auto !important; min-width: 132px; margin: 0 !important; padding: 0 18px !important; height: 42px; }
 @media (max-height: 360px) { .b13d-hd { min-height: 32px; } .b13d-hd h2 { font-size: 16px; } .b13d-bk { width: 30px; height: 30px; } .b13d-gr { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 6px; margin: 4px 0; } .b13d-go { height: 38px; } }
 @media (max-width: 420px) { .b13d-gr { grid-template-columns: repeat(2, minmax(0, 1fr)); } .b13d-go { min-width: 110px; } }
+
+</style>
+<style id="ss13e">
+/* ===== build13e: Weekly League badges, Champion of the Week banner, league screen ===== */
+.b13d-bd { --s: 22px; position: relative; display: inline-grid; place-items: center; width: var(--s); height: var(--s); vertical-align: middle; flex: none; isolation: isolate; }
+.b13d-bd svg { width: 100%; height: 100%; display: block; overflow: visible; filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, .6)); }
+.b13d-bd.b13d-sm { --s: 17px; }
+.b13d-bd.b13d-md { --s: 34px; }
+.b13d-bd.b13d-xl { --s: 84px; }
+/* shine sweep (clipped to the shield) */
+.b13d-bd::after { content: ""; position: absolute; inset: 4% 12% 6%; z-index: 2; pointer-events: none; clip-path: polygon(50% 0, 100% 14%, 100% 50%, 50% 100%, 0 50%, 0 14%);
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .85) 50%, transparent 65%) -150% 0 / 300% 100% no-repeat; animation: b13d-shine 3.6s ease-in-out infinite; }
+.b13d-t1::after { animation-duration: 3.2s; } .b13d-t2::after { animation-duration: 2.8s; } .b13d-t3::after { animation-duration: 2.5s; }
+.b13d-t4::after, .b13d-t5::after, .b13d-t6::after { animation-duration: 2.2s; }
+@keyframes b13d-shine { 0%, 55% { background-position: -150% 0; } 100% { background-position: 150% 0; } }
+/* Platinum+: soft glow pulse; Diamond: sparkle; Master: rotating halo; Legend: fire aura + rotating halo */
+.b13d-t3 svg { animation: b13d-gl3 2.6s ease-in-out infinite; }
+@keyframes b13d-gl3 { 50% { filter: drop-shadow(0 0 3px rgba(95, 216, 207, .9)) drop-shadow(0 1px 1.5px rgba(0, 0, 0, .6)); } }
+.b13d-t4 svg { animation: b13d-gl4 2.2s ease-in-out infinite; }
+@keyframes b13d-gl4 { 50% { filter: drop-shadow(0 0 4px rgba(79, 180, 255, 1)) drop-shadow(0 0 8px rgba(79, 180, 255, .5)); } }
+.b13d-t5::before, .b13d-t6::before { content: ""; position: absolute; inset: -18%; z-index: -1; border-radius: 50%; pointer-events: none; animation: b13d-spin 4s linear infinite; }
+.b13d-t5::before { background: conic-gradient(from 0deg, transparent, rgba(180, 92, 255, .75), transparent 40%, rgba(255, 140, 255, .6), transparent 75%); filter: blur(1.5px); }
+.b13d-t6::before { inset: -26%; background: conic-gradient(from 0deg, rgba(255, 220, 90, .0), rgba(255, 150, 30, .95), rgba(255, 60, 0, .2), rgba(255, 230, 120, .9), rgba(255, 90, 0, .0)); filter: blur(2px); animation-duration: 2.4s; }
+.b13d-t6 svg { animation: b13d-fire 1.1s ease-in-out infinite alternate; }
+@keyframes b13d-fire { from { filter: drop-shadow(0 0 3px rgba(255, 140, 20, .95)) drop-shadow(0 -1px 5px rgba(255, 60, 0, .6)); } to { filter: drop-shadow(0 0 6px rgba(255, 200, 60, 1)) drop-shadow(0 -2px 9px rgba(255, 80, 0, .8)); } }
+@keyframes b13d-spin { to { transform: rotate(360deg); } }
+.b13d-cr, .b13d-lgd { position: relative; display: inline-flex; align-items: center; vertical-align: middle; flex: none; margin-inline-start: 2px; }
+.b13d-cr svg { width: 18px; height: 15px; filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, .6)); }
+.b13d-cr1 svg { animation: b13d-gl6 1.8s ease-in-out infinite alternate; }
+@keyframes b13d-gl6 { to { filter: drop-shadow(0 0 4px rgba(255, 210, 80, 1)); } }
+.b13d-lgd svg { width: 19px; height: 19px; animation: b13d-fire 1.4s ease-in-out infinite alternate; }
+.b13d-cr i, .b13d-lgd i { font: 800 9px/1 system-ui, sans-serif; font-style: normal; color: #ffe9a8; margin-inline-start: 1px; }
+i.b13d-lb { display: inline-flex; align-items: center; gap: 1px; font-style: normal; vertical-align: middle; margin-inline-start: 3px; }
+i.b13d-lb:empty { display: none; }
+@media (prefers-reduced-motion: reduce) { .b13d-bd::after, .b13d-bd::before, .b13d-bd svg, .b13d-cr svg, .b13d-lgd svg, .b13d-ch, .b13d-chr, .b13d-lgf, body.b13d-legend #chip > i:first-child { animation: none !important; } }
+/* ---------- home: Champion of the Week ---------- */
+.b13d-ch { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 3px; text-align: start; padding: 7px 10px 8px; border-radius: 14px; cursor: pointer; color: #fff; font: inherit; min-height: 84px;
+  border: 1.5px solid rgba(255, 211, 77, .7); background: radial-gradient(120% 140% at 0% 0%, rgba(255, 200, 60, .32), transparent 55%), linear-gradient(160deg, #2a1a52, #0d1236 60%, #160a2e);
+  box-shadow: 0 0 0 1px rgba(255, 230, 150, .25) inset, 0 4px 14px rgba(0, 0, 0, .45), 0 0 18px rgba(255, 190, 50, .22); }
+.b13d-ch.x-hide { display: none !important; }
+.b13d-ch::after { content: ""; position: absolute; top: -30%; bottom: -30%; left: 0; width: 24%; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255, 240, 190, .35), transparent); animation: b13d-sw 4.5s ease-in-out infinite; }
+@keyframes b13d-sw { 0%, 60% { transform: translateX(-140%) skewX(-18deg); } 100% { transform: translateX(520%) skewX(-18deg); } }
+.b13d-chl { font: 900 10px/1 system-ui, sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #ffd34d; text-shadow: 0 0 8px rgba(255, 190, 40, .6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-chl i { font-style: normal; }
+.b13d-chb { display: flex; align-items: center; gap: 9px; min-width: 0; position: relative; z-index: 1; }
+.b13d-cht { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.b13d-cht b { font: 800 15px/1.15 system-ui, sans-serif; color: #fff7da; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-cht small { display: flex; align-items: center; gap: 4px; font: 600 10.5px/1.2 system-ui, sans-serif; color: #c9d8ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-cht small.b13d-chs { color: #ffe39a; }
+.b13d-av { flex: none; display: grid; place-items: center; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 35% 30%, #2d4fa8, #0b1640); font-size: 22px; line-height: 1; }
+.b13d-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.b13d-avl { width: 50px; height: 50px; font-size: 28px; box-shadow: 0 0 0 2px #ffd34d, 0 0 0 4px rgba(120, 60, 0, .6), 0 0 14px rgba(255, 200, 60, .65); }
+.b13d-ch.b13d-chc .b13d-avl { animation: b13d-ring 2.4s ease-in-out infinite; }
+@keyframes b13d-ring { 50% { box-shadow: 0 0 0 2px #fff2b0, 0 0 0 4px rgba(160, 90, 0, .7), 0 0 22px rgba(255, 210, 80, .95); } }
+.b13d-avm { width: 46px; height: 46px; font-size: 26px; box-shadow: 0 0 0 2px rgba(255, 255, 255, .7); }
+.b13d-avs { width: 26px; height: 26px; font-size: 16px; }
+.b13d-chr { position: absolute; inset-inline-end: -10px; top: -10px; width: 56px; height: 56px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255, 220, 110, .35), transparent 65%); animation: b13d-ring 2.4s ease-in-out infinite; }
+body.b13d-hasch #menu .hm-r .p10-ns { min-height: 70px !important; max-height: 110px !important; }
+/* Legend of the Month frame (kept forever) */
+.b13d-lgf, body.b13d-legend #chip > i:first-child, body.b13d-legend #pcard > i:first-child { box-shadow: 0 0 0 2px #ffcf3a, 0 0 0 4px #8a1a00, 0 0 12px rgba(255, 140, 20, .9) !important; animation: b13d-lgfr 1.6s ease-in-out infinite alternate; }
+@keyframes b13d-lgfr { to { box-shadow: 0 0 0 2px #fff0a0, 0 0 0 4px #c42a00, 0 0 20px rgba(255, 180, 40, 1) !important; } }
+/* ---------- profile block ---------- */
+.b13d-pf { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; cursor: pointer; text-align: start;
+  background: linear-gradient(160deg, rgba(42, 26, 82, .9), rgba(12, 18, 52, .9)); border: 1px solid rgba(255, 211, 77, .45); }
+.b13d-pf.x-hide { display: none !important; }
+.b13d-pf > span:not(.b13d-bd):not(.b13d-hon) { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.b13d-pf b { font: 800 13px/1.2 system-ui, sans-serif; color: #fff3cf; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-pf small { font: 600 11px/1.2 system-ui, sans-serif; color: #b9cbef; }
+.b13d-hon { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+/* ---------- league screen ---------- */
+.b13d-lgb { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 10px; padding: 6px 2px 4px; align-items: start; }
+.b13d-lc { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.b13d-lgb section { border-radius: 14px; padding: 9px 11px; background: rgba(9, 18, 44, .85); border: 1px solid rgba(120, 170, 255, .2); min-width: 0; }
+.b13d-lgb h3 { margin: 0 0 6px; font: 800 12.5px/1.2 system-ui, sans-serif; color: #ffe39a; letter-spacing: .03em; display: flex; align-items: baseline; gap: 6px; }
+.b13d-lgb h3 small { font-weight: 600; color: #9fb7d8; font-size: 10.5px; }
+.b13d-me { display: flex; align-items: center; gap: 12px; background: radial-gradient(120% 140% at 0% 0%, rgba(120, 90, 255, .3), transparent 60%), rgba(9, 18, 44, .9) !important; border-color: rgba(255, 211, 77, .4) !important; }
+.b13d-met { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.b13d-met > small { font: 600 10.5px/1.2 system-ui, sans-serif; color: #9fb7d8; }
+.b13d-met > b { font: 900 20px/1.1 system-ui, sans-serif; color: #fff; }
+.b13d-mep { font: 700 12.5px/1.2 system-ui, sans-serif; color: #ffe39a; }
+.b13d-bar { display: block; height: 7px; border-radius: 6px; background: rgba(0, 0, 0, .45); border: 1px solid rgba(79, 227, 255, .35); overflow: hidden; }
+.b13d-bar u { display: block; height: 100%; background: linear-gradient(90deg, #ffb52e, #ffe680); box-shadow: 0 0 8px rgba(255, 200, 60, .8); }
+.b13d-pod ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.b13d-pod ol.n1 { grid-template-columns: minmax(0, 170px); justify-content: center; } .b13d-pod ol.n2 { grid-template-columns: repeat(2, minmax(0, 170px)); justify-content: center; }
+.b13d-pod li { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; min-width: 0; padding: 6px 4px; border-radius: 10px; background: rgba(255, 255, 255, .04); }
+.b13d-pod li.r1 { order: 2; background: linear-gradient(180deg, rgba(255, 211, 77, .22), rgba(255, 211, 77, .04)); border: 1px solid rgba(255, 211, 77, .5); }
+.b13d-pod li.r2 { order: 1; margin-top: 10px; } .b13d-pod li.r3 { order: 3; margin-top: 16px; }
+.b13d-pod li.r1 .b13d-avm { width: 54px; height: 54px; box-shadow: 0 0 0 2px #ffd34d, 0 0 14px rgba(255, 200, 60, .7); }
+.b13d-pod li b { font: 800 12px/1.2 system-ui, sans-serif; color: #fff; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-pod li small { display: flex; align-items: center; gap: 3px; font: 600 10px/1.2 system-ui, sans-serif; color: #b9cbef; white-space: nowrap; }
+.b13d-pod li.me { outline: 1.5px solid #4fe3ff; }
+.b13d-pod0 p { margin: 0; font: 600 11.5px/1.35 system-ui, sans-serif; color: #c9d8ff; }
+.b13d-leg { display: flex; gap: 10px; align-items: flex-start; }
+.b13d-leg .b13d-lgd svg { width: 40px; height: 40px; }
+.b13d-leg > div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.b13d-leg h3 { margin: 0; }
+.b13d-leg small { font: 600 10.5px/1.3 system-ui, sans-serif; color: #b9cbef; }
+.b13d-legw { margin: 0; display: flex; align-items: center; gap: 6px; font: 700 12.5px/1.2 system-ui, sans-serif; color: #fff; }
+.b13d-leg.has { border-color: rgba(255, 150, 40, .6) !important; background: radial-gradient(120% 140% at 0% 0%, rgba(255, 120, 20, .25), transparent 60%), rgba(9, 18, 44, .9) !important; }
+.b13d-note { margin: 0; font: 500 10.5px/1.35 system-ui, sans-serif !important; color: #8ea6c9 !important; }
+.b13d-std ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.b13d-std li { display: flex; align-items: center; gap: 7px; padding: 4px 6px; border-radius: 8px; background: rgba(255, 255, 255, .035); min-width: 0; }
+.b13d-std li:nth-child(1) em { color: #ffd34d; } .b13d-std li:nth-child(2) em { color: #e6ecf5; } .b13d-std li:nth-child(3) em { color: #f0a46a; }
+.b13d-std li.me { background: rgba(79, 227, 255, .14); outline: 1px solid rgba(79, 227, 255, .5); }
+.b13d-std em { flex: none; width: 22px; text-align: center; font: 900 12px/1 system-ui, sans-serif; font-style: normal; color: #9fb7d8; }
+.b13d-rn { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.b13d-rn b { font: 700 12px/1.2 system-ui, sans-serif; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-rn small { font: 500 10px/1.2 system-ui, sans-serif; color: #9fb7d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-rp { flex: none; display: flex; flex-direction: column; align-items: flex-end; }
+.b13d-rp b { font: 800 12.5px/1.1 system-ui, sans-serif; color: #ffe39a; }
+.b13d-rp small { font: 600 9.5px/1.1 system-ui, sans-serif; color: #9fb7d8; }
+.b13d-lad ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.b13d-lad li { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 1px; border-radius: 9px; min-width: 0; }
+.b13d-lad li.on { background: rgba(255, 211, 77, .14); outline: 1px solid rgba(255, 211, 77, .5); }
+.b13d-lad li b { font: 700 9.5px/1.1 system-ui, sans-serif; color: #fff; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b13d-lad li small { font: 600 9px/1 system-ui, sans-serif; color: #9fb7d8; }
+.b13d-ld { margin: 10px 0; text-align: center; font: 600 12px/1.3 system-ui, sans-serif; color: #9fb7d8; }
+@media (max-width: 700px), (max-height: 300px) { .b13d-lgb { grid-template-columns: minmax(0, 1fr); } }
+@media (max-height: 360px) { .b13d-bd.b13d-xl { --s: 64px; } .b13d-met > b { font-size: 17px; } .b13d-ch { min-height: 74px; padding: 6px 9px 7px; } .b13d-avl { width: 44px; height: 44px; } }
 
 </style>
 </body>
