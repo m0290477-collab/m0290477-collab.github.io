@@ -10856,7 +10856,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13h" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13i" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -11408,11 +11408,12 @@
             cg.restore(); drawn = true;
           }
           const visible = () => !$("menu").classList.contains("x-hide") && tryv(() => state !== "play", true) && !document.hidden;
-          function loop(tm) {
+          // build13i hotfix: block-scoped name. A sloppy-mode block `function loop` (Annex B) overwrote the game's main loop, so matches never ran.
+          const hLoop = (tm) => {
             raf = 0; if (!visible()) return;
-            if (QL > 0 || !drawn) { if (tm - lastT > 33) { lastT = tm; drawSnake(tm); } raf = requestAnimationFrame(loop); }
-          }
-          const kick = () => { drawn = false; if (!raf && visible()) raf = requestAnimationFrame(loop); };
+            if (QL > 0 || !drawn) { if (tm - lastT > 33) { lastT = tm; drawSnake(tm); } raf = requestAnimationFrame(hLoop); }
+          };
+          const kick = () => { drawn = false; if (!raf && visible()) raf = requestAnimationFrame(hLoop); };
           function paint() { if (!cur) return; [pTop, pLeft, pRight, pNav, pPlate].forEach((f) => { try { f(); } catch (e) { console.warn("b13h", e); } }); kick(); }
           B13H.paint = paint; B13H.lg = () => { try { pTop(); pLeft(); } catch (_) {} };
           // sheets: Compete, Social, Shop, Settings, More (modes + difficulty + how to play)
