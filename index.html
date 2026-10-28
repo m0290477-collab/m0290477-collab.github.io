@@ -2002,6 +2002,8 @@
         b13dT4: ["ماسي", "Diamond", "Elmas", "Diamant", "Diamante", "हीरा"],
         b13dT5: ["ماستر", "Master", "Usta", "Maître", "Maestro", "मास्टर"],
         b13dT6: ["أسطورة", "Legend", "Efsane", "Légende", "Leyenda", "लीजेंड"],
+        b13fBossLen: ["الطول {n}", "Length {n}", "Uzunluk {n}", "Longueur {n}", "Longitud {n}", "लंबाई {n}"],
+        b13dLeader: ["متصدر الدوري", "League leader", "Lig lideri", "En tête de la ligue", "Líder de la liga", "लीग में सबसे आगे"],
         p11Ph: ["صورة الملف", "Profile photo", "Profil fotoğrafı", "Photo de profil", "Foto de perfil", "प्रोफ़ाइल फ़ोटो"],
         p11Ch: ["اختر صورة", "Choose photo", "Fotoğraf seç", "Choisir une photo", "Elegir foto", "फ़ोटो चुनें"],
         p11Rm: ["إزالة الصورة", "Remove photo", "Fotoğrafı kaldır", "Retirer la photo", "Quitar foto", "फ़ोटो हटाएँ"],
@@ -2337,7 +2339,7 @@
         frRemoved: ["انحذف {x} من أصدقائك", "{x} removed from friends", "{x} arkadaşlardan çıkarıldı", "{x} retiré de tes amis", "{x} eliminado de tus amigos", "{x} दोस्तों से हटाया गया"],
         frEmpty: ["أضف أصدقاء برقم اللاعب أو باسم الحساب على هذا الجهاز", "Add friends by Player ID or account name on this device", "Bu cihazdaki hesapları Oyuncu ID'si ya da hesap adıyla arkadaş ekle", "Ajoute des amis par ID de joueur ou nom de compte sur cet appareil", "Añade amigos por ID de jugador o nombre de cuenta en este dispositivo", "इस डिवाइस पर प्लेयर ID या खाते के नाम से दोस्त जोड़ें"],
         frGone: ["مو موجود على هذا الجهاز", "Not on this device", "Bu cihazda değil", "Absent de cet appareil", "No está en este dispositivo", "इस डिवाइस पर नहीं"],
-        frRemote: ["الأصدقاء والطلبات والرسائل تشتغل بين الحسابات على هذا الجهاز فقط. بين الأجهزة يحتاج سيرفر (قريباً).", "Friends, requests and messages only work between accounts on this device. Across devices needs a server (coming later).", "Arkadaşlar, istekler ve mesajlar yalnızca bu cihazdaki hesaplar arasında çalışır. Cihazlar arası için sunucu gerekiyor (yakında).", "Amis, demandes et messages ne marchent qu'entre les comptes de cet appareil. Entre appareils, il faut un serveur (bientôt).", "Amigos, solicitudes y mensajes solo funcionan entre cuentas de este dispositivo. Entre dispositivos hace falta un servidor (próximamente).", "दोस्त, अनुरोध और संदेश सिर्फ़ इसी डिवाइस के खातों के बीच चलते हैं। दूसरे डिवाइस के लिए सर्वर चाहिए (जल्द आएगा)।"],
+        frRemote: ["الأصدقاء والطلبات والرسائل محفوظة في حسابك على السيرفر، وتشتغل على كل أجهزتك.", "Friends, requests and messages are saved to your online account and work on all your devices.", "Arkadaşlar, istekler ve mesajlar çevrimiçi hesabına kaydedilir ve tüm cihazlarında çalışır.", "Amis, demandes et messages sont enregistrés sur ton compte en ligne et marchent sur tous tes appareils.", "Amigos, solicitudes y mensajes se guardan en tu cuenta en línea y funcionan en todos tus dispositivos.", "दोस्त, अनुरोध और संदेश आपके ऑनलाइन खाते में सेव रहते हैं और आपके सभी डिवाइस पर चलते हैं।"],
         rqSend: ["أرسل طلب", "Send request", "İstek gönder", "Envoyer", "Enviar solicitud", "अनुरोध भेजें"],
         rqSent: ["📨 انرسل طلب صداقة إلى {x}", "📨 Friend request sent to {x}", "📨 {x} kişisine arkadaşlık isteği gönderildi", "📨 Demande d'ami envoyée à {x}", "📨 Solicitud enviada a {x}", "📨 {x} को दोस्ती का अनुरोध भेजा"],
         rqDup: ["أرسلت له طلب من قبل، استنى رده", "Request already sent; wait for a reply", "İstek zaten gönderildi; yanıt bekle", "Demande déjà envoyée ; attends sa réponse", "Ya enviaste una solicitud; espera respuesta", "अनुरोध पहले ही भेजा है; जवाब का इंतज़ार करें"],
@@ -7625,7 +7627,7 @@
         function nfSXP(n, why) { if (NFR && RP.add) RP.add(n, why); }
         var RP = { add: null };
         // one click router for every new button (data-go="nf...")
-        var NFG = {}, B13 = {}, B13C = {}, B13D = {}; // build13 module (filled at the end of the script)
+        var NFG = {}, B13 = {}, B13C = {}, B13D = {}, B13F = {}; // build13 module (filled at the end of the script)
         document.addEventListener("click", (e) => {
           const b = e.target.closest("[data-go]"); if (!b) return; const g = b.dataset.go;
           if (!g.startsWith("nf") || !NFG[g]) return;
@@ -10440,7 +10442,7 @@
           B13.rtStop = () => { const w = B13.rt; B13.rt = null; if (w) { w.onclose = null; try { w.close(); } catch (_) {} } };
 
           // ---------- presence (online / in a match) + polling fallback ----------
-          const ping = (st) => { if (online()) ON.rpc("b13_ping", { p_state: st }).catch(() => {}); };
+          let pgL = "", pgT = 0; const ping = (st) => { if (!online()) return; const n = Date.now(); if (st === pgL && n - pgT < 20000) return; pgL = st; pgT = n; ON.rpc("b13_ping", { p_state: st }).catch(() => {}); };
           NFH.start.push(() => ping("match"));
           NFH.home.push(() => ping("menu"));
           setInterval(() => { if (!online()) { if (B13.rt) B13.rtStop(); return; } ping(state === "play" ? "match" : "menu"); if (!B13.rt) B13.rtStart(); if (state !== "play") B13.inbox(); }, 45000);
@@ -10668,9 +10670,10 @@
               const bf = Math.round(clamp((player.len - 12) / 88, 0, 1) * 100) + "%"; if (bf !== hud.bf) { hud.bf = bf; $("boost").style.setProperty("--bf", bf); }
             }
             const lbx = $("lbx"); lbx.classList.remove("x-lb0"); lbx.classList.toggle("b13c-full", lbS === 2);
-            const all = snakes.filter((s) => s.alive && !s.ad).sort((a, b) => b.len - a.len || b.kills - a.kills);
-            const xs = document.body.classList.contains("x-vshort"), top = lbS === 2 ? all : all.slice(0, xs ? 3 : 5);
-            const row = (s, i) => `<li class="${s === player ? "me" : ""}"><i>${i < 3 ? MED[i] : i + 1}</i>${B13.lv(B13C.lvOf(s))}<em>${s.tm === undefined ? "" : TC[s.tm][0] + " "}${esc(s.name)}</em><span dir="ltr">${Math.floor(s.len)}</span></li>`;
+            const all = snakes.filter((s) => s.alive && (!s.ad || s.boss)).sort((a, b) => b.len - a.len || b.kills - a.kills); // build13f: bosses are ranked too
+            const xs = document.body.classList.contains("x-vshort"), top = lbS === 2 ? all : all.slice(0, 5); // build13f: never fewer than 5 (compact rows on short screens)
+            const row = (s, i) => s.boss ? `<li class="b13f-boss${s.ad ? "" : " king"}"><i class="b13f-rk${i < 3 ? " r" + (i + 1) : ""}" dir="ltr">${i + 1}</i><b class="b13f-bm" aria-hidden="true">${s.ad ? "👹" : "👑"}</b><em>${esc(s.ad ? _t("adMiniName") : s.name === _t("bossName") || /^(ملك الثعابين|Snake King|Yılan Kral|Roi Serpent|Rey Serpiente|साँपों का राजा)$/.test(s.name) ? _t("bossName") : s.name)}</em><span dir="ltr">${Math.floor(s.len)}</span></li>`
+              : `<li class="${s === player ? "me" : ""}"><i class="b13f-rk${i < 3 ? " r" + (i + 1) : ""}" dir="ltr">${i + 1}</i><em>${s.tm === undefined ? "" : TC[s.tm][0] + " "}${esc(s.name)}</em><span dir="ltr">${Math.floor(s.len)}</span></li>`;
             let html = top.map(row).join("");
             if (player && player.alive && !top.includes(player)) html += `<li class="sep" aria-hidden="true">···</li>` + row(player, all.indexOf(player));
             if (html !== lbH) {
@@ -10721,7 +10724,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13c" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13f" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -10979,9 +10982,9 @@
           function paintBanner() {
             const on = online() && !!LG; ban.classList.toggle("x-hide", !on); document.body.classList.toggle("b13d-hasch", on); if (!on) return;
             const c = (LG.champions || [])[0], p = c || LG.leader;
-            const lab = c ? _t("b13dChamp") : _t("b13dLg");
+            const lab = c ? _t("b13dChamp") : _t("b13dLeader");
             let body;
-            if (p) body = `${photoH(p, "b13d-avl")}<span class="b13d-cht"><b><bdi>${esc(p.username)}</bdi></b><small>${idOf(p)} · ${B13D.badge(p.tier, "b13d-sm")} ${esc(_t(TN[p.tier | 0]))}</small><small class="b13d-chs">${c ? esc(_t("b13dPts", { n: num(c.points) })) + " · " + esc(_t("b13dLast")) : esc(_t("b13dLead")) + " · " + esc(_t("b13dPts", { n: num(p.points) }))}</small></span>`;
+            if (p) body = `${photoH(p, "b13d-avl")}<span class="b13d-cht"><b><bdi>${esc(p.username)}</bdi></b><small>${idOf(p)} · ${B13D.badge(p.tier, "b13d-sm")} ${esc(_t(TN[p.tier | 0]))}</small><small class="b13d-chs">${c ? esc(_t("b13dPts", { n: num(c.points) })) + " · " + esc(_t("b13dLast")) : esc(_t("b13dPts", { n: num(p.points) })) + " · " + esc(_t("b13dLg"))}</small></span>`;
             else body = `<span class="b13d-av b13d-avl">🏆</span><span class="b13d-cht"><b>${esc(_t("b13dLg"))}</b><small>${esc(_t("b13dEmpty"))}</small></span>`;
             ban.classList.toggle("b13d-chc", !!c);
             ban.innerHTML = `<span class="b13d-chl"><i aria-hidden="true">🏆</i> ${esc(lab)}</span><span class="b13d-chb">${body}</span>${c ? '<i class="b13d-chr" aria-hidden="true"></i>' : ""}`;
@@ -11031,6 +11034,25 @@
           pf.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); NFG.nfb13dlg(); } });
           NFH.relang.push(() => { BC.forEach((b) => { b.at = b.at + 1; }); fill(); paintBanner(); if (!$("b13dlg").classList.contains("x-hide")) paintLg(); });
           setTimeout(() => lgLoad(false), 2500);
+        }
+        // ===================== build13f: QA/polish + HUD fixes =====================
+        {
+          // boss alert: a clear, dedicated banner when the Mini-boss / Snake King / a story boss enters the arena (combo toasts can't overwrite it)
+          const bb = document.createElement("div"); bb.id = "b13fbb"; bb.className = "b13f-bb"; bb.setAttribute("role", "alert"); bb.setAttribute("aria-live", "assertive");
+          ($("game") || document.body).appendChild(bb);
+          let bbT = 0;
+          B13F.bossAlert = (s) => {
+            const mini = !!s.ad, k = mini ? "👹" : "👑";
+            bb.innerHTML = `<i aria-hidden="true">${k}</i><b>${esc(mini ? _t("adMini") : s.name === _t("bossName") ? _t("bossCome").replace(/^⚠️\s*/, "") : "⚠️ " + s.name)}</b><small>${esc(_t("b13fBossLen", { n: Math.floor(s.len) }))}</small>`;
+            bb.className = "b13f-bb " + (mini ? "mini" : "king"); void bb.offsetWidth; bb.classList.add("on");
+            clearTimeout(bbT); bbT = setTimeout(() => bb.classList.remove("on"), 3600);
+            try { vib([40, 40, 80]); } catch (_) {}
+          };
+          NFH.upd.push(() => {
+            if (state !== "play") return;
+            for (const s of snakes) if (s.boss && s.alive && !s.b13fa) { s.b13fa = 1; if (s !== player) B13F.bossAlert(s); }
+          });
+          NFH.home.push(() => { bb.classList.remove("on"); });
         }
         requestAnimationFrame(loop);
       })();
@@ -12537,6 +12559,55 @@ body.b13d-hasch #menu .hm-r .p10-ns { min-height: 70px !important; max-height: 1
 .b13d-ld { margin: 10px 0; text-align: center; font: 600 12px/1.3 system-ui, sans-serif; color: #9fb7d8; }
 @media (max-width: 700px), (max-height: 300px) { .b13d-lgb { grid-template-columns: minmax(0, 1fr); } }
 @media (max-height: 360px) { .b13d-bd.b13d-xl { --s: 64px; } .b13d-met > b { font-size: 17px; } .b13d-ch { min-height: 74px; padding: 6px 9px 7px; } .b13d-avl { width: 44px; height: 44px; } }
+
+</style>
+<style id="ss13f">
+/* ===== build13f: QA / polish ===== */
+/* in-match TOP list: always 1-5 (+ ··· + you); compact on short landscape screens */
+body.x-vshort #game .x-lb { padding: 3px 6px 3px !important; width: 140px !important; }
+body.x-vshort #game .x-lb h4 { font-size: 9.5px !important; margin-bottom: 2px !important; padding-bottom: 2px !important; }
+body.x-vshort #game .x-lb li { font-size: 10px !important; line-height: 1.25 !important; padding: 0 4px !important; gap: 4px !important; }
+body.x-vshort #game .x-lb li .b13-lv { height: 11px; min-width: 15px; font-size: 7.5px; }
+body.x-vshort #game .x-lb li.sep { line-height: .9 !important; }
+#game .x-lb li.b13f-boss { background: linear-gradient(90deg, rgba(255, 60, 60, .3), rgba(255, 60, 60, .06)) !important; }
+[dir="rtl"] #game .x-lb li.b13f-boss { background: linear-gradient(270deg, rgba(255, 60, 60, .3), rgba(255, 60, 60, .06)) !important; }
+#game .x-lb li.b13f-boss.king { background: linear-gradient(90deg, rgba(255, 200, 50, .32), rgba(255, 200, 50, .06)) !important; }
+#game .x-lb li .b13f-bm { flex: none; font-style: normal; font-size: 11px; line-height: 1; }
+#game .x-lb li.b13f-boss em { color: #ffb4a8 !important; }
+#game .x-lb li.b13f-boss.king em { color: #ffe08a !important; }
+/* boss alert banner */
+.b13f-bb { position: fixed; z-index: 30; left: 50%; top: calc(var(--x-st, 0px) + 46px); transform: translate(-50%, -12px) scale(.9); opacity: 0; pointer-events: none;
+  display: flex; align-items: center; gap: 8px; padding: 7px 16px 7px 10px; border-radius: 999px; max-width: calc(100vw - 340px); min-width: 0;
+  background: linear-gradient(180deg, rgba(120, 10, 10, .92), rgba(60, 0, 0, .92)); border: 2px solid #ff5a4a; box-shadow: 0 0 0 1px rgba(255, 200, 180, .35) inset, 0 0 22px rgba(255, 60, 40, .75), 0 6px 18px rgba(0, 0, 0, .6);
+  color: #fff; font: 900 15px/1.15 system-ui, sans-serif; text-shadow: 0 1px 2px #000; transition: opacity .25s, transform .25s; }
+.b13f-bb.king { background: linear-gradient(180deg, rgba(110, 70, 0, .94), rgba(60, 30, 0, .94)); border-color: #ffd34d; box-shadow: 0 0 0 1px rgba(255, 240, 190, .35) inset, 0 0 22px rgba(255, 200, 50, .8), 0 6px 18px rgba(0, 0, 0, .6); }
+.b13f-bb.on { opacity: 1; transform: translate(-50%, 0) scale(1); animation: b13f-bbp .7s ease-in-out 3 alternate; }
+@keyframes b13f-bbp { to { box-shadow: 0 0 0 1px rgba(255, 200, 180, .5) inset, 0 0 34px rgba(255, 80, 50, 1), 0 6px 18px rgba(0, 0, 0, .6); } }
+.b13f-bb i { font-style: normal; font-size: 22px; line-height: 1; flex: none; }
+.b13f-bb b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.b13f-bb small { flex: none; font: 700 11px/1 system-ui, sans-serif; color: #ffd6cc; padding: 3px 7px; border-radius: 999px; background: rgba(0, 0, 0, .35); }
+body.x-vshort .b13f-bb { top: calc(var(--x-st, 0px) + 40px); font-size: 13px; padding: 5px 12px 5px 8px; max-width: calc(100vw - 320px); }
+body.x-vshort .b13f-bb i { font-size: 18px; }
+@media (max-width: 720px) { .b13f-bb small { display: none; } }
+@media (prefers-reduced-motion: reduce) { .b13f-bb.on { animation: none; } }
+/* home: mode bar never pushes into the right column; scrolls sideways on narrow phones */
+#menu .hm-c { min-width: 0 !important; }
+#menu .x-mode { overflow-x: auto !important; overflow-y: hidden !important; flex-wrap: nowrap !important; scrollbar-width: none; -webkit-overflow-scrolling: touch; max-width: 100% !important; }
+#menu .x-mode::-webkit-scrollbar { display: none; }
+#menu .x-mode > button { flex: none !important; }
+/* home rail labels: two short lines instead of "Tourna…" */
+#menu .hm-rail .hm-rb span { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; line-height: 1.05 !important; word-break: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+/* online leaderboard: ID, OWNER pill and league badges sit in one tidy row */
+#onlb .on-lb li b small { display: inline-flex !important; align-items: center; gap: 3px; flex-wrap: nowrap; white-space: nowrap; max-width: 100%; overflow: hidden; }
+#onlb .on-lb li b small .b13c-own { position: static !important; flex: none; margin: 0 !important; }
+/* TOP list rank digits: clear 1-5 (gold / silver / bronze discs for 1-3); no level badge in this list */
+#game .x-lb li i.b13f-rk { flex: none; display: inline-grid; place-items: center; min-width: 15px; height: 15px; padding: 0 2px; box-sizing: border-box; border-radius: 50%;
+  font: 900 10px/1 system-ui, sans-serif !important; font-style: normal; color: #dfe8f7 !important; background: rgba(255, 255, 255, .1); }
+#game .x-lb li i.b13f-rk.r1 { color: #3a2400 !important; background: linear-gradient(180deg, #fff1a8, #f0b52a); box-shadow: 0 0 6px rgba(255, 200, 60, .7); }
+#game .x-lb li i.b13f-rk.r2 { color: #1e2633 !important; background: linear-gradient(180deg, #ffffff, #aab6c6); }
+#game .x-lb li i.b13f-rk.r3 { color: #2e1404 !important; background: linear-gradient(180deg, #ffd2a6, #c27a3e); }
+#game .x-lb li.me i.b13f-rk:not(.r1):not(.r2):not(.r3) { color: #062a33 !important; background: #4fe3ff; }
+body.x-vshort #game .x-lb li i.b13f-rk { min-width: 13px; height: 13px; font-size: 9px !important; }
 
 </style>
 </body>
