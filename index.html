@@ -2342,7 +2342,7 @@
         tInv: ["ادعُ", "Invite", "Davet et", "Inviter", "Invitar", "बुलाएँ"],
         tOut: ["شيل", "Remove", "Çıkar", "Retirer", "Quitar", "हटाएँ"],
         tFull: ["الفريق مكتمل", "Team is full", "Takım dolu", "Équipe complète", "Equipo completo", "टीम भरी है"],
-        tNoFr: ["ما عندك أصدقاء بعد. أضفهم من ملفك؛ البوتات تعبّي الأماكن الفاضية.", "No friends yet. Add them from your profile; bots fill empty slots.", "Henüz arkadaş yok. Profilinden ekle; boş yerleri botlar doldurur.", "Pas encore d'amis. Ajoute-les depuis ton profil ; des bots comblent les places.", "Aún no tienes amigos. Añádelos desde tu perfil; los bots llenan los huecos.", "अभी कोई दोस्त नहीं। प्रोफ़ाइल से जोड़ें; खाली जगह बॉट भरेंगे।"],
+        tNoFr: ["ما عندك أصدقاء بعد. افتح الأصدقاء لإضافتهم؛ البوتات تعبّي الأماكن الفاضية.", "No friends yet. Open Friends to add them; bots fill empty slots.", "Henüz arkadaş yok. Eklemek için Arkadaşlar'ı aç; boş yerleri botlar doldurur.", "Pas encore d'amis. Ouvre Amis pour en ajouter ; des bots comblent les places.", "Aún no tienes amigos. Abre Amigos para añadirlos; los bots llenan los huecos.", "अभी कोई दोस्त नहीं। जोड़ने के लिए दोस्त खोलें; खाली जगह बॉट भरेंगे।"],
         tLocal: ["بالمباراة، الكمبيوتر يحرّك زملاءك البوتات.", "In the match, the computer steers your bot teammates.", "Maçta bot takım arkadaşlarını bilgisayar yönetir.", "Pendant le match, l’ordinateur dirige tes coéquipiers bots.", "En la partida, la computadora controla a tus compañeros bot.", "मैच में कंप्यूटर आपके बॉट साथियों को चलाता है।"],
         tRating: ["تقييم الفرق", "Team rating", "Takım puanı", "Cote d'équipe", "Rating de equipo", "टीम रेटिंग"],
         tWins: ["انتصارات", "Wins", "Galibiyet", "Victoires", "Victorias", "जीत"],
@@ -6257,9 +6257,9 @@
           } else {
             h = `<p class="x-note">${_t("tVs", { n: tCnt() - 1 })} · ${_t("tRating")} ${P.tr}</p>` + it("🔵", esc(P.name || nameOf(cur)), _t("tYou"), "", 1);
             for (let i = 0; i < f - 1; i++) h += TI[i] ? it("👥", esc(nameOf(TI[i])), _t("tYours"), `<button data-ti="${esc(TI[i])}">${_t("tOut")}</button>`)
-              : it("🤖", _t("tBot"), _t("tAuto"));
+              : (cur === "@on" && window.__L && window.__L.slot ? window.__L.slot(i) : it("🤖", _t("tBot"), _t("tAuto")));
             if (f > 1) h += P.fr.filter((k) => ACC[k] && !TI.includes(k)).map((k) => it(avH(ACC[k].d.P), esc(nameOf(k)), `${_t("tRating")} ${Number.isInteger(ACC[k].d.P.tr) ? ACC[k].d.P.tr : 1000}`,
-              `<button data-ti="${esc(k)}" ${TI.length >= f - 1 ? "disabled" : ""}>${_t(TI.length >= f - 1 ? "tFull" : "tInv")}</button>`)).join("") || `<p class="x-note">${_t("tNoFr")}</p>`;
+              `<button data-ti="${esc(k)}" ${TI.length >= f - 1 ? "disabled" : ""}>${_t(TI.length >= f - 1 ? "tFull" : "tInv")}</button>`)).join("") || (cur === "@on" && window.__L && window.__L.noFr ? window.__L.noFr() : `<p class="x-note">${_t("tNoFr")}</p>`);
             h += `<p class="x-note">${_t("tLocal")}</p>`;
           }
           c.innerHTML = h;
@@ -10858,7 +10858,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13k" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13l" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -11615,7 +11615,7 @@
           const SKIPOV = new Set(["menu", "game", "chat", "onch", "login", "reg", "mnt", "studio"]);
           document.querySelectorAll(".x-ov").forEach((ov) => {
             if (SKIPOV.has(ov.id)) return;
-            new MutationObserver((ms) => { if (ov.classList.contains("x-hide")) return; if (ms.some((m) => !(m.target.closest && m.target.closest(".h-own")))) sched(ov); })
+            new MutationObserver((ms) => { if (ov.classList.contains("x-hide")) return; if (ms.some((m) => { const t = m.target && m.target.nodeType === 1 ? m.target : m.target && m.target.parentElement; return !!t && t.isConnected && ov.contains(t) && !t.closest(".h-own"); })) sched(ov); })
               .observe(ov, { attributes: true, attributeFilter: ["class"], childList: true, subtree: true, characterData: true });
           });
 
@@ -11693,11 +11693,11 @@
           SEC.nfmodes = () => {
             const r = tryv(mystToday, null); if (!r) return;
             const done = tryv(() => NX.my === utcDay(), false), left = (utcDay() + 1) * 864e5 - Date.now();
-            evh.innerHTML = `<div class="h-evt"><span class="h-art" style="background-image:url(ui/bn_event.webp${V})"></span><span class="pill r">${esc(_t("b13hLive"))} · ${esc(fmtLeft(left))}</span>` +
+            const evHtml = `<div class="h-evt"><span class="h-art" style="background-image:url(ui/bn_event.webp${V})"></span><span class="pill r">${esc(_t("b13hLive"))} · ${esc(fmtLeft(left))}</span>` +
               `<small class="h-lab o">${esc(_t("nfMyst"))}</small><b class="h-disp h-t1 h-stroke">${esc(mystName(r))}</b><p>${esc(_t("nfMy_d_" + r.k))}</p></div>` +
               `<div class="h-evb"><div class="h-row">${ic(done ? "missions" : "gift", "h-c28")}<span><b>${esc(done ? _t("nfMyDone") : _t("nfMyRewT", { n: 50 }))}</b></span></div>` +
               `<button type="button" class="h-btn green" data-go="nfplay" data-m="myst">${esc(_t("b13hPlayEv"))}</button></div>`;
-            deEmoji(evh, "nfmodes");
+            if (evh._lh !== evHtml) { evh._lh = evHtml; evh.innerHTML = evHtml; deEmoji(evh, "nfmodes"); }
             const l = $("nfml"); if (l) l.querySelectorAll(".x-it").forEach((c) => { const b = c.querySelector('[data-m="myst"]'); c.classList.toggle("h-live", !!b); });
           };
 
@@ -12112,7 +12112,7 @@
             if (p.is_friend) return `<button type="button" class="x-btn x-main" data-jpa="chat" data-id="${esc(p.id)}">💬 ${esc(_t("jChat"))}</button><button type="button" class="x-btn x-sub" data-jpa="inv" data-id="${esc(p.id)}">🎮 ${esc(_t("jChallenge"))}</button>` +
               `<button type="button" class="x-btn x-sub j-dg" data-jpa="rm" data-id="${esc(p.id)}">${esc(_t("jRemove"))}</button><button type="button" class="x-btn x-sub j-dg" data-jpa="block" data-id="${esc(p.id)}">⛔ ${esc(_t("jBlock"))}</button>`;
             if (p.incoming) return `<button type="button" class="x-btn x-main" data-jpa="acc" data-id="${esc(p.id)}">✓ ${esc(_t("onAccept"))}</button><button type="button" class="x-btn x-sub" data-jpa="dec" data-id="${esc(p.id)}">${esc(_t("jDecline"))}</button><button type="button" class="x-btn x-sub j-dg" data-jpa="block" data-id="${esc(p.id)}">⛔ ${esc(_t("jBlock"))}</button>`;
-            if (p.requested) return `<button type="button" class="x-btn x-sub" disabled>✓ ${esc(_t("jSent"))}</button><button type="button" class="x-btn x-sub" data-jpa="can" data-id="${esc(p.id)}">${esc(_t("onCancel"))}</button><button type="button" class="x-btn x-sub j-dg" data-jpa="block" data-id="${esc(p.id)}">⛔ ${esc(_t("jBlock"))}</button>`;
+            if (p.requested) return `<span class="j-stc" role="status">✓ ${esc(_t("jSent"))}</span><button type="button" class="x-btn x-sub" data-jpa="can" data-id="${esc(p.id)}">${esc(_t("onCancel"))}</button><button type="button" class="x-btn x-sub j-dg" data-jpa="block" data-id="${esc(p.id)}">⛔ ${esc(_t("jBlock"))}</button>`;
             return `<button type="button" class="x-btn x-main" data-jpa="add" data-id="${esc(p.id)}" data-q="${esc(String(p.shown_id || p.player_id))}">+ ${esc(_t("b13Add"))}</button><button type="button" class="x-btn x-sub j-dg" data-jpa="block" data-id="${esc(p.id)}">⛔ ${esc(_t("jBlock"))}</button>`;
           };
           const lastSeen = (p) => { if (p.in_match) return _t("b13InMatch"); if (p.online) return _t("b13Online"); if (!p.last_seen) return ""; const m = Math.max(1, Math.round((Date.now() - Date.parse(p.last_seen)) / 60000));
@@ -12122,7 +12122,7 @@
             const fr = id === 1 ? "own" : id <= 50 ? "vip v" + vipT(id) : "n";
             const crowns = (lg.c1 ? tv(() => B13D.crown(1, lg.c1), "") : "") + (lg.lg ? tv(() => B13D.legend(lg.lg), "") : "");
             const k = (v, l) => `<span class="j-pst"><b dir="ltr">${v}</b><small>${esc(l)}</small></span>`;
-            return `<div class="j-pc${compact ? " cmp" : ""}" data-jid="${esc(p.id)}">` +
+            return `<div class="j-pc${compact ? " cmp" : ""}" data-jid="${esc(p.id)}" data-q="${esc(String(id || ""))}" data-nm="${esc(p.username || "")}">` +
               `<div class="j-pch"><span class="j-pav ${fr}">${tv(() => B13G.h(p.avatar), "🐍")}${p.blocked_by_me ? "" : `<i class="b13-dot ${dot}"></i>`}</span>` +
               `<span class="j-pnm"><b class="h-disp"><bdi>${esc(p.username || "—")}</bdi></b><span class="j-prow">${rid(id)}${p.level ? tv(() => B13.lv(p.level), "") : ""}${p.role ? `<span class="j-role">${esc(p.role === "owner" ? _t("b13cOwner") : "ADMIN")}</span>` : ""}</span>` +
               `<small class="j-pmu">${p.blocked_by_me ? esc(_t("onFrBl")) : esc(lastSeen(p))}</small></span>` +
@@ -12131,6 +12131,7 @@
               `<div class="j-pba">${relBtns(p)}</div><p class="x-err j-pm" role="alert"></p></div>`;
           };
           const errT = (e) => (e && (e.code === "id_only" || e.message === "id_only") ? _t("jIdOnly") : tv(() => ON.err(e), _t("onErr")));
+          J.cardHTML = (p, c) => cardHTML(p, c); J.errT = errT;
           J.card = async (q) => {
             q = String(q || "").replace(/[^0-9]/g, ""); if (!q || !online()) return;
             B13.pop(`<div class="j-pcw"><div class="j-pc ld">…</div></div>`); $("b13pop").classList.add("j-pp");
@@ -12162,8 +12163,9 @@
             else if (a === "repgo") { try { await ON.rpc("report_player", { p_user: id, p_reason: b.dataset.r }); toast(_t("onRepSent")); } catch (e) { toast(errT(e)); } B13.popX(); return; }
             if (box && box.parentElement && box.parentElement.classList.contains("j-pcw") && J.cardP) J.card(J.cardP.shown_id || J.cardP.player_id);
           };
+          J.act0 = act;
           document.addEventListener("click", (e) => {
-            const b = e.target.closest && e.target.closest("[data-jpa]"); if (b && !b.disabled) { e.preventDefault(); act(b.dataset.jpa, b.dataset.id, b); return; }
+            const b = e.target.closest && e.target.closest("[data-jpa]"); if (b && !b.disabled) { e.preventDefault(); (J.act || act)(b.dataset.jpa, b.dataset.id, b); return; }
             if (e.target.closest && e.target.closest("button, a, input, [data-fa], [data-b13add]")) return;
             const row = e.target.closest && e.target.closest(".j-frow, #onlbl li, #lgl li, .b13d-row, #b13dlgl li, .b13-fc, #onchh, .b13d-pod > *, .h-lbr, .lg-row");
             if (!row) return; const id = row.querySelector(".jid[data-p]"); if (!id) return;
@@ -12217,7 +12219,7 @@
               else l.innerHTML = (d.blocked || []).length ? d.blocked.map((f) => rowH(f, "b")).join("") : empty("settings", _t("onFrNoBl"), "");
             };
             const jLoad0 = async () => { if (!online()) return; try { J.fr = await ON.rpc("list_friends"); } catch (e) { $("jfrm").textContent = errT(e); } paintList(); };
-            jLoad = jLoad0;
+            jLoad = jLoad0; J.jLoad = jLoad0;
             const search = async () => {
               const raw = inp.value.trim(), q = raw.replace(/^#/, ""), m = $("jfrm"), r = $("jfres"); m.textContent = "";
               if (!q) { r.innerHTML = ""; return; }
@@ -12742,6 +12744,192 @@
           $("kadm").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "kaq") { const s = $("kadm").querySelector('[data-ka="search"]'); if (s) s.click(); } });
           if (NFH.relang) NFH.relang.push(() => { setTitle("kprof", _t("kProf")); setTitle("kset", _t("kSet")); setTitle("kban", _t("kBanT")); if (!$("kprof").classList.contains("x-hide")) pfPaint(); if (!$("kset").classList.contains("x-hide")) setPaint(); if (!$("kadm").classList.contains("x-hide")) admPaintK(); });
           K.v = "13k";
+        }
+        try { Object.assign(I18N, {"lOkAdd": ["تم إرسال طلب صداقة إلى {x}", "Friend request sent to {x}", "{x} kişisine arkadaşlık isteği gönderildi", "Demande d'ami envoyée à {x}", "Solicitud de amistad enviada a {x}", "{x} को फ्रेंड रिक्वेस्ट भेजी गई"], "lOkCan": ["تم إلغاء طلبك إلى {x}", "Request to {x} cancelled", "{x} kişisine olan istek iptal edildi", "Demande à {x} annulée", "Solicitud a {x} cancelada", "{x} को भेजी रिक्वेस्ट रद्द"], "lOkAcc": ["أنت و{x} أصدقاء الآن", "You and {x} are now friends", "{x} ile artık arkadaşsınız", "{x} et toi êtes maintenant amis", "Tú y {x} ya sois amigos", "आप और {x} अब दोस्त हैं"], "lOkDec": ["تم رفض طلب {x}", "Request from {x} declined", "{x} kişisinin isteği reddedildi", "Demande de {x} refusée", "Solicitud de {x} rechazada", "{x} की रिक्वेस्ट अस्वीकार"], "lOkRm": ["تمت إزالة {x} من أصدقائك", "{x} removed from your friends", "{x} arkadaşlarından çıkarıldı", "{x} retiré de tes amis", "{x} eliminado de tus amigos", "{x} दोस्तों से हटाए गए"], "lOkBl": ["تم حظر {x}", "{x} is blocked", "{x} engellendi", "{x} est bloqué", "{x} está bloqueado", "{x} ब्लॉक किए गए"], "lOkUnb": ["تم إلغاء حظر {x}", "{x} unblocked", "{x} engeli kaldırıldı", "{x} débloqué", "{x} desbloqueado", "{x} अनब्लॉक किए गए"], "lCfCan": ["إلغاء طلب الصداقة إلى {x}؟", "Cancel your friend request to {x}?", "{x} kişisine olan isteğini iptal et?", "Annuler ta demande d'ami à {x} ?", "¿Cancelar tu solicitud a {x}?", "{x} को भेजी रिक्वेस्ट रद्द करें?"], "lCfRm": ["إزالة {x} من أصدقائك؟", "Remove {x} from your friends?", "{x} arkadaşlarından çıkarılsın mı?", "Retirer {x} de tes amis ?", "¿Eliminar a {x} de tus amigos?", "{x} को दोस्तों से हटाएं?"], "lCfBl": ["حظر {x}؟ لن يتمكن من إضافتك أو مراسلتك.", "Block {x}? They can't add or message you.", "{x} engellensin mi? Seni ekleyemez veya mesaj atamaz.", "Bloquer {x} ? Il ne pourra plus t'ajouter ni t'écrire.", "¿Bloquear a {x}? No podrá añadirte ni escribirte.", "{x} को ब्लॉक करें? वे आपको जोड़ या मैसेज नहीं कर पाएंगे।"], "lYesCan": ["نعم، ألغِ الطلب", "Yes, cancel request", "Evet, iptal et", "Oui, annuler", "Sí, cancelar", "हां, रद्द करें"], "lYesRm": ["نعم، أزِله", "Yes, remove", "Evet, çıkar", "Oui, retirer", "Sí, eliminar", "हां, हटाएं"], "lYesBl": ["نعم، احظر", "Yes, block", "Evet, engelle", "Oui, bloquer", "Sí, bloquear", "हां, ब्लॉक करें"], "lKeep": ["تراجع", "Keep", "Vazgeç", "Garder", "Mantener", "रहने दें"], "lInvite": ["دعوة", "Invite", "Davet et", "Inviter", "Invitar", "बुलाएं"], "lInvitedS": ["مدعو", "Invited", "Davet edildi", "Invité", "Invitado", "बुलाया"], "lInvited": ["تمت الدعوة · بانتظار رده", "Invited · waiting for them", "Davet edildi · yanıt bekleniyor", "Invité · en attente", "Invitado · esperando", "बुलाया · जवाब का इंतज़ार"], "lChange": ["تغيير", "Change", "Değiştir", "Changer", "Cambiar", "बदलें"], "lEmpty": ["مكان فارغ", "Empty slot", "Boş yer", "Place libre", "Hueco libre", "खाली जगह"], "lEmptyS": ["يلعبه بوت · اضغط لدعوة صديق", "A bot plays it · tap to invite a friend", "Bot oynar · arkadaş davet etmek için dokun", "Un bot le joue · touche pour inviter un ami", "Lo juega un bot · toca para invitar", "बॉट खेलेगा · दोस्त बुलाने के लिए दबाएं"], "lNoFr": ["اضغط على مكان فارغ لدعوة صديق. البوتات تلعب الأماكن الفاضية.", "Tap an empty slot to invite a friend. Bots play any empty slot.", "Arkadaş davet etmek için boş bir yere dokun. Boş yerleri botlar oynar.", "Touche une place libre pour inviter un ami. Des bots jouent les places libres.", "Toca un hueco libre para invitar a un amigo. Los bots juegan los huecos.", "दोस्त बुलाने के लिए खाली जगह दबाएं। खाली जगह बॉट खेलते हैं।"], "lOpenFr": ["الأصدقاء", "Friends", "Arkadaşlar", "Amis", "Amigos", "दोस्त"], "lYourFr": ["أصدقاؤك", "Your friends", "Arkadaşların", "Tes amis", "Tus amigos", "आपके दोस्त"], "lShare": ["شارك رابط الدعوة", "Share invite link", "Davet bağlantısını paylaş", "Partager le lien", "Compartir enlace", "इनवाइट लिंक शेयर करें"], "lPkT": ["دعوة إلى المكان {n}", "Invite to slot {n}", "{n}. yere davet", "Inviter à la place {n}", "Invitar al hueco {n}", "जगह {n} के लिए बुलाएं"], "lPkNoFr": ["ما عندك أصدقاء بعد. ابحث برقم اللاعب أو شارك رابطك.", "No friends yet. Search by player ID or share your link.", "Henüz arkadaşın yok. Oyuncu ID'siyle ara veya bağlantını paylaş.", "Pas encore d'amis. Cherche par ID ou partage ton lien.", "Aún no tienes amigos. Busca por ID o comparte tu enlace.", "अभी कोई दोस्त नहीं। ID से खोजें या अपना लिंक शेयर करें।"], "lPkNote": ["الصديق يستلم دعوة لغرفة خاصة معك. البوتات تلعب أي مكان فاضي في الفرق.", "Your friend gets an invite to a private room with you. Bots play any empty Teams slot.", "Arkadaşın seninle özel bir odaya davet alır. Boş takım yerlerini botlar oynar.", "Ton ami reçoit une invitation dans un salon privé avec toi. Des bots jouent les places libres.", "Tu amigo recibe una invitación a una sala privada contigo. Los bots juegan los huecos libres.", "दोस्त को आपके साथ प्राइवेट रूम का इनवाइट मिलता है। खाली टीम जगह बॉट खेलते हैं।"]}); } catch (_) {}
+        // ===================== build13l: iPhone Safari tap fixes (friends flow, lobby invite picker, Extra modes re-render loop) =====================
+        b13l: {
+          const tv = (f, d) => { try { const v = f(); return v === undefined || v === null || Number.isNaN(v) ? d : v; } catch (_) { return d; } };
+          const J = window.__J || {}, L = (window.__L = window.__L || {});
+          const online = () => tv(() => cur === "@on" && ON.on && !!ON.rpc, false);
+          const me = () => tv(() => ON.st.profile, null);
+          const errT = (e) => { const c = (e && (e.code || e.message)) || ""; const k = "onE_" + c; return I18N[k] ? _t(k) : J.errT ? J.errT(e) : tv(() => ON.err(e), _t("onErr")); };
+          const go = (g) => { const b = document.createElement("button"); b.dataset.go = g; b.style.display = "none"; document.body.appendChild(b); b.click(); b.remove(); };
+          const qs = (s) => (window.CSS && CSS.escape ? CSS.escape(s) : String(s).replace(/"/g, '\\"'));
+
+          // ---------- 1) friends: every action confirms where it should, shows a clear result, and the card on screen always shows the server's truth ----------
+          const allFr = () => { const d = J.fr || {}; return [].concat(d.friends || [], d.incoming || [], d.outgoing || [], d.blocked || []); };
+          const nameOf = (id, box) => {
+            if (box && box.dataset.nm) return box.dataset.nm;
+            const c = document.querySelector(`.j-pc[data-jid="${qs(id)}"]`); if (c && c.dataset.nm) return c.dataset.nm;
+            const f = allFr().find((x) => x.id === id); if (f) return f.username;
+            return J.cardP && J.cardP.id === id ? J.cardP.username || "" : "";
+          };
+          const RPC = {
+            add: ["send_friend_request", (id, b, box) => ({ p_username: (b.dataset.q || (box && box.dataset.q) || "").replace(/[^0-9]/g, "") }), "lOkAdd"],
+            acc: ["respond_friend_request", (id) => ({ p_from: id, p_accept: true }), "lOkAcc"],
+            dec: ["respond_friend_request", (id) => ({ p_from: id, p_accept: false }), "lOkDec"],
+            can: ["cancel_friend_request", (id) => ({ p_to: id }), "lOkCan"],
+            unb: ["unblock_user", (id) => ({ p_user: id }), "lOkUnb"],
+            rm: ["remove_friend", (id) => ({ p_user: id }), "lOkRm"],
+            block: ["block_user", (id) => ({ p_user: id }), "lOkBl"],
+          };
+          const CONF = { can: ["lCfCan", "lYesCan", "lKeep"], rm: ["lCfRm", "lYesRm", "lKeep"], block: ["lCfBl", "lYesBl", "onCancel"] };
+          const prevH = new WeakMap();
+          // re-read one card from the server and swap it in place (search result card, popup card, lobby picker card)
+          const refreshCard = async (box) => {
+            const q = box && box.dataset.q; if (!q || !online()) return;
+            try {
+              const r = await ON.rpc("player_card", { p_query: q }); if (!box.isConnected) return;
+              if (r && r.found && J.cardHTML) {
+                const t = document.createElement("div"); t.innerHTML = J.cardHTML(r.player, box.classList.contains("cmp")); const nb = t.firstElementChild;
+                if (nb) box.replaceWith(nb);
+                if (J.cardP && J.cardP.id === r.player.id) J.cardP = r.player;
+              }
+            } catch (_) {}
+          };
+          const refreshAll = async (id) => {
+            const cards = [...document.querySelectorAll(`.j-pc[data-jid="${qs(id)}"]`)];
+            await Promise.all(cards.map(refreshCard));
+            try { if (B13.frReload) await B13.frReload(); else if (J.jLoad) await J.jLoad(); } catch (_) {}
+            try { if (L.pkOpen && L.pkLoad) L.pkLoad(); } catch (_) {}
+          };
+          const run = async (a, id, b) => {
+            const R = RPC[a]; if (!R || !online()) return false;
+            const box = b.closest(".j-pc"), row = b.closest(".j-frow"), inPop = !box && !row && b.closest("#b13pb");
+            const scope = box ? box.querySelector(".j-pba") : row ? row.querySelector(".j-fa") : b.parentElement;
+            const m = box && box.querySelector(".j-pm"); if (m) m.textContent = "";
+            const nm = nameOf(id, box) || (box && box.dataset.q ? "#" + box.dataset.q : "");
+            const btns = scope ? [...scope.querySelectorAll("button")] : [b];
+            const old = b.innerHTML; btns.forEach((x) => { x.disabled = true; }); b.classList.add("l-busy"); b.innerHTML = `<span class="l-spin" aria-hidden="true"></span>${old}`;
+            try {
+              await ON.rpc(R[0], R[1](id, b, box));
+              toast("✓ " + _t(R[2], { x: nm }));
+              try { beep(784, 0.1, "triangle", 0.05, 1175); } catch (_) {}
+            } catch (e) {
+              const t = errT(e); toast("⚠️ " + t); if (m) m.textContent = t;
+              if (b.isConnected) { b.innerHTML = old; b.classList.remove("l-busy"); btns.forEach((x) => { x.disabled = false; }); }
+              if (box && prevH.has(scope)) { scope.innerHTML = prevH.get(scope); prevH.delete(scope); }
+              if (inPop) B13.popX();
+              refreshAll(id);
+              return false;
+            }
+            if (inPop) B13.popX();
+            await refreshAll(id);
+            return true;
+          };
+          const confirmAsk = (a, id, b) => {
+            const box = b.closest(".j-pc"), nm = nameOf(id, box) || "", C = CONF[a];
+            const yes = `<button type="button" class="x-btn x-main l-cfy${a === "can" ? "" : " l-dg"}" data-jpa="cf_${a}" data-id="${esc(id)}">${esc(_t(C[1]))}</button>`;
+            const no = (attr) => `<button type="button" class="x-btn x-sub l-cfn" ${attr}>${esc(_t(C[2]))}</button>`;
+            if (box) { // inline: the question replaces the buttons until the player answers (no timer, no stale "Sure?")
+              const sc = box.querySelector(".j-pba"); if (!sc) return; prevH.set(sc, sc.innerHTML);
+              sc.innerHTML = `<p class="l-cfq" role="alert">${esc(_t(C[0], { x: nm }))}</p>${yes}${no(`data-jpa="cfno" data-id="${esc(id)}"`)}`;
+              const y = sc.querySelector(".l-cfy"); if (y) try { y.focus({ preventScroll: true }); } catch (_) {}
+            } else { // list rows: a small dialog
+              B13.pop(`<div class="j-pcw l-cfp"><h3>${esc(_t(C[0], { x: nm }))}</h3><div class="b13-row2">${yes}${no('data-b13x="1"')}</div></div>`);
+            }
+          };
+          J.act = async (a, id, b) => {
+            if (a === "cfno") { const sc = b.closest(".j-pba"); if (sc && prevH.has(sc)) { sc.innerHTML = prevH.get(sc); prevH.delete(sc); } return; }
+            if (a.startsWith("cf_")) { await run(a.slice(3), id, b); return; }
+            if (CONF[a]) { confirmAsk(a, id, b); return; }
+            if (RPC[a]) { await run(a, id, b); return; }
+            if (J.act0) return J.act0(a, id, b); // chat / challenge / gifts / report keep their own flow
+          };
+
+          // the Requests / Friends / Blocked tabs re-read the list, so a request that just arrived shows without reopening the screen
+          { const tb = $("jftabs"); if (tb) tb.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("[data-jft]") && J.jLoad) J.jLoad(); }); }
+
+          // ---------- 2) team lobby: empty slots open an invite picker (friends, search by ID, share link); points to Friends ----------
+          L.inv = L.inv || {};
+          L.slot = (i) => {
+            const v = L.inv[i];
+            if (v) return `<div class="x-it l-slot inv" data-lslot="${i}"><i class="l-pi" aria-hidden="true">⏳</i><b><bdi>${esc(v.name)}</bdi><small>${esc(_t("lInvited"))}</small></b><button type="button" class="l-sb" data-lslot="${i}">${esc(_t("lChange"))}</button></div>`;
+            return `<div class="x-it l-slot" data-lslot="${i}"><i class="l-pi" aria-hidden="true">+</i><b>${esc(_t("lEmpty"))}<small>${esc(_t("lEmptyS"))}</small></b><button type="button" class="l-sb" data-lslot="${i}">${esc(_t("lInvite"))}</button></div>`;
+          };
+          L.noFr = () => `<div class="l-nofr"><p>${esc(_t("lNoFr"))}</p><button type="button" class="x-btn x-sub l-ofr" data-lofr="1">${esc(_t("lOpenFr"))}</button></div>`;
+          const tmw = document.querySelector(".j-tmp .j-tmw"), tmp = document.querySelector(".j-tmp");
+          if (tmw && !$("lpk")) {
+            const pk = document.createElement("div"); pk.id = "lpk"; pk.className = "l-pk x-hide";
+            pk.innerHTML = `<div class="l-pkh"><button type="button" class="l-bk" data-lpk="back"></button><b id="lpkt"></b></div>
+              <div class="l-pkb" id="lpkb">
+                <p class="l-pkn l-pkt" id="lpkno"></p>
+                <h4 id="lpkf"></h4><div class="l-pkl" id="lpkl"></div>
+                <h4 id="lpks"></h4><div class="l-pks"><span class="j-hash" aria-hidden="true">#</span><input id="lpkn" class="x-name" inputmode="numeric" pattern="[0-9]*" maxlength="12" autocomplete="off" spellcheck="false" dir="ltr" /><button type="button" class="x-btn x-main" data-lpk="find" id="lpkgo"></button></div>
+                <p class="j-sm" id="lpkm" role="alert"></p><div class="l-pkr" id="lpkr" aria-live="polite"></div>
+                <div class="l-pka"><button type="button" class="x-btn x-sub" data-lpk="share" id="lpksh"></button><button type="button" class="x-btn x-sub" data-lofr="1" id="lpkfr"></button></div>
+              </div>`;
+            tmw.appendChild(pk);
+            const paintStatic = () => {
+              pk.dir = LANG === "ar" ? "rtl" : "ltr";
+              pk.querySelector(".l-bk").textContent = (LANG === "ar" ? "› " : "‹ ") + _t("back");
+              $("lpkf").textContent = _t("lYourFr"); $("lpks").textContent = _t("jSearchId"); $("lpkgo").textContent = _t("b13Search");
+              $("lpkn").placeholder = _t("jSearchPh"); $("lpkn").setAttribute("aria-label", _t("jSearchId"));
+              $("lpksh").textContent = "↗ " + _t("lShare"); $("lpkfr").textContent = _t("lOpenFr"); $("lpkno").textContent = _t("lPkNote");
+              if (L.pkOpen) $("lpkt").textContent = _t("lPkT", { n: (L.pkSlot | 0) + 2 });
+            };
+            const close = () => { L.pkOpen = false; pk.classList.add("x-hide"); tmw.classList.remove("l-pko"); };
+            const stTxt = (f) => (f.in_match ? _t("b13InMatch") : f.online ? _t("b13Online") : "");
+            L.pkLoad = async () => {
+              const l = $("lpkl"); if (!l) return;
+              if (!online()) { l.innerHTML = `<p class="l-pkn">${esc(_t("onErr"))}</p>`; return; }
+              if (!J.fr) l.innerHTML = `<p class="l-pkn">…</p>`;
+              let d = J.fr; try { d = await ON.rpc("list_friends"); J.fr = d; } catch (e) { if (!d) { l.innerHTML = `<p class="l-pkn">${esc(errT(e))}</p>`; return; } }
+              const fr = ((d && d.friends) || []).slice().sort((a, b) => (b.online ? 2 : 0) + (b.in_match ? 1 : 0) - ((a.online ? 2 : 0) + (a.in_match ? 1 : 0)) || String(a.username).localeCompare(String(b.username)));
+              const taken = new Set(Object.values(L.inv).map((v) => v.id));
+              l.innerHTML = fr.length ? fr.map((f) => { const id = f.vip_id || f.player_id, dot = f.in_match ? "m" : f.online ? "on" : "";
+                return `<div class="j-frow l-fr"><span class="j-fav">${tv(() => B13G.h(f.avatar), "🐍")}<i class="b13-dot ${dot}"></i></span><span class="j-fn"><b><bdi>${esc(f.username)}</bdi></b><span class="j-prow">${id && J.rid ? J.rid(id) : ""}<small class="j-pmu">${esc(stTxt(f))}</small></span></span>` +
+                  `<span class="j-fa"><button type="button" class="j-qa ok" data-linv="${esc(f.id)}" ${taken.has(f.id) ? "disabled" : ""}>${esc(_t(taken.has(f.id) ? "lInvitedS" : "lInvite"))}</button></span></div>`; }).join("")
+                : `<p class="l-pkn">${esc(_t("lPkNoFr"))}</p>`;
+            };
+            L.open = (slot) => {
+              if (!online()) { toast(_t("onErr")); return; }
+              L.pkOpen = true; L.pkSlot = slot | 0; paintStatic(); $("lpkr").innerHTML = ""; $("lpkm").textContent = "";
+              tmw.classList.add("l-pko"); pk.classList.remove("x-hide"); const b = $("lpkb"); if (b) b.scrollTop = 0; L.pkLoad();
+            };
+            const find = async () => {
+              const q = $("lpkn").value.trim().replace(/^#/, ""), m = $("lpkm"), r = $("lpkr"); m.textContent = "";
+              if (!q) { r.innerHTML = ""; return; }
+              if (!/^[0-9]{1,12}$/.test(q)) { m.textContent = _t("jIdOnly"); r.innerHTML = ""; return; }
+              r.innerHTML = `<div class="j-pc cmp ld">…</div>`;
+              try { const x = await ON.rpc("player_card", { p_query: q }); r.innerHTML = x && x.found && J.cardHTML ? J.cardHTML(x.player, true) : `<div class="j-pc cmp ld">${esc(_t("jNoId", { n: q }))}</div>`; if (x && x.found) J.cardP = x.player; }
+              catch (e) { r.innerHTML = `<div class="j-pc cmp ld">${esc(errT(e))}</div>`; }
+            };
+            $("lpkn").addEventListener("input", () => { const v = $("lpkn").value, c = v.replace(/[^0-9]/g, "").slice(0, 12); if (v !== c) $("lpkn").value = c; });
+            $("lpkn").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); find(); } });
+            pk.addEventListener("click", async (e) => {
+              const t = e.target.closest && e.target.closest("button"); if (!t || t.disabled) return;
+              if (t.dataset.lpk === "back") { close(); return; }
+              if (t.dataset.lpk === "find") { find(); return; }
+              if (t.dataset.lpk === "share") {
+                const p = me() || {}, id = String(p.vip_id || p.player_id || ""), txt = _t("jShareTx", { n: id }) + " https://billke.com";
+                try { if (navigator.share) await navigator.share({ text: txt }); else { await navigator.clipboard.writeText(txt); toast("✓ " + _t("jCopied", { n: id })); } }
+                catch (er) { if (!(er && er.name === "AbortError")) { try { await navigator.clipboard.writeText(txt); toast("✓ " + _t("jCopied", { n: id })); } catch (_) { toast("#" + id); } } }
+                return;
+              }
+              if (t.dataset.linv) {
+                const f = ((J.fr && J.fr.friends) || []).find((x) => x.id === t.dataset.linv); if (!f) return;
+                t.disabled = true; const old = t.textContent; t.innerHTML = `<span class="l-spin" aria-hidden="true"></span>`;
+                try {
+                  const r = await ON.rpc("invite_friend", { p_to: f.id });
+                  B13.room = { code: r.code, host: true, name: f.username, t: Date.now() }; try { B13.badges(); } catch (_) {}
+                  L.inv[L.pkSlot | 0] = { id: f.id, name: f.username }; toast("🎮 " + _t("b13InvSent", { x: f.username }));
+                  close(); try { paintTeam(); } catch (_) {}
+                } catch (er) { toast("⚠️ " + errT(er)); t.disabled = false; t.textContent = old; }
+              }
+            });
+            // open the picker from an empty slot (the whole row or its button); "Friends" closes the lobby and opens the Friends screen
+            const tmc = $("tmc");
+            tmw.addEventListener("click", (e) => {
+              const fr = e.target.closest && e.target.closest("[data-lofr]"); if (fr) { e.stopPropagation(); close(); if (tmp) tmp.classList.add("x-hide"); go("nfonfr"); return; }
+              const s = e.target.closest && e.target.closest("[data-lslot]"); if (s && tmc && tmc.contains(s)) { e.stopPropagation(); L.open(+s.dataset.lslot || 0); }
+            }, true);
+            if (tmp) new MutationObserver(() => { if (tmp.classList.contains("x-hide") && L.pkOpen) close(); }).observe(tmp, { attributes: true, attributeFilter: ["class"] });
+            if (NFH.relang) NFH.relang.push(() => { paintStatic(); if (L.pkOpen) L.pkLoad(); });
+            paintStatic();
+            // a friend who answered the invite (or an expired one) frees the slot label on the next paint
+            if (NFH.home) NFH.home.push(() => { if (!B13.room) L.inv = {}; });
+          }
         }
         requestAnimationFrame(loop);
       })();
@@ -15379,6 +15567,52 @@ body.k-tmo #b13hnv, body:has(.j-tmp:not(.x-hide)) #b13hnv { visibility: hidden; 
 
 /* banned screen: no wallet in the header (nothing can be bought or used while banned) */
 #kban .p10-w { display: none !important; }
+
+</style>
+<style id="ss13l">
+/* ===== build13l: iPhone Safari tap fixes ===== */
+/* no double-tap-zoom wait on taps (Safari in desktop-site mode otherwise holds every tap ~300 ms) */
+html, body, button, [data-go], [role="button"], .x-it, .j-frow { touch-action: manipulation; }
+#toast { z-index: 200 !important; }
+/* friend card: status chip instead of a dead disabled button; inline confirm; busy spinner */
+.j-pba .j-stc { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 38px; padding: 0 10px; border-radius: 12px; font: 700 13.5px/1 inherit; color: #9ff5c0; background: rgba(40, 200, 120, .12); border: 1.5px dashed rgba(120, 240, 170, .5); white-space: nowrap; }
+.j-pba .l-cfq { flex: 1 1 100%; margin: 0 0 2px; font-size: 13px; line-height: 1.3; font-weight: 700; color: #ffe7a8; text-align: start; }
+.j-pba .l-cfy.l-dg, .l-cfp .l-cfy.l-dg, body.b13h-on .x-ov:not(#menu) .x-btn.x-main.l-cfy.l-dg, #b13pop #b13pb .x-btn.x-main.l-dg, .j-tmp .j-tmw .x-btn.x-main.l-dg { background: linear-gradient(180deg, #ff8a95, #e0303f 45%, #b0182a) !important; color: #fff !important; border: 2px solid #4a0610 !important; text-shadow: 0 2px 0 #6a0a14 !important; box-shadow: 0 4px 0 #6a0a14 !important; }
+.l-cfp h3 { margin: 0 0 10px; font-size: 16px; line-height: 1.3; }
+.l-busy { opacity: .85; }
+.l-spin { display: inline-block; width: 13px; height: 13px; margin-inline-end: 6px; vertical-align: -2px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: l-spin .7s linear infinite; }
+@keyframes l-spin { to { transform: rotate(360deg); } }
+/* team lobby: empty slots invite, friends button */
+#tmc .x-it.l-slot { cursor: pointer; border: 1.5px dashed rgba(255, 214, 110, .55) !important; background: rgba(255, 214, 110, .06) !important; }
+#tmc .x-it.l-slot.inv { border-style: solid !important; border-color: rgba(120, 220, 255, .6) !important; }
+#tmc .x-it.l-slot .l-pi { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; font: 800 20px/1 system-ui; font-style: normal; color: #ffd76a; background: rgba(255, 214, 110, .14); flex: 0 0 auto; }
+#tmc .x-it.l-slot .l-sb { flex: 0 0 auto; min-width: 74px; height: 34px; padding: 0 12px; border-radius: 11px; border: 0; font-weight: 800; font-size: 13px; color: #2a1800; background: linear-gradient(#ffe08a, #e2a93a); box-shadow: 0 2px 0 #8a5a12; }
+#tmc .x-it.l-slot.inv .l-sb { color: #fff; background: rgba(255, 255, 255, .14); box-shadow: none; }
+#tmc .l-nofr { display: flex; align-items: center; gap: 10px; margin: 6px 0 2px; padding: 8px 10px; border-radius: 12px; background: rgba(255, 255, 255, .05); }
+#tmc .l-nofr p { flex: 1 1 auto; margin: 0; font-size: 12.5px; line-height: 1.3; color: #cfd8ff; text-align: start; }
+#tmc .l-nofr .x-btn { flex: 0 0 auto; width: auto !important; min-width: 96px; height: 34px !important; min-height: 0 !important; margin: 0 !important; padding: 0 12px !important; font-size: 13px !important; }
+.j-tmw.l-pko > #tmt, .j-tmw.l-pko > #tmc { display: none !important; }
+.l-pk { display: flex; flex-direction: column; gap: 6px; min-height: 0; flex: 1 1 auto; }
+.l-pk.x-hide { display: none !important; }
+.l-pkh { display: flex; align-items: center; gap: 8px; }
+.l-pkh b { font: 800 15px/1.2 var(--disp, system-ui); color: #ffe08a; }
+.l-pkh .l-bk { flex: 0 0 auto; height: 32px; padding: 0 12px; border-radius: 10px; border: 0; color: #fff; font-weight: 700; background: rgba(255, 255, 255, .12); }
+.l-pkb { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 6px; padding-bottom: 4px; }
+.l-pkb h4 { margin: 4px 0 0; font-size: 12px; letter-spacing: .4px; text-transform: uppercase; color: #ffd76a; text-align: start; }
+.l-pkl { display: flex; flex-direction: column; gap: 5px; }
+.l-pkl .j-frow { padding: 6px 8px; }
+.l-pkl .j-qa { min-width: 70px; }
+.l-pks { display: flex; align-items: center; gap: 6px; }
+.l-pks .x-name { flex: 1 1 auto; min-width: 0; height: 38px; margin: 0; }
+.l-pks .x-btn { flex: 0 0 auto; width: auto !important; height: 38px !important; min-height: 0 !important; margin: 0 !important; padding: 0 14px !important; font-size: 13.5px !important; }
+.l-pka { display: flex; gap: 6px; flex-wrap: wrap; }
+.l-pka .x-btn { flex: 1 1 auto; width: auto !important; height: 36px !important; min-height: 0 !important; margin: 0 !important; padding: 0 10px !important; font-size: 13px !important; white-space: nowrap; }
+.l-pkn { margin: 2px 0 0; font-size: 11.5px; line-height: 1.35; color: #aeb9e8; text-align: start; }
+.l-pkr .j-pc { margin-top: 2px; }
+.l-pkl .j-fn { text-align: start; min-width: 0; }
+.l-pkl .j-fn b { display: block; text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.l-pkl .j-prow { justify-content: flex-start; }
+.l-pkn.l-pkt { margin: 0; padding: 6px 8px; border-radius: 10px; background: rgba(120, 200, 255, .08); }
 
 </style>
 </body>
