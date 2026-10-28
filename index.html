@@ -1204,11 +1204,12 @@
           <div class="x-hud x-stat"><button class="x-hb" id="exitb" data-go="exit" aria-label="الخروج من المباراة" data-i18n-al="exitM"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button><button class="x-hb" id="mute" data-go="mute" aria-label="كتم الصوت"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path class="x-w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /><path class="x-x" d="M16 9l5 6M21 9l-5 6" /></svg></button><div id="len">🐍 20</div><div id="kc">⚔️ 0</div></div>
           <div class="x-evo" aria-live="polite"><b class="x-sr" id="evn">التطوّر: صغير</b><div class="x-evt"><i id="evb"></i></div><span id="evc">0/5 🧬</span><div class="x-pw" id="xpw"></div></div>
         </div>
-        <div class="x-hud x-lb" id="lbx" role="button" tabindex="0" aria-label="المتصدرون" data-i18n-al="leaders"><h4>🏆 <span data-i18n="leaders">المتصدرون</span></h4><ol id="lb"></ol></div>
+        <div class="x-hud x-lb" id="lbx" role="button" tabindex="0" aria-label="المتصدرون" data-i18n-al="leaders"><h4>🏆 <span data-i18n="p12Top">المتصدرون</span></h4><ol id="lb"></ol></div>
         <div class="x-hud x-tm x-hide" id="tm"></div>
         <button class="x-boost" id="boost" aria-label="تسريع" data-i18n="boost" data-i18n-al="boost">تسريع</button>
         <button class="x-ab x-hide" id="abil" aria-label="القدرة"><span class="x-ring" id="abr"></span><b id="abn"></b></button>
         <div class="x-ban" id="ban" role="status"></div>
+        <div class="p12-fx" id="p12fx" aria-hidden="true"></div>
         <div class="x-hud x-q x-hide" id="xq" role="alertdialog" aria-modal="false" aria-labelledby="xqt">
           <p id="xqt" data-i18n="exitQ">تطلع من المباراة؟ اللعبة ما توقف، وخروجك ينحسب خسارة.</p>
           <div class="x-row"><button class="x-btn x-sub" id="xqn" data-go="exitN" data-i18n="exitNo">كمّل اللعب</button><button class="x-btn" data-go="exitY" data-i18n="exitYes">اخرج</button></div>
@@ -1314,7 +1315,7 @@
         <p data-i18n="pickAv">اختر صورتك</p>
         <div class="x-emo" id="emo"></div>
         <p class="x-note x-hide" id="avdn" data-i18n="avDrawn">صورتك المرسومة مفعّلة. احذفها من الاستوديو لترجع للإيموجي.</p>
-        <button class="x-btn x-hide" id="stub" data-go="studio">🎨 <span data-i18n="studio">استوديو الرسم</span></button>
+        <button class="x-btn x-hide" id="stub" hidden aria-hidden="true" tabindex="-1"></button>
         <button class="x-btn x-main" data-go="save" data-i18n="save">حفظ</button>
         <div class="x-col x-hide p11-gone" id="xsec">
           <p class="x-warn x-hide" id="prem" role="status" data-i18n="saveRem">انسخ كود الحفظ حتى ما يضيع تقدمك</p>
@@ -1448,6 +1449,7 @@
           <li data-i18n="how4">التسريع: زر التسريع، أو اضغط مطوّلًا بالفأرة، أو المسافة. يستهلك من طولك.</li>
           <li data-i18n="how5">التحكم من الإعدادات: اتبع الإصبع، عصا تحكم، أو أزرار الاتجاه. على الكمبيوتر: الفأرة أو الأسهم.</li>
           <li data-i18n="how6">التطوّر 🧬: اجمع كرات الحمض النووي لتتطوّر: صغير ← أفعى ← كوبرا ← بايثون ← تنين. كل شكل يفتح قدرة (زر القدرة أو مفتاح E).</li>
+          <li data-i18n="p12How">Grab power-ups on the map (10 s)</li>
           <li data-i18n="how7">المباراة ما توقف أبدًا. زر ✕ في الأعلى أو Esc يخرجك وينحسب خسارة، وزر الصوت أو M للكتم.</li>
         </ul>
         <button class="x-btn" data-go="back" data-i18n="back">رجوع</button>
@@ -1753,6 +1755,15 @@
         p10Cat: ["الأقسام", "Categories", "Kategoriler", "Catégories", "Categorías", "श्रेणियाँ"],
         p10Gems: ["باقات الجواهر", "Gem packs", "Mücevher paketleri", "Packs de gemmes", "Packs de gemas", "जेम पैक"],
         p10Wel: ["أهلاً بك في الساحة الأسطورية", "Welcome to the Legendary Arena", "Efsanevi Arenaya hoş geldin", "Bienvenue dans l'Arène légendaire", "Bienvenido a la Arena legendaria", "लेजेंडरी एरीना में स्वागत है"],
+        p12EUnk: ["هذا العنصر لم يعد معروضاً للبيع", "This item isn't sold anymore", "Bu ürün artık satılmıyor", "Cet article n'est plus en vente", "Este artículo ya no se vende", "यह आइटम अब नहीं बिकता"],
+        p12EAuth: ["انتهت جلستك، سجّل الدخول مرة ثانية", "Your session ended, please sign in again", "Oturumun sona erdi, tekrar giriş yap", "Ta session a expiré, reconnecte-toi", "Tu sesión terminó, inicia sesión de nuevo", "आपका सत्र समाप्त हुआ, फिर से साइन इन करें"],
+        p12ESrv: ["خطأ في الخادم، حاول بعد لحظات", "Server error, please try again in a moment", "Sunucu hatası, birazdan tekrar dene", "Erreur du serveur, réessaie dans un instant", "Error del servidor, inténtalo en un momento", "सर्वर त्रुटि, थोड़ी देर में फिर कोशिश करें"],
+        p12Top: ["الصدارة", "Top", "Zirve", "Top", "Top", "टॉप"],
+        p12Spd: ["سرعة", "Speed", "Hız", "Vitesse", "Velocidad", "स्पीड"],
+        p12Mag: ["مغناطيس", "Magnet", "Mıknatıs", "Aimant", "Imán", "चुंबक"],
+        p12Fire: ["نار", "Fire", "Ateş", "Feu", "Fuego", "आग"],
+        p12Sh: ["درع", "Shield", "Kalkan", "Bouclier", "Escudo", "ढाल"],
+        p12How: ["التقط القوى من الخريطة (١٠ ثوانٍ): ⚡ سرعة بلا خسارة طول · 🧲 مغناطيس يجذب الطعام · 🔥 نار: أي ثعبان يلمس رأسك يموت · 🛡️ درع: لا تموت من الاصطدام", "Grab power-ups on the map (10 s): ⚡ Speed with no length cost · 🧲 Magnet pulls food · 🔥 Fire: any snake your head touches dies · 🛡️ Shield: collisions can't kill you", "Haritadaki güçleri topla (10 sn): ⚡ boy kaybetmeden Hız · 🧲 Mıknatıs yemi çeker · 🔥 Ateş: başının değdiği yılan ölür · 🛡️ Kalkan: çarpışmalar öldürmez", "Ramasse les bonus sur la carte (10 s) : ⚡ Vitesse sans perdre de longueur · 🧲 Aimant attire la nourriture · 🔥 Feu : tout serpent touché par ta tête meurt · 🛡️ Bouclier : les collisions ne te tuent pas", "Recoge mejoras del mapa (10 s): ⚡ Velocidad sin perder longitud · 🧲 Imán atrae comida · 🔥 Fuego: cualquier serpiente que toque tu cabeza muere · 🛡️ Escudo: los choques no te matan", "मैप से पावर-अप उठाएँ (10 सेकंड): ⚡ स्पीड बिना लंबाई घटे · 🧲 चुंबक खाना खींचे · 🔥 आग: आपके सिर से छूने वाला साँप मरता है · 🛡️ ढाल: टक्कर से नहीं मरेंगे"],
         p11Ph: ["صورة الملف", "Profile photo", "Profil fotoğrafı", "Photo de profil", "Foto de perfil", "प्रोफ़ाइल फ़ोटो"],
         p11Ch: ["اختر صورة", "Choose photo", "Fotoğraf seç", "Choisir une photo", "Elegir foto", "फ़ोटो चुनें"],
         p11Rm: ["إزالة الصورة", "Remove photo", "Fotoğrafı kaldır", "Retirer la photo", "Quitar foto", "फ़ोटो हटाएँ"],
@@ -3879,7 +3890,9 @@
           return { name, skin, bot, seg, len: 20, a, ta: a, r: 11, boost: false, alive: true, think: 0, respawn: 0, drop: 0, kills: 0, evo: 0, dna: 0, cd: 0, slow: 0, ghost: 0 };
         }
         function kill(s) {
-          if (s.inv > 0 || (s === player && (rvOn || !s.alive))) return; // a dead player is never killed twice (no double game over)
+          if (s.inv > 0 || (s === player && (rvOn || !s.alive))) return;
+          if (s.psh > 0 && s.alive) { const h = s.seg[0]; if (h.x < s.r * 2 || h.y < s.r * 2 || h.x > A - s.r * 2 || h.y > A - s.r * 2) { h.x = clamp(h.x, s.r, A - s.r); h.y = clamp(h.y, s.r, A - s.r); s.a = s.ta = Math.atan2(A / 2 - h.y, A / 2 - h.x); } return; } // build12 pickup shield
+          // a dead player is never killed twice (no double game over)
           if (s.shield) {
             const h = s.seg[0]; s.shield = 0; s.inv = 2;
             h.x = clamp(h.x, s.r, A - s.r); h.y = clamp(h.y, s.r, A - s.r);
@@ -3932,7 +3945,7 @@
           xBan(_t("evolved") + " " + _t("evo" + s.evo));
           [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.18, "triangle", 0.06), i * 90));
         }
-        function useAb(s) {
+        function useAb(s) { return; // build12: in-match abilities removed; power-ups come from map pickups
           if (!s || !s.alive || !s.evo || s.cd > 0) return;
           const E = EVO[s.evo], h = s.seg[0], ca = Math.cos(s.a), sa = Math.sin(s.a), me = s === player;
           s.cd = E.cd;
@@ -3962,7 +3975,7 @@
         function credit(o, s) { const was = s.alive; kill(s); if (was && !s.alive) { o.kills++; if (o === player) sKill(); } }
         function evoUpdate(dt) {
           while (dna.length < dnaN()) spawnDna();
-          if (player && player.alive && (keys.e || keys["ث"])) { keys.e = keys["ث"] = false; useAb(player); }
+          if (false) { keys.e = keys["ث"] = false; useAb(player); }
           for (const p of parts) if (p.vx) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.96; p.vy *= 0.96; }
           for (const s of snakes) {
             if (!s.alive) continue;
@@ -4131,7 +4144,7 @@
           }
         }
 
-        function think(b, dt) {
+        function think0(b, dt) {
           b.think -= dt;
           if (b.think > 0) return;
           b.think = rnd(0.15, 0.35) / (AD.smart * DF().s);
@@ -4146,6 +4159,7 @@
               if (d < bd) { bd = d; tgt = f; }
             } });
             b.ta = tgt ? Math.atan2(tgt.y - h.y, tgt.x - h.x) : b.a + rnd(-0.8, 0.8);
+            { const pu = pups.find((q) => Math.abs(q.x - h.x) < 420 && Math.abs(q.y - h.y) < 420 && !(q.t.k === "fire" && b.fire > 0)); if (pu) b.ta = Math.atan2(pu.y - h.y, pu.x - h.x); }
             const dn = dna.find((d) => Math.abs(d.x - h.x) < 320 && Math.abs(d.y - h.y) < 320);
             if (dn) b.ta = Math.atan2(dn.y - h.y, dn.x - h.x);
             for (const dc of decoys) { const p = dc.seg[(dc.seg.length / 3) | 0]; if (dc.o !== b && p && Math.hypot(p.x - h.x, p.y - h.y) < 520) { b.ta = Math.atan2(p.y - h.y, p.x - h.x); break; } }
@@ -4177,9 +4191,76 @@
           }
         }
 
+        // ---------- build12: smarter bots. The old think() (now think0) still picks the wish (food, pickups, DNA, hunting / cutting off
+        // the player); this layer then looks where that leads: a fan of short probes through the snake grid and the border keeps the bot
+        // out of bodies and head-ons, detects an enclosure (most directions blocked) and steers + boosts out through the widest gap.
+        // Bigger bots sometimes try to circle the player. Thinks every 0.1-0.2 s; easy bots see less and react slower, hard/legends more.
+        const P12R_S = [0, 0.35, -0.35, 0.7, -0.7, 1.1, -1.1, 1.6, -1.6, 2.2, -2.2], P12R_E = [0, 0.55, -0.55, 1.15, -1.15, 1.8, -1.8];
+        function p12Free(b, a, L) {
+          const h = b.seg[0], st = Math.max(30, b.r * 2.2), ca = Math.cos(a), sa = Math.sin(a), fire = b.fire > 0, sh = b.psh > 0;
+          for (let d = st; d <= L; d += st) {
+            const x = h.x + ca * d, y = h.y + sa * d;
+            if (x < b.r * 2 || y < b.r * 2 || x > A - b.r * 2 || y > A - b.r * 2) return sh ? d + st : d - st * 0.6;
+            if (sh) continue;
+            let hit = false;
+            gCells(SG, x, y, b.r + 26, (c) => { for (let j = 0; j < c.length; j += 2) {
+              const o = c[j]; if (o === b || !o.alive || o.pg > 0 || (b.tm !== undefined && b.tm === o.tm) || (fire && !(o.psh > 0))) continue;
+              const p = c[j + 1], rr = (o.r + b.r) * 0.85 + 8, dx = p.x - x, dy = p.y - y; if (dx * dx + dy * dy < rr * rr) { hit = true; return false; }
+            } });
+            if (hit) return d - st * 0.6;
+          }
+          return L;
+        }
+        function think(b, dt) {
+          b.think -= dt; if (b.think > 0) return;
+          const sm = clamp((AD.smart || 1) * DF().s, 0.5, 2.6);
+          b.think = 0; think0(b, 0); // the wish (sets b.ta / b.boost)
+          b.think = rnd(0.1, 0.2) / clamp(sm, 0.75, 1.35);
+          if (b.boss) return;
+          const h = b.seg[0], pl = player && player.alive && state === "play" ? player : null;
+          // circle / trap: a clearly bigger bot near the player swings around it (hard and up)
+          if (pl && sm >= 1.25 && b.len > pl.len * 1.3 && (b.tm === undefined || b.tm !== pl.tm) && !b.gd) {
+            const p = pl.seg[0], d = Math.hypot(p.x - h.x, p.y - h.y);
+            if (d < 420 && d > 90 && R() < 0.55) { b.ccw = b.ccw || (R() < 0.5 ? 1 : -1); b.ta = Math.atan2(p.y - h.y, p.x - h.x) + b.ccw * (d < 200 ? 1.45 : 1.05); }
+          }
+          const L = 170 + 110 * sm + (b.spd > 0 ? 120 : 0), RS = sm < 0.8 ? P12R_E : P12R_S, want = b.ta;
+          let best = want, bs = -1, f0 = 0;
+          for (const o of RS) {
+            const a = want + o, f = p12Free(b, a, L); if (o === 0) f0 = f;
+            const sc = f / L - Math.abs(o) * (0.09 + 0.05 / sm); if (sc > bs) { bs = sc; best = a; }
+            if (o === 0 && f >= L) break; // the wish is clear
+          }
+          if (f0 < L) b.ta = best;
+          // enclosure: when even the best probe is short, look all around; most directions blocked = trapped -> widest gap, boost out
+          const fb = p12Free(b, b.ta, L);
+          if (fb < L * 0.55 && (sm >= 0.8 || R() < 0.45)) {
+            let blk = 0, ga = b.ta, gf = -1; const N = 16, L2 = L * 1.9;
+            for (let i = 0; i < N; i++) { const a = b.a + (i / N) * 6.2832, f = p12Free(b, a, L2); if (f < L * 0.6) blk++; const sc = f - Math.abs(angDiff(a, b.a)) * 18; if (sc > gf) { gf = sc; ga = a; } }
+            if (blk >= N * 0.55) { b.ta = ga; b.esc = 1.2; b.boost = b.len > 22 && sm >= 0.8; }
+            else if (fb < L * 0.3) b.boost = false;
+          } else if (b.esc > 0) { b.esc -= 0.15; b.boost = b.len > 22 && fb > L * 0.6; }
+          else if (b.boost && (fb < L * 0.7 || b.len < 30)) b.boost = false; // boost only with room ahead and length to spare
+          // smart bots sprint for a power-up that is close and clear
+          if (sm >= 1.1 && !b.boost && b.len > 40 && fb >= L) { const pu = pups.find((q) => Math.abs(q.x - h.x) < 260 && Math.abs(q.y - h.y) < 260); if (pu && Math.abs(angDiff(Math.atan2(pu.y - h.y, pu.x - h.x), b.a)) < 0.5) b.boost = true; }
+          if (sm < 0.8) b.ta += rnd(-0.25, 0.25); // easy bots wobble
+        }
         // EXTRAS: day/night, rain, map power-ups, boss, combo
-        const PW = [{ k: "spd", h: "spd", e: "⚡", d: 5, c: "#ffe14a" }, { k: "pg", h: "pg", e: "👻", d: 4, c: "#d8e4ff" },
-          { k: "pm", h: "pm", e: "🧲", d: 8, c: "#ff5a7a" }, { k: "frz", h: "frzT", e: "❄️", d: 2, c: "#7fd8ff" }];
+        // build12: four map pickups, each auto-activates for 10 s on whoever eats it (player or bot). Fire never stacks.
+        const PW = [{ k: "spd", h: "spd", e: "⚡", d: 10, c: "#ffd21a", n: "p12Spd" }, { k: "pm", h: "pm", e: "🧲", d: 10, c: "#ff4f8b", n: "p12Mag" },
+          { k: "fire", h: "fire", e: "🔥", d: 10, c: "#ff6a00", n: "p12Fire" }, { k: "psh", h: "psh", e: "🛡️", d: 10, c: "#36d8ff", n: "p12Sh" }];
+        function p12N() { return Math.max(6, Math.round(16 * (A / 9000) * (A / 9000))); } // 16 on the 9000 arena, 11 on 7500
+        function p12Pick() {
+          for (const s of snakes) {
+            if (!s.alive) continue; const h = s.seg[0], rr = s.r + 34;
+            for (let i = pups.length - 1; i >= 0; i--) {
+              const p = pups[i]; if (Math.abs(p.x - h.x) > rr || Math.abs(p.y - h.y) > rr || Math.hypot(p.x - h.x, p.y - h.y) > rr) continue;
+              if (p.t.k === "fire" && s.fire > 0) continue; // no stacking: a burning snake leaves the next fire on the map
+              pups.splice(i, 1); s[p.t.k] = p.t.d;
+              if (s === player) { beep(880, 0.15, "triangle", 0.06, 1320); burst(p.x, p.y, 16, 200); vib(15); xBan(p.t.e + " " + _t(p.t.n) + "!"); }
+              else if (player && Math.abs(player.seg[0].x - p.x) < 800 && Math.abs(player.seg[0].y - p.y) < 600) burst(p.x, p.y, 10, 200);
+            }
+          }
+        }
         let pups = [], rips = [], floats = [], xpwH = null, xN = 0, rainA = 0, rainOn = 0, rainNext = 150, bossT = 0, xPl = null, pwT = 0, pwCd = 0, cN = 0, cT = -9, cF = null;
         function xPup() {
           for (let k = 0; k < 20; k++) { const x = rnd(150, A - 150), y = rnd(150, A - 150);
@@ -4399,17 +4480,12 @@
           for (let i = rips.length - 1; i >= 0; i--) if ((rips[i].l -= dt) <= 0) rips.splice(i, 1);
           if (rips.length > QC.rain) rips.splice(0, rips.length - QC.rain); // ripples scale with quality
           for (let i = floats.length - 1; i >= 0; i--) if ((floats[i].l -= dt) <= 0) floats.splice(i, 1);
-          for (const s of snakes) for (const k of ["spd", "pg", "pm", "frz", "frzT"]) if (s[k] > 0) s[k] -= dt;
-          if (xPl !== player) { xPl = player; bossT = 0; pups = []; while (pups.length < 6) xPup(); }
-          if (pups.length < Math.round(6 * A / 4500) && (pwCd -= dt) <= 0) { pwCd = 12; xPup(); }
+          for (const s of snakes) for (const k of ["spd", "pg", "pm", "frz", "frzT", "fire", "psh"]) if (s[k] > 0) s[k] -= dt;
+          const pwN = p12N();
+          if (xPl !== player) { xPl = player; bossT = 0; pups = []; while (pups.length < pwN) xPup(); }
+          if (pups.length < pwN && (pwCd -= dt) <= 0) { pwCd = 4; xPup(); }
+          p12Pick();
           if (player && player.alive) {
-            const h = player.seg[0];
-            for (let i = pups.length - 1; i >= 0; i--) {
-              const p = pups[i]; if (Math.hypot(p.x - h.x, p.y - h.y) > player.r + 34) continue;
-              pups.splice(i, 1); beep(880, 0.15, "triangle", 0.06, 1320); burst(p.x, p.y, 16, 200); if (typeof abPickup === "function") abPickup();
-              if (p.t.k === "frz") { for (const o of snakes) if (o !== player && o.alive && Math.hypot(o.seg[0].x - h.x, o.seg[0].y - h.y) < 400) o.frz = 2; player.frzT = 2; }
-              else player[p.t.k] = p.t.d;
-            }
             if ((bossT += dt) >= 180 && !snakes.some((s) => s.boss && s.alive)) {
               bossT = 0; const b = makeSnake(_t("bossName"), "gold", false);
               Object.assign(b, { boss: true, len: 400, hat: "crown" }); snakes.push(b);
@@ -4427,8 +4503,9 @@
           }
           if ((pwT -= dt) <= 0) {
             pwT = 0.2; const pl = player && player.alive ? player : null;
-            const hx = pl ? PW.filter((p) => pl[p.h] > 0).map((p) => `<span title="${_t("pw_" + p.k)}">${p.e}${Math.ceil(pl[p.h])}</span>`).join("") : "";
-            if (hx !== xpwH) { xpwH = hx; $("xpw").innerHTML = hx; }
+            const ac = pl ? PW.filter((p) => pl[p.h] > 0) : [];
+            const hx = ac.map((p) => `<span class="p12c" style="--c:${p.c}"><i>${p.e}</i><b>${esc(_t(p.n))}</b><em dir="ltr">${Math.ceil(pl[p.h])}</em><u style="width:${Math.round(clamp(pl[p.h] / p.d, 0, 1) * 100)}%"></u></span>`).join("");
+            if (hx !== xpwH) { xpwH = hx; const fx = $("p12fx"); if (fx) { fx.innerHTML = hx; fx.classList.toggle("p12-many", ac.length > 2); } }
           }
         }
         function xDraw0(vis) {
@@ -4443,8 +4520,10 @@
             if (!vis(p.x, p.y)) continue;
             pr(p.x, p.y, 0); const sw = 34 * PK; ctx.globalAlpha = 0.4; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST);
             pr(p.x, p.y, 34 + 8 * Math.sin(time * 3 + p.ph)); const g = 80 * PK * (1 + 0.15 * Math.sin(time * 5 + p.ph));
-            ctx.globalAlpha = 0.75; ctx.drawImage(orb(p.t.c), PX - g / 2, PY - g / 2, g, g); ctx.globalAlpha = 1;
-            emo(p.t.e, PX, PY, Math.max(10, Math.round(24 * PK)));
+            ctx.globalAlpha = 0.95; ctx.drawImage(orb(p.t.c), PX - g * 0.7, PY - g * 0.7, g * 1.4, g * 1.4); ctx.globalAlpha = 1;
+            ctx.strokeStyle = p.t.c; ctx.lineWidth = Math.max(1.5, 3 * PK); ctx.beginPath(); ctx.arc(PX, PY, 26 * PK * (1 + 0.1 * Math.sin(time * 5 + p.ph)), 0, 6.283); ctx.stroke();
+            ctx.fillStyle = "rgba(8,12,28,.55)"; ctx.beginPath(); ctx.arc(PX, PY, 22 * PK, 0, 6.283); ctx.fill();
+            emo(p.t.e, PX, PY, Math.max(13, Math.round(30 * PK)));
           }
           ctx.textBaseline = "alphabetic";
         }
@@ -4548,12 +4627,12 @@
               const cr = (s.r + o.r) * 0.72, dx = p.x - h.x, dy = p.y - h.y;
               if (dx * dx + dy * dy < cr * cr) { hit = o; return false; }
             } });
-            if (hit) credit(hit, s); // a kill counts only when the snake really dies (not on a shield or while invulnerable)
+            if (hit) { if (s.fire > 0 && !(hit.psh > 0)) credit(s, hit); else credit(hit, s); } // build12 fire. a kill counts only when the snake really dies (not on a shield or while invulnerable)
           }
           evoUpdate(dt); xUpdate(dt); preyUpdate(dt); adUpdate(dt); modeTick(); nfUpdate(dt);
           if (pendImp) { pendImp = false; if (killT !== time) sImpact(0.45); }
           while (food.length < fMin() * (state === "play" ? AD.food : 1)) addFood(rnd(40, A - 40), rnd(40, A - 40), 0, 0, pickFood());
-          const fCap = Math.round(2200 * Math.max(1, (A / 6600) * (A / 6600))); if (food.length > fCap) food.splice(0, food.length - fCap);
+          const fCap = Math.round(2200 * Math.max(1, (A / 6600) * (A / 6600))); if (food.length > fCap) { let ex = food.length - fCap; const cx = cam.x, cy = cam.y; food = food.filter((f) => { if (ex > 0 && Math.abs(f.x - cx) > 1600 || ex > 0 && Math.abs(f.y - cy) > 1200) { ex--; return false; } return true; }); if (ex > 0) food.splice(0, ex); }
         }
 
         // 3D: tilted perspective camera over the floor, projected onto the 2D canvas
@@ -4812,7 +4891,7 @@
         }
         const SHADOW = (() => {
           const c = mk(64), g = c.getContext("2d"), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-          gr.addColorStop(0, "rgba(0,0,0,.6)"); gr.addColorStop(0.55, "rgba(0,0,0,.3)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+          gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0)"); // build12: no ground shadows
           g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return c;
         })();
         // segment sprites pre-scaled to a few device-pixel sizes, so no big downscale per draw
@@ -4891,8 +4970,8 @@
           // the screen covers a trapezoid of floor: cull against its slanted sides, with a small margin (+m for big things)
           const tA = c0.x, tB = c1.x, bA = c2.x, bB = c3.x, ty0 = c0.y, iy = 1 / Math.max(1, c2.y - c0.y);
           const vis = (x, y, m) => {
-            if (y < vy0 - (m || 0) || y > vy1 + (m || 0)) return false;
-            const t = y <= ty0 ? 0 : y >= c2.y ? 1 : (y - ty0) * iy, mg = 60 + (m || 0);
+            if (y < vy0 - 80 - (m || 0) || y > vy1 + 80 + (m || 0)) return false;
+            const t = y <= ty0 ? 0 : y >= c2.y ? 1 : (y - ty0) * iy, mg = 140 + (m || 0);
             return x > tA + (bA - tA) * t - mg && x < tB + (bB - tB) * t + mg;
           };
           const fx0 = Math.max(0, vx0), fx1 = Math.min(A, vx1), fy0 = Math.max(0, vy0), fy1 = Math.min(A, vy1);
@@ -4942,20 +5021,19 @@
           for (const f of food) {
             if (!vis(f.x, f.y)) continue;
             const T = f.k && FT[f.k], r = (T ? T.r : 3 + f.v * 4) * AD.fs;
-            const z = T ? r * 0.9 + (f.k === "mouse" ? 0 : 3 + 3 * Math.sin(time * 3 + f.ph)) : r + 4 + 3 * Math.sin(time * 3 + f.ph);
+            const z = T ? r * 0.9 + (f.k === "mouse" ? 0 : 3) : r + 4; if (f.ft === undefined) f.ft = time; const fa = Math.min(1, Math.max(0, (time - f.ft) / 0.6));
             pr(f.x, f.y, 0); const sw = r * 2.3 * PK;
             ctx.globalAlpha = 0.35; ctx.drawImage(SHADOW, PX - sw / 2, PY - (sw * ST) / 2, sw, sw * ST); ctx.globalAlpha = 1;
             pr(f.x, f.y, z);
             if (T) {
-              if (T.glow && QL > 1) { ctx.globalAlpha = 0.18 + 0.12 * Math.sin(time * 4 + f.ph); const g2 = r * 4 * PK; ctx.drawImage(orb(T.glow), PX - g2 / 2, PY - g2 / 2, g2, g2); ctx.globalAlpha = 1; }
-              const s2 = r * 2.3 * PK * (T.real ? 1 + 0.05 * Math.sin(time * 4 + f.ph) : 1) * (1 + 0.12 * nfBeatK()); ctx.save(); ctx.translate(PX, PY);
+              if (T.glow) { ctx.globalAlpha = 0.24 * fa; const g2 = r * 4 * PK; ctx.drawImage(orb(T.glow), PX - g2 / 2, PY - g2 / 2, g2, g2); ctx.globalAlpha = 1; }
+              const s2 = r * 2.3 * PK; ctx.save(); ctx.translate(PX, PY); ctx.globalAlpha = fa;
               if (f.k === "mouse" || T.rot) ctx.rotate(Math.atan2(Math.sin(f.a) * ST, Math.cos(f.a)));
-              else if (T.spin) ctx.scale(0.45 + 0.55 * Math.abs(Math.cos(time * 2 + f.ph)), 1);
-              ctx.drawImage(foodSpr(f.k), -s2 / 2, -s2 / 2, s2, s2); ctx.restore();
+              ctx.drawImage(foodSpr(f.k), -s2 / 2, -s2 / 2, s2, s2); ctx.restore(); ctx.globalAlpha = 1;
               continue;
             }
-            const s2 = r * 4 * PK * (1 + 0.06 * Math.sin(time * 4 + f.ph) + 0.2 * nfBeatK()); // glossy orb, slight pulse + the music beat
-            ctx.drawImage(pearl(f.c), PX - s2 / 2, PY - s2 / 2, s2, s2);
+            const s2 = r * 4 * PK; // build12: steady glossy orb (no pulse, no beat throb)
+            ctx.globalAlpha = fa; ctx.drawImage(pearl(f.c), PX - s2 / 2, PY - s2 / 2, s2, s2); ctx.globalAlpha = 1;
           }
 
           preyDraw(vis); evoDraw0(vis); xDraw0(vis); nfDrawWorld(vis);
@@ -5061,8 +5139,7 @@
             while (oi < tall.length && tall[oi].y < sn.seg[0].y) drawOb(tall[oi++]);
             const n = sn.seg.length;
             const ga = sn.pg > 0 ? 0.45 : 1, bo = sn.boost && sn.len > 12, hc = sn.frz > 0 ? "#8fd8ff" : segColor(sn.skin, 0);
-            if (bo) { band(sn, 1, 0, 0, 3.4, hc, 0.1 * ga); band(sn, 1, 0, 0, 2.6, hc, 0.16 * ga); } // boost: a slight glow
-            if (QL >= 2 && !bo && sn.frz <= 0) { band(sn, 1, 0, 0, 3.1, hc, 0.09 * ga); } /* build9: dark outline tube removed */
+            /* build12: body halo bands removed (looked like a dark shadow band) */ /* build9: dark outline tube removed */
             ctx.globalAlpha = ga;
             for (let i = n - 1; i > 0; i -= sn.st) {
               const px = sn.wx[i], py = sn.wy[i];
@@ -5122,7 +5199,8 @@
               ctx.fillStyle = "#05060d"; ctx.beginPath(); ctx.ellipse(PX + ox, PY + oy, er * 0.2, er * 0.78, sa, 0, 6.283); ctx.fill();
               ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(PX - er * 0.38, PY - er * 0.4, er * 0.2, 0, 6.283); ctx.fill();
             }
-            if (sn.shield || sn.inv > 0) {
+            if (sn.fire > 0) { pr(h.x, h.y, r); const g = r * 7 * PK * (1 + 0.14 * Math.sin(time * 16)); ctx.globalAlpha = 1; ctx.drawImage(orb("#ff6a00"), PX - g / 2, PY - g / 2, g, g); ctx.drawImage(orb("#ffd21a"), PX - g / 4, PY - g / 4, g / 2, g / 2); ctx.strokeStyle = "rgba(255,120,20,.95)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(PX, PY, r * 1.45 * PK, 0, 6.283); ctx.stroke(); emo("🔥", PX, PY - r * 2.1 * PK, Math.max(10, Math.round(r * 1.5 * PK))); }
+            if (sn.shield || sn.inv > 0 || sn.psh > 0) {
               pr(h.x, h.y, r); ctx.strokeStyle = sn.inv > 0 ? "rgba(255,255,255,.5)" : "rgba(0,229,255,.8)"; ctx.lineWidth = 3;
               ctx.beginPath(); ctx.arc(PX, PY, r * 1.7 * PK, 0, 6.283); ctx.stroke();
             }
@@ -5158,7 +5236,7 @@
 
           if (S.map && player && state === "play") {
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            const m = Math.round(Math.min(90, W * 0.25)), k = m / A;
+            const m = Math.round(Math.min(72, W * 0.19)), k = m / A; // build12: compact minimap
             const x = (window.P10SA ? P10SA.l : 0) + 10, y = (window.P10SA ? P10SA.t : 0) + 8; // build10: minimap at the top-left
             const mk2 = m + "|" + dpr + "|" + mapI;
             if ((mmT -= fdt) <= 0 || mk2 !== mmK) { // redraw the cached minimap at ~5 Hz
@@ -5627,7 +5705,7 @@
           player.hat = P.hat; player.trail = P.trail; parts = [];
           for (const s of snakes) if (s.bot) Object.assign(s, { evo: (R() * 2) | 0, dna: 0, cd: 0, slow: 0, ghost: 0 });
           fxs = []; decoys = []; dna = []; evoKey = ""; $("ban").classList.remove("on"); genFood();
-          ON.mUsed = []; for (const b of BOOSTS) if (P.bst[b.id] > 0) { P.bst[b.id]--; player[b.id] = 1; ON.mUsed.push(b.id); }
+          ON.mUsed = []; // build12: no purchased boosts
           if (player.big) player.len = 60;
           cam.x = player.seg[0].x; cam.y = player.seg[0].y; cam.vx = cam.vy = cam.vs = cam.vt = 0;
           release(); applySettings(); lbS = 1; lbT = 0; rvUsed = false; revHide();
@@ -5642,7 +5720,7 @@
         function forfeit() {
           closeExit();
           if (state !== "play" || !player || !player.alive) return;
-          player.inv = 0; player.shield = 0; rvUsed = true; kill(player);
+          player.inv = 0; player.shield = 0; player.psh = 0; rvUsed = true; kill(player);
         }
         function toggleMute() { S.sound = S.sound ? 0 : 1; applySettings(); }
         function home() {
@@ -6675,7 +6753,7 @@
           if (avSafe(P)) { const im = new Image(), l = SD.layers[0]; im.onload = () => { l.x.drawImage(im, 0, 0, 256, 256); sRender(); }; im.src = P.dv.i; }
           sRender();
         }
-        function stuOpen() {
+        function stuOpen() { return; // build12: Drawing studio removed
           if (!cur || state === "play") return;
           if (SD.own !== cur) stuReset();
           const tl = TOOLS.find((x) => x[0] === SD.tool); if (tl[2] && !rOk(tl[2])) SD.tool = "brush";
@@ -6840,11 +6918,8 @@
           HATS.forEach((x) => { h += it("h" + x.id, `<i>${x.e}</i>`, _t("h_" + x.id), _t(P.own["h" + x.id] ? "owned" : "onHead"), x.p, P.own["h" + x.id], P.hat === x.id); });
           h += `<h3>${_t("trail")}</h3>`;
           TRAILS.forEach((x) => { h += it("t" + x.id, `<i>${x.e}</i>`, _t("t_" + x.id), _t(P.own["t" + x.id] ? "owned" : "behind"), x.p, P.own["t" + x.id], P.trail === x.id); });
-          h += `<h3>${_t("boostsH")}</h3>`;
-          BOOSTS.forEach((x) => { const c = P.bst[x.id] || 0; h += it("b" + x.id, `<i>${x.e}</i>`, _t("b_" + x.id), _t("bd_" + x.id) + (c ? ` · ${_t("have")} ${c}` : ""), x.p, c > 0, false, c); });
           h += `<h3>💎 ${_t("gemShop")}</h3><p class="x-note">${_t("gemHow")}</p>` +
-            `<div class="x-it"><i>🪙</i><b>${_t("gx")}<small>${_t("gxSub")}</small></b><button data-g="gx"${p11N(0, 1)}>1 💎</button></div>` +
-            `<div class="x-it"><i>🎁</i><b>${_t("pack")}<small>${_t("packSub")}</small></b><button data-g="pack"${p11N(0, 3)}>3 💎</button></div>`;
+            `<div class="x-it"><i>🪙</i><b>${_t("gx")}<small>${_t("gxSub")}</small></b><button data-g="gx"${p11N(0, 1)}>1 💎</button></div>` ;
           if (ON.storeOk() && cur === "@on") h += `<div class="x-it"><i>💎</i><b>${esc(_t("onGemsT"))}<small>${esc(_t("onGemsSub"))}</small></b><button data-go="nfongems">${esc(_t("onGemsBtn"))} ＋</button></div>`;
           $("items").innerHTML = h; $("gems").textContent = P.gems; skLazy();
         }
@@ -6899,9 +6974,9 @@
           ["items", "pts", "txl"].forEach((id) => $(id).classList.toggle("x-hide", b.dataset.t !== id));
           if (b.dataset.t === "pts") paintPts(); else if (b.dataset.t === "txl") paintTx(); else paintShop();
         });
-        const WP = [{ c: 20 }, { b: "mag" }, { c: 40 }, { b: "shield" }, { c: 80 }, { b: "big" }]; // wheel prizes, labelled by wpN()
+        const WP = [{ c: 20 }, { c: 30 }, { c: 40 }, { c: 50 }, { c: 80 }, { c: 60 }]; // build12: coins only (server 10_pickups.sql) // wheel prizes, labelled by wpN()
         let wheelDeg = 0, spinning = false;
-        const wpN = (p) => (p.c ? p.c + " 🪙" : BOOSTS.find((b) => b.id === p.b).e + " " + _t("b_" + p.b));
+        const wpN = (p) => (p.c ? p.c + " 🪙" : "🪙");
         function paintPts() {
           $("coins").textContent = P.coins;
           const wl = Math.max(0, 3 - (M.games - M.wheelAt));
@@ -7411,7 +7486,7 @@
           NFS.bt = NFS.t; NFS.bc++;
           const m = 1 + Math.min(4, Math.floor(NFS.bc / 4)) * (wide ? 2 : 1);
           if (m > 1) player.len += f.v * 0.15 * AD.fv * (m - 1) * 0.5;
-          if (m > NFS.bm) { const h = player.seg[0]; floats.push({ x: h.x, y: h.y, t: "♪ x" + m, l: 1.2 }); beep(880 + m * 110, 0.08, "sine", 0.04, 1760); }
+          if (m > NFS.bm) { beep(880 + m * 110, 0.08, "sine", 0.04, 1760); }
           NFS.bm = m;
           if (QL >= 1) { const h = player.seg[0]; parts.push({ x: h.x, y: h.y, z: player.r * 1.5, l: 0.35, vz: 30, c: "#fff6a8" }); }
         });
@@ -7533,7 +7608,7 @@
             if (vRing.length > 6) vRing.shift();
           }
           for (let i = vRing.length - 1; i >= 0; i--) if ((vRing[i].l += dt / 0.9) >= 1) vRing.splice(i, 1);
-          if (mapI === 6 && QL >= 2) { if ((vGlT -= dt) <= 0) { vGl = 0.16; vGlT = rnd(6, 12); } if (vGl > 0) vGl -= dt; }
+          if (false) { if ((vGlT -= dt) <= 0) { vGl = 0.16; vGlT = rnd(6, 12); } if (vGl > 0) vGl -= dt; }
         });
         // floor layer: neon rings (cyber), soft light pools (forest), sparkles (classic)
         NFH.floor.push((vis) => {
@@ -7585,7 +7660,7 @@
             ctx.fillStyle = col;
             for (const s of vScr) { ctx.globalAlpha = m === 3 ? 0.3 + 0.3 * Math.sin(s.p * 4) : 0.6; const d = (m === 2 ? 3 : 2) * s.s; ctx.fillRect(s.x * W, s.y * H, d, d); }
           }
-          if (m === 0 || m === 6 || m === 5) { ctx.globalAlpha = (m === 5 ? 0.55 : 0.45) * DN.v; ctx.drawImage(vVig(m === 5 ? "rgba(2,14,4,.9)" : m === 6 ? "rgba(10,0,30,.9)" : "rgba(30,0,20,.85)"), -W * 0.1, -H * 0.1, W * 1.2, H * 1.2); }
+          if (false) { ctx.globalAlpha = (m === 5 ? 0.55 : 0.45) * DN.v; ctx.drawImage(vVig(m === 5 ? "rgba(2,14,4,.9)" : m === 6 ? "rgba(10,0,30,.9)" : "rgba(30,0,20,.85)"), -W * 0.1, -H * 0.1, W * 1.2, H * 1.2); }
           ctx.globalAlpha = 1;
         });
 
@@ -7798,7 +7873,7 @@
           const trk = $("nftr"), cu = trk.querySelector(".cur"); if (cu) trk.scrollLeft = Math.max(0, cu.offsetLeft - trk.clientWidth / 2);
         }
         NFG.nfpass = () => { if (state === "play") return; paintPass(); show("nfpass"); };
-        NFG.nfprem = async () => { const r = await WALLET.premium(); if (!r.ok) toast(r.err === "funds" ? _t("nfNoGems", { n: RP_PREM }) : _t("nfErr")); else { toast("👑 " + _t("nfPremOn")); beep(784, 0.3, "triangle", 0.06, 1568); } paintPass(); };
+        NFG.nfprem = async () => { const r = await WALLET.premium(); if (!r.ok) toast(r.err === "funds" ? _t("nfNoGems", { n: RP_PREM }) : r.msg || _t("nfErr")); else { toast("👑 " + _t("nfPremOn")); beep(784, 0.3, "triangle", 0.06, 1568); } paintPass(); };
         NFG.nfclaim = async (b) => { const r = await WALLET.claim(+b.dataset.t, b.dataset.k); if (r.ok) { toast("🎁 " + rwLbl(r.rw || {})); beep(988, 0.15, "triangle", 0.05, 1480); } paintPass(); };
         NFG.nfclaimall = async () => { const t = rpTier(); let n = 0; for (let i = 1; i <= t; i++) { for (const k of ["f", "p"]) { const r = await WALLET.claim(i, k); if (r.ok) n++; } } if (n) toast("🎁 × " + n); paintPass(); };
         NFG.nfback = (b) => { const to = b.dataset.to || "menu"; back = "menu"; if (to === "nfpass") paintPass(); if (to === "nfmodes") paintModes(); show(to); };
@@ -7839,10 +7914,10 @@
         NFG.nfshop = () => { if (state === "play") return; SH2.from = !$("nfpass").classList.contains("x-hide") ? "nfpass" : !$("shop").classList.contains("x-hide") ? "shop" : "menu"; paintShop2(); show("nfshop"); };
         NFG.nfcat = (b) => { SH2.cat = b.dataset.c; paintShop2(); };
         NFG.nfbuy = async (b) => { const r = await WALLET.buy(b.dataset.id); if (r.ok) { toast("✅ " + itName(b.dataset.id)); beep(784, 0.15, "triangle", 0.05, 1175); nfEquip(b.dataset.id); } else toast(r.err === "funds" ? _t("nfFunds") : r.msg || _t("nfErr")); paintShop2(); };
-        NFG.nfbundle = async (b) => { const r = await WALLET.bundle(b.dataset.id); toast(r.ok ? "✅ " + _t("nfI_" + b.dataset.id) : r.err === "funds" ? _t("nfFunds") : _t("nfErr")); paintShop2(); };
+        NFG.nfbundle = async (b) => { const r = await WALLET.bundle(b.dataset.id); toast(r.ok ? "✅ " + _t("nfI_" + b.dataset.id) : r.err === "funds" ? _t("nfFunds") : r.msg || _t("nfErr")); paintShop2(); };
         NFG.nfcrate = async (b) => {
           const r = await WALLET.crate(b.dataset.id);
-          if (!r.ok) toast(r.err === "funds" ? _t("nfFunds") : _t("nfErr"));
+          if (!r.ok) toast(r.err === "funds" ? _t("nfFunds") : r.msg || _t("nfErr"));
           else if (r.item) { toast("🎁 " + ITEMS[r.item].e + " " + itName(r.item) + " · " + _t(RAR[ITEMS[r.item].r])); burstUI(); }
           else toast("🎁 +" + r.refund + " 🪙 (" + _t("nfAllOwned") + ")");
           paintShop2();
@@ -7957,7 +8032,7 @@
             for (let i = 0; i < n; i++) { a[i * 2] = player.seg[i].x; a[i * 2 + 1] = player.seg[i].y; }
             rwB.push({ a, len: player.len, an: player.a }); if (rwB.length > 31) rwB.shift();
           }
-          if (keys.r || keys["ق"]) { keys.r = keys["ق"] = false; NFG.nfrw(); }
+          if (keys.r || keys["ق"]) { keys.r = keys["ق"] = false; }
           abRing($("nfrw"), NFS.rwCd > 0 ? NFS.rwCd : 0, RW_CD, false);
         });
         NFG.nfrw = () => {
@@ -8012,7 +8087,7 @@
           }
           if (NFS.abSh && !player.shield) { NFS.abSh = 0; NFS.ab.sh.t = 0; } // the shield took a hit
         });
-        NFG.nfab = (b) => {
+        NFG.nfab = (b) => { return; // build12
           if (!b || state !== "play" || !player || !player.alive || !abOk() || !NFS.ab) return;
           const a = AB.find((x) => "ab-" + x.k === b.id); if (!a) return; const s = NFS.ab[a.k];
           if (level() < a.lv) { toast(_t("abLock", { n: a.lv })); abFx(b, "nope"); return; }
@@ -8271,10 +8346,10 @@
           });
         }
         NFH.load.push(() => { const u = cur ? KV.get(phKey()) : null; phBuild(u && u.startsWith("data:image/") ? u : ""); if (!u && NX.eq.sk === "photo") NX.eq.sk = ""; });
-        NFG.nfphoto = () => {
-          const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
-          inp.onchange = () => {
-            const f = inp.files && inp.files[0]; if (!f) return;
+        function phFile(f) {
+          {
+            if (!f) return;
+            if (f.type && !/^image\//.test(f.type)) { toast(_t("nfPhBad")); return; }
             const url = URL.createObjectURL(f), im = new Image();
             im.onload = () => {
               const c = document.createElement("canvas"); c.width = c.height = 96; const g = c.getContext("2d"), s = Math.min(im.width, im.height);
@@ -8285,14 +8360,15 @@
             };
             im.onerror = () => { URL.revokeObjectURL(url); toast(_t("nfPhBad")); };
             im.src = url;
-          };
-          inp.click();
-        };
+          }
+        }
+        document.addEventListener("change", (e) => { const t = e.target; if (t && t.classList && t.classList.contains("nf-phin")) { const f = t.files && t.files[0]; phFile(f); t.value = ""; } });
+        NFG.nfphoto = () => { const i = document.querySelector(".nf-phin"); if (i) i.click(); }; // fallback (keyboard); a tap lands on the input itself
         NFG.nfphdel = () => { KV.del(phKey()); PHOTO.spr = null; PHOTO.url = ""; if (NX.eq.sk === "photo") NX.eq.sk = ""; commit(); paintShop2(); };
         NFSHX.sk = () => {
           const has = !!PHOTO.spr, eqd = NX.eq.sk === "photo";
           return `<div class="x-it${has ? " own" : ""}">${has ? `<img class="nf-ph" alt="" src="${PHOTO.url}">` : "<i>📷</i>"}<b>${esc(_t("nfPhT"))}<small>${esc(_t("nfPhD"))}</small></b>` +
-            `<button data-go="nfphoto">${esc(_t(has ? "nfPhNew" : "nfPhPick"))}</button>` +
+            `<span class="nf-phw"><button type="button" tabindex="-1" aria-hidden="true">${esc(_t(has ? "nfPhNew" : "nfPhPick"))}</button><input class="nf-phin" type="file" accept="image/*" aria-label="${esc(_t(has ? "nfPhNew" : "nfPhPick"))}"></span>` +
             (has ? `<button data-go="nfeq" data-id="photo" class="${eqd ? "eq" : ""}">${esc(_t(eqd ? "equipped" : "equip"))}</button><button data-go="nfphdel" aria-label="${esc(_t("nfPhDel"))}">🗑️</button>` : "") + `</div>`;
         };
         NFCARDS.push(() => {
@@ -8668,7 +8744,7 @@
         function pxPv(cv, tt) {
           const id = cv.dataset.pv, it = ITEMS[id]; if (!it) return;
           const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
-          const k = Math.min(2, window.devicePixelRatio || 1); if (cv.width !== Math.round(w * k)) { cv.width = Math.round(w * k); cv.height = Math.round(h * k); }
+          const k = Math.min(2, window.devicePixelRatio || 1); if (cv.width !== Math.round(w * k) || cv.height !== Math.round(h * k)) { cv.width = Math.round(w * k); cv.height = Math.round(h * k); }
           const g = cv.getContext("2d"); g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, w, h);
           const n = 13, R0 = Math.min(h * 0.15, w / 18), gap = R0 * 1.05, x0 = w / 2 + (n * gap) / 2 - R0 * 1.4;
           const X = (i) => x0 - i * gap, Y = (i) => h / 2 + Math.sin(tt * 3 - i * 0.55) * h * 0.13 * Math.min(1, i / 4), rr = (i) => R0 * (i < 2 ? 1 : 1 - ((i - 2) / n) * 0.55);
@@ -8753,7 +8829,7 @@
           }
           ctx.globalCompositeOperation = "lighter"; ctx.imageSmoothingQuality = "low"; ctx.drawImage(pxNC, 0, 0, W, H); ctx.imageSmoothingQuality = "high"; ctx.globalCompositeOperation = "source-over";
         });
-        NFH.top.push(() => { if (QL < 1 || mapI === 0 || mapI === 5 || mapI === 6) return; ctx.globalAlpha = mapI === 3 ? 0.55 : 0.35 * (0.5 + 0.5 * DN.v); ctx.drawImage(vVig(mapI === 2 || mapI === 1 ? "rgba(20,30,40,.75)" : "rgba(0,0,0,.85)"), -W * 0.1, -H * 0.1, W * 1.2, H * 1.2); ctx.globalAlpha = 1; });
+        NFH.top.push(() => { return; ctx.globalAlpha = mapI === 3 ? 0.55 : 0.35 * (0.5 + 0.5 * DN.v); ctx.drawImage(vVig(mapI === 2 || mapI === 1 ? "rgba(20,30,40,.75)" : "rgba(0,0,0,.85)"), -W * 0.1, -H * 0.1, W * 1.2, H * 1.2); ctx.globalAlpha = 1; });
 
         // ---------- KILL FEED, SHOCKWAVES, CINEMATIC DEATH ----------
         let pxRings = [], pxDead = false;
@@ -8893,12 +8969,12 @@
           const rpc = async (fn, args) => (await call("/rest/v1/rpc/" + fn, args || {})).j;
           o.rpc = rpc; o.call = call;
           // server error code -> i18n key
-          const EK = { insufficient_funds: "onE_funds", already_claimed: "onE_claimed", not_reached: "onE_reach", not_ready: "onE_reach", rate_limited: "onE_rate", banned: "onE_banned",
+          const EK = { unknown_item: "p12EUnk", not_authenticated: "p12EAuth", no_profile: "p12EAuth", insufficient_funds: "onE_funds", already_claimed: "onE_claimed", not_reached: "onE_reach", not_ready: "onE_reach", rate_limited: "onE_rate", banned: "onE_banned",
             maintenance: "onE_maint", level_too_low: "onE_level", already_owned: "onE_owned", invalid_login: "onE_login", user_not_found: "onE_nouser", cannot_add_self: "onE_self",
             already_friends: "onE_already", friends_full: "onE_full", their_friends_full: "onE_full", gift_limit: "onE_giftlim", already_sent: "onE_giftsent", not_friends: "onE_notfr",
             blocked: "onE_notfr", purchases_disabled: "onE_off", pass_disabled: "onE_off", season_not_active: "onE_off", premium_required: "onE_off", net: "onNet",
             username_taken: "taken", invalid_username: "unameBad", user_already_exists: "emailTaken", email_exists: "emailTaken", weak_password: "weakPw", transaction_belongs_to_other_user: "onPayOther" };
-          o.ek = (e) => { const c = (e && (e.code || e.message)) || ""; return EK[c] || (/already registered/i.test(c) ? "emailTaken" : "onErr"); };
+          o.ek = (e) => { const c = (e && (e.code || e.message)) || ""; return EK[c] || (/already registered/i.test(c) ? "emailTaken" : /fetch|network|load failed|timeout/i.test(c) ? "onNet" : c ? "p12ESrv" : "onErr"); };
           o.err = (e) => _t(o.ek(e));
           const wset = (w) => { if (w && Number.isInteger(w.coins) && Number.isInteger(w.gems)) { P.coins = w.coins; P.gems = w.gems; } };
 
@@ -9806,6 +9882,43 @@
           e.stopImmediatePropagation(); e.preventDefault();
           const [c, v] = n.split(":"); p11Need(c, Math.max(1, +v || 1));
         }, true);
+        // ---------- build12: joystick rests bottom-left (bottom-right when Boost is set to the left); it still follows the thumb while held ----------
+        {
+          const jr = () => { const j = $("joy"); if (j && !joy.on) { j.style.left = ""; j.style.top = ""; } };
+          ["pointerup", "pointercancel"].forEach((t) => addEventListener(t, () => setTimeout(jr, 0)));
+          NFH.start.push(jr); jr();
+        }
+        // ---------- build12: tidy Profile panel: card + ID/photo row + stats, then Friends | Leaderboard, Save | Log out, small Delete link ----------
+        {
+          const box = document.querySelector("#acct .x-box");
+          if (box) {
+            const q = (s) => box.querySelector(s);
+            const fr = q('[data-go="nfonfr"]'), lb = q('[data-go="nfonlb"]'), del = q('[data-go="nfondel"]'), sv = q('.x-btn.x-main[data-go="save"]'), lo = $("logout"), oa = q(".on-acts");
+            if (fr && lb && del && sv && lo && oa) {
+              const g = document.createElement("div"); g.className = "p12-g2 on-only"; g.append(fr, lb);
+              const r = document.createElement("div"); r.className = "p12-sv"; r.append(sv, lo);
+              oa.before(g); g.after(r); r.after(oa); oa.classList.add("p12-dl");
+            }
+            const idp = $("pidP"), fixRow = () => { const ph = q(".p11-acph"); if (!ph || !idp || ph.parentElement.classList.contains("p12-idr")) return; const w = document.createElement("div"); w.className = "p12-idr"; idp.before(w); w.append(idp, ph); };
+            fixRow(); new MutationObserver(fixRow).observe(box, { childList: true });
+          }
+        }
+        // ---------- build12: balanced card grids (no lonely last row): a short list fills one row, a longer one splits into even rows ----------
+        {
+          const SEL = "#nfsb .px-grid, #mapl";
+          const bal = () => document.querySelectorAll(SEL).forEach((g) => {
+            if (!g.offsetParent) return;
+            const n = [...g.children].filter((c) => !c.classList.contains("px-wide") && !(g.id !== "mapl" && c.classList.contains("x-it")) && getComputedStyle(c).gridColumnEnd !== "-1").length;
+            g.style.removeProperty("grid-template-columns"); const mx = getComputedStyle(g).gridTemplateColumns.split(" ").length;
+            if (n < 2 || mx < 2) return;
+            const k = n <= mx + 2 ? n : Math.ceil(n / Math.ceil(n / mx));
+            if (k > 1 && (k !== mx || n % mx)) g.style.setProperty("grid-template-columns", `repeat(${k}, minmax(0, 1fr))`, "important");
+          });
+          let bt = 0; const sch = () => { cancelAnimationFrame(bt); bt = requestAnimationFrame(bal); setTimeout(bal, 260); };
+          const mo = new MutationObserver(sch); ["nfsb", "mapl"].forEach((id) => { const e = $(id); if (e) mo.observe(e, { childList: true, subtree: true }); });
+          ["nfshop", "maps"].forEach((id) => { const e = $(id); if (e) mo.observe(e, { attributes: true, attributeFilter: ["class"] }); });
+          addEventListener("resize", sch);
+        }
         requestAnimationFrame(loop);
       })();
     </script>
@@ -10875,6 +10988,99 @@ body { font-family: var(--sans); }
 .p11-emd > summary::before { content: "▸ "; } .p11-emd[open] > summary::before { content: "▾ "; }
 #xsec.p11-gone, #impgo, #impv, #onmig, #login .x-note[data-i18n="memNote"] { display: none !important; }
 .p11-hl { outline: 2px solid #ffe08a !important; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(255, 224, 138, .25), 0 0 22px rgba(255, 210, 80, .7) !important; }
+
+</style>
+<style id="ss12">
+/* ================= build12: compact, symmetrical in-game HUD ================= */
+/* removed in-match buttons: evolution ability, Magnet/Shield/Phase, Rewind, Emote (power-ups are map pickups now) */
+#game #abil, #game .ab2, #game #nfemw, #game .nf-emw, #game #xpw { display: none !important; }
+/* top-left: minimap (canvas, 72px at sl+10/st+8) + stats pill with the level bar under it */
+#game .x-tl { left: calc(var(--x-sl) + min(72px, 19vw) + 18px) !important; top: calc(var(--x-st) + 8px) !important; display: flex !important; flex-direction: column !important;
+  align-items: stretch !important; gap: 5px !important; width: max-content !important; opacity: .96 !important; }
+#game .x-tl .x-hud.x-stat { min-height: 28px !important; height: 28px; padding: 0 8px 0 0 !important; gap: 5px !important; border-radius: 12px !important; }
+#game .x-tl .x-hb { width: 32px !important; height: 28px !important; }
+#game .x-tl .x-hb + .x-hb { margin-inline-start: -4px !important; }
+#game .x-tl .x-hb svg { width: 15px !important; height: 15px !important; }
+#game .x-stat div { font: 800 11.5px/1 var(--sans, system-ui) !important; padding: 3px 7px !important; }
+#game .x-tl .x-evo { align-self: stretch !important; min-height: 0 !important; padding: 2px 8px !important; gap: 5px !important; font-size: 11px !important; box-sizing: border-box; }
+#game .x-tl .x-evo * { font-size: 11px !important; }
+/* top-right: compact leaderboard, short title that never truncates, readable own score */
+#game .x-lb { top: calc(var(--x-st) + 8px) !important; right: calc(var(--x-sr) + 10px) !important; left: auto !important; width: 146px !important; padding: 5px 7px 4px !important; border-radius: 12px !important; }
+#game .x-lb h4 { font: 800 10.5px/1.2 var(--sans, system-ui) !important; margin: 0 1px 3px !important; padding-bottom: 3px !important; gap: 4px !important; letter-spacing: .06em !important; }
+#game .x-lb h4 span { overflow: visible !important; text-overflow: clip !important; white-space: nowrap !important; flex: 1 1 auto !important; }
+#game .x-lb li { font: 700 11px/1.4 var(--sans, system-ui) !important; padding: 1px 5px !important; gap: 5px !important; }
+#game .x-lb li span { color: #f3ecd6 !important; font-weight: 800 !important; }
+#game .x-lb li:first-child:not(.me) { background: linear-gradient(90deg, rgba(242, 180, 40, .32), transparent) !important; }
+#game .x-lb li.me { background: linear-gradient(90deg, rgba(79, 227, 255, .34), rgba(79, 227, 255, .1)) !important; color: #9dffbc !important; box-shadow: inset 0 0 0 1px rgba(79, 227, 255, .45) !important; }
+[dir="rtl"] #game .x-lb li.me { background: linear-gradient(270deg, rgba(79, 227, 255, .34), rgba(79, 227, 255, .1)) !important; }
+#game .x-lb li.me span { color: #ffd84a !important; font-weight: 900 !important; text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 6px rgba(255, 200, 60, .45) !important; }
+#game .x-lb li.me i { color: #ffffff !important; }
+/* top-centre: active pickup effects with countdown */
+.p12-fx { position: fixed; z-index: 6; top: calc(var(--x-st) + 8px); left: 50%; transform: translateX(-50%); display: flex; gap: 5px; pointer-events: none; direction: ltr; max-width: calc(100% - 2 * (var(--x-sl) + 290px)); }
+.p12-fx:empty { display: none; }
+.p12c { position: relative; display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 5px; border-radius: 999px; overflow: hidden; white-space: nowrap;
+  background: linear-gradient(180deg, rgba(14, 20, 40, .88), rgba(6, 10, 24, .82)); border: 1px solid color-mix(in srgb, var(--c) 75%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--c) 45%, transparent); color: #fff; font: 800 11px/1 var(--sans, system-ui); }
+.p12c i { font-style: normal; font-size: 13px; filter: drop-shadow(0 0 4px var(--c)); }
+.p12c b { font-weight: 800; color: #f4f0e2; }
+.p12c em { font-style: normal; min-width: 14px; text-align: center; color: var(--c); font-variant-numeric: tabular-nums; }
+.p12c u { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--c); transition: width .2s linear; text-decoration: none; }
+.p12-many .p12c b { display: none; }
+@media (max-width: 760px) { .p12c b { display: none; } }
+#game .x-ban { top: calc(var(--x-st) + 72px) !important; }
+#game .x-hud.x-tm { top: calc(var(--x-st) + 36px) !important; font-size: 11px !important; padding: 2px 9px !important; }
+/* bottom-centre: small mode / score chip */
+#game .x-hud.nf-h { bottom: calc(var(--x-sb) + 4px) !important; padding: 2px 10px !important; font-size: 11px !important; line-height: 1.5 !important; border-radius: 999px !important; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* bottom-right: Boost · bottom-left: joystick (mirrored when Boost is set to the left side) */
+#game .x-boost { width: 64px !important; height: 64px !important; bottom: calc(var(--x-sb) + 10px) !important; font-size: 11px !important; }
+#game .x-boost::before { width: 20px !important; height: 20px !important; }
+body.x-r #game .x-boost { right: calc(var(--x-sr) + 12px) !important; left: auto !important; }
+body.x-l #game .x-boost { left: calc(var(--x-sl) + 12px) !important; right: auto !important; }
+#game #joy.x-joy { width: 92px !important; height: 92px !important; transform: translate(-50%, -50%) !important; }
+body.x-r #game #joy.x-joy:not([style*="left"]) { left: calc(var(--x-sl) + 16px + 46px); top: calc(100% - var(--x-sb) - 10px - 46px); right: auto; bottom: auto; }
+body.x-l #game #joy.x-joy:not([style*="left"]) { left: calc(100% - var(--x-sr) - 16px - 46px); top: calc(100% - var(--x-sb) - 10px - 46px); right: auto; bottom: auto; }
+#game #joy .x-knob { width: 38px !important; height: 38px !important; margin: -19px 0 0 -19px !important; }
+#game .px-kf { top: calc(var(--x-st) + 92px) !important; }
+@media (max-height: 340px) {
+  #game .x-boost { width: 58px !important; height: 58px !important; }
+  #game #joy.x-joy { width: 84px !important; height: 84px !important; }
+  #game .x-lb { width: 138px !important; }
+}
+/* photo skin: the file input sits over its button so a tap opens the system photo picker directly (iOS Safari) */
+.nf-phw { position: relative; display: inline-flex; flex: none; }
+.nf-phw > button { pointer-events: none; }
+.nf-phw > .nf-phin { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.011; cursor: pointer; font-size: 16px; z-index: 2; -webkit-appearance: none; appearance: none; }
+.nf-phw:focus-within > button { outline: 2px solid #ffe08a; outline-offset: 2px; }
+/* Profile panel (build12): compact, tidy */
+#acct #stub, #acct #avdn, #studio { display: none !important; }
+#acct .p12-idr { display: flex; align-items: center; gap: 8px; width: 100%; }
+#acct .p12-idr > .x-pid { margin: 0 !important; flex: none; }
+#acct .p12-idr > .p11-acph { flex: 1 1 auto; width: auto !important; min-width: 0; padding: 4px 8px !important; }
+#acct .p12-idr .p11-acph .p11-php { width: 34px !important; height: 34px !important; font-size: 19px !important; }
+#acct .p12-idr .p11-acph .x-btn { flex: 0 1 auto !important; min-height: 32px !important; padding: 0 14px !important; }
+#acct .p12-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+#acct .p12-sv { display: flex; gap: 8px; width: 100%; }
+#acct .p12-g2 > .x-btn, #acct .p12-sv > .x-btn { margin: 0 !important; min-height: 36px !important; height: 36px; padding: 0 12px !important; font-size: 13.5px !important; width: 100% !important; }
+#acct .p12-sv > .x-btn { flex: 1 1 0; }
+#acct .p12-sv > .x-btn.x-hide { display: none !important; }
+#acct .on-acts.p12-dl { justify-content: center; margin-top: -2px; }
+#acct .on-acts.p12-dl .on-del { width: auto !important; min-height: 26px !important; height: auto; padding: 2px 10px !important; margin: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important;
+  color: #ff6b7a !important; font-size: 12px !important; font-weight: 600 !important; text-decoration: underline; text-underline-offset: 3px; }
+#nfshop .nf-phw > button { min-height: 32px !important; height: 32px; padding: 0 14px !important; font-size: 13px !important; }
+/* build12: one small corner tag for every card badge (Premium Pass / Pass / Owned / Save %), never covering the preview */
+.px-card { position: relative; }
+.px-card .px-badge { top: 5px !important; inset-inline-start: 5px !important; inset-inline-end: auto !important; bottom: auto !important; left: auto; right: auto; transform: none !important;
+  padding: 1px 6px !important; border-radius: 5px !important; font-size: 8px !important; line-height: 1.45 !important; letter-spacing: .05em !important; white-space: nowrap !important;
+  max-width: calc(100% - 10px); overflow: hidden; text-overflow: ellipsis; box-shadow: 0 1px 4px rgba(0, 0, 0, .45) !important; width: auto !important; height: auto !important; }
+[dir="ltr"] .px-card .px-badge { left: 5px !important; right: auto !important; }
+[dir="rtl"] .px-card .px-badge { right: 5px !important; left: auto !important; }
+.px-card .px-badge.val { inset-inline-start: auto !important; inset-inline-end: 5px !important; }
+[dir="ltr"] .px-card .px-badge.val { left: auto !important; right: 5px !important; }
+[dir="rtl"] .px-card .px-badge.val { right: auto !important; left: 5px !important; }
+/* build12 tidy: lists read as lists; an odd last card in two-column lists spans the row */
+#txl, #inbl { grid-template-columns: minmax(0, 1fr) !important; }
+#nfml > :last-child:nth-child(odd), #achl > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+#nfsb .px-grid > .px-card, #mapl > * { min-width: 0; }
 
 </style>
 </body>
