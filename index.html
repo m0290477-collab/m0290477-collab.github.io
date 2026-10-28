@@ -1887,7 +1887,7 @@
         b13cPsT: ["إعدادات الملف الشخصي", "Profile settings", "Profil ayarları", "Paramètres du profil", "Ajustes del perfil", "प्रोफ़ाइल सेटिंग्स"],
         b13cLang: ["اللغة", "Language", "Dil", "Langue", "Idioma", "भाषा"],
         b13cName: ["اسم اللاعب", "Player name", "Oyuncu adı", "Nom du joueur", "Nombre de jugador", "खिलाड़ी का नाम"],
-        b13cNameN: ["تقدر تغيّر اسمك مرة كل يوم.", "You can change your name once a day.", "Adını günde bir kez değiştirebilirsin.", "Tu peux changer de nom une fois par jour.", "Puedes cambiar tu nombre una vez al día.", "आप दिन में एक बार नाम बदल सकते हैं।"],
+        b13cNameN: ["أول تغيير للاسم مجاني، وبعده مرة كل 6 أشهر.", "Your first name change is free; after that, once every 6 months.", "İlk isim değişikliği ücretsiz; sonra 6 ayda bir.", "Le premier changement de nom est gratuit, ensuite une fois tous les 6 mois.", "El primer cambio de nombre es gratis; después, una vez cada 6 meses.", "पहला नाम बदलना मुफ़्त है; उसके बाद हर 6 महीने में एक बार।"],
         b13cAv: ["الصورة الرمزية", "Avatar", "Avatar", "Avatar", "Avatar", "अवतार"],
         b13cPhoto: ["صورة الملف الشخصي", "Profile photo", "Profil fotoğrafı", "Photo de profil", "Foto de perfil", "प्रोफ़ाइल फ़ोटो"],
         b13cAcct: ["الحساب", "Account", "Hesap", "Compte", "Cuenta", "खाता"],
@@ -4312,7 +4312,7 @@
         const EVO = [{}, { ab: 1, cd: 4 }, { ab: 1, cd: 7 }, { ab: 1, cd: 12 }, { ab: 1, cd: 6 }];
         const EVO_LV = [1, 2, 5, 10, 20]; // player level needed for each form
         function evoCap(s) { if (s !== player) return 4; const lv = level(); let c = 0; while (c < 4 && lv >= EVO_LV[c + 1]) c++; return c; }
-        const NEED = 5, dnaN = () => Math.round((A / 400) * (A / 400));
+        const NEED = 5, dnaN = () => Math.max(4, Math.round((A / 900) * (A / 900))); // build13j: DNA orbs are rare (evolution v2)
         function spawnDna(x, y) {
           x = x === undefined ? rnd(80, A - 80) : clamp(x, 40, A - 40); y = y === undefined ? rnd(80, A - 80) : clamp(y, 40, A - 40);
           if (!obsNear(x, y).some((o) => oD(o, x, y) < o.r + 20)) dna.push({ x, y, ph: R() * 6.28 });
@@ -4520,7 +4520,7 @@
           const h = s.seg[0];
           h.x += Math.cos(s.a) * sp; h.y += Math.sin(s.a) * sp;
           if (boosting && !(s.spd > 0)) {
-            s.len -= dt * 3;
+            s.len -= dt * 3 * (s.st5 >= 1 ? 0.75 : 1); // build13j: evolution stage 1 perk
             s.drop -= dt;
             if (s.drop <= 0) { s.drop = 0.15; const t = s.seg[s.seg.length - 1]; addFood(t.x, t.y, 0.4, segColor(s.skin, s.seg.length - 1)); }
           }
@@ -5030,7 +5030,7 @@
           for (const s of snakes) {
             if (!s.alive) continue;
             const h = s.seg[0];
-            if (h.x < s.r * 0.5 || h.y < s.r * 0.5 || h.x > A - s.r * 0.5 || h.y > A - s.r * 0.5) { kill(s); continue; }
+            if (h.x < s.r * 0.5 || h.y < s.r * 0.5 || h.x > A - s.r * 0.5 || h.y > A - s.r * 0.5) { if (s === player) DCX(s, null, "wall"); kill(s); continue; }
             { const ob = obsNear(h.x, h.y).find((o) => oD(o, h.x, h.y) < o.r + s.r * 0.5); if (ob) obPush(s, h, ob); } // build10: obstacles never kill
             if (s.pg > 0) continue;
             let hit = null;
@@ -5038,9 +5038,9 @@
               const o = c[j], p = c[j + 1];
               if (o === s || !o.alive || o.pg > 0 || (s.boss && o !== player) || (s.tm !== undefined && s.tm === o.tm)) continue;
               const cr = (s.r + o.r) * 0.72, dx = p.x - h.x, dy = p.y - h.y;
-              if (dx * dx + dy * dy < cr * cr) { hit = o; return false; }
+              if (dx * dx + dy * dy < cr * cr) { hit = o; DCP = p; return false; }
             } });
-            if (hit) { if (s.fire > 0 && !(hit.psh > 0)) { const k0 = s.kills; credit(s, hit); if (s === player && s.kills > k0) player.fk13 = (player.fk13 || 0) + 1; } else credit(hit, s); } // build12 fire. a kill counts only when the snake really dies (not on a shield or while invulnerable)
+            if (hit) { if (s.fire > 0 && !(hit.psh > 0)) { const k0 = s.kills; if (hit === player) DCX(hit, s, "fire"); credit(s, hit); if (s === player && s.kills > k0) player.fk13 = (player.fk13 || 0) + 1; } else { if (s === player) DCX(s, hit, DCP && hit.seg[0] === DCP ? "head" : "body"); credit(hit, s); } } // build12 fire. a kill counts only when the snake really dies (not on a shield or while invulnerable)
           }
           evoUpdate(dt); xUpdate(dt); preyUpdate(dt); adUpdate(dt); modeTick(); nfUpdate(dt);
           if (pendImp) { pendImp = false; if (killT !== time) sImpact(0.45); }
@@ -6203,7 +6203,7 @@
         }
         function gameOver() {
           closeExit(); revHide(); state = "over"; AD.deaths = time - AD.t0 < 60 ? AD.deaths + 1 : Math.max(0, AD.deaths - 1);
-          const l = Math.floor(player.len), pb = best, onS = ON.stats(l);
+          const l = Math.round(player.len), pb = best, onS = ON.stats(l); // build13j: round (boosting stops at ~12, floor showed 11)
           best = Math.max(best, l);
           $("ngo").textContent = l > pb ? _t("ngoBest") : pb - l + 1 === 1 ? _t("ngoNear1") : _t("ngoNear", { n: pb - l + 1 });
           { const cg = $("chg"); cg.classList.toggle("x-hide", !CH); cg.classList.toggle("lose", !!CH && l <= CH.s);
@@ -9363,7 +9363,7 @@
           o.rpc = rpc; o.call = call;
           // server error code -> i18n key
           const EK = { avatar_locked: "avatar_locked", invalid_avatar: "avatar_locked", unknown_item: "p12EUnk", not_authenticated: "p12EAuth", no_profile: "p12EAuth", insufficient_funds: "onE_funds", already_claimed: "onE_claimed", not_reached: "onE_reach", not_ready: "onE_reach", rate_limited: "onE_rate", banned: "onE_banned",
-            maintenance: "onE_maint", level_too_low: "onE_level", already_owned: "onE_owned", invalid_login: "onE_login", user_not_found: "onE_nouser", cannot_add_self: "onE_self",
+            maintenance: "onE_maint", level_too_low: "onE_level", already_owned: "onE_owned", invalid_login: "onE_login", user_not_found: "onE_nouser", id_only: "jIdOnly", cannot_add_self: "onE_self",
             already_friends: "onE_already", friends_full: "onE_full", their_friends_full: "onE_full", gift_limit: "onE_giftlim", already_sent: "onE_giftsent", not_friends: "onE_notfr",
             blocked: "onE_notfr", purchases_disabled: "onE_off", pass_disabled: "onE_off", season_not_active: "onE_off", premium_required: "onE_off", net: "onNet",
             username_taken: "taken", invalid_username: "unameBad", user_already_exists: "emailTaken", email_exists: "emailTaken", weak_password: "weakPw", transaction_belongs_to_other_user: "onPayOther" };
@@ -9956,7 +9956,7 @@
           const P10_NOBACK = { over: 1, lgr: 1, mnt: 1, onmig: 1, login: 1, reg: 1, menu: 1, studio: 1 };
           const P10_OV = ["acct", "shop", "set", "how", "maps", "league", "lgr", "achs", "inbox", "adm", "onlb", "onfr", "onch", "ongems", "onmig", "mnt", "chat", "nfmodes", "nfedit", "nfstory", "nfpass", "nfshop", "over", "reg", "b13ids", "b13mis", "b13gift", "b13prem", "b13cps", "b13cadm", "b13dmp", "b13dlg"];
           const ARW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-          const num2 = (n) => { try { return num(n); } catch (_) { return String(n || 0); } };
+          const num2 = (n) => { try { return B13H.fmtK ? B13H.fmtK(n) : num(n); } catch (_) { return String(n || 0); } }; // build13j: compact like home (1.01M)
           const wallet = () => {
             let c = 0, g = 0; try { c = P.coins || 0; g = P.gems || 0; } catch (_) {}
             let plus = false; try { plus = ON.storeOk() && cur === "@on"; } catch (_) {}
@@ -10851,12 +10851,12 @@
           function psPaint() {
             const p = prof(), el = $("b13cps"); if (!el) return;
             const nm = $("b13cnm"); if (nm && document.activeElement !== nm) nm.value = p ? p.username : P.name || "";
-            $("b13cid").innerHTML = p ? `<bdi dir="ltr">ID ${num(p.vip_id || p.player_id)}</bdi> ${B13C.ownB(p.player_id)}` : "";
+            $("b13cid").innerHTML = p ? B13H.rid(p.vip_id || p.player_id, "lg") : "";
             B13G.grid();
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13i" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13j" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -11279,7 +11279,6 @@
               <div class="h-halo"></div><div class="h-ring2"></div><div class="h-ring1"></div><div class="h-shd"></div>
               <canvas class="h-snake" id="b13hcv" aria-hidden="true"></canvas>
               <div class="h-plate h-glass" id="b13hpl"></div>
-              <button type="button" class="h-swap h-glass h-gold" data-hm="sk" id="b13hsw">${ic("locker")}</button>
             </div>
             <div class="h-col r">
               <button type="button" class="h-mini h-glass" data-go="nfb13mis" id="b13hmi"></button>
@@ -11313,7 +11312,7 @@
             const lv = tryv(lvInfo, { n: 1, x: 0, need: 1 }), t = tryv(() => B13.tier(lv.n), 0), p = prof(), id = p ? (p.vip_id || p.player_id) : 0;
             const lg = LGd(), pts = lg && lg.me ? lg.me.points | 0 : 0;
             $("b13hpc").innerHTML = `<span class="h-avf"><span class="h-avr"></span><span class="h-av">${tryv(() => avH(P), "")}</span><span class="h-lvh"><b dir="ltr">${lv.n}</b></span></span>` +
-              `<span class="h-pi"><span class="h-row"><b class="h-nm h-stroke"><bdi>${esc(P.name || "—")}</bdi></b>${id ? `<span class="h-idb">${ic("medal")}<bdi dir="ltr">#${fmt(id)}</bdi></span>` : ""}</span>` +
+              `<span class="h-pi"><span class="h-row"><b class="h-nm h-stroke"><bdi>${esc(P.name || "—")}</bdi></b>${id ? (B13H.rid || ((x) => "#" + x))(id) : ""}</span>` +
               `<span class="h-row"><span class="h-lab">${esc(_t("b13T" + t))}</span><span class="h-bar g"><i style="width:${lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)}%"></i></span></span></span>` +
               `<span class="h-trop">${ic("trophy")}<bdi dir="ltr">${fmt(pts)}</bdi></span>`;
             const plus = storeOk() ? `<button type="button" class="h-plus" data-go="nfongems" aria-label="${esc(_t("onGemsT"))}">+</button>` : "";
@@ -11364,7 +11363,7 @@
           function pNav() {
             const n = tryv(() => { const s = ON.st || {}; return (s.unread_chat | 0) + (s.incoming_requests | 0) + (B13.chatUn | 0) + ((B13.inb && B13.inb.unread) | 0); }, 0);
             const it = (k, icn, lab, attr, bd) => `<button type="button" class="nv${k === "battle" ? " on" : ""}" ${attr}>${ic(icn)}<span>${esc(lab)}</span>${bd ? `<em class="h-bd">${bd}</em>` : ""}</button>`;
-            $("b13hnv").innerHTML = it("shop", "shop", _t("shop"), 'data-b13s="shop"') + it("locker", "locker", _t("b13hLocker"), 'data-hm="sk"') + it("battle", "battle", _t("b13hBattle"), 'data-go="mplay"') +
+            $("b13hnv").innerHTML = it("shop", "shop", _t("shop"), 'data-go="shop"') + it("locker", "locker", _t("b13hLocker"), 'data-hm="sk"') + it("battle", "battle", _t("b13hBattle"), 'data-go="mplay"') +
               it("compete", "tournaments", _t("b13hCompete"), 'data-b13s="compete"') + it("social", "friends", _t("b13hSocial"), 'data-b13s="social"', n ? String(Math.min(99, n)) : "");
           }
           // equipped snake on the stand: same sprites as the match (body bands, royal overlay, head, flag)
@@ -11376,43 +11375,130 @@
             if (it) { nm = _t(id); if (nm === id) nm = _t("nfI_" + id); r = it.r | 0; } else { nm = tryv(() => SKINS[skin].n, ""); r = tryv(() => (SKINS[skin].p ? (SKINS[skin].p > 1500 ? 2 : 1) : 0), 0); }
             $("b13hpl").innerHTML = `<span class="h-rar r${r}">${esc(_t("nfR" + r))}</span><b class="h-nmk">${esc(nm)}</b>`;
           }
-          function drawSnake(tm) {
+          // build13j: premium living hero snake (equipped skin, shaded tube, breathing + S-sway, coil drift, blink, tongue flick,
+          // skin-coloured rim light + pedestal reflection, flourish on tap / skin change). 60 fps rAF, pauses when hidden, static under reduced motion / Low quality.
+          const RM = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+          const still = () => RM.matches || QL <= 0;
+          const SPR = new Map();
+          const hexA = (c, a) => { try { const x = document.createElement("canvas").getContext("2d"); x.fillStyle = c; const v = x.fillStyle; if (v[0] === "#") { const n = parseInt(v.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; } return v.replace(/rgba?\(([^)]+)\)/, (m, p) => `rgba(${p.split(",").slice(0, 3).join(",")},${a})`); } catch (_) { return `rgba(255,220,120,${a})`; } };
+          const ball = (col, ov) => { // shaded scale "bead": base colour or royal overlay disc, specular, rim light, soft dark edge
+            const key = col + "|" + (ov ? ov.__id || (ov.__id = Math.random().toString(36).slice(2)) : "");
+            let c = SPR.get(key); if (c) return c;
+            if (SPR.size > 260) SPR.clear();
+            const S = 64; c = document.createElement("canvas"); c.width = c.height = S; const g = c.getContext("2d");
+            g.save(); g.beginPath(); g.arc(32, 32, 30, 0, 6.283); g.clip();
+            if (ov) g.drawImage(ov, 2, 2, 60, 60); else { g.fillStyle = col; g.fillRect(0, 0, S, S); }
+            // scale hint
+            g.globalAlpha = 0.16; g.strokeStyle = "#000"; g.lineWidth = 1.4; for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(32, 14 + i * 18, 16, 0.25 * Math.PI, 0.75 * Math.PI); g.stroke(); } g.globalAlpha = 1;
+            let gr = g.createRadialGradient(22, 18, 2, 32, 32, 32); gr.addColorStop(0, "rgba(255,255,255,.55)"); gr.addColorStop(0.35, "rgba(255,255,255,.08)"); gr.addColorStop(0.75, "rgba(0,0,0,.12)"); gr.addColorStop(1, "rgba(0,0,0,.55)");
+            g.fillStyle = gr; g.fillRect(0, 0, S, S); g.restore();
+            g.lineWidth = 2.2; g.strokeStyle = "rgba(255,255,255,.28)"; g.beginPath(); g.arc(32, 32, 29, 1.05 * Math.PI, 1.75 * Math.PI); g.stroke();
+            SPR.set(key, c); return c;
+          };
+          const HS = { t0: performance.now(), fl: 0, sp: [], key: "", blinkAt: 2.5, tongueAt: 4, w: 0, h: 0 };
+          const flourish = () => { if (still()) return; HS.fl = performance.now(); HS.burst = 1; };
+          cv.style.pointerEvents = "auto"; cv.style.cursor = "pointer";
+          cv.addEventListener("click", () => { flourish(); try { beep(720, 0.08, "triangle", 0.035, 1100); } catch (_) {} kick(); setTimeout(() => { const lk = $("b13hnv").querySelector('[data-hm="sk"]'); if (lk && visible()) lk.click(); }, still() ? 0 : 520); }); // tap the hero = Locker (the floating hanger button was a duplicate)
+          function drawSnake(tmNow) {
             const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
-            const d = Math.min(window.devicePixelRatio || 1, QL <= 0 ? 1 : 2);
+            const d = Math.min(window.devicePixelRatio || 1, QL <= 0 ? 1.5 : 2);
             if (cv.width !== Math.round(w * d) || cv.height !== Math.round(h * d)) { cv.width = Math.round(w * d); cv.height = Math.round(h * d); }
             cg.setTransform(d, 0, 0, d, 0, 0); cg.clearRect(0, 0, w, h);
-            const R0 = Math.min(w, h) * 0.07, cx = w / 2, by = h * 0.8, sway = QL <= 0 ? 0 : Math.sin(tm / 900) * 0.06;
-            // path: tail spiral on the stand, then the neck rising into an S with the head on top
-            const pts = [];
-            const coil = 64, rise = 40;
-            for (let i = 0; i < coil; i++) { const t = i / coil, a = Math.PI * 0.5 + t * Math.PI * 3.2, rad = R0 * (1.6 + (1 - t) * 2.2); pts.push([cx + Math.cos(a) * rad * 1.15, by + Math.sin(a) * rad * 0.42 - t * R0 * 0.6]); }
-            const [sx, sy] = pts[pts.length - 1];
-            for (let i = 1; i <= rise; i++) { const t = i / rise; pts.push([sx + Math.sin(t * Math.PI * 1.15 + sway * 6) * R0 * 1.6 * (1 - t * 0.4) - (sx - cx) * t, sy - t * h * 0.5]); }
-            const n = pts.length, sk = tryv(() => skin, 0), eq = tryv(() => NX.eq.sk, ""), ovs = eq ? tryv(() => ovsFor(eq), null) : null, ova = eq === "photo" ? 0.95 : 0.82;
-            // soft contact shadow
-            cg.fillStyle = "rgba(0,0,0,.35)"; cg.beginPath(); cg.ellipse(cx, by + R0 * 0.6, R0 * 5.2, R0 * 1.3, 0, 0, 6.283); cg.fill();
-            const rr = (i) => { const t = i / (n - 1); return R0 * (t < 0.15 ? 0.45 + t * 3.6 : t < 0.8 ? 1 : 1 - (t - 0.8) * 0.9); };
-            for (let i = 0; i < n - 1; i++) {
-              const [x, y] = pts[i], [x2, y2] = pts[i + 1], an = Math.atan2(y2 - y, x2 - x), r = rr(i), wd = r * 1.9, ln = Math.hypot(x2 - x, y2 - y) + wd * 0.55;
-              cg.setTransform(d * Math.cos(an), d * Math.sin(an), -d * Math.sin(an), d * Math.cos(an), d * x, d * y);
-              const k = n - 1 - i; // head = 0 like the match
-              try { cg.drawImage(bodySpr(bodyKey(sk, k), k % 4 === 0 ? 1 : 0), -ln / 2, -wd / 2, ln, wd); } catch (_) { cg.fillStyle = "#3c6"; cg.fillRect(-ln / 2, -wd / 2, ln, wd); }
-              if (ovs && ovs.length) { cg.globalAlpha = ova; cg.drawImage(ovs[k % ovs.length], -ln / 2, -wd / 2, ln, wd); cg.globalAlpha = 1; }
+            const t = still() ? 1.2 : (tmNow - HS.t0) / 1000;
+            const sk = tryv(() => skin, 0), eq = tryv(() => NX.eq.sk, ""), ovs = eq ? tryv(() => ovsFor(eq), null) : null;
+            const key = sk + "|" + eq; if (HS.key && HS.key !== key) flourish(); HS.key = key;
+            // flourish curve: rear up fast, settle smoothly (1.2 s)
+            const fe = HS.fl ? (tmNow - HS.fl) / 1200 : 1, rear = fe < 1 ? Math.sin(Math.min(1, fe * 1.6) * Math.PI) * (1 - fe * 0.35) : 0;
+            if (fe >= 1) HS.fl = 0;
+            const R0 = Math.min(w, h) * 0.066, cx = w / 2, by = h * 0.8, br = 1 + Math.sin(t * 1.7) * 0.035; // breathing
+            const colAt = (k) => { try { return segColor(sk, k); } catch (_) { return "#39ff14"; } };
+            const glow = colAt(0);
+            // ---- path: coil (tail outside-back → front centre), then the raised neck
+            const P = [], coilN = 150, turns = 1.72, drift = Math.sin(t * 0.45) * 0.14;
+            for (let i = 0; i < coilN; i++) {
+              const u = i / (coilN - 1), a = Math.PI * 1.5 - 0.35 + drift + u * Math.PI * 2 * turns, rad = R0 * (4.3 - u * 2.6) * (1 + Math.sin(t * 0.9 + u * 6) * 0.015);
+              P.push([cx + Math.cos(a) * rad * 1.18, by + Math.sin(a) * rad * 0.4 - u * R0 * 0.9, u < 0.12 ? 0.35 + u * 5.4 : 1, 0]);
             }
-            const [hx, hy] = pts[n - 1], [px, py] = pts[n - 4], ha = Math.atan2(hy - py, hx - px), hw = R0 * 3.2;
-            cg.setTransform(d, 0, 0, d, 0, 0); cg.save(); cg.translate(hx, hy); cg.rotate(ha);
-            try { cg.drawImage(headSpr(segColor(sk, 0)), -hw * 0.45, -hw * 0.37, hw, hw * 0.74); } catch (_) {}
-            try { if (SKINS[sk].fl) { const fr = R0 * 0.8; cg.drawImage(flagSpr(SKINS[sk].fl), -R0 * 0.3 - fr, -fr, fr * 2, fr * 2); } } catch (_) {}
-            for (const s of [-1, 1]) { const ex = Math.cos(0.73) * R0 * 0.87, ey = s * Math.sin(0.73) * R0 * 0.87, er = R0 * 0.27;
-              cg.fillStyle = "#e9b829"; cg.beginPath(); cg.arc(ex, ey, er, 0, 6.283); cg.fill(); cg.fillStyle = "#05060d"; cg.beginPath(); cg.ellipse(ex + er * 0.15, ey, er * 0.3, er * 0.82, 0, 0, 6.283); cg.fill(); }
-            cg.restore(); drawn = true;
+            const [sx, sy] = P[P.length - 1], neckN = 70, H = h * (0.5 + rear * 0.12) * br, ph = Math.sin(t * 0.8) * 0.55, amp = R0 * (1.75 + rear * 0.4);
+            for (let i = 1; i <= neckN; i++) {
+              const u = i / neckN, e = u * u * (3 - 2 * u);
+              const x = sx + (cx - sx) * e + Math.sin(u * Math.PI * 1.25 + ph) * amp * (1 - u * 0.55) - Math.sin(ph) * amp * (1 - u) * 0.2;
+              const y = sy - u * H + Math.sin(t * 1.6) * R0 * 0.18 * u;
+              P.push([x, y, 1 - u * 0.22, 1]);
+            }
+            const n = P.length;
+            // ---- pedestal reflection (coil only, mirrored + squashed, faint)
+            const ry = by + R0 * 1.25;
+            cg.save(); cg.beginPath(); cg.ellipse(cx, ry, R0 * 6.2, R0 * 1.6, 0, 0, 6.283); cg.clip(); cg.globalAlpha = 0.16;
+            for (let i = 0; i < coilN; i += 3) { const [x, y, s] = P[i], r = R0 * s * br; cg.drawImage(ball(colAt(((coilN - i) / 2.2) | 0), ovs && ovs.length ? ovs[(((coilN - i) / 2.2) | 0) % ovs.length] : null), x - r, ry + (ry - y) * 0.45 - r * 0.5, r * 2, r); }
+            cg.restore();
+            // skin-coloured contact glow on the stand
+            let gr = cg.createRadialGradient(cx, by + R0 * 0.6, R0, cx, by + R0 * 0.6, R0 * 6.5); gr.addColorStop(0, hexA(glow, 0.32 + rear * 0.2)); gr.addColorStop(1, hexA(glow, 0));
+            cg.fillStyle = gr; cg.beginPath(); cg.ellipse(cx, by + R0 * 0.6, R0 * 6.5, R0 * 1.7, 0, 0, 6.283); cg.fill();
+            cg.fillStyle = "rgba(0,0,0,.32)"; cg.beginPath(); cg.ellipse(cx, by + R0 * 0.55, R0 * 5, R0 * 1.15, 0, 0, 6.283); cg.fill();
+            // ---- body: coil drawn back-to-front (depth = y), neck base-to-head; segment index k keeps the match's pattern bands
+            const order = [];
+            for (let i = 0; i < coilN; i++) order.push(i);
+            order.sort((a, b) => P[a][1] - P[b][1]);
+            for (let i = coilN; i < n; i++) order.push(i);
+            cg.shadowColor = hexA(glow, 0.55); cg.shadowBlur = still() ? 6 : 8 + rear * 10;
+            for (const i of order) {
+              const [x, y, s] = P[i], r = R0 * s * br, k = ((n - 1 - i) / 2.2) | 0;
+              cg.drawImage(ball(colAt(k), ovs && ovs.length ? ovs[k % ovs.length] : null), x - r, y - r, r * 2, r * 2);
+              if (i === coilN - 1) cg.shadowBlur = 0;
+            }
+            cg.shadowBlur = 0;
+            // rim light along the neck (skin colour, light from upper left)
+            cg.globalCompositeOperation = "lighter"; cg.strokeStyle = hexA(glow, 0.35); cg.lineWidth = R0 * 0.22; cg.lineCap = "round"; cg.beginPath();
+            for (let i = coilN; i < n - 4; i++) { const [x, y, s] = P[i]; const r = R0 * s * br; if (i === coilN) cg.moveTo(x - r * 0.72, y - r * 0.3); else cg.lineTo(x - r * 0.72, y - r * 0.3); }
+            cg.stroke(); cg.globalCompositeOperation = "source-over";
+            // ---- head
+            const [hx, hy] = P[n - 1], [qx, qy] = P[n - 6], ha = Math.atan2(hy - qy, hx - qx) + Math.sin(t * 1.1) * 0.08;
+            const hl = R0 * 2.35, hw = R0 * 1.75, hc = colAt(0);
+            cg.save(); cg.translate(hx, hy); cg.rotate(ha);
+            // tongue (every ~4 s, 0.45 s)
+            const tc = t % 4.2, tg = !still() && tc > 3.75 ? Math.sin(((tc - 3.75) / 0.45) * Math.PI) : 0;
+            if (tg > 0.02) { const L = R0 * 2.1 * tg, x0 = hl * 0.62; cg.strokeStyle = "#ff3a5c"; cg.lineWidth = Math.max(1.2, R0 * 0.16); cg.lineCap = "round"; cg.beginPath(); cg.moveTo(x0, 0); cg.lineTo(x0 + L, Math.sin(t * 40) * R0 * 0.08);
+              cg.moveTo(x0 + L, 0); cg.lineTo(x0 + L + R0 * 0.45 * tg, -R0 * 0.28 * tg); cg.moveTo(x0 + L, 0); cg.lineTo(x0 + L + R0 * 0.45 * tg, R0 * 0.28 * tg); cg.stroke(); }
+            cg.shadowColor = hexA(glow, 0.6); cg.shadowBlur = 10 + rear * 12;
+            const hb = ball(hc, ovs && ovs.length ? ovs[0] : null);
+            cg.save(); cg.scale(1, hw / hl); cg.drawImage(hb, -hl * 0.55, -hl * 0.55, hl * 1.2, hl * 1.1); cg.restore();
+            cg.shadowBlur = 0;
+            // brow ridge + nostrils
+            cg.fillStyle = "rgba(0,0,0,.28)"; for (const s of [-1, 1]) { cg.beginPath(); cg.arc(hl * 0.5, s * hw * 0.16, R0 * 0.08, 0, 6.283); cg.fill(); }
+            // eyes with blink
+            const bc = t % 3.6, blink = !still() && bc > 3.45 ? Math.abs(Math.cos(((bc - 3.45) / 0.15) * Math.PI)) : 1;
+            for (const s of [-1, 1]) {
+              const ex = hl * 0.18, ey = s * hw * 0.42, er = R0 * 0.36;
+              cg.fillStyle = "#0a0f1a"; cg.beginPath(); cg.ellipse(ex, ey, er * 1.15, er * 1.15 * Math.max(0.12, blink), 0, 0, 6.283); cg.fill();
+              cg.fillStyle = "#ffd23a"; cg.beginPath(); cg.ellipse(ex, ey, er, er * Math.max(0.1, blink), 0, 0, 6.283); cg.fill();
+              if (blink > 0.3) { cg.fillStyle = "#05060d"; cg.beginPath(); cg.ellipse(ex + er * 0.18, ey, er * 0.28, er * 0.82 * blink, 0, 0, 6.283); cg.fill();
+                cg.fillStyle = "rgba(255,255,255,.9)"; cg.beginPath(); cg.arc(ex - er * 0.25, ey - er * 0.35 * blink, er * 0.22, 0, 6.283); cg.fill(); }
+            }
+            cg.restore();
+            // ---- sparkles (flourish)
+            if (HS.burst) { HS.burst = 0; for (let i = 0; i < 22; i++) { const a = Math.random() * 6.283, v = 30 + Math.random() * 70; HS.sp.push({ x: hx, y: hy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 30, l: 1, s: 2 + Math.random() * 3, c: i % 3 ? "#fff3b0" : glow }); } }
+            if (HS.sp.length) {
+              const dt = 1 / 60; cg.globalCompositeOperation = "lighter";
+              HS.sp = HS.sp.filter((p) => (p.l -= dt * 1.1) > 0);
+              for (const p of HS.sp) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 40 * dt; const s = p.s * (0.6 + p.l);
+                cg.globalAlpha = Math.min(1, p.l * 1.4); cg.fillStyle = p.c; cg.beginPath(); cg.moveTo(p.x, p.y - s * 2); cg.lineTo(p.x + s * 0.5, p.y - s * 0.5); cg.lineTo(p.x + s * 2, p.y); cg.lineTo(p.x + s * 0.5, p.y + s * 0.5);
+                cg.lineTo(p.x, p.y + s * 2); cg.lineTo(p.x - s * 0.5, p.y + s * 0.5); cg.lineTo(p.x - s * 2, p.y); cg.lineTo(p.x - s * 0.5, p.y - s * 0.5); cg.closePath(); cg.fill(); }
+              cg.globalAlpha = 1; cg.globalCompositeOperation = "source-over";
+            }
+            // pedestal ring pulse follows the skin colour
+            const st = $("b13hst"); if (st && st.__g !== glow) { st.__g = glow; st.style.setProperty("--hg", hexA(glow, 0.75)); st.style.setProperty("--hg2", hexA(glow, 0.35)); }
+            drawn = true;
           }
           const visible = () => !$("menu").classList.contains("x-hide") && tryv(() => state !== "play", true) && !document.hidden;
           // build13i hotfix: block-scoped name. A sloppy-mode block `function loop` (Annex B) overwrote the game's main loop, so matches never ran.
           const hLoop = (tm) => {
             raf = 0; if (!visible()) return;
-            if (QL > 0 || !drawn) { if (tm - lastT > 33) { lastT = tm; drawSnake(tm); } raf = requestAnimationFrame(hLoop); }
+            if (!still() || !drawn || HS.sp.length) { drawSnake(tm); }
+            if (!still() || HS.sp.length) raf = requestAnimationFrame(hLoop);
           };
+          document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
+          if (RM.addEventListener) RM.addEventListener("change", () => kick());
           const kick = () => { drawn = false; if (!raf && visible()) raf = requestAnimationFrame(hLoop); };
           function paint() { if (!cur) return; [pTop, pLeft, pRight, pNav, pPlate].forEach((f) => { try { f(); } catch (e) { console.warn("b13h", e); } }); kick(); }
           B13H.paint = paint; B13H.lg = () => { try { pTop(); pLeft(); } catch (_) {} };
@@ -11423,7 +11509,7 @@
             let h = "", t = "";
             if (k === "compete") { t = _t("b13hCompete"); h = row("tournaments", _t("p10Tour"), 'data-go="league"') + row("league", _t("b13dLg"), 'data-go="nfb13dlg"') + row("trophy", _t("hmRank"), 'data-go="nfonlb"') + row("medal", _t("ach"), 'data-go="achs"') + row("missions", _t("b13hHard"), 'data-go="nfb13mis"'); }
             else if (k === "social") { t = _t("b13hSocial"); h = row("friends", _t("p10Fr"), 'data-go="nfonfr"', _t("b13hChatSub")) + row("inbox", _t("inbox"), 'data-go="inbox"') + row("gift", _t("gift"), 'data-go="gift"'); }
-            else if (k === "shop") { t = _t("shop"); h = row("shop", _t("b13hStore"), 'data-go="shop"') + row("skins", _t("b13hLocker"), 'data-hm="sk"') + (storeOk() ? row("gems", _t("onGemsT"), 'data-go="nfongems"') : "") + row("medal", _t("b13hVip"), 'data-go="nfb13ids"') + row("chest", _t("b13hPremium"), 'data-go="nfb13prem"'); }
+            else if (k === "shop") { t = _t("shop"); h = row("shop", _t("b13hStore"), 'data-go="shop"') + (storeOk() ? row("gems", _t("onGemsT"), 'data-go="nfongems"') : "") + row("medal", _t("b13hVip"), 'data-go="nfb13ids"') + row("chest", _t("b13hPremium"), 'data-go="nfb13prem"'); }
             else if (k === "set") { t = _t("settings"); h = row("profile", _t("b13hProf"), 'data-go="nfb13cps"') + row("settings", _t("b13hGame"), 'data-go="set"') + row("events", _t("hmEv"), 'data-go="nfmodes"') + row("play", _t("how"), 'data-go="how"') + (staff() ? row("boss", _t("admin"), 'data-go="nfb13cadm"') : ""); }
             else if (k === "more") { t = _t("b13hMore"); const m = tryv(() => S.mode, "n");
               h = `<div class="h-mm">${MORE.map(([v, l]) => `<button type="button" class="h-mode${m === v ? " on" : ""}" data-b13m="${v}">${esc(_t(l))}</button>`).join("")}</div><div class="h-dlw" id="b13hdl"></div>` + row("play", _t("how"), 'data-go="how"'); }
@@ -11653,7 +11739,7 @@
             const id = p.vip_id || p.player_id, role = p.role === "owner" ? "OWNER" : p.role === "admin" ? "ADMIN" : "";
             const k = (v, l) => `<span class="h-stc"><b dir="ltr">${v}</b><small>${esc(l)}</small></span>`;
             pch.innerHTML = `<div class="h-pcl"><button type="button" class="h-pav" data-b13hav="1" aria-label="${esc(_t("b13hEditAv"))}">${tryv(() => avH(P), "")}<b class="h-plv" dir="ltr">${lv.n}</b></button>` +
-              `<div class="h-pnm"><b class="h-disp h-t1 h-stroke"><bdi>${esc(P.name || "—")}</bdi></b><div class="h-row">${id ? `<span class="h-idb">${ic("medal", "h-c14")}<bdi dir="ltr">#${fmt(id)}</bdi></span>` : ""}<span class="h-tier">${esc(_t("b13T" + t))}</span>${role ? `<span class="h-role">${role}</span>` : ""}</div>` +
+              `<div class="h-pnm"><b class="h-disp h-t1 h-stroke"><bdi>${esc(P.name || "—")}</bdi></b><div class="h-row">${id ? (B13H.rid || ((x) => "#" + x))(id) : ""}<span class="h-tier">${esc(_t("b13T" + t))}</span>${role ? `<span class="h-role">${role}</span>` : ""}</div>` +
               `<small class="h-mu">${esc(_t("b13hTapAv"))}</small></div></div>` +
               `<div class="h-stg">${k(fmt(st.games), _t("games"))}${k(fmt(st.kills), _t("kills"))}${k(fmt(st.best_len), _t("b13hBest"))}${k(fmt(st.eat), _t("b13hEaten"))}${k(fmt(st.trophies), _t("trophies"))}${k(esc(_t("b13dT" + (me ? me.tier | 0 : 0))), _t("b13dLg"))}</div>`;
           };
@@ -11664,7 +11750,7 @@
           { const ad = document.querySelector("#onfr .on-add"); if (ad) { ad.before(fid); const s = ad.querySelector(".x-btn"); if (s) s.classList.add("h-srb"); } }
           SEC.onfr = () => {
             const p = tryv(() => ON.st.profile, {}) || {}, id = p.vip_id || p.player_id;
-            fid.innerHTML = `<b class="h-disp h-stroke">${esc(_t("b13hAddFr"))}</b><div class="h-row"><span class="h-fav">${tryv(() => avH(P), "")}</span><span class="h-fmi"><small class="h-mu">${esc(_t("b13hMyId"))}</small><b class="h-disp" dir="ltr">${id ? "#" + fmt(id) : "—"}</b></span></div><small class="h-mu">${esc(_t("b13hShareId"))}</small>`;
+            fid.innerHTML = `<b class="h-disp h-stroke">${esc(_t("b13hAddFr"))}</b><div class="h-row"><span class="h-fav">${tryv(() => avH(P), "")}</span><span class="h-fmi"><small class="h-mu">${esc(_t("b13hMyId"))}</small>${id ? (B13H.rid || ((x) => "#" + x))(id, "lg") : "—"}</span></div><small class="h-mu">${esc(_t("b13hShareId"))}</small>`;
             const sb = document.querySelector("#onfr .on-add .x-btn"); if (sb && !sb.querySelector(".h-sr")) { const t = sb.querySelector("span"); sb.innerHTML = `<i class="h-ei h-sr">${SRCH}</i>`; if (t) sb.appendChild(t); }
           };
 
@@ -11673,6 +11759,518 @@
 
           // repaint on language change
           if (typeof NFH === "object" && NFH && NFH.relang) NFH.relang.push(() => { document.querySelectorAll(".x-ov").forEach((ov) => { if (!ov.classList.contains("x-hide") && !SKIPOV.has(ov.id)) sched(ov); }); if (vis("nfstory")) storyMap(); if (vis("league")) torPaint(); });
+        }
+        try { Object.assign(I18N, {"jTime": ["الوقت", "Time", "Süre", "Temps", "Tiempo", "समय"], "jGoBest": ["رقم قياسي جديد: {n}!", "New personal best: {n}!", "Yeni kişisel rekor: {n}!", "Nouveau record perso : {n} !", "¡Nuevo récord personal: {n}!", "नया निजी रिकॉर्ड: {n}!"], "jGoTop1": ["بطل! أنهيت في المركز الأول.", "Champion! You finished #1.", "Şampiyon! 1. bitirdin.", "Champion ! Tu finis n°1.", "¡Campeón! Terminaste #1.", "चैंपियन! आप #1 रहे।"], "jGoTop3": ["ضمن الثلاثة الأوائل (#{r}) — جولة رائعة!", "Top 3 finish (#{r}) — great run!", "İlk 3'te bitirdin (#{r}) — harika!", "Top 3 (#{r}) — belle partie !", "Top 3 (#{r}) — ¡gran partida!", "टॉप 3 (#{r}) — शानदार!"], "jGoKill1": ["أسقطت ثعباناً — واصل الصيد!", "1 takedown — keep hunting!", "1 avlama — avlanmaya devam!", "1 élimination — continue la chasse !", "1 derribo — ¡sigue cazando!", "1 शिकार — शिकार जारी रखें!"], "jGoKills": ["أسقطت {n} ثعابين — واصل الصيد!", "{n} takedowns — keep hunting!", "{n} avlama — avlanmaya devam!", "{n} éliminations — continue la chasse !", "{n} derribos — ¡sigue cazando!", "{n} शिकार — शिकार जारी रखें!"], "jGoTip": ["كُل الطعام المضيء واقطع طريق المنافسين لتتجاوز أفضل طول لك ({n}).", "Eat glowing food and cut off rivals to beat your best length ({n}).", "En iyi uzunluğunu ({n}) geçmek için parlayan yemi ye, rakiplerin önünü kes.", "Mange la nourriture lumineuse et coupe la route aux rivaux pour battre ton record ({n}).", "Come comida brillante y corta el paso a rivales para superar tu mejor longitud ({n}).", "अपनी सबसे अच्छी लंबाई ({n}) तोड़ने के लिए चमकता खाना खाएँ और विरोधियों का रास्ता काटें।"], "jGoNoRw": ["لا مكافأة هذه الجولة — القتلات والمراكز العشرة الأولى تمنح عملات وخبرة", "No coins this round — kills and top-10 finishes earn coins and XP", "Bu tur ödül yok — avlar ve ilk 10 bitirişler jeton ve XP kazandırır", "Pas de pièces cette fois — les éliminations et le top 10 rapportent pièces et XP", "Sin monedas esta vez — los derribos y el top 10 dan monedas y XP", "इस राउंड कोई सिक्के नहीं — शिकार और टॉप-10 से सिक्के और XP मिलते हैं"], "jHunt": ["ابحث", "Hunt", "Ara", "Chercher", "Buscar", "खोजें"], "jProg": ["تقدمك", "Your progress", "İlerlemen", "Ta progression", "Tu progreso", "आपकी प्रगति"], "jSecrets": ["الأسرار", "Secrets", "Sırlar", "Secrets", "Secretos", "रहस्य"], "jThisIsYou": ["هذا أنت", "This is you", "Bu sensin", "C'est toi", "Eres tú", "यह आप हैं"], "jChat": ["دردشة", "Chat", "Sohbet", "Chat", "Chat", "चैट"], "jChallenge": ["تحدَّ", "Challenge", "Meydan oku", "Défier", "Desafiar", "चुनौती"], "jRemove": ["إزالة", "Remove", "Kaldır", "Retirer", "Quitar", "हटाएँ"], "jBlock": ["حظر", "Block", "Engelle", "Bloquer", "Bloquear", "ब्लॉक"], "jDecline": ["رفض", "Decline", "Reddet", "Refuser", "Rechazar", "अस्वीकार"], "jSent": ["تم إرسال الطلب", "Request sent", "İstek gönderildi", "Demande envoyée", "Solicitud enviada", "अनुरोध भेजा"], "jSeen": ["آخر ظهور قبل {t}", "Last seen {t} ago", "Son görülme {t} önce", "Vu il y a {t}", "Visto hace {t}", "{t} पहले देखा"], "jWins": ["انتصارات", "Wins", "Galibiyet", "Victoires", "Victorias", "जीत"], "jIdOnly": ["البحث برقم اللاعب فقط (أرقام)", "Search by player ID only (numbers)", "Yalnızca oyuncu ID'si ile ara (rakam)", "Recherche par ID joueur uniquement (chiffres)", "Busca solo por ID de jugador (números)", "केवल प्लेयर ID से खोजें (अंक)"], "jSure": ["متأكد؟", "Sure?", "Emin misin?", "Sûr ?", "¿Seguro?", "पक्का?"], "jSearchId": ["ابحث برقم اللاعب", "Search by player ID", "Oyuncu ID'si ile ara", "Rechercher par ID joueur", "Buscar por ID de jugador", "प्लेयर ID से खोजें"], "jSearchPh": ["مثال: 1024", "e.g. 1024", "ör. 1024", "ex. 1024", "p. ej. 1024", "जैसे 1024"], "jShareId": ["شارك", "Share", "Paylaş", "Partager", "Compartir", "शेयर"], "jNoFr": ["لا أصدقاء بعد", "No friends yet", "Henüz arkadaş yok", "Pas encore d'amis", "Aún no hay amigos", "अभी कोई दोस्त नहीं"], "jNoFrS": ["أضف صديقاً برقم اللاعب، أو شارك رقمك.", "Add a friend by player ID, or share your ID.", "Oyuncu ID'siyle arkadaş ekle ya da ID'ni paylaş.", "Ajoute un ami par son ID, ou partage le tien.", "Añade un amigo por su ID, o comparte el tuyo.", "प्लेयर ID से दोस्त जोड़ें, या अपनी ID शेयर करें।"], "jNoId": ["لا يوجد لاعب بالرقم #{n}", "No player with ID #{n}", "#{n} ID'li oyuncu yok", "Aucun joueur avec l'ID #{n}", "Ningún jugador con ID #{n}", "ID #{n} वाला कोई प्लेयर नहीं"], "jCopied": ["تم نسخ الرقم #{n}", "ID #{n} copied", "#{n} kopyalandı", "ID #{n} copié", "ID #{n} copiado", "ID #{n} कॉपी हुई"], "jShareTx": ["أضفني في Super Snake! رقمي: #{n}", "Add me on Super Snake! My ID: #{n}", "Super Snake'te beni ekle! ID'm: #{n}", "Ajoute-moi sur Super Snake ! Mon ID : #{n}", "¡Agrégame en Super Snake! Mi ID: #{n}", "Super Snake पर मुझे जोड़ें! मेरी ID: #{n}"], "b13FrPh": ["رقم اللاعب، مثل 1024", "Player ID, e.g. 1024", "Oyuncu ID'si, ör. 1024", "ID joueur, ex. 1024", "ID de jugador, p. ej. 1024", "प्लेयर ID, जैसे 1024"], "b13hShareId": ["شارك رقمك ليضيفك أصدقاؤك، أو ابحث برقم اللاعب.", "Share your ID so friends can add you, or search by player ID.", "Arkadaşların seni eklesin diye ID'ni paylaş ya da oyuncu ID'siyle ara.", "Partage ton ID pour que tes amis t'ajoutent, ou cherche par ID joueur.", "Comparte tu ID para que te añadan, o busca por ID de jugador.", "अपनी ID शेयर करें ताकि दोस्त आपको जोड़ सकें, या प्लेयर ID से खोजें।"], "onFrNone": ["ما عندك أصدقاء للحين، أضف واحداً برقم اللاعب", "No friends yet — add one by player ID", "Henüz arkadaş yok — oyuncu ID'siyle ekle", "Pas encore d'amis — ajoute-en un par son ID", "Aún no tienes amigos — añade uno por su ID", "अभी कोई दोस्त नहीं — प्लेयर ID से जोड़ें"], "nfLmD": ["٣ معالم مخفية في كل من نيون والغابة والسايبر. المسها!", "3 hidden landmarks each in Neon, Forest and Cyber. Touch them!", "Neon, Orman ve Siber'de 3'er gizli simge. Dokun!", "3 monuments cachés dans Néon, Forêt et Cyber. Touche-les !", "3 lugares ocultos en Neón, Bosque y Ciber. ¡Tócalos!", "नियॉन, जंगल और साइबर में 3-3 छिपे स्थल। छुएँ!"], "jNm1": ["لديك تغيير اسم مجاني واحد", "1 free name change left", "1 ücretsiz isim değişikliği hakkın var", "1 changement de nom gratuit restant", "Te queda 1 cambio de nombre gratis", "1 मुफ़्त नाम बदलाव बाकी"], "jNmLock": ["🔒 يمكنك تغيير اسمك مجدداً في {d}", "🔒 You can change your name again on {d}", "🔒 İsmini {d} tarihinde tekrar değiştirebilirsin", "🔒 Tu pourras changer de nom le {d}", "🔒 Podrás cambiar tu nombre de nuevo el {d}", "🔒 आप {d} को फिर से नाम बदल सकते हैं"], "jNmCan": ["يمكنك تغيير اسمك الآن (بعدها يُقفل ٦ أشهر)", "You can change your name now (then it locks for 6 months)", "İsmini şimdi değiştirebilirsin (sonra 6 ay kilitlenir)", "Tu peux changer de nom maintenant (puis bloqué 6 mois)", "Puedes cambiar tu nombre ahora (luego se bloquea 6 meses)", "अभी नाम बदल सकते हैं (फिर 6 महीने लॉक)"], "jNmConfT": ["تغيير الاسم إلى «{x}»؟", "Change your name to “{x}”?", "İsmin “{x}” olarak değişsin mi?", "Changer ton nom en « {x} » ?", "¿Cambiar tu nombre a «{x}»?", "नाम “{x}” करें?"], "jNmConf": ["بعد هذا التغيير يُقفل اسمك لمدة ٦ أشهر (حتى {d}).", "After this change your name is locked for 6 months (until {d}).", "Bu değişiklikten sonra ismin 6 ay kilitlenir ({d} tarihine kadar).", "Après ce changement, ton nom est bloqué 6 mois (jusqu'au {d}).", "Tras este cambio tu nombre queda bloqueado 6 meses (hasta el {d}).", "इस बदलाव के बाद आपका नाम 6 महीने ({d} तक) लॉक रहेगा।"], "jNmGo": ["غيّر الاسم", "Change name", "İsmi değiştir", "Changer le nom", "Cambiar nombre", "नाम बदलें"], "b13cNameN": ["أول تغيير للاسم مجاني، وبعده مرة كل 6 أشهر.", "Your first name change is free; after that, once every 6 months.", "İlk isim değişikliği ücretsiz; sonra 6 ayda bir.", "Le premier changement de nom est gratuit, ensuite une fois tous les 6 mois.", "El primer cambio de nombre es gratis; después, una vez cada 6 meses.", "पहला नाम बदलना मुफ़्त है; उसके बाद हर 6 महीने में एक बार।"], "jConfirmBuy": ["اضغط مرة ثانية للشراء", "Tap again to buy", "Satın almak için tekrar dokun", "Touche encore pour acheter", "Toca otra vez para comprar", "खरीदने के लिए फिर टैप करें"], "jDcWall": ["اصطدمت بالجدار", "Hit the wall", "Duvara çarptın", "Tu as heurté le mur", "Chocaste con el muro", "दीवार से टकराए"], "jDcBody": ["اصطدمت بجسم {x}", "Hit {x}'s body", "{x} adlı yılanın gövdesine çarptın", "Tu as heurté le corps de {x}", "Chocaste con el cuerpo de {x}", "{x} के शरीर से टकराए"], "jDcHead": ["تصادم رأساً برأس مع {x}", "Head-on crash with {x}", "{x} ile kafa kafaya çarpıştın", "Collision frontale avec {x}", "Choque frontal con {x}", "{x} से आमने-सामने टक्कर"], "jDcFire": ["أحرقتك نار {x}", "Burned by {x}'s Fire", "{x} seni Ateş ile yaktı", "Brûlé par le Feu de {x}", "Quemado por el Fuego de {x}", "{x} की आग से जले"], "jDcTime": ["انتهى الوقت", "Time's up", "Süre doldu", "Temps écoulé", "Se acabó el tiempo", "समय समाप्त"], "jDcQuit": ["خرجت من المباراة", "You left the match", "Maçtan çıktın", "Tu as quitté la partie", "Saliste de la partida", "आपने मैच छोड़ा"], "jEvStage": ["المرحلة {n}", "Stage {n}", "Aşama {n}", "Stade {n}", "Etapa {n}", "चरण {n}"], "jEvolved": ["تطوّرت! المرحلة {n}", "EVOLVED! Stage {n}", "EVRİMLEŞTİN! Aşama {n}", "ÉVOLUTION ! Stade {n}", "¡EVOLUCIONASTE! Etapa {n}", "विकसित! चरण {n}"], "how6": ["التطوّر 🧬: خمس مراحل (5 ← 15 ← 35 ← 70 ← 120 حمض نووي). الحمض النووي نادر: يهرب منك، ويظهر قرب الثعابين الكبيرة، ويسقط من الثعابين التي تقتلها (أكثر من الكبيرة والزعماء)، وتحصل على القليل عند المرور بمحاذاة جسم دون أن تموت. كل مرحلة تغيّر شكلك وتمنحك ميزة صغيرة: تعزيز أوفر، التقاط أبعد، رأس أكبر، درع لمرة واحدة، طعام أغنى.", "Evolution 🧬: five stages (5 → 15 → 35 → 70 → 120 DNA). DNA is rare: orbs flee from you and gather near big snakes, kills drop DNA (more from big snakes and bosses), and skimming past a body without dying gives a little. Each stage changes your look and gives a small perk: cheaper boost, longer reach, bigger head, a one-time shield, richer food.", "Evrim 🧬: beş aşama (5 → 15 → 35 → 70 → 120 DNA). DNA nadirdir: küreler senden kaçar ve büyük yılanların yanında toplanır, avlar DNA düşürür, bir gövdenin yanından ölmeden geçmek biraz verir. Her aşama görünümünü değiştirir ve küçük bir avantaj verir.", "Évolution 🧬 : cinq stades (5 → 15 → 35 → 70 → 120 ADN). L'ADN est rare : les orbes te fuient et se regroupent près des gros serpents, les éliminations en lâchent, et frôler un corps sans mourir en donne un peu. Chaque stade change ton look et donne un petit bonus.", "Evolución 🧬: cinco etapas (5 → 15 → 35 → 70 → 120 ADN). El ADN es raro: los orbes huyen de ti y se juntan cerca de serpientes grandes, los derribos sueltan ADN y rozar un cuerpo sin morir da un poco. Cada etapa cambia tu aspecto y da una pequeña ventaja.", "विकास 🧬: पाँच चरण (5 → 15 → 35 → 70 → 120 DNA)। DNA दुर्लभ है: गोले आपसे भागते हैं और बड़े साँपों के पास इकट्ठा होते हैं, शिकार DNA गिराते हैं, और बिना मरे किसी शरीर के पास से गुज़रने पर थोड़ा मिलता है। हर चरण रूप बदलता है और छोटा फ़ायदा देता है।"], "nfLeftH": ["باقي {h}س {m}د", "{h}h {m}m left", "{h}s {m}d kaldı", "encore {h} h {m} min", "quedan {h} h {m} min", "{h} घंटे {m} मिनट बाकी"]}); } catch (_) {}
+        // ===================== build13j: owner feedback pass (IDs, Teams panel, Game Over, Extra modes, Friends + profile card, spawn) =====================
+        b13j: {
+          const tv = (f, d) => { try { const v = f(); return v === undefined || v === null || Number.isNaN(v) ? d : v; } catch (_) { return d; } };
+          const J = (window.__J = window.__J || {});
+          const RMq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+          const nf = (v) => Number(v || 0).toLocaleString("en-US");
+          const IC = (n) => `<i class="h-ic j-ic" style="background-image:url(ui/ic/${n}.webp?v=13h1)" aria-hidden="true"></i>`;
+          const online = () => tv(() => cur === "@on" && ON.on && !!ON.rpc, false);
+          let jLoad = () => {};
+
+          // ---------- 1) shared ID badge: owner #1, VIP 2–50 in four luxury tiers, normal IDs coloured per block of 100 ----------
+          const PAL = [["#5cc8ff", "#1f6fd6"], ["#5dffb0", "#119a62"], ["#ffbe6b", "#d9620f"], ["#ff86c0", "#b8266f"], ["#c2a2ff", "#6a3fe0"], ["#8ff0ff", "#1592a8"],
+                       ["#ffe36e", "#b88a00"], ["#ff9b8a", "#bf3322"], ["#b6ff7a", "#4a9614"], ["#9fb4ff", "#3248c4"], ["#ffb0ef", "#9a2fb3"], ["#7dffe4", "#0d8a73"]];
+          const SV = {
+            crown: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z" fill="currentColor"/><circle cx="12" cy="4" r="1.6" fill="currentColor"/></svg>',
+            gem: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l4 6-9 12L3 9z" fill="currentColor"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12" stroke="rgba(0,0,0,.35)" stroke-width="1.2" fill="none"/></svg>',
+            star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7.1L12 17.3 5.8 21l1.6-7.1L2 9.2l7.1-.6z" fill="currentColor"/></svg>',
+          };
+          const vipT = (id) => (id === 2 ? 1 : id <= 5 ? 2 : id <= 20 ? 3 : 4); // matches the VIP price tiers (#2, #3–5, #6–20, #21–50)
+          const rid = (id, cls) => {
+            id = Math.floor(+id || 0); if (id <= 0) return "";
+            let k, ic = "", lab = "", st = "";
+            if (id === 1) { k = "own"; ic = SV.crown; lab = `<em>${esc(_t("b13cOwner"))}</em>`; }
+            else if (id <= 50) { const t = vipT(id); k = "vip v" + t; ic = t === 1 ? SV.crown : t === 2 ? SV.gem : t === 3 ? SV.crown : SV.gem; lab = "<em>VIP</em>"; }
+            else { const c = PAL[Math.floor((id - 1) / 100) % PAL.length]; k = "n"; st = ` style="--a:${c[0]};--b:${c[1]}"`; }
+            return `<span class="jid ${k}${cls ? " " + cls : ""}"${st} dir="ltr" data-p="${id}" title="ID ${id}">${ic ? `<i>${ic}</i>` : ""}<b>#${nf(id)}</b>${lab}</span>`;
+          };
+          J.rid = rid; B13H.rid = rid;
+          B13.idH = (pid, vip) => rid(vip || pid);
+          // profile account line + old ID rows (menu/profile) use the badge too
+          const pidPaint = () => { const p = tv(() => ON.st.profile, null), v = p ? p.vip_id || p.player_id : 0;
+            for (const id of ["pidM", "pidP"]) { const el = $(id); if (el && v) { const s = el.querySelector(".pidv"); if (s && s.dataset.j !== String(v)) { s.dataset.j = String(v); s.innerHTML = rid(v); } } } };
+          setInterval(pidPaint, 1500);
+
+          // ---------- 2) spawn: never start a match against the wall ----------
+          if (typeof NFH === "object" && NFH.start) NFH.start.unshift(() => {
+            try {
+              if (!player || !player.seg || !player.seg.length) return;
+              const m = Math.min(1400, A * 0.2), h = player.seg[0];
+              if (h.x < m || h.y < m || h.x > A - m || h.y > A - m) {
+                let x = A / 2, y = A / 2;
+                for (let t = 0; t < 60; t++) { const px = rnd(m, A - m), py = rnd(m, A - m); if (!obsNear(px, py).some((o) => oD(o, px, py) < o.r + 200) && !snakes.some((s) => s !== player && s.alive && s.seg.some((p, i) => i % 3 === 0 && Math.hypot(p.x - px, p.y - py) < 400))) { x = px; y = py; break; } }
+                const a = Math.atan2(A / 2 - y, A / 2 - x) + rnd(-0.7, 0.7);
+                player.a = player.ta = a; player.seg = player.seg.map((_, i) => ({ x: x - Math.cos(a) * i * 6, y: y - Math.sin(a) * i * 6 }));
+                cam.x = x; cam.y = y;
+              } else { const a = Math.atan2(A / 2 - h.y, A / 2 - h.x), far = Math.min(h.x, h.y, A - h.x, A - h.y) < A * 0.3; if (far) { player.a = player.ta = a; player.seg = player.seg.map((_, i) => ({ x: h.x - Math.cos(a) * i * 6, y: h.y - Math.sin(a) * i * 6 })); } }
+            } catch (_) {}
+          });
+
+
+          // ---------- 9) death cause (shown on Game Over; logged for QA) ----------
+          var DCP = null;
+          var DCX = (s, o, k) => {
+            try {
+              const h = s.seg[0], d = { k, t: +time.toFixed(2), map: mapI, md: MD, st: NFM.m || "", nm: o ? String(o.name || "") : "", bot: o ? (o.bot ? 1 : 0) : 0, x: h.x | 0, y: h.y | 0, A, sr: +s.r.toFixed(1), or: o ? +o.r.toFixed(1) : 0, len: +s.len.toFixed(1) };
+              if (o && DCP) { d.dist = +Math.hypot(DCP.x - h.x, DCP.y - h.y).toFixed(1); d.cr = +((s.r + o.r) * 0.72).toFixed(1); d.si = o.seg.indexOf(DCP); d.ol = +o.len.toFixed(0); d.ad = o.ad ? 1 : 0; d.boss = o.boss ? 1 : 0; d.ghost = o.ghost > 0 ? 1 : 0;
+                pr(DCP.x, DCP.y, 0); d.sx = PX | 0; d.sy = PY | 0; d.on = PX > -10 && PY > -10 && PX < innerWidth + 10 && PY < innerHeight + 10 ? 1 : 0; d.fog = AD.fog && Math.hypot(AD.fog.x - DCP.x, AD.fog.y - DCP.y) < AD.fog.r ? 1 : 0; d.hx = DCP.x | 0; d.hy = DCP.y | 0; }
+              J.dc = d; (J.dlog = J.dlog || []).push(d); if (J.dlog.length > 200) J.dlog.shift();
+              J.snapAt = { x: o && DCP ? DCP.x : h.x, y: o && DCP ? DCP.y : h.y };
+            } catch (e) {}
+            DCP = null;
+          };
+          if (NFH.start) NFH.start.push(() => { J.dc = null; J.snap = null; });
+
+
+          // ---------- 11) no silent spending: buy / bundle / crate need a second tap; revive ignores taps in its first 0.8 s ----------
+          window.addEventListener("click", (e) => {
+            const b = e.target.closest && e.target.closest('[data-go="nfbuy"],[data-go="nfbundle"],[data-go="nfcrate"]'); if (!b || b.disabled) return;
+            if (b.dataset.jarm === "1") { b.dataset.jarm = ""; b.classList.remove("j-arm"); return; }
+            e.preventDefault(); e.stopImmediatePropagation();
+            b.dataset.jarm = "1"; b.dataset.jtx = b.innerHTML; b.classList.add("j-arm"); b.innerHTML = `✓ ${esc(_t("jConfirmBuy"))}`;
+            setTimeout(() => { if (b.dataset.jarm === "1") { b.dataset.jarm = ""; b.classList.remove("j-arm"); if (b.dataset.jtx) b.innerHTML = b.dataset.jtx; } }, 3500);
+          }, true);
+          { const rv = $("rev"); let at = 0; if (rv) new MutationObserver(() => { if (!rv.classList.contains("x-hide")) at = performance.now(); }).observe(rv, { attributes: true, attributeFilter: ["class"] });
+            window.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("#revy"); if (b && performance.now() - at < 800) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+            window.addEventListener("click", (e) => { if (e.target.closest && e.target.closest('[data-go="exitY"]') && state === "play") J.dc = { k: "quit" }; }, true); }
+          // FPS counter is a debug aid: hidden unless ?debug is in the URL
+          if (!/[?&]debug\b/.test(location.search)) document.body.classList.add("j-nofps");
+          // freeze-frame of the death spot for the Game Over card
+          const snapDeath = () => {
+            try {
+              const at = J.snapAt; if (!at || !cv || !cv.width) return; pr(at.x, at.y, 0);
+              const k = cv.width / Math.max(1, cv.clientWidth || innerWidth), w = 240, h = 136, sx = (PX - w / 2) * k, sy = (PY - h / 2) * k;
+              const c = document.createElement("canvas"); c.width = w * 2; c.height = h * 2; const g = c.getContext("2d");
+              g.fillStyle = "#050814"; g.fillRect(0, 0, c.width, c.height); g.drawImage(cv, sx, sy, w * k, h * k, 0, 0, c.width, c.height);
+              g.strokeStyle = "#ff3b4a"; g.lineWidth = 5; g.beginPath(); g.arc(w, h, 26, 0, 6.283); g.stroke(); g.lineWidth = 4; g.beginPath(); g.moveTo(w - 12, h - 12); g.lineTo(w + 12, h + 12); g.moveTo(w + 12, h - 12); g.lineTo(w - 12, h + 12); g.stroke();
+              J.snap = c.toDataURL("image/jpeg", 0.72);
+            } catch (_) { J.snap = null; }
+          };
+          { const _dcx = DCX; DCX = (s, o, k) => { _dcx(s, o, k); requestAnimationFrame(() => requestAnimationFrame(snapDeath)); }; }
+          J.dcText = (d, alive) => {
+            if (alive || !d) return alive ? _t("jDcTime") : "";
+            const x = String(d.nm || "").replace(/^[^\p{L}\p{N}]+/u, "") || "?";
+            return d.k === "wall" ? _t("jDcWall") : d.k === "head" ? _t("jDcHead", { x }) : d.k === "fire" ? _t("jDcFire", { x }) : d.k === "quit" ? _t("jDcQuit") : d.k === "body" ? _t("jDcBody", { x }) : "";
+          };
+
+
+          // ---------- 12) full matches: 30–35 snakes, realistic length spread, more food, bigger new arenas, styled edge ----------
+          J.tot = 32;
+          for (let i = 8; i < MAPS.length; i++) if (!MAPS[i].sz) MAPS[i].sz = 2.5; // build13d arenas were 3,000 × 3,000; now 7,500 × 7,500 like the classic ones
+          const _sync = syncBots;
+          syncBots = function () {
+            if (MD === "t" || !(J.inStart || state === "play")) return _sync();
+            const want = Math.max(2, J.tot - 1), bots = snakes.filter((x) => x.bot && !x.ad);
+            while (bots.length < want) { const b = makeSnake(bn(bots.length), botSkin(), true); b.ni = bots.length; snakes.push(b); bots.push(b); }
+            while (bots.length > want) snakes.splice(snakes.indexOf(bots.pop()), 1);
+          };
+          const sizeRoll = () => { const r = R(); return r < 0.09 ? rnd(300, A >= 7000 ? 900 : 500) : r < 0.34 ? rnd(60, 250) : rnd(18, 55); };
+          const layOut = (b) => { // lay a long body along a smooth wandering path that stays inside the arena
+            const len = b.len, r = 8 + Math.sqrt(len) * 0.4, gap = r * 0.55, n = Math.max(2, Math.ceil(len)), m = 260;
+            let x = b.seg[0].x, y = b.seg[0].y, a = b.a + Math.PI, t = R() * 6; const seg = [{ x, y }];
+            for (let i = 1; i < n; i++) { a += Math.sin(t += 0.05) * 0.06; let nx = x + Math.cos(a) * gap, ny = y + Math.sin(a) * gap;
+              if (nx < m || nx > A - m) { a = Math.PI - a; nx = clamp(nx, m, A - m); } if (ny < m || ny > A - m) { a = -a; ny = clamp(ny, m, A - m); }
+              x = nx; y = ny; seg.push({ x, y }); }
+            b.seg = seg; b.r = r; b.pX = null;
+          };
+          const _mk = makeSnake;
+          makeSnake = function (name, sk, bot) {
+            const b = _mk(name, sk, bot);
+            if (bot && (state === "play" || J.inStart) && MD !== "t" && MD !== "s") { b.len = sizeRoll(); if (b.len > 40) layOut(b); b.big = b.len >= 300 ? 1 : 0; }
+            return b;
+          };
+          { const _st = start; start = function () { J.tot = 30 + ((R() * 6) | 0); J.inStart = 1; try { return _st.apply(this, arguments); } finally { J.inStart = 0; } }; }
+          if (NFH.start) NFH.start.push(() => { // first wave (bots created before state = play)
+            if (MD === "t" || MD === "s") return;
+            snakes.filter((x) => x.bot && !x.ad && !x.boss && !x.rv).forEach((b) => { b.len = sizeRoll(); if (b.len > 40) layOut(b); else b.pX = null; b.big = b.len >= 300 ? 1 : 0; });
+            // keep the player's spawn clear of the long bodies
+            const h = player && player.seg[0]; if (h && snakes.some((o) => o !== player && o.alive && o.seg.some((p, i) => i % 3 === 0 && Math.hypot(p.x - h.x, p.y - h.y) < 450))) {
+              for (let t = 0; t < 80; t++) { const px = rnd(1400, A - 1400), py = rnd(1400, A - 1400);
+                if (!snakes.some((o) => o !== player && o.alive && o.seg.some((p, i) => i % 3 === 0 && Math.hypot(p.x - px, p.y - py) < 500))) { const a = Math.atan2(A / 2 - py, A / 2 - px);
+                  player.a = player.ta = a; player.seg = player.seg.map((_, i) => ({ x: px - Math.cos(a) * i * 6, y: py - Math.sin(a) * i * 6 })); player.pX = null; cam.x = px; cam.y = py; break; } }
+            }
+          });
+          // food: denser everywhere (was 0.6 of the old table), 30% of refills arrive as small clusters
+          F13.DENS = 1.0;
+          { const _fill = F13.fill.bind(F13);
+            F13.fill = function () { if (R() < 0.3 && food.length < this.cap() - 8) { const cx = rnd(200, A - 200), cy = rnd(200, A - 200), n = 5 + ((R() * 4) | 0); for (let i = 0; i < n; i++) addFood(cx + rnd(-70, 70), cy + rnd(-70, 70), 0, 0, pickFood()); this.nat += n; } _fill(); }; }
+          // bigger bots hunt a little harder: they steer toward a nearby smaller head now and then
+          if (NFH.upd) NFH.upd.push((dt) => {
+            if (state !== "play") return;
+            for (const b of snakes) { if (!b.bot || !b.alive || !b.big || b.boss || R() > dt * 0.8) continue; const h = b.seg[0];
+              let best = null, bd = 700; for (const o of snakes) { if (o === b || !o.alive || o.len > b.len * 0.5) continue; const d = Math.hypot(o.seg[0].x - h.x, o.seg[0].y - h.y); if (d < bd) { bd = d; best = o; } }
+              if (best) { const oh = best.seg[0], lead = 120; b.ta = Math.atan2(oh.y + Math.sin(best.a) * lead - h.y, oh.x + Math.cos(best.a) * lead - h.x); b.think = 0.6; } }
+          });
+          // arena edge: dark rim outside the wall + glowing boundary line, brighter when you are close
+          if (NFH.world) NFH.world.push(() => {
+            try {
+              if (state !== "play" || !player) return; const h = player.seg[0], dm = Math.min(h.x, h.y, A - h.x, A - h.y), warn = clamp(1 - dm / 700, 0, 1), M = MAPS[mapI];
+              const q = (x0, y0, x1, y1, x2, y2, x3, y3) => { pr(x0, y0, 0); ctx.moveTo(PX, PY); pr(x1, y1, 0); ctx.lineTo(PX, PY); pr(x2, y2, 0); ctx.lineTo(PX, PY); pr(x3, y3, 0); ctx.lineTo(PX, PY); ctx.closePath(); };
+              const W2 = 900, cx0 = clamp(cam.x - 2600, -W2, A + W2), cx1 = clamp(cam.x + 2600, -W2, A + W2), cy0 = clamp(cam.y - 1600, -W2, A + W2), cy1 = clamp(cam.y + 2200, -W2, A + W2);
+              ctx.save(); ctx.fillStyle = "rgba(4,6,16,.82)"; ctx.beginPath();
+              if (cy0 < 0) q(cx0, cy0, cx1, cy0, cx1, 0, cx0, 0); if (cy1 > A) q(cx0, A, cx1, A, cx1, cy1, cx0, cy1);
+              if (cx0 < 0) q(cx0, Math.max(0, cy0), 0, Math.max(0, cy0), 0, Math.min(A, cy1), cx0, Math.min(A, cy1)); if (cx1 > A) q(A, Math.max(0, cy0), cx1, Math.max(0, cy0), cx1, Math.min(A, cy1), A, Math.min(A, cy1));
+              ctx.fill();
+              const col = warn > 0.05 ? `rgba(255,${Math.round(120 - 80 * warn)},60,${0.55 + 0.4 * warn * (0.6 + 0.4 * Math.sin(time * 8))})` : `rgba(${M.wc || "255,210,120"},.7)`;
+              ctx.strokeStyle = col; ctx.lineWidth = 3 + warn * 5; ctx.shadowColor = col; ctx.shadowBlur = 10 + warn * 18; ctx.beginPath();
+              const seg = (x0, y0, x1, y1) => { const n = 24; for (let i = 0; i <= n; i++) { const t = i / n; pr(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, 1); i ? ctx.lineTo(PX, PY) : ctx.moveTo(PX, PY); } };
+              const vx0 = Math.max(0, cx0), vx1 = Math.min(A, cx1), vy0 = Math.max(0, cy0), vy1 = Math.min(A, cy1);
+              if (cy0 <= 0) seg(vx0, 0, vx1, 0); if (cy1 >= A) seg(vx0, A, vx1, A); if (cx0 <= 0) seg(0, vy0, 0, vy1); if (cx1 >= A) seg(A, vy0, A, vy1);
+              ctx.stroke(); ctx.restore();
+            } catch (_) {}
+          });
+
+          // ---------- 13) Evolution v2: 5 stages (5 → 15 → 35 → 70 → 120 DNA), risky DNA, perks, premium HUD emblem ----------
+          const EV2 = [5, 15, 35, 70, 120];
+          J.EV2 = EV2; J.qaDna = (n) => gainDna(player, n); // QA helper (no effect unless called)
+          const stageOf = (d) => { let k = 0; while (k < 5 && d >= EV2[k]) k++; return k; };
+          const evApply = (s, me) => {
+            const k = stageOf(s.dnaT || 0), was = s.st5 || 0; s.st5 = k; s.evo = Math.min(4, k);
+            if (k > was) {
+              if (k >= 4 && !s.sh4) { s.sh4 = 1; s.shield = 1; } // stage 4 perk: one shield per life (survive one fatal hit)
+              burst(s.seg[0].x, s.seg[0].y, me ? 70 : 25, k >= 5 ? 45 : 110);
+              if (me) { if (k >= 5) { M.dragon = 1; ON.mx.dragon = 1; } J.evoFx = { k, t: performance.now() }; [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.18, "triangle", 0.06), i * 90)); try { vib([20, 40, 20]); } catch (_) {} }
+            }
+          };
+          gainDna = function (s, amt) {
+            if (!s || !s.alive) return; s.dnaT = (s.dnaT || 0) + (amt || 1); if (s.dnaT > EV2[4]) { s.len += 0.5 * (amt || 1); s.dnaT = Math.min(s.dnaT, EV2[4] + 20); }
+            if (s === player) try { sDna(); } catch (_) {}
+            evApply(s, s === player);
+          };
+          evoDrop = function (s) { // kills drop DNA: more from big snakes and bosses
+            const h = s.seg[0], n = Math.min(16, 1 + Math.floor((s.len || 20) / 70) + (s.boss ? 10 : 0) + Math.floor((s.dnaT || 0) * 0.15));
+            for (let i = 0; i < n; i++) spawnDna(h.x + rnd(-90, 90), h.y + rnd(-90, 90));
+          };
+          // rare free orbs (a third of before), and most of them spawn next to big snakes; orbs flee from heads
+          if (NFH.start) NFH.start.push(() => { for (const x of snakes) { x.dnaT = x.bot ? (R() < 0.5 ? 0 : rnd(0, 40) | 0) : 0; x.st5 = 0; x.sh4 = 0; x.evo = 0; evApply(x, false); } J.evoFx = null; });
+          if (NFH.upd) NFH.upd.push((dt) => {
+            if (state !== "play") return;
+            const want = Math.max(4, Math.round((A / 900) * (A / 900)));
+            if (dna.length > want * 1.6) dna.length = Math.round(want * 1.6);
+            for (const d of dna) { let fx = 0, fy = 0; for (const o of snakes) { if (!o.alive) continue; const oh = o.seg[0], dx = d.x - oh.x, dy = d.y - oh.y, q = dx * dx + dy * dy; if (q < 48400 && q > 1) { const k = 1 / Math.sqrt(q); fx += dx * k; fy += dy * k; } }
+              if (fx || fy) { const m = Math.hypot(fx, fy) || 1; d.x = clamp(d.x + (fx / m) * 95 * dt, 60, A - 60); d.y = clamp(d.y + (fy / m) * 95 * dt, 60, A - 60); } }
+          });
+          { const _sd = spawnDna; spawnDna = function (x, y) { if (x === undefined) { const g = snakes.filter((o) => o.alive && o.len >= 120); if (g.length && R() < 0.65) { const o = g[(R() * g.length) | 0], p = o.seg[(R() * o.seg.length) | 0]; return _sd(p.x + rnd(-80, 80), p.y + rnd(-80, 80)); } } return _sd(x, y); }; }
+          // near-miss: skimming past another body without dying gives a little DNA (max one per 3 s)
+          if (NFH.upd) NFH.upd.push(() => {
+            if (state !== "play" || !player || !player.alive || time - (J.nmT || 0) < 3) return; const h = player.seg[0];
+            for (const o of snakes) { if (o === player || !o.alive) continue; const cr = (player.r + o.r) * 0.72;
+              for (let i = 2; i < o.seg.length; i += 2) { const p = o.seg[i], d = Math.hypot(p.x - h.x, p.y - h.y); if (d < cr * 1.6 && d > cr * 1.05) { J.nmT = time; gainDna(player, 1); floats.push({ x: h.x, y: h.y, t: "🧬+1", l: 1 }); return; } } }
+          });
+          // perks: stage 1 cheaper boost (via build rep), stage 2 bigger pick-up reach, stage 3 bigger head + trail sparks, stage 5 food +15%
+          if (NFH.eat) NFH.eat.push((f) => { try { if (player && player.st5 >= 5 && f && f.v) player.len += Math.min(2, f.v * 0.05); } catch (_) {} });
+          if (NFH.upd) NFH.upd.push((dt) => { // stage 2+: short food magnet
+            if (state !== "play") return; const mg = snakes.filter((o) => o.alive && o.st5 >= 2); if (!mg.length) return;
+            for (const f of food) for (const o of mg) { const h = o.seg[0], dx = h.x - f.x, dy = h.y - f.y; if (Math.abs(dx) > 90 || Math.abs(dy) > 90) continue; const d = Math.hypot(dx, dy) || 1; if (d < 90) { f.x += (dx / d) * 160 * dt; f.y += (dy / d) * 160 * dt; } break; }
+          });
+          if (NFH.world) NFH.world.push(() => { // visible transformation: aura ring (2+), crest (3+), golden halo (5)
+            try {
+              for (const s of snakes) { if (!s.alive || !(s.st5 >= 2)) continue; const h = s.seg[0]; if (Math.abs(h.x - cam.x) > 2200 || Math.abs(h.y - cam.y) > 1600) continue;
+                pr(h.x, h.y, s.r * 0.6); const rr = s.r * PK * (1.7 + 0.12 * Math.sin(time * 5 + (s.ni || 0))), gold = s.st5 >= 5;
+                ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.strokeStyle = gold ? "rgba(255,210,80,.75)" : s.st5 >= 4 ? "rgba(200,120,255,.6)" : "rgba(90,230,255,.5)"; ctx.lineWidth = Math.max(1.5, 2.5 * PK); ctx.beginPath(); ctx.ellipse(PX, PY, rr, rr * 0.75, 0, 0, 6.283); ctx.stroke();
+                if (s.st5 >= 3) { const a = s.a, cs = s.r * PK * 0.9; ctx.fillStyle = gold ? "#ffd659" : "#e3a8ff"; ctx.beginPath(); for (let k = -1; k <= 1; k++) { const b = a + Math.PI + k * 0.5; ctx.moveTo(PX + Math.cos(b) * cs * 0.6, PY + Math.sin(b) * cs * 0.45); ctx.lineTo(PX + Math.cos(b) * cs * 1.7, PY + Math.sin(b) * cs * 1.25 - cs * 0.5); ctx.lineTo(PX + Math.cos(b + 0.25) * cs * 0.6, PY + Math.sin(b + 0.25) * cs * 0.45); } ctx.fill(); }
+                ctx.restore(); }
+            } catch (_) {}
+          });
+          // premium HUD emblem: circular progress ring + stage number; level-up glow + "EVOLVED! Stage N" flourish
+          {
+            const ev = document.querySelector(".x-evo");
+            if (ev) {
+              ev.classList.add("j-evo");
+              ev.insertAdjacentHTML("afterbegin", `<span class="j-eve" id="jeve"><svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18" class="bg"/><circle cx="22" cy="22" r="18" class="fg" id="jevr" pathLength="100" stroke-dasharray="0 100"/></svg><b id="jevn">0</b></span><span class="j-evt"><small id="jevl"></small><em id="jevc"></em></span>`);
+            }
+            const fl = document.createElement("div"); fl.className = "j-evfl x-hide"; fl.id = "jevfl"; ($("game") || document.body).appendChild(fl);
+            let key = "";
+            evoHud = function () {
+              if (!player) return;
+              const d = player.dnaT || 0, k = player.st5 || 0, lo = k ? EV2[k - 1] : 0, hi = k >= 5 ? EV2[4] : EV2[k], pc = k >= 5 ? 100 : Math.round(((d - lo) / Math.max(1, hi - lo)) * 100);
+              const kk = k + "|" + d + "|" + LANG; if (kk === key) return; key = kk;
+              const r = $("jevr"); if (r) r.setAttribute("stroke-dasharray", `${pc} 100`);
+              const n = $("jevn"); if (n) n.textContent = String(k);
+              const l = $("jevl"); if (l) l.textContent = _t("jEvStage", { n: k });
+              const c = $("jevc"); if (c) c.textContent = k >= 5 ? _t("max") : `${d}/${hi} 🧬`;
+              try { $("evn").textContent = _t("jEvStage", { n: k }); $("evc").textContent = k >= 5 ? _t("max") : `${d}/${hi} 🧬`; $("evb").style.width = pc + "%"; $("abil").classList.add("x-hide"); } catch (_) {}
+              const e = $("jeve"); if (e) e.dataset.k = String(k);
+              if (J.evoFx && performance.now() - J.evoFx.t < 400) { const f = $("jevfl"); if (f) { f.textContent = _t("jEvolved", { n: J.evoFx.k }); f.classList.remove("x-hide", "on"); void f.offsetWidth; f.classList.add("on"); setTimeout(() => f.classList.add("x-hide"), 2200); }
+                if (e) { e.classList.remove("up"); void e.offsetWidth; e.classList.add("up"); } J.evoFx = null; }
+            };
+          }
+
+          // ---------- 3) Portal PLAY panel: fixed height; Teams = one Solo/Duo/Squad row + lobby popover ----------
+          {
+            const tml = $("tml"), cl = $("b13hcl");
+            if (tml && cl) {
+              const btn = document.createElement("button"); btn.type = "button"; btn.className = "j-tmb"; btn.innerHTML = IC("friends"); tml.appendChild(btn);
+              const pop = document.createElement("div"); pop.className = "j-tmp x-hide"; pop.innerHTML = `<div class="j-tmw" role="dialog" aria-modal="true"><div class="j-tmh"><span id="jtmt"></span><button type="button" class="j-tmx" aria-label="Close">✕</button></div></div>`;
+              tml.appendChild(pop); const w = pop.firstChild; w.appendChild($("tmt")); w.appendChild($("tmc"));
+              const relab = () => { btn.setAttribute("aria-label", _t("tLobby")); btn.title = _t("tLobby"); $("jtmt").textContent = "👥 " + _t("tLobby") + " · " + _t("tBoard"); };
+              relab(); if (NFH.relang) NFH.relang.push(relab);
+              btn.addEventListener("click", (e) => { e.stopPropagation(); pop.classList.remove("x-hide"); const on = $("tmt").querySelector("button.on") || $("tmt").querySelector("button"); if (on) on.click(); });
+              pop.addEventListener("click", (e) => { if (e.target === pop || e.target.closest(".j-tmx")) { e.stopPropagation(); pop.classList.add("x-hide"); } });
+              const sync = () => { const x = $("b13hx"); cl.classList.toggle("j-x", !!x && [...x.children].some((c) => !c.classList.contains("x-hide"))); };
+              new MutationObserver(sync).observe($("b13hx"), { attributes: true, subtree: true, attributeFilter: ["class"] }); sync();
+            }
+          }
+
+          // ---------- 4) compact numbers in section headers + game-over header (same as home: 1.01M) ----------
+          J.fmtK = B13H.fmtK = (v) => { v = Number(v || 0); return v >= 1e6 ? (v / 1e6).toFixed(v >= 1e7 ? 1 : 2).replace(/\.?0+$/, "") + "M" : nf(v); };
+
+          // ---------- 5) Game Over: hero rank card, 4 stats, reward chips, one clear line ----------
+          {
+            const ov = $("over"), res = ov && ov.querySelector(".x-res");
+            if (res && !$("jgt")) res.insertAdjacentHTML("beforeend", `<div class="j-tm"><b id="jgt">0:00</b><span id="jgtl"></span></div>`);
+            const lab = () => { const l = $("jgtl"); if (l) l.textContent = _t("jTime"); }; lab(); if (NFH.relang) NFH.relang.push(lab);
+            const kids = ov ? [...ov.querySelectorAll(".x-box > .p10-oc")] : [];
+            kids.forEach((k, i) => k.classList.add("j-col" + i));
+            const _go = gameOver;
+            gameOver = function () {
+              const me = player, tot = snakes.length, rk = me ? 1 + snakes.filter((s) => s !== me && s.alive && s.len > me.len).length : 0, pb = best, kills = me ? me.kills | 0 : 0, dur = Math.max(0, time - (AD.t0 || 0));
+              _go();
+              if (!me) return;
+              try {
+                const l = +$("fl").textContent || Math.round(me.len), mm = Math.floor(dur / 60), ss = Math.floor(dur % 60);
+                $("jgt").textContent = mm + ":" + String(ss).padStart(2, "0");
+                // one motivational line
+                let line;
+                if (l > pb) line = _t("jGoBest", { n: nf(l) });
+                else if (rk === 1) line = _t("jGoTop1");
+                else if (rk <= 3) line = _t("jGoTop3", { r: rk });
+                else if (kills === 1) line = _t("jGoKill1");
+                else if (kills > 1) line = _t("jGoKills", { n: kills });
+                else line = _t("jGoTip", { n: nf(Math.max(pb, l)) });
+                const cg = $("chg"), chOn = cg && !cg.classList.contains("x-hide");
+                $("ngo").textContent = line; $("ngo").classList.toggle("x-hide", !!chOn);
+                const nfo = $("nfo"); if (nfo) nfo.classList.add("x-hide");
+                const alive = !!me.alive, dct = J.dcText(J.dc, alive);
+                J.lastDeath = { cause: J.dc, alive };
+                // hero rank card with count-up
+                $("pxrank").innerHTML = `<span class="j-rav">${avH(P)}</span><span class="j-rk"><small>${esc(_t("pxRank"))}</small><b dir="ltr"><span id="jrkn">#${rk}</span></b><small class="j-of">${esc(_t("pxOf", { n: tot }))}</small></span>` +
+                  `<span class="j-rid">${tv(() => rid(ON.st.profile.vip_id || ON.st.profile.player_id), "")}</span>` +
+                  (dct ? `<span class="j-dc">${J.snap ? `<img src="${J.snap}" alt="">` : ""}<b dir="auto">${esc(dct)}</b></span>` : "");
+                if (dct && !J.snap) setTimeout(() => { const el = document.querySelector('#pxrank .j-dc'); if (el && J.snap && !el.querySelector('img')) el.insertAdjacentHTML('afterbegin', `<img src="${J.snap}" alt="">`); }, 120);
+                if (!RMq.matches && tot > rk) setTimeout(() => { const el = $("jrkn"); if (!el) return; const t0 = performance.now(); const st = (ts) => { const k = Math.min(1, (ts - t0) / 900), e = 1 - Math.pow(1 - k, 3); el.textContent = "#" + Math.round(tot - (tot - rk) * e); if (k < 1) requestAnimationFrame(st); }; el.textContent = "#" + tot; requestAnimationFrame(st); }, 760);
+              } catch (e) { console.warn("b13j over", e); }
+            };
+            // reward chips: drop "+0" chips; if nothing was earned say how rewards are earned
+            const pr = $("pxrews");
+            if (pr) {
+              let busy = false;
+              const fix = () => {
+                if (busy) return; busy = true;
+                try {
+                  [...pr.children].forEach((c) => { const t = c.textContent.trim(); if (/^\+0(\s|$)/.test(t)) c.remove(); else { c.classList.toggle("j-co", /🪙/.test(t)); c.classList.toggle("j-xp", /\bXP\b|خبرة/i.test(t) && !/👑/.test(t)); c.classList.toggle("j-sx", /👑/.test(t)); } });
+                  const has = [...pr.children].some((c) => c.classList.contains("j-co") || c.classList.contains("j-xp"));
+                  if (!has && pr.children.length && !pr.querySelector(".j-hint") && !/…/.test(pr.textContent)) pr.insertAdjacentHTML("afterbegin", `<span class="j-hint" dir="auto">${esc(_t("jGoNoRw"))}</span>`);
+                } finally { busy = false; }
+              };
+              new MutationObserver(fix).observe(pr, { childList: true });
+            }
+          }
+
+          // ---------- 6) Extra modes: every row gets a working action; toggles for Ghost race / Nemesis; Secrets hunt ----------
+          {
+            const _pm = paintModes;
+            const row = (b, html) => { if (!b.querySelector("button")) b.insertAdjacentHTML("beforeend", html); };
+            paintModes = function () {
+              _pm();
+              const el = $("nfml"); if (!el) return;
+              el.querySelectorAll(".x-it").forEach((c) => {
+                const t = (c.querySelector("b") ? c.querySelector("b").firstChild : null), tt = t ? String(t.textContent || "") : "";
+                if (tt.startsWith(_t("nfLmT"))) { c.dataset.j = "lm"; row(c, `<button data-go="nfjsec">${esc(_t("jHunt"))}</button>`); }
+                else if (tt.startsWith(_t("nfGhostT"))) { c.dataset.j = "gh"; row(c, `<button data-go="nfjtog" data-k="gh" class="j-tog${NX.set.gh ? " on" : ""}">${esc(_t(NX.set.gh ? "on" : "off"))}</button>`); }
+                else if (tt.startsWith(_t("nfRivalN"))) { c.dataset.j = "rv"; row(c, `<button data-go="nfjtog" data-k="rv" class="j-tog${NX.set.rv ? " on" : ""}">${esc(_t(NX.set.rv ? "on" : "off"))}</button>`); }
+                const sm = c.querySelector("small"); if (sm) sm.textContent = sm.textContent.replace(/\s·\s(On|Off|تشغيل|إيقاف|Açık|Kapalı|Activé|Désactivé|Sí|No|चालू|बंद)$/u, "");
+              });
+              jModesSide();
+            };
+            NFG.nfjtog = (b) => { const k = b.dataset.k, v = NX.set[k] ? 0 : 1; const sb = document.querySelector(`.x-seg[data-nk="${k}"] button[data-v="${v}"]`); if (sb) sb.click(); else { NX.set[k] = v; } setTimeout(paintModes, 120); };
+            NFG.nfjsec = () => { if (state === "play") return; const ids = [0, 5, 6].filter((i) => !tv(() => mapLock(i), true)); const got = (i) => Object.keys(NX.lm || {}).filter((k) => k.startsWith(i + ":") || k.startsWith(i + "_") || k.startsWith(String(i))).length;
+              const i = ids.length ? ids.sort((a, b) => got(a) - got(b))[0] : 0; mapSel = i; setMap(i); NFM.m = ""; NFM.st = 0; start(); };
+            // right panel lower half: your progress in the extra modes (fills the empty area)
+            const jModesSide = () => {
+              const ev = document.querySelector("#nfmodes .h-evp, #nfmodes .h-ev, #nfmodes [class*='h-ev']"); const host = ev && ev.closest(".x-box") ? ev.parentElement : null;
+              const box = document.querySelector("#nfmodes .x-box"); if (!box) return;
+              let s = $("jmside"); const evh = $("b13hevh") || box;
+              if (!s) { s = document.createElement("div"); s.id = "jmside"; s.className = "j-mside"; evh.appendChild(s); if (evh.id === "b13hevh") new MutationObserver(() => { if (!evh.contains(s)) evh.appendChild(s); }).observe(evh, { childList: true }); }
+              const lm = Object.keys(NX.lm || {}).length, lmAll = Object.keys(LMD).length * 3, st = tv(() => Object.values(NX.cs).reduce((a, v) => a + v, 0), 0);
+              const k = (i, v, l) => `<span class="j-ms">${IC(i)}<b dir="ltr">${v}</b><small>${esc(l)}</small></span>`;
+              s.innerHTML = `<b class="j-msh">${esc(_t("jProg"))}</b><div class="j-msg">` + k("story", `★${st}/${tv(() => STG.length * 3, 36)}`, _t("nfStoryT")) + k("missions", nf(NX.wd || 0), _t("nfWordT")) +
+                k("trophy", `${lm}/${lmAll}`, _t("jSecrets")) + k("boss", tv(() => NX.ai.n | 0, 0), _t("nfRivalN")) + `</div>`;
+            };
+          }
+
+          // ---------- 7) public player card (tap a name/avatar/ID anywhere) ----------
+          const relBtns = (p) => {
+            if (p.is_self) return `<p class="j-pcn">${esc(_t("jThisIsYou"))}</p>`;
+            if (p.blocked_by_me) return `<button type="button" class="x-btn x-sub" data-jpa="unb" data-id="${esc(p.id)}">${esc(_t("onUnblock"))}</button>`;
+            if (p.is_friend) return `<button type="button" class="x-btn x-main" data-jpa="chat" data-id="${esc(p.id)}">💬 ${esc(_t("jChat"))}</button><button type="button" class="x-btn x-sub" data-jpa="inv" data-id="${esc(p.id)}">🎮 ${esc(_t("jChallenge"))}</button>` +
+              `<button type="button" class="x-btn x-sub j-dg" data-jpa="rm" data-id="${esc(p.id)}">${esc(_t("jRemove"))}</button><button type="button" class="x-btn x-sub j-dg" data-jpa="block" data-id="${esc(p.id)}">⛔ ${esc(_t("jBlock"))}</button>`;
+            if (p.incoming) return `<button type="button" class="x-btn x-main" data-jpa="acc" data-id="${esc(p.id)}">✓ ${esc(_t("onAccept"))}</button><button type="button" class="x-btn x-sub" data-jpa="dec" data-id="${esc(p.id)}">${esc(_t("jDecline"))}</button><button type="button" class="x-btn x-sub j-dg" data-jpa="block" data-id="${esc(p.id)}">⛔ ${esc(_t("jBlock"))}</button>`;
+            if (p.requested) return `<button type="button" class="x-btn x-sub" disabled>✓ ${esc(_t("jSent"))}</button><button type="button" class="x-btn x-sub" data-jpa="can" data-id="${esc(p.id)}">${esc(_t("onCancel"))}</button><button type="button" class="x-btn x-sub j-dg" data-jpa="block" data-id="${esc(p.id)}">⛔ ${esc(_t("jBlock"))}</button>`;
+            return `<button type="button" class="x-btn x-main" data-jpa="add" data-id="${esc(p.id)}" data-q="${esc(String(p.shown_id || p.player_id))}">＋ ${esc(_t("b13Add"))}</button><button type="button" class="x-btn x-sub j-dg" data-jpa="block" data-id="${esc(p.id)}">⛔ ${esc(_t("jBlock"))}</button>`;
+          };
+          const lastSeen = (p) => { if (p.in_match) return _t("b13InMatch"); if (p.online) return _t("b13Online"); if (!p.last_seen) return ""; const m = Math.max(1, Math.round((Date.now() - Date.parse(p.last_seen)) / 60000));
+            return _t("jSeen", { t: m < 60 ? m + "m" : m < 1440 ? Math.round(m / 60) + "h" : Math.round(m / 1440) + "d" }); };
+          const cardHTML = (p, compact) => {
+            const id = p.shown_id || p.vip_id || p.player_id, lg = p.league || {}, s = p.stats || {}, dot = p.in_match ? "m" : p.online ? "on" : "";
+            const fr = id === 1 ? "own" : id <= 50 ? "vip v" + vipT(id) : "n";
+            const crowns = (lg.c1 ? tv(() => B13D.crown(1, lg.c1), "") : "") + (lg.lg ? tv(() => B13D.legend(lg.lg), "") : "");
+            const k = (v, l) => `<span class="j-pst"><b dir="ltr">${v}</b><small>${esc(l)}</small></span>`;
+            return `<div class="j-pc${compact ? " cmp" : ""}" data-jid="${esc(p.id)}">` +
+              `<div class="j-pch"><span class="j-pav ${fr}">${tv(() => B13G.h(p.avatar), "🐍")}${p.blocked_by_me ? "" : `<i class="b13-dot ${dot}"></i>`}</span>` +
+              `<span class="j-pnm"><b class="h-disp"><bdi>${esc(p.username || "—")}</bdi></b><span class="j-prow">${rid(id)}${p.level ? tv(() => B13.lv(p.level), "") : ""}${p.role ? `<span class="j-role">${esc(p.role === "owner" ? _t("b13cOwner") : "ADMIN")}</span>` : ""}</span>` +
+              `<small class="j-pmu">${p.blocked_by_me ? esc(_t("onFrBl")) : esc(lastSeen(p))}</small></span>` +
+              (lg.tier !== undefined ? `<span class="j-plg">${tv(() => B13D.badge(lg.tier), "")}<small>${esc(_t("b13dT" + (lg.tier | 0)))}</small>${crowns}</span>` : "") + `</div>` +
+              (p.stats ? `<div class="j-psg">${k(nf(s.games), _t("games"))}${k(nf(s.kills), _t("kills"))}${k(nf(s.best), _t("b13hBest"))}${k(nf(s.wins), _t("jWins"))}${k(nf(s.trophies), _t("trophies"))}</div>` : "") +
+              `<div class="j-pba">${relBtns(p)}</div><p class="x-err j-pm" role="alert"></p></div>`;
+          };
+          const errT = (e) => (e && (e.code === "id_only" || e.message === "id_only") ? _t("jIdOnly") : tv(() => ON.err(e), _t("onErr")));
+          J.card = async (q) => {
+            q = String(q || "").replace(/[^0-9]/g, ""); if (!q || !online()) return;
+            B13.pop(`<div class="j-pcw"><div class="j-pc ld">…</div></div>`); $("b13pop").classList.add("j-pp");
+            try { const r = await ON.rpc("player_card", { p_query: q }); J.cardP = r && r.found ? r.player : null;
+              $("b13pb").innerHTML = `<div class="j-pcw">${J.cardP ? cardHTML(J.cardP) : `<div class="j-pc ld">${esc(_t("onE_nouser"))}</div>`}<button type="button" class="x-btn x-sub j-pcx" data-b13x="1">${esc(_t("back"))}</button></div>`; }
+            catch (e) { $("b13pb").innerHTML = `<div class="j-pcw"><div class="j-pc ld">${esc(errT(e))}</div><button type="button" class="x-btn x-sub j-pcx" data-b13x="1">${esc(_t("back"))}</button></div>`; }
+          };
+          { const pb = $("b13pop"); if (pb) new MutationObserver(() => { if (pb.classList.contains("x-hide") && pb.classList.contains("j-pp")) pb.classList.remove("j-pp"); /* QA: classList.remove always rewrites the attribute, so the unguarded call looped the observer and froze the page on every popup close */ }).observe(pb, { attributes: true, attributeFilter: ["class"] }); }
+          const arm = {};
+          const act = async (a, id, b, after) => {
+            const box = b.closest(".j-pc"), m = box && box.querySelector(".j-pm"); if (m) m.textContent = "";
+            const run = async (fn, args, ok) => { b.disabled = true; try { await ON.rpc(fn, args); if (ok) toast(ok); } catch (e) { if (m) m.textContent = errT(e); else toast(errT(e)); b.disabled = false; return false; } jLoad(); try { B13.frReload && B13.frReload(); } catch (_) {} if (after) after(); return true; };
+            if ((a === "rm" || a === "block") && arm[a + id] !== true) { arm[a + id] = true; b.classList.add("arm"); b.textContent = _t("jSure"); setTimeout(() => { arm[a + id] = false; }, 4000); return; }
+            const f = (J.fr && J.fr.friends || []).find((x) => x.id === id) || (J.cardP && J.cardP.id === id ? J.cardP : null);
+            if (a === "add") await run("send_friend_request", { p_username: b.dataset.q }, _t("onFrOut"));
+            else if (a === "acc") await run("respond_friend_request", { p_from: id, p_accept: true });
+            else if (a === "dec") await run("respond_friend_request", { p_from: id, p_accept: false });
+            else if (a === "can") await run("cancel_friend_request", { p_to: id });
+            else if (a === "unb") await run("unblock_user", { p_user: id });
+            else if (a === "rm") await run("remove_friend", { p_user: id });
+            else if (a === "block") await run("block_user", { p_user: id });
+            else if (a === "inv" && f) { B13.popX(); B13.invite(f); return; }
+            else if (a === "gift" && f) { B13.popX(); B13.giftOpen(f); return; }
+            else if (a === "cgift") await run("send_friend_gift", { p_to: id }, _t("onGiftSent"));
+            else if (a === "chat") { B13.popX(); const ob = () => $("onfrl").querySelector(`[data-fa="chat"][data-id="${CSS.escape(id)}"]`);
+              let x = ob(); if (!x) { try { await B13.frReload(); } catch (_) {} x = ob(); } if (x) x.click(); return; }
+            else if (a === "rep") { const r = ["cheating", "abuse", "name", "spam", "other"]; const nm = f ? f.username : "";
+              B13.pop(`<div class="j-pcw"><h3>⚑ ${esc(_t("onRepT", { x: nm }))}</h3><div class="j-rep">${r.map((k) => `<button type="button" class="x-btn x-sub" data-jpa="repgo" data-id="${esc(id)}" data-r="${k}">${esc(_t("onRep_" + k))}</button>`).join("")}</div><button type="button" class="x-btn x-sub" data-b13x="1">${esc(_t("onCancel"))}</button></div>`); return; }
+            else if (a === "repgo") { try { await ON.rpc("report_player", { p_user: id, p_reason: b.dataset.r }); toast(_t("onRepSent")); } catch (e) { toast(errT(e)); } B13.popX(); return; }
+            if (box && box.parentElement && box.parentElement.classList.contains("j-pcw") && J.cardP) J.card(J.cardP.shown_id || J.cardP.player_id);
+          };
+          document.addEventListener("click", (e) => {
+            const b = e.target.closest && e.target.closest("[data-jpa]"); if (b && !b.disabled) { e.preventDefault(); act(b.dataset.jpa, b.dataset.id, b); return; }
+            if (e.target.closest && e.target.closest("button, a, input, [data-fa], [data-b13add]")) return;
+            const row = e.target.closest && e.target.closest(".j-frow, #onlbl li, #lgl li, .b13d-row, #b13dlgl li, .b13-fc, #onchh, .b13d-pod > *, .h-lbr, .lg-row");
+            if (!row) return; const id = row.querySelector(".jid[data-p]"); if (!id) return;
+            J.card(id.dataset.p);
+          });
+
+          // ---------- 8) Friends: ID card header, ID-only search with preview card, tabs with badge, rich rows ----------
+          J.fr = null; J.ft = "f";
+          const FRB = $("onfr") && $("onfr").querySelector(".x-box");
+          if (FRB) {
+            FRB.classList.add("j-frbox");
+            const w = document.createElement("div"); w.className = "j-frw"; w.id = "jfrw";
+            w.innerHTML = `<div class="j-frl"><div class="j-me" id="jfme"></div>
+                <div class="j-srch"><label class="j-sl" for="jfrn" id="jfrsl"></label><div class="j-sr"><span class="j-hash" aria-hidden="true">#</span><input id="jfrn" class="x-name" inputmode="numeric" pattern="[0-9]*" maxlength="12" autocomplete="off" spellcheck="false" dir="ltr" /><button type="button" class="x-btn x-main" id="jfrgo"></button></div><p class="j-sm" id="jfrm" role="alert"></p></div>
+                <div class="j-res" id="jfres" aria-live="polite"></div></div>
+              <div class="j-frr"><div class="j-tabs" id="jftabs" role="tablist"></div><div class="j-list" id="jfl" aria-live="polite"></div></div>`;
+            const hd = FRB.querySelector(".p10-hd"); hd ? hd.after(w) : FRB.prepend(w);
+            const inp = $("jfrn");
+            const paintStatic = () => {
+              $("jfrsl").textContent = _t("jSearchId"); inp.placeholder = _t("jSearchPh"); inp.setAttribute("aria-label", _t("jSearchId")); $("jfrgo").innerHTML = `🔍 <span>${esc(_t("b13Search"))}</span>`;
+              const old = $("onfrn"); if (old) { old.placeholder = _t("jSearchPh"); old.setAttribute("aria-label", _t("jSearchId")); }
+            };
+            const paintMe = () => {
+              const p = tv(() => ON.st.profile, {}) || {}, id = p.vip_id || p.player_id;
+              $("jfme").innerHTML = `<span class="j-mav">${tv(() => avH(P), "")}</span><span class="j-mi"><small>${esc(_t("b13hMyId"))}</small><b class="h-disp"><bdi>${esc(P.name || p.username || "—")}</bdi></b>${rid(id, "lg")}</span>` +
+                `<span class="j-mb"><button type="button" class="j-ib" id="jfcopy" aria-label="${esc(_t("copy"))}">⧉ <span>${esc(_t("copy"))}</span></button><button type="button" class="j-ib" id="jfshare" aria-label="${esc(_t("share"))}">↗ <span>${esc(_t("jShareId"))}</span></button></span>`;
+            };
+            const paintTabs = () => {
+              const d = J.fr || { friends: [], incoming: [], blocked: [] }, n = (d.incoming || []).length;
+              $("jftabs").innerHTML = [["f", _t("onFrT"), (d.friends || []).length, ""], ["r", _t("onFrReq"), n, n ? "hot" : ""], ["b", _t("onFrBl"), (d.blocked || []).length, ""]]
+                .map(([k, l, c, h]) => `<button type="button" role="tab" data-jft="${k}" class="${J.ft === k ? "on" : ""}" aria-selected="${J.ft === k}">${esc(l)}${c ? `<em class="${h}">${c}</em>` : ""}</button>`).join("");
+            };
+            const rowH = (f, kind) => {
+              const id = f.vip_id || f.player_id, st = f.in_match ? "m" : f.online ? "on" : "", fr = id === 1 ? "own" : id && id <= 50 ? "vip v" + vipT(id) : "n";
+              const qb = (a, t, cls, lab) => `<button type="button" class="j-qa${cls ? " " + cls : ""}" data-jpa="${a}" data-id="${esc(f.id)}"${lab ? ` aria-label="${esc(lab)}" title="${esc(lab)}"` : ""}>${t}</button>`;
+              let acts = "";
+              if (kind === "f") acts = qb("chat", "💬" + (f.unread ? `<sup>${f.unread}</sup>` : ""), f.unread ? "hot" : "", _t("jChat")) + qb("inv", "🎮", "", _t("jChallenge")) + qb("gift", "🎁", "", _t("gift")) + qb("cgift", f.gift_sent_today ? "✓" : "🪙", f.gift_sent_today ? "dim" : "", _t("onGiftSent")) + qb("rep", "⚑", "", _t("onReport"));
+              else if (kind === "in") acts = qb("acc", "✓ " + esc(_t("onAccept")), "ok") + qb("dec", "✕", "", _t("jDecline"));
+              else if (kind === "out") acts = `<small class="j-pmu">${esc(_t("jSent"))}</small>` + qb("can", "✕", "", _t("onCancel"));
+              else acts = qb("unb", esc(_t("onUnblock")), "");
+              const sub = kind === "f" ? lastSeen(f) : kind === "in" ? _t("onFrIn") : kind === "out" ? _t("onFrOut") : "";
+              return `<div class="j-frow${kind === "out" ? " dim" : ""}"><span class="j-fav ${fr}">${tv(() => B13G.h(f.avatar), "🐍")}${kind === "f" ? `<i class="b13-dot ${st}"></i>` : ""}</span>` +
+                `<span class="j-fn"><b><bdi>${esc(f.username)}</bdi>${f.level ? " " + tv(() => B13.lv(f.level), "") : ""}</b><span class="j-prow">${id ? rid(id) : ""}<small class="j-pmu">${esc(sub)}</small></span></span><span class="j-fa">${acts}</span></div>`;
+            };
+            const empty = (ic, t, s) => `<div class="j-empty">${IC(ic)}<b>${esc(t)}</b><small>${esc(s)}</small></div>`;
+            const paintList = () => {
+              const d = J.fr; paintTabs(); const l = $("jfl");
+              if (!d) { l.innerHTML = `<div class="j-empty"><b>…</b></div>`; return; }
+              if (J.ft === "f") l.innerHTML = (d.friends || []).length ? d.friends.map((f) => rowH(f, "f")).join("") : empty("friends", _t("jNoFr"), _t("jNoFrS"));
+              else if (J.ft === "r") l.innerHTML = ((d.incoming || []).map((f) => rowH(f, "in")).join("") + (d.outgoing || []).map((f) => rowH(f, "out")).join("")) || empty("inbox", _t("onFrNoReq"), _t("jNoFrS"));
+              else l.innerHTML = (d.blocked || []).length ? d.blocked.map((f) => rowH(f, "b")).join("") : empty("settings", _t("onFrNoBl"), "");
+            };
+            const jLoad0 = async () => { if (!online()) return; try { J.fr = await ON.rpc("list_friends"); } catch (e) { $("jfrm").textContent = errT(e); } paintList(); };
+            jLoad = jLoad0;
+            const search = async () => {
+              const raw = inp.value.trim(), q = raw.replace(/^#/, ""), m = $("jfrm"), r = $("jfres"); m.textContent = "";
+              if (!q) { r.innerHTML = ""; return; }
+              if (!/^[0-9]{1,12}$/.test(q)) { m.textContent = _t("jIdOnly"); r.innerHTML = ""; return; }
+              r.innerHTML = `<div class="j-pc cmp ld">…</div>`;
+              try { const x = await ON.rpc("player_card", { p_query: q }); if (inp.value.trim().replace(/^#/, "") !== q) return;
+                r.innerHTML = x && x.found ? cardHTML(x.player, true) : `<div class="j-pc cmp ld">${esc(_t("jNoId", { n: q }))}</div>`; if (x && x.found) J.cardP = x.player; }
+              catch (e) { r.innerHTML = `<div class="j-pc cmp ld">${esc(errT(e))}</div>`; }
+            };
+            J.search = search;
+            let ft = 0;
+            inp.addEventListener("input", () => { const v = inp.value, c = v.replace(/[^0-9]/g, "").slice(0, 12); if (v !== c) inp.value = c; clearTimeout(ft); ft = setTimeout(search, 450); });
+            inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { clearTimeout(ft); search(); } });
+            $("jfrgo").addEventListener("click", () => { clearTimeout(ft); search(); });
+            $("jftabs").addEventListener("click", (e) => { const b = e.target.closest("[data-jft]"); if (b) { J.ft = b.dataset.jft; paintList(); } });
+            $("jfme").addEventListener("click", async (e) => {
+              const p = tv(() => ON.st.profile, {}) || {}, id = String(p.vip_id || p.player_id || ""); if (!id) return;
+              if (e.target.closest("#jfcopy")) { try { await navigator.clipboard.writeText(id); toast("✓ " + _t("jCopied", { n: id })); } catch (_) { toast("#" + id); } }
+              else if (e.target.closest("#jfshare")) { const txt = _t("jShareTx", { n: id }) + " https://billke.com"; try { if (navigator.share) await navigator.share({ text: txt }); else { await navigator.clipboard.writeText(txt); toast("✓ " + _t("jCopied", { n: id })); } } catch (_) {} }
+            });
+            // old search, tabs and list stay in the DOM (hidden) for the chat/gift plumbing; the new view replaces them
+            const fb = B13.frReload; B13.frReload = async () => { try { if (fb) await fb(); } catch (_) {} jLoad(); };
+            const ovF = $("onfr");
+            new MutationObserver(() => { if (!ovF.classList.contains("x-hide")) { paintStatic(); paintMe(); paintList(); jLoad(); } }).observe(ovF, { attributes: true, attributeFilter: ["class"] });
+            if (NFH.relang) NFH.relang.push(() => { if (!ovF.classList.contains("x-hide")) { paintStatic(); paintMe(); paintList(); } });
+            paintStatic();
+          }
+
+          // ---------- 10) name change rule: one free change, then once every 6 months (server-enforced; owner exempt) ----------
+          {
+            const fmtD = (iso) => { try { return new Intl.DateTimeFormat(LANG === "ar" ? "ar" : LANG, { dateStyle: "medium" }).format(new Date(iso)); } catch (_) { return String(iso).slice(0, 10); } };
+            const sec = $("b13cnm") && $("b13cnm").closest(".b13c-sec");
+            if (sec && !$("jnms")) $("b13cnmm").insertAdjacentHTML("beforebegin", `<p class="j-nms" id="jnms"></p>`);
+            J.nst = null;
+            const paintN = () => { const el = $("jnms"), s = J.nst, inp = $("b13cnm"), bt = sec && sec.querySelector('[data-go="nfb13cren"]'); if (!el) return;
+              let lock = false;
+              if (!s) el.textContent = ""; else if (s.exempt) el.textContent = ""; else if (s.free_left > 0) { el.textContent = _t("jNm1"); el.className = "j-nms ok"; }
+              else if (!s.can) { el.textContent = _t("jNmLock", { d: fmtD(s.unlock_at) }); el.className = "j-nms lk"; lock = true; } else { el.textContent = _t("jNmCan"); el.className = "j-nms ok"; }
+              if (inp) inp.disabled = lock; if (bt) bt.disabled = lock; };
+            const loadN = async () => { if (!online()) return; try { J.nst = await ON.rpc("name_change_status"); } catch (_) { J.nst = null; } paintN(); };
+            J.loadN = loadN;
+            const ovP = $("b13cps"); if (ovP) new MutationObserver(() => { if (!ovP.classList.contains("x-hide")) loadN(); }).observe(ovP, { attributes: true, attributeFilter: ["class"] });
+            if (NFH.relang) NFH.relang.push(paintN);
+            const _ren = NFG.nfb13cren;
+            NFG.nfb13cren = async (b) => {
+              const v = $("b13cnm").value.trim(), p = tv(() => ON.st.profile, null); if (!online() || !p || !v || v === p.username) return _ren(b);
+              const s = J.nst; if (s && s.exempt) return _ren(b);
+              if (s && !s.can) { $("b13cnmm").textContent = _t("jNmLock", { d: fmtD(s.unlock_at) }); return; }
+              const until = new Date(Date.now() + 182.5 * 864e5).toISOString();
+              B13.pop(`<div class="j-pcw j-nmc"><h3>✏️ ${esc(_t("jNmConfT", { x: v }))}</h3><p>${esc(_t("jNmConf", { d: fmtD(until) }))}</p><div class="b13-row2"><button type="button" class="x-btn x-main" id="jnmok">${esc(_t("jNmGo"))}</button><button type="button" class="x-btn x-sub" data-b13x="1">${esc(_t("onCancel"))}</button></div></div>`);
+              $("jnmok").addEventListener("click", async () => { B13.popX(); await _ren(b); loadN(); }, { once: true });
+            };
+          }
+          // chat header: show the friend's ID badge (tap opens the card)
+          { const h = $("onchh"); if (h) new MutationObserver(() => { if (h.querySelector(".jid")) return; const nm = (h.querySelector("b") || {}).textContent; const f = J.fr && (J.fr.friends || []).find((x) => x.username === nm); if (f) { const b = h.querySelector("b"); if (b) b.insertAdjacentHTML("afterend", rid(f.vip_id || f.player_id)); } }).observe(h, { childList: true }); }
         }
         requestAnimationFrame(loop);
       })();
@@ -13784,6 +14382,265 @@ body.b13h-on #b13dmp #b13dcnt { display: none !important; }
 body.b13h-on #b13dmp .b13d-hd h2 { min-width: 0; flex: 0 1 auto; }
 body.b13h-on #b13dmp .b13d-hd h2 span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 760px) { body.b13h-on #b13dmp .b13d-hd h2 { font-size: 17px !important; } body.b13h-on .h-sts b { font-size: 11px; } body.b13h-on .h-tabs button { padding: 4px 8px; font-size: 11px; } }
+
+/* ===================== build13j ===================== */
+/* hero snake: canvas renders its own glow; ring pulse in the skin colour */
+#b13h .h-snake { width: 320px; height: 292px; margin-left: -160px; bottom: 82px; filter: none; z-index: 1; }
+#b13h .h-ring1 { border-color: var(--hg, rgba(120, 250, 255, .55)); box-shadow: 0 0 18px var(--hg, rgba(80, 240, 255, .7)), inset 0 0 18px var(--hg2, rgba(80, 240, 255, .5)); animation: j-ring 3s ease-in-out infinite; }
+#b13h .h-ring2 { background: radial-gradient(ellipse, var(--hg2, rgba(120, 250, 255, .55)), transparent 70%); animation: j-ring2 3s ease-in-out infinite; }
+@keyframes j-ring { 0%, 100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.06); opacity: 1; } }
+@keyframes j-ring2 { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+#b13h .h-swap { z-index: 4; }
+
+/* bottom nav: fills the stage between the columns, bigger icons/labels, 48px+ targets, Battle raised */
+#b13h .h-nav { max-width: none; height: 66px; bottom: max(4px, env(safe-area-inset-bottom)); inset-inline-start: calc(var(--px) + var(--cl) + 8px); inset-inline-end: calc(var(--px) + var(--cr) + 8px); padding: 0 8px; gap: 2px; border-radius: 20px; }
+#b13h .nv { height: 62px; min-height: 48px; font-size: 13px; padding: 0 0 5px; gap: 1px; letter-spacing: .1px; }
+#b13h .nv .h-ic { width: 44px; height: 44px; }
+#b13h .nv.on { width: 92px; height: 86px; margin-top: -26px; font-size: 15px; }
+#b13h .nv.on .h-ic { width: 60px; height: 60px; }
+#b13h .nv:active { transform: translateY(2px); }
+@media (max-width: 760px) { #b13h .nv { font-size: 12px; } #b13h .nv .h-ic { width: 40px; height: 40px; } #b13h .nv.on { width: 80px; font-size: 13.5px; } #b13h .nv.on .h-ic { width: 54px; height: 54px; } }
+
+/* PLAY panel: never grows. Teams = one compact Solo/Duo/Squad row + a lobby button (popover) */
+#b13h .h-xtra { max-height: none; overflow: visible; }
+#b13h .h-cl.j-x .h-play { height: 54px; font-size: 30px; }
+#b13h #tml { flex-direction: row !important; align-items: center !important; gap: 6px !important; }
+#b13h #tml > .x-seg[data-k="tf"] { flex: 1; width: auto !important; margin: 0 !important; min-height: 0; height: 32px; padding: 2px !important; }
+#b13h #tml > .x-seg[data-k="tf"] button { min-height: 0 !important; height: 26px; padding: 0 4px !important; font-size: 12.5px !important; white-space: nowrap; }
+#b13h #tml > #tmt, #b13h #tml > #tmc { display: none !important; }
+#b13h .j-tmb { flex: none; width: 36px; height: 32px; border-radius: 10px; padding: 0; display: grid; place-items: center; border: 1.5px solid rgba(255, 220, 120, .55); background: linear-gradient(#2b3a8a, #141c4a); color: #ffe08a; font-size: 16px; }
+#b13h .j-tmb .h-ic { width: 24px; height: 24px; }
+#b13h #room { height: 32px; min-height: 0 !important; margin: 0 !important; }
+.j-tmp { position: fixed; z-index: 60; inset: 0; display: grid; place-items: center; background: rgba(2, 4, 16, .55); }
+.j-tmp.x-hide { display: none !important; }
+.j-tmp .j-tmw { width: min(440px, 92vw); max-height: 86vh; display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; background: linear-gradient(180deg, #1a2560, #0b1236); border: 2px solid #e2b04a; box-shadow: 0 10px 30px rgba(0, 0, 0, .6); }
+.j-tmp .j-tmh { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 800 17px/1.1 var(--disp, system-ui); color: #ffe08a; }
+.j-tmp .j-tmh button { width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .12); color: #fff; font-size: 16px; }
+.j-tmp #tmt { display: flex !important; width: 100% !important; }
+.j-tmp #tmt button { white-space: nowrap; }
+.j-tmp #tmc { display: block !important; overflow-y: auto; max-height: 52vh; }
+
+/* section header wallet: compact numbers fit */
+.p10-pl bdi { white-space: nowrap; }
+
+/* ---------- ID badge (shared everywhere) ---------- */
+.jid { display: inline-flex; align-items: center; gap: 3px; height: 1.6em; padding: 0 .55em; border-radius: 999px; font: 900 12px/1 var(--disp, system-ui); letter-spacing: .3px; white-space: nowrap; vertical-align: middle; direction: ltr; unicode-bidi: isolate; position: relative; overflow: hidden; flex: none; cursor: pointer; }
+.jid b { font: inherit; }
+.jid i { display: inline-grid; width: 1.15em; height: 1.15em; font-style: normal; }
+.jid i svg { width: 100%; height: 100%; }
+.jid em { font-style: normal; font-size: .72em; letter-spacing: .8px; padding: .15em .4em; border-radius: 6px; margin-inline-start: 2px; }
+.jid.n { color: #fff; background: linear-gradient(135deg, var(--a), var(--b)); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 1px 0 rgba(0,0,0,.4); text-shadow: 0 1px 0 rgba(0,0,0,.45); }
+.jid.own { color: #2a1600; background: linear-gradient(110deg, #fff3b0, #ffc93a 30%, #b8740c 55%, #ffe58a 75%, #c9871a); border: 1.5px solid #fff1b8; box-shadow: 0 0 10px rgba(255,200,60,.85), inset 0 1px 0 #fff; }
+.jid.own em { background: #1a0f00; color: #ffd659; }
+.jid.vip { border: 1.5px solid rgba(255,255,255,.7); text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.jid.vip em { background: rgba(0,0,0,.35); color: #fff; }
+.jid.v1 { color: #fff; background: linear-gradient(115deg, #ff5ec8, #8a5cff 25%, #3ad7ff 50%, #7dffb0 75%, #ffd34d); box-shadow: 0 0 12px rgba(180,120,255,.9); }
+.jid.v2 { color: #fff; background: linear-gradient(115deg, #b9f3ff, #4fb4ff 40%, #1d4fd8 70%, #c4ecff); box-shadow: 0 0 10px rgba(80,180,255,.85); }
+.jid.v3 { color: #3a2300; background: linear-gradient(115deg, #fff6c0, #ffcf3a 40%, #c98a0c 70%, #ffe88a); box-shadow: 0 0 9px rgba(255,200,60,.75); }
+.jid.v4 { color: #2a2030; background: linear-gradient(115deg, #ffffff, #e6d4ff 35%, #b9a4d8 60%, #ffe0ef); box-shadow: 0 0 8px rgba(220,190,255,.7); }
+.jid.own::after, .jid.vip::after { content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%; transform: skewX(-20deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent); animation: jid-sh 2.8s ease-in-out infinite; pointer-events: none; }
+@keyframes jid-sh { 0% { left: -40%; } 60%, 100% { left: 130%; } }
+@media (prefers-reduced-motion: reduce) { .jid::after { animation: none !important; display: none; } }
+body.b13h-low .jid::after { display: none; }
+.jid.lg { font-size: 15px; }
+.b13-vip + .jid, .b13c-own + .jid { margin-inline-start: 4px; }
+.x-pid .pidv { display: inline-flex; }
+.x-pid { display: flex !important; align-items: center; gap: 8px; }
+.x-pid .x-btn { min-height: 0 !important; height: 28px; padding: 0 12px !important; border-radius: 999px !important; font-size: 12px !important; }
+
+/* FPS label only with ?debug */
+body.j-nofps #fps { display: none !important; }
+
+/* buy confirm */
+.j-arm { background: linear-gradient(#ffe066, #f0a400) !important; color: #3a2200 !important; box-shadow: 0 0 0 2px #fff6, 0 0 14px rgba(255,200,0,.8) !important; }
+
+/* name change status */
+.j-nms { margin: 4px 0 0; font-size: 12.5px; font-weight: 800; }
+.j-nms.ok { color: #7dffb0; } .j-nms.lk { color: #ffcf6a; }
+.j-nmc p { margin: 6px 0 12px; line-height: 1.35; }
+
+/* ---------- Game Over (13j) ---------- */
+body #over .x-box.p10b { display: grid !important; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); column-gap: 14px; row-gap: 0; align-items: center; overflow: hidden !important; }
+body #over .x-box.p10b > .p10-hd { grid-column: 1 / -1; }
+body #over .x-box.p10b > h2 { display: none !important; }
+body #over .x-box > .p10-oc { display: flex !important; flex-direction: column !important; gap: 8px !important; justify-content: center; min-height: 0; padding: 6px 0 !important; margin: 0 !important; width: auto !important; }
+body #over #pxrank { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "av rk id" "av dc dc"; align-items: center; column-gap: 12px; row-gap: 4px; padding: 10px 14px !important; min-height: 0 !important; height: auto !important; border-radius: 18px !important;
+  background: radial-gradient(120% 140% at 0% 0%, rgba(255, 210, 90, .22), transparent 55%), linear-gradient(180deg, rgba(40, 52, 120, .92), rgba(14, 20, 56, .94)) !important; border: 2px solid rgba(226, 176, 74, .8) !important; box-shadow: 0 8px 22px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .15) !important; }
+body #over #pxrank .j-rav { grid-area: av; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; border: 3px solid #ffd659; box-shadow: 0 0 16px rgba(255, 200, 60, .6); font-size: 40px; background: #0b1236; }
+body #over #pxrank .j-rav img, body #over #pxrank .j-rav .b13g-av, body #over #pxrank .j-rav > * { width: 100% !important; height: 100% !important; object-fit: cover; border-radius: 50%; }
+body #over #pxrank .j-rk { grid-area: rk; display: flex; flex-direction: column; min-width: 0; }
+body #over #pxrank .j-rk small { font: 800 11px/1.2 var(--sans, system-ui); letter-spacing: 1.5px; text-transform: uppercase; color: #c9d4ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body #over #pxrank .j-rk b { font: 900 44px/1 var(--disp, system-ui); background: linear-gradient(#fff, #ffe08a 55%, #ffb52e); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 #0a0f2a); }
+body #over #pxrank .j-rid { grid-area: id; align-self: start; }
+body #over #pxrank .j-dc { grid-area: dc; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 4px 8px 4px 4px; border-radius: 10px; background: rgba(255, 59, 74, .14); border: 1px solid rgba(255, 90, 100, .45); }
+body #over #pxrank .j-dc img { width: 70px; height: 40px; border-radius: 7px; object-fit: cover; flex: none; border: 1px solid rgba(255, 255, 255, .25); }
+body #over #pxrank .j-dc b { font: 800 13px/1.2 var(--sans, system-ui); color: #ffd0d4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body #over .x-res { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important; margin: 0 !important; width: 100% !important; }
+body #over .x-res > div { min-height: 0 !important; height: auto !important; padding: 6px 2px !important; border-radius: 12px !important; }
+body #over .x-res > div::before { width: 22px !important; height: 22px !important; margin-bottom: 2px !important; }
+body #over .x-res > div b { font-size: 20px !important; line-height: 1.1 !important; }
+body #over .x-res > div span { font-size: 11px !important; white-space: nowrap; }
+body #over .x-res > .j-tm { display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(180deg, rgba(30, 40, 96, .9), rgba(12, 18, 50, .92)); border: 1px solid rgba(120, 160, 255, .3); color: #fff; }
+body #over .x-res > .j-tm::before { content: "⏱"; font-size: 18px; line-height: 22px; }
+body #over .x-res > .j-tm b { font-family: var(--disp, system-ui); }
+body #over .x-res > .j-tm span { color: #c9d4ff; }
+body #over #ngo { margin: 0 !important; text-align: center; font: 800 13.5px/1.3 var(--sans, system-ui) !important; color: #ffe08a !important; min-height: 0; }
+body #over #ngo.x-hide, body #over #nfo { display: none !important; }
+body #over #chg { margin: 0 !important; text-align: center; }
+body #over #pxrews { justify-content: center; min-height: 30px; }
+body #over #pxrews > span { animation: j-pop .45s cubic-bezier(.2, 1.4, .4, 1) both; }
+body #over #pxrews > .j-co { background: linear-gradient(#ffe48a, #e8a713) !important; color: #3a2200 !important; border-color: #fff3b0 !important; }
+body #over #pxrews > .j-xp { background: linear-gradient(#8fd0ff, #2b78e4) !important; color: #fff !important; }
+body #over #pxrews > .j-sx { background: linear-gradient(#e3a8ff, #7b2fe0) !important; color: #fff !important; }
+body #over #pxrews > .j-hint { background: rgba(255, 255, 255, .08) !important; color: #c9d4ff !important; font-weight: 700 !important; white-space: normal !important; text-align: center; }
+@keyframes j-pop { from { opacity: 0; transform: scale(.6); } }
+body #over .x-lvp { order: 2; margin: 0 !important; height: 9px !important; }
+body #over #lvpt { order: 3; text-align: center; margin: -2px 0 2px !important; }
+body #over .j-col1 > [data-go="again"] { order: 4; height: 54px !important; min-height: 0 !important; font-size: 22px !important; margin: 2px 0 0 !important; }
+body #over .j-col1 > .p10-or { order: 5; margin: 0 !important; gap: 8px !important; }
+body #over .j-col1 > .p10-or .x-btn { height: 44px !important; min-height: 0 !important; font-size: 15px !important; }
+body #over .j-col1 > #pxrews { order: 1; } body #over .j-col1 > #earn { order: 0; } body #over .j-col1 > #tmr { order: 6; }
+/* entrance */
+body #over:not(.x-hide) .j-col0 > * , body #over:not(.x-hide) .j-col1 > * { animation: j-up .5s cubic-bezier(.2, .9, .3, 1) both; }
+body #over:not(.x-hide) .j-col0 > :nth-child(2) { animation-delay: .08s; } body #over:not(.x-hide) .j-col0 > :nth-child(3) { animation-delay: .14s; }
+body #over:not(.x-hide) .j-col1 > * { animation-delay: .18s; }
+body #over:not(.x-hide) #pxrank { animation: j-zoom .55s cubic-bezier(.2, 1.3, .4, 1) both; }
+@keyframes j-up { from { opacity: 0; transform: translateY(14px); } }
+@keyframes j-zoom { from { opacity: 0; transform: scale(.88); } }
+@media (prefers-reduced-motion: reduce) { body #over *, body #over *::before { animation: none !important; } }
+@media (max-height: 360px) { body #over #pxrank .j-rk b { font-size: 36px; } body #over #pxrank .j-rav { width: 60px; height: 60px; } body #over .x-res > div b { font-size: 17px !important; } body #over .x-res > div::before { width: 18px !important; height: 18px !important; } body #over .j-col1 > [data-go="again"] { height: 48px !important; } }
+
+/* nav label fit */
+#b13h .nv { justify-content: flex-end; padding-bottom: 7px !important; line-height: 1; }
+#b13h .nv span { line-height: 1.05; padding-bottom: 1px; }
+
+@media (max-width: 760px) { #b13h .nv { font-size: 11px; } #b13h .nv .h-ic { width: 38px; height: 38px; } #b13h .nv.on { width: 74px; font-size: 12.5px; } #b13h .nv.on .h-ic { width: 50px; height: 50px; }
+  #b13h .h-snake { width: 270px; height: 250px; margin-left: -135px; bottom: 96px; } }
+
+/* ---------- Friends (13j) ---------- */
+#onfr .j-frbox > :not(.p10-hd):not(.j-frw) { display: none !important; }
+#onfr .j-frbox { display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+.j-frw { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(250px, 34%) minmax(0, 1fr); gap: 12px; padding-top: 6px; }
+.j-frl { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow-y: auto; }
+.j-frr { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.j-me { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "av mi" "mb mb"; gap: 6px 10px; align-items: center; padding: 10px 12px; border-radius: 16px;
+  background: radial-gradient(120% 140% at 0 0, rgba(255, 210, 90, .22), transparent 55%), linear-gradient(180deg, rgba(40, 52, 120, .95), rgba(14, 20, 56, .95)); border: 2px solid rgba(226, 176, 74, .85); box-shadow: 0 6px 18px rgba(0, 0, 0, .4); }
+.j-mav { grid-area: av; width: 54px; height: 54px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; border: 2.5px solid #ffd659; font-size: 30px; background: #0b1236; }
+.j-mav img, .j-mav > * { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.j-mi { grid-area: mi; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.j-mi small { font-size: 11px; font-weight: 800; color: #c9d4ff; text-transform: uppercase; letter-spacing: 1px; }
+.j-mi > b { font-size: 16px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.j-mi .jid { align-self: flex-start; }
+.j-mb { grid-area: mb; display: flex; gap: 6px; }
+.j-ib { flex: 1; height: 32px; border-radius: 10px; border: 1.5px solid rgba(255, 220, 120, .5); background: linear-gradient(#2b3a8a, #141c4a); color: #ffe08a; font: 800 13px/1 var(--sans, system-ui); }
+.j-srch { display: flex; flex-direction: column; gap: 4px; }
+.j-sl { font-size: 12px; font-weight: 900; color: #ffe08a; letter-spacing: .5px; }
+.j-sr { display: flex; align-items: center; gap: 6px; }
+.j-hash { font: 900 18px/1 var(--disp, system-ui); color: #8fa8ff; margin-inline-end: -2px; }
+.j-sr input { flex: 1; min-width: 0; height: 38px !important; min-height: 0 !important; margin: 0 !important; font: 800 16px/1 var(--disp, system-ui) !important; letter-spacing: 1px; text-align: left !important; }
+.j-sr .x-btn { flex: none; width: auto !important; height: 38px !important; min-height: 0 !important; padding: 0 12px !important; margin: 0 !important; font-size: 14px !important; }
+.j-sm { margin: 0; min-height: 0; font-size: 12px; font-weight: 800; color: #ff9aa4; }
+.j-sm:empty { display: none; }
+.j-tabs { display: flex; gap: 4px; padding: 3px; border-radius: 12px; background: rgba(4, 8, 26, .85); border: 1.5px solid rgba(140, 170, 255, .25); flex: none; }
+.j-tabs button { flex: 1; height: 34px; border: 0; border-radius: 9px; background: none; color: #c9d4ff; font: 800 14px/1 var(--disp, system-ui); white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.j-tabs button.on { background: linear-gradient(#ffe48a, #e8a713); color: #3a2200; box-shadow: inset 0 1px 0 #fff8; }
+.j-tabs em { font-style: normal; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: rgba(255, 255, 255, .18); font-size: 11px; line-height: 18px; color: inherit; }
+.j-tabs em.hot { background: #ff3b4a; color: #fff; }
+.j-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; }
+.j-frow { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 14px; background: linear-gradient(180deg, rgba(34, 46, 108, .9), rgba(14, 20, 56, .92)); border: 1px solid rgba(140, 170, 255, .25); cursor: pointer; }
+.j-frow.dim { opacity: .75; }
+.j-fav, .j-pav { position: relative; flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; background: #0b1236; border: 2.5px solid #8fa8ff; }
+.j-fav img, .j-pav img, .j-fav > .b13g-av, .j-pav > .b13g-av { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.j-fav.own, .j-pav.own { border-color: #ffd659; box-shadow: 0 0 10px rgba(255, 200, 60, .8); }
+.j-fav.vip, .j-pav.vip { border-color: #e3a8ff; box-shadow: 0 0 10px rgba(180, 120, 255, .7); }
+.j-fav .b13-dot, .j-pav .b13-dot { position: absolute; bottom: -1px; inset-inline-end: -1px; }
+.j-fn { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.j-fn > b { font-size: 15px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.j-prow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; }
+.j-pmu { font-size: 11.5px; color: #aab6e8; font-weight: 700; white-space: nowrap; }
+.j-fa { display: flex; gap: 4px; flex: none; align-items: center; }
+.j-qa { min-width: 34px; height: 34px; padding: 0 8px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .18); background: rgba(255, 255, 255, .08); color: #fff; font: 800 14px/1 var(--sans, system-ui); position: relative; white-space: nowrap; }
+.j-qa.ok { background: linear-gradient(#7dffa0, #22b04a); color: #053014; border: 0; }
+.j-qa.hot { background: linear-gradient(#ff7a85, #d8263a); }
+.j-qa.dim { opacity: .5; }
+.j-qa sup { position: absolute; top: -5px; inset-inline-end: -5px; background: #ff3b4a; border-radius: 8px; padding: 0 4px; font-size: 10px; }
+.j-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 20px; text-align: center; color: #c9d4ff; border-radius: 16px; border: 1.5px dashed rgba(140, 170, 255, .3); }
+.j-empty .h-ic { width: 54px; height: 54px; opacity: .9; }
+.j-empty b { font: 800 16px/1.2 var(--disp, system-ui); color: #fff; }
+.j-empty small { font-size: 12.5px; }
+.j-ic { display: inline-block; flex: none; width: 24px; height: 24px; background: center / contain no-repeat; }
+/* player card (popup + search preview) */
+.j-pc { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 16px; background: radial-gradient(130% 120% at 0 0, rgba(255, 210, 90, .18), transparent 55%), linear-gradient(180deg, rgba(40, 52, 120, .96), rgba(14, 20, 56, .96)); border: 2px solid rgba(226, 176, 74, .75); color: #fff; }
+.j-pc.ld { align-items: center; justify-content: center; min-height: 64px; color: #c9d4ff; font-weight: 800; text-align: center; }
+.j-pch { display: flex; align-items: center; gap: 10px; }
+.j-pc .j-pav { width: 58px; height: 58px; font-size: 34px; }
+.j-pc.cmp .j-pav { width: 46px; height: 46px; font-size: 26px; }
+.j-pnm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.j-pnm > b { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.j-role { font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 6px; background: #1a0f00; color: #ffd659; border: 1px solid #ffd659; }
+.j-plg { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; font-weight: 800; color: #ffe08a; }
+.j-plg .b13d-bd { width: 34px; height: 34px; }
+.j-psg { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.j-pst { display: flex; flex-direction: column; align-items: center; padding: 5px 2px; border-radius: 10px; background: rgba(0, 0, 0, .25); }
+.j-pst b { font: 800 15px/1.1 var(--disp, system-ui); } .j-pst small { font-size: 10.5px; color: #aab6e8; white-space: nowrap; }
+.j-pba { display: flex; gap: 6px; flex-wrap: wrap; }
+.j-pba .x-btn { flex: 1 1 auto; width: auto !important; min-width: 0; height: 38px !important; min-height: 0 !important; margin: 0 !important; padding: 0 10px !important; font-size: 13.5px !important; white-space: nowrap; }
+.j-pba .j-dg { color: #ffb0b8 !important; }
+.j-pba .arm { background: linear-gradient(#ff7a85, #d8263a) !important; color: #fff !important; }
+.j-pcn { margin: 0; font-weight: 800; color: #7dffb0; }
+.j-pm:empty { display: none; }
+.j-pcw { display: flex; flex-direction: column; gap: 8px; width: min(460px, 86vw); max-height: 84vh; overflow-y: auto; }
+.j-pcw h3 { margin: 0; }
+.j-rep { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+#b13pop.j-pp .b13-pb, #b13pop.j-pp > div { background: transparent; }
+@media (max-width: 760px) { .j-frw { grid-template-columns: minmax(220px, 38%) minmax(0, 1fr); gap: 8px; } .j-psg { grid-template-columns: repeat(5, minmax(0, 1fr)); } .j-qa { min-width: 30px; height: 30px; padding: 0 6px; } }
+@media (max-height: 360px) { .j-me { padding: 7px 10px; } .j-mav { width: 44px; height: 44px; } .j-frow { padding: 5px 8px; } }
+[dir="rtl"] .j-sr input { text-align: right !important; direction: ltr; }
+
+/* ---------- Extra modes (13j) ---------- */
+#nfmodes .x-it.nf-card { align-items: center !important; }
+#nfmodes .x-it.nf-card > b { min-width: 0; flex: 1; }
+#nfmodes .x-it.nf-card > b small { display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal !important; }
+#nfmodes .x-it.nf-card > button { flex: none; width: auto !important; min-width: 74px; max-width: 110px; padding: 0 12px !important; white-space: nowrap; }
+#nfmodes .x-it.nf-card > button.j-tog { background: linear-gradient(#55607e, #2a3352) !important; color: #dfe6ff !important; }
+#nfmodes .x-it.nf-card > button.j-tog.on { background: linear-gradient(#7dffa0, #22b04a) !important; color: #053014 !important; }
+.j-mside { margin-top: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.j-msh { font: 800 15px/1 var(--disp, system-ui); color: #ffe08a; }
+.j-msg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.j-ms { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 12px; background: rgba(0, 0, 0, .28); border: 1px solid rgba(140, 170, 255, .2); min-width: 0; }
+.j-ms .h-ic { width: 30px; height: 30px; }
+.j-ms b { font: 800 16px/1 var(--disp, system-ui); color: #fff; } .j-ms small { font-size: 11px; color: #aab6e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.j-frw { align-self: stretch; width: 100%; box-sizing: border-box; }
+.j-sr .x-btn { padding: 0 10px !important; font-size: 13px !important; }
+
+/* ---------- Evolution v2 HUD emblem ---------- */
+.x-evo.j-evo { display: flex !important; align-items: center; gap: 6px; }
+.x-evo.j-evo > .x-evt, .x-evo.j-evo > #evc, .x-evo.j-evo > b#evn { display: none !important; }
+.j-eve { position: relative; width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #3a4aa8, #0b1236); box-shadow: 0 0 0 1.5px rgba(255, 220, 120, .7), 0 2px 6px rgba(0, 0, 0, .5); }
+.j-eve svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.j-eve .bg { fill: none; stroke: rgba(255, 255, 255, .14); stroke-width: 4; }
+.j-eve .fg { fill: none; stroke: url(#none); stroke: #5ae6ff; stroke-width: 4; stroke-linecap: round; transition: stroke-dasharray .45s ease; }
+.j-eve[data-k="2"] .fg { stroke: #7dffb0; } .j-eve[data-k="3"] .fg { stroke: #c08cff; } .j-eve[data-k="4"] .fg { stroke: #ff7ad1; } .j-eve[data-k="5"] .fg { stroke: #ffd659; }
+.j-eve[data-k="5"] { box-shadow: 0 0 0 1.5px #ffe58a, 0 0 14px rgba(255, 200, 60, .9); }
+.j-eve b { position: relative; font: 900 15px/1 var(--disp, system-ui); color: #fff; text-shadow: 0 1px 0 #000; }
+.j-eve.up { animation: j-evup .9s ease-out; }
+@keyframes j-evup { 0% { transform: scale(1); } 30% { transform: scale(1.35); box-shadow: 0 0 0 2px #fff, 0 0 26px #ffd659; } 100% { transform: scale(1); } }
+.j-evt { display: flex; flex-direction: column; line-height: 1.05; }
+.j-evt small { font: 800 10px/1.1 var(--sans, system-ui); color: #c9d4ff; text-transform: uppercase; letter-spacing: .5px; }
+.j-evt em { font: 800 12px/1.1 var(--disp, system-ui); font-style: normal; color: #fff; }
+.j-evfl { position: fixed; left: 50%; top: 26%; transform: translate(-50%, -50%); z-index: 40; pointer-events: none; font: 900 26px/1 var(--disp, system-ui); letter-spacing: 1px; color: #fff3b0; text-shadow: 0 3px 0 #6a3a00, 0 0 22px rgba(255, 200, 60, .9); white-space: nowrap; }
+.j-evfl.on { animation: j-evfl 2.1s ease-out both; }
+@keyframes j-evfl { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.5); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); } 25% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -60%) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .j-evfl.on, .j-eve.up { animation: none !important; } }
+/* build13j QA: bottom nav labels never clip at 667 (Arabic "المنافسة") */
+@media (max-width: 700px) { #b13h .h-nav { gap: 0; padding: 0 4px; } #b13h .nv { font-size: 10.5px; letter-spacing: -.2px; } #b13h .nv .h-ic { width: 34px; height: 34px; } #b13h .nv.on { width: 66px; font-size: 12px; } #b13h .nv.on .h-ic { width: 46px; height: 46px; } #b13h .nv span { overflow: visible; text-overflow: clip; } }
+/* name-change confirm dialog (QA fix: text overflowed, buttons unstyled) */
+.j-nmc { text-align: center; }
+.j-nmc h3 { font: 800 17px/1.25 var(--disp, system-ui); color: #ffd659; white-space: normal; overflow-wrap: anywhere; }
+.j-nmc p { white-space: normal; overflow-wrap: anywhere; color: #d6defa; font-size: 14px; }
+.j-nmc .b13-row2 { display: flex; gap: 8px; }
+.j-nmc .b13-row2 .x-btn { flex: 1 1 0; min-width: 0; width: auto !important; height: 42px !important; min-height: 0 !important; margin: 0 !important; padding: 0 10px !important; font: 800 15px/1 var(--disp, system-ui) !important; letter-spacing: 0 !important; white-space: nowrap; border-radius: 12px; }
+#b13cps [data-go="nfb13cren"]:disabled, #b13cnm:disabled { opacity: .45; filter: grayscale(.6); cursor: not-allowed; }
 
 </style>
 </body>
