@@ -9477,12 +9477,28 @@
             CFG.an = c.announcement && c.announcement.on && am ? 1 : 0; if (am !== CFG.am) { CFG.am = am; let h = 7; for (const ch of am) h = (h * 31 + ch.charCodeAt(0)) >>> 0; CFG.ai = h; }
             try { cfgPaint(); } catch (e) {}
           };
+/*ss-reset-v1*/
+          o.rstKey = (uid) => "ss-rst-" + uid;
+          o.rstNeeded = (st) => { try { const ra = String((st && st.profile && st.profile.reset_at) || ""); return ra && KV.get(o.rstKey(st.profile.id)) !== ra ? ra : ""; } catch (e) { return ""; } };
+          o.rstApply = (st) => { // the server reset this account: drop every device-only copy of its old progress, then start fresh once
+            const uid = st.profile.id, ra = String(st.profile.reset_at);
+            try {
+              const exact = ["ss-on-" + uid, "ss-photo:" + uid, "ss-ph:@on", "ss-migskip-" + uid, "ss-recent-" + uid, "ss-lk-seen-" + uid, "ss-tut", "ss-shop-seen", "ss-streak-auto", "ss-soul-seen", "ss-soul-last", "ss-and-@on", "ss-13n-skfix-@on", "ss-pending-checkout"];
+              const pre = ["ss-gh:@on:"];
+              const ks = []; try { for (let i = 0; i < localStorage.length; i++) ks.push(localStorage.key(i)); } catch (_) {}
+              for (const k of new Set(exact.concat(ks.filter((k) => k && pre.some((p) => k.startsWith(p)))))) KV.del(k);
+              KV.set(o.rstKey(uid), ra);
+              let n = 0; try { n = +sessionStorage.getItem("ss-rst-n") || 0; sessionStorage.setItem("ss-rst-n", String(n + 1)); } catch (_) {}
+              if (KV.ok && KV.get(o.rstKey(uid)) === ra && n < 2) { location.reload(); return true; }
+            } catch (e) {}
+            return false;
+          };
           let syncT = 0, syncP = null;
           o.sync = async () => {
             if (!o.on) return;
             if (syncP) return syncP;
             syncP = (async () => {
-              try { const [st, wl] = await Promise.all([rpc("get_my_state"), rpc("get_wallet")]); if (!o.on) return; o.st = st; o.cfgApply(st.config); live(st); WALLET.apply(wl); repaint(); }
+              try { const [st, wl] = await Promise.all([rpc("get_my_state"), rpc("get_wallet")]); if (!o.on) return; if (o.rstNeeded(st) && o.rstApply(st)) return; o.st = st; o.cfgApply(st.config); live(st); WALLET.apply(wl); repaint(); }
               catch (e) { if (e.code === "not_authenticated") { o.signOut(true); } }
               finally { syncP = null; }
             })();
@@ -9508,6 +9524,7 @@
             setSess(sess);
             const [st, wl] = await Promise.all([rpc("get_my_state"), rpc("get_wallet")]);
             o.st = st; o.uid = st.profile.id; o.cfgApply(st.config);
+            if (o.rstNeeded(st) && o.rstApply(st)) return new Promise(() => {});
             let dev = null; try { dev = jparse(KV.get("ss-on-" + o.uid) || "null"); } catch (e) {}
             const base = JSON.parse(JSON.stringify(DEF)), d = dev && isObj(dev) && isObj(dev.P) && isObj(dev.M) && isObj(dev.PST) && isObj(dev.L) ? dev : base;
             for (const k of Object.keys(base)) if (d[k] === undefined) d[k] = base[k];
