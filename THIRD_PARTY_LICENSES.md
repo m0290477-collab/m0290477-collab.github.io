@@ -41,6 +41,12 @@ ships in `node_modules/@capgo/native-purchases/LICENSE` and at https://mozilla.o
 
 ## Services (not bundled code)
 Supabase (database/auth), Cloudflare Workers (realtime server), GitHub Pages (hosting), Stripe Checkout (web only, hidden in
-the iOS app), Apple StoreKit (iOS), Open-Meteo (weather API, https://open-meteo.com; its data is CC BY 4.0 and asks for an attribution such as "Weather data by Open-Meteo.com" — not shown in the game yet, open item).
+the iOS app), Apple StoreKit (iOS), Open-Meteo (weather API, https://open-meteo.com).
 
 Art and audio origin: see `ASSET_PROVENANCE.md`.
+
+## Open-Meteo weather data (CC BY 4.0)
+The optional "Real weather & time" setting reads current conditions from the Open-Meteo API (https://open-meteo.com/).
+Open-Meteo data is licensed under Creative Commons Attribution 4.0 International (https://creativecommons.org/licenses/by/4.0/).
+Attribution shown in the game since build 13u: "Weather data by Open-Meteo.com" with a link, in Settings › More › Credits,
+next to the weather line on the home screen, and under the Real weather setting. Only a coarse location (about 10 km) is sent; nothing is stored by the game.
