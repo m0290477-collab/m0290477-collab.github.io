@@ -13077,7 +13077,9 @@
           const setPaint = () => {
             const b = $("ksetb"); if (!b) return; const p = me() || {}, ns = J.nst;
             const nameLock = ns && !ns.exempt && !ns.can;
-            const secs = [["ctl", "s13sCtlT"], ["acct", "kSecAcct"], ["prof", "kSecProf"], ["priv", "kSecPriv"], ["app", "kSecApp"], ["more", "kSecMore"]];
+            if (ST.sec === "prof") ST.sec = "acct"; else if (ST.sec === "app" || ST.sec === "more") ST.sec = "priv"; // 13u-sk: 3 tabs
+            const dv4 = (k) => `<div class="sk4-div">${esc(_t(k))}</div>`;
+            const secs = [["ctl", "s13sCtlT"], ["acct", "kSecAcct"], ["priv", "sk4SecPA"]];
             let h = `<div class="k-tabs k-stabs" role="tablist">${secs.map(([k, l]) => `<button type="button" role="tab" data-ksec="${k}" class="${ST.sec === k ? "on" : ""}">${esc(_t(l))}</button>`).join("")}</div><div class="k-sbody">`;
             if (ST.sec === "ctl") { h += `<section class="k-sec s13s-ctlh" id="s13sctlh"></section>`; } else if (ST.sec === "acct") {
               h += `<section class="k-sec"><h4>${esc(_t("kName"))}</h4><div class="k-inl"><input id="ksnm" maxlength="20" value="${esc(p.username || "")}" ${nameLock ? "disabled" : ""} dir="auto" aria-label="${esc(_t("kName"))}"><button type="button" class="x-btn x-main${nameLock ? " j-nlk" : ""}" data-kset="name">${esc(_t("save"))}</button></div>` +
@@ -13087,38 +13089,41 @@
                 `<div class="k-inl"><button type="button" class="x-btn x-main" data-kset="pw">${esc(_t("kChangePw"))}</button><button type="button" class="x-btn x-sub" data-kset="reset">${esc(_t("kResetPw"))}</button></div><p class="x-err" id="kspwm" role="alert"></p></section>` +
                 `<section class="k-sec k-dz"><div class="k-inl"><button type="button" class="x-btn x-sub" data-go="logout">⎋ ${esc(_t("kLogout"))}</button>${+p.player_id === 1 ? `<small class="k-note">${esc(_t("kOwnerNoDel"))}</small>` : `<button type="button" class="x-btn x-sub k-red" data-kset="delopen">🗑️ ${esc(_t("kDel"))}</button>`}</div>` +
                 `<div class="k-del x-hide" id="ksdel"><p>${esc(_t("kDelTx"))}</p><div class="k-inl"><input id="ksdpw" type="password" autocomplete="current-password" placeholder="${esc(_t("kCurPw"))}"><input id="ksdun" placeholder="${esc(_t("kUserName"))}" dir="auto"><button type="button" class="x-btn k-redb" data-kset="delgo">${esc(_t("kDelGo"))}</button></div><p class="x-err" id="ksdm" role="alert"></p></div></section>`;
-            } else if (ST.sec === "prof") {
+            } if (ST.sec === "acct") {
+              h += dv4("kSecProf");
               const opts = CC.map((c) => [c, cName(c)]).sort((a, b) => String(a[1]).localeCompare(String(b[1]), loc()));
               h += `<section class="k-sec"><h4>${esc(_t("kBio"))}</h4><textarea id="ksbio" maxlength="150" rows="2" dir="auto" placeholder="${esc(_t("kBioPh"))}">${esc(p.bio || "")}</textarea><div class="k-inl"><small class="k-note" id="ksbion">${(p.bio || "").length}/150</small><button type="button" class="x-btn x-main" data-kset="bio">${esc(_t("kBioSave"))}</button></div><p class="x-err" id="ksbiom" role="alert"></p></section>` +
                 `<section class="k-sec"><h4>${esc(_t("kCountry"))}</h4><div class="k-inl"><select id="kscc" aria-label="${esc(_t("kCountry"))}"><option value="">${esc(_t("kNone"))}</option>${opts.map(([c, n]) => `<option value="${c}" ${p.country === c ? "selected" : ""}>${flag(c)} ${esc(n)}</option>`).join("")}</select><button type="button" class="x-btn x-main" data-kset="cc">${esc(_t("save"))}</button></div></section>` +
-                `<section class="k-sec"><div class="k-inl"><button type="button" class="x-btn x-sub" data-go="nfb13cps">🙂 ${esc(_t("b13cAv"))}</button><button type="button" class="x-btn x-sub" data-kset="prof">${esc(_t("kProf"))} ›</button></div></section>`;
-            } else if (ST.sec === "priv") {
-              const o = [["1", _t("kOn")], ["0", _t("kOff")]];
+                `<section class="k-sec"><div class="k-inl"><button type="button" class="x-btn x-sub" data-go="nfb13cps">🙂 ${esc(_t("b13cAv"))}</button><button type="button" class="x-btn x-sub" data-kset="prof">${esc(_t("kProf"))} ›</button></div></section>` +
+                (isOwner() ? `<section class="k-sec"><div class="k-inl"><button type="button" class="x-btn x-sub" data-kset="adm">🛡️ ${esc(_t("kAdmin"))}</button></div></section>` : "");
+            } if (ST.sec === "priv") {
+              const o = [["1", _t("kOn")], ["0", _t("kOff")]]; h += dv4("kSecPriv");
               h += `<section class="k-sec">${row(_t("kPvOnline"), seg("pv:show_online", o, pv("show_online") ? 1 : 0))}${row(_t("kPvReq"), seg("pv:friend_requests", o, pv("friend_requests") ? 1 : 0))}` +
                 `${row(_t("kPvStats"), seg("pv:show_stats", o, pv("show_stats") ? 1 : 0))}${row(_t("kPvCountry"), seg("pv:show_country", o, pv("show_country") ? 1 : 0))}</section>` +
                 `<section class="k-sec"><h4>${esc(_t("kBlocked"))}</h4><div class="k-list" id="ksbl">${ST.blocked === null ? "…" : ST.blocked.length ? ST.blocked.map((x) => `<div class="k-li"><span>${tv(() => B13G.h(x.avatar), "")}<b><bdi>${esc(x.username)}</bdi></b>${tv(() => J.rid(x.vip_id || x.player_id), "")}</span><button type="button" class="x-btn x-sub" data-kset="unb" data-id="${esc(x.id)}">${esc(_t("kUnblock"))}</button></div>`).join("") : `<p class="k-note">${esc(_t("kNoBlocked"))}</p>`}</div></section>`;
-            } else if (ST.sec === "app") {
+            } if (ST.sec === "priv") {
               const o = [["1", _t("kOn")], ["0", _t("kOff")]];
-              h += (window.__SM && __SM.on ? __SM.appHTML() + `<section class="k-sec">${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>` : `<section class="k-sec">${row(_t("kSound"), seg("s:sound", o, S.sound ? 1 : 0))}${row(_t("kMusic"), seg("s:music", o, S.music ? 1 : 0))}${row(_t("kVib"), seg("vib", o, vibOn() ? 1 : 0))}${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>`) +
+              h += dv4("kSecApp") + (window.__SM && __SM.on ? __SM.appHTML() + `<section class="k-sec">${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>` : `<section class="k-sec">${row(_t("kSound"), seg("s:sound", o, S.sound ? 1 : 0))}${row(_t("kMusic"), seg("s:music", o, S.music ? 1 : 0))}${row(_t("kVib"), seg("vib", o, vibOn() ? 1 : 0))}${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>`) +
                 `<section class="k-sec">${row(_t("kLang"), seg("lang", [["ar", "العربية"], ["en", "English"], ["tr", "Türkçe"], ["fr", "Français"], ["es", "Español"], ["hi", "हिन्दी"]], LANG))}` +
                 `${row(_t("kGfx"), seg("gfx", [["h", _t("kGfxHi")], ["m", _t("kGfxMid")], ["l", _t("kGfxLo")]], gfx()))}${row(_t("kBattery"), seg("bat", o, window.__ssBsv ? 1 : 0)) + `<p class="k-hint s13s-bsvh">${esc(_t("bsvHint"))}</p>`}</section>` +
                 (window.__ssTut ? __ssTut.html() : "") + `<section class="k-sec"><button type="button" class="x-btn x-sub" data-kset="controls">🎮 ${esc(_t("kControls"))} ›</button></section>`;
-            } else {
+            } if (ST.sec === "priv") {
               const pr = ST.purch, lg = ST.ledger;
-              h += (window.__SM && __SM.on ? __SM.moreHTML() : "") + `<section class="k-sec"><h4>${esc(_t("kPurch"))}</h4><div class="k-list">${pr === null ? "…" : pr.length ? pr.map((x) => `<div class="k-li"><span><b>${esc(String(x.product || "").replace(/^web\./, "").replace(/^com\.billke\.supersnake\.gems(\d+)$/, (m, n) => (+n).toLocaleString("en-US") + " 💎 · App Store"))}</b><small>${esc(fmtD(x.at, 1))}${x.env && /^(test|sandbox)$/i.test(x.env) ? " · TEST" : ""}</small></span><span dir="ltr">${x.amount_cents ? "$" + (x.amount_cents / 100).toFixed(2) : ""} · ${esc(x.status)}</span></div>`).join("") : `<p class="k-note">${esc(_t("kNoPurch"))}</p>`}</div>` +
+              h += dv4("sk4Help") + (window.__SM && __SM.on ? __SM.moreHTML() : "") + `<section class="k-sec"><h4>${esc(_t("kPurch"))}</h4><div class="k-list">${pr === null ? "…" : pr.length ? pr.map((x) => `<div class="k-li"><span><b>${esc(String(x.product || "").replace(/^web\./, "").replace(/^com\.billke\.supersnake\.gems(\d+)$/, (m, n) => (+n).toLocaleString("en-US") + " 💎 · App Store"))}</b><small>${esc(fmtD(x.at, 1))}${x.env && /^(test|sandbox)$/i.test(x.env) ? " · TEST" : ""}</small></span><span dir="ltr">${x.amount_cents ? "$" + (x.amount_cents / 100).toFixed(2) : ""} · ${esc(x.status)}</span></div>`).join("") : `<p class="k-note">${esc(_t("kNoPurch"))}</p>`}</div>` +
                 `<h4>${esc(_t("kWalletLog"))}</h4><div class="k-list">${lg === null ? "…" : (lg || []).slice(0, 25).map((x) => `<div class="k-li"><span><b>${esc(I18N["tx_" + x.reason] ? _t("tx_" + x.reason) : x.reason)}</b><small>${esc(fmtD(x.created_at || x.at, 1))}</small></span><span dir="ltr" class="${x.delta < 0 ? "neg" : "pos"}">${x.delta > 0 ? "+" : ""}${nf(x.delta)} ${x.currency === "gems" ? "💎" : "🪙"}</span></div>`).join("")}</div></section>` +
-                `<section class="k-sec"><h4>${esc(_t("kHelp"))}</h4><textarea id="kshelp" rows="3" maxlength="500" dir="auto" placeholder="${esc(_t("kHelpPh"))}"></textarea><div class="k-inl"><button type="button" class="x-btn x-main" data-kset="help">${esc(_t("kSend"))}</button></div><p class="x-err" id="kshm" role="alert"></p><div id="ksmine"></div></section>` +
-                `<section class="k-sec"><div class="k-inl"><button type="button" class="x-btn x-sub" data-legal="terms">${esc(_t("n13Terms"))} ↗</button><button type="button" class="x-btn x-sub" data-legal="privacy">${esc(_t("n13Privacy"))} ↗</button>${isOwner() ? `<button type="button" class="x-btn x-sub" data-kset="adm">🛡️ ${esc(_t("kAdmin"))}</button>` : ""}</div></section>`;
+                `<section class="k-sec"><div class="k-inl"><button type="button" class="x-btn x-sub" data-legal="terms">${esc(_t("n13Terms"))} ↗</button><button type="button" class="x-btn x-sub" data-legal="privacy">${esc(_t("n13Privacy"))} ↗</button></div></section>` +
+
+                `<section class="k-sec"><h4>${esc(_t("kHelp"))}</h4><textarea id="kshelp" rows="3" maxlength="500" dir="auto" placeholder="${esc(_t("kHelpPh"))}"></textarea><div class="k-inl"><button type="button" class="x-btn x-main" data-kset="help">${esc(_t("kSend"))}</button></div><p class="x-err" id="kshm" role="alert"></p><div id="ksmine"></div></section>`;
             }
             b.innerHTML = h + "</div>";
-            try { window.__SM && __SM.on && __SM.setPainted(ST.sec); } catch (_) {}
+            try { window.__SM && __SM.on && __SM.setPainted(ST.sec === "priv" ? "app" : ST.sec); } catch (_) {}
           };
           const setLoad = async () => {
             if (!online()) return;
             try { if (J.loadN) await J.loadN(); } catch (_) {}
             try { const u = await ON.call("/auth/v1/user", undefined, { method: "GET" }); ST.email = (u.j && (u.j.new_email ? u.j.email + " → " + u.j.new_email : u.j.email)) || ""; } catch (_) {}
             if (ST.sec === "priv") { try { const r = await ON.rpc("list_friends"); ST.blocked = r.blocked || []; } catch (_) { ST.blocked = []; } }
-            if (ST.sec === "more") { try { ST.purch = await ON.rpc("my_purchases"); } catch (_) { ST.purch = []; } try { const l = await ON.rpc("get_ledger", { p_limit: 25, p_before_id: null }); ST.ledger = Array.isArray(l) ? l : (l && (l.items || l.ledger)) || []; } catch (_) { ST.ledger = []; } }
+            if (ST.sec === "priv") { try { ST.purch = await ON.rpc("my_purchases"); } catch (_) { ST.purch = []; } try { const l = await ON.rpc("get_ledger", { p_limit: 25, p_before_id: null }); ST.ledger = Array.isArray(l) ? l : (l && (l.items || l.ledger)) || []; } catch (_) { ST.ledger = []; } }
             setPaint();
           };
           K.openSettings = (sec) => { if (state === "play") return; if (!online()) { show("login"); return; } ST.sec = sec || ST.sec || "ctl"; setTitle("kset", _t("kSet")); setPaint(); show("kset"); toTop("kset"); setLoad(); };
@@ -18669,6 +18674,276 @@
           { let n = 0; const t = setInterval(() => { n++; if (hookAdmin() || n > 8) { clearInterval(t); if (!(window.__srwA && __srwA.__nx)) hookAdmin(); } }, 600); }
           { let tries = 0; const keep = setInterval(() => { if (++tries > 60) clearInterval(keep); const a = window.__srwA; if (a && !a.__nx) hookAdmin(); }, 1000); } // the rewards module may (re)define its hooks later
         }
+        // ---------- 13u-sk: Skins section (Locker) · Royal Shop = Offers + VIP IDs · Coins & Gems bank · tidy Compete/Social sheets ----------
+        // Client mirror of server sql/102_skins13u.sql: 10 free classic skins, 197 flags at $4.99 (Stripe web.item, web only), every other skin
+        // legacy (owners keep + equip it). Only const arrows inside this block (no block-level function declarations); every hook guarded.
+        {
+          const SK4 = (window.__SK4 = window.__SK4 || {});
+          const tv4 = (f, d) => { try { return f(); } catch (_) { return d; } };
+          const E4 = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+          const go4 = (g) => { const b = document.createElement("button"); b.dataset.go = g; b.style.display = "none"; document.body.appendChild(b); b.click(); b.remove(); };
+          const SK_I18N = {"sk4Title": ["السكنات", "Skins", "Görünümler", "Skins", "Aspectos", "स्किन्स"], "sk4Priv": ["خاص بك", "Private", "Sana özel", "Privé", "Privado", "निजी"], "sk4Snakes": ["أفاعي", "Snakes", "Yılanlar", "Serpents", "Serpientes", "साँप"], "sk4SnakesS": ["١٠ مجانية", "10 free", "10 ücretsiz", "10 gratuits", "10 gratis", "10 मुफ़्त"], "sk4Flags": ["أعلام", "Flags", "Bayraklar", "Drapeaux", "Banderas", "झंडे"], "sk4FlagsS": ["أعلام الدول", "Country flags", "Ülke bayrakları", "Drapeaux des pays", "Banderas de países", "देशों के झंडे"], "sk4Foot": ["كرة القدم", "Football", "Futbol", "Football", "Fútbol", "फ़ुटबॉल"], "sk4FootS": ["قريباً", "Coming soon", "Yakında", "Bientôt", "Muy pronto", "जल्द आ रहा"], "sk4Bask": ["كرة السلة", "Basketball", "Basketbol", "Basket", "Baloncesto", "बास्केटबॉल"], "sk4BaskS": ["قريباً", "Coming soon", "Yakında", "Bientôt", "Muy pronto", "जल्द आ रहा"], "sk4Amf": ["كرة أمريكية", "Am. Football", "Amerikan F.", "Foot US", "Fútbol am.", "अमेरिकी फ़ुटबॉल"], "sk4AmfS": ["قريباً", "Coming soon", "Yakında", "Bientôt", "Muy pronto", "जल्द आ रहा"], "sk4Prem": ["بريميوم", "Premium", "Premium", "Premium", "Premium", "प्रीमियम"], "sk4PremS": ["قريباً", "Coming soon", "Yakında", "Bientôt", "Muy pronto", "जल्द आ रहा"], "sk4Search": ["ابحث عن علم…", "Search flags…", "Bayrak ara…", "Chercher un drapeau…", "Buscar bandera…", "झंडा खोजें…"], "sk4Free": ["مجاني", "FREE", "ÜCRETSİZ", "GRATUIT", "GRATIS", "मुफ़्त"], "sk4Web": ["متاح على الموقع", "On the website", "Web sitesinde", "Sur le site", "En la web", "वेबसाइट पर"], "sk4Soon": ["قريباً", "Coming soon", "Çok yakında", "Bientôt disponible", "Muy pronto", "जल्द आ रहा है"], "sk4SoonS": ["سكنات {x} في الطريق. ترقّب!", "{x} skins are on the way. Stay tuned!", "{x} görünümleri yolda. Takipte kal!", "Les skins {x} arrivent bientôt. Restez à l'écoute !", "Los aspectos de {x} están en camino. ¡Atento!", "{x} स्किन्स आने वाली हैं। जुड़े रहें!"], "sk4SeeFree": ["شوف السكنات المجانية", "See the free skins", "Ücretsiz görünümler", "Voir les skins gratuits", "Ver los aspectos gratis", "मुफ़्त स्किन्स देखें"], "sk4Cur": ["سكنك الحالي في كل الأوضاع", "Your current skin in every mode", "Her modda şu anki görünümün", "Ton skin actuel dans tous les modes", "Tu aspecto actual en todos los modos", "हर मोड में आपकी मौजूदा स्किन"], "sk4FreeD": ["مجاني للجميع", "Free for everyone", "Herkese ücretsiz", "Gratuit pour tous", "Gratis para todos", "सबके लिए मुफ़्त"], "sk4Yours": ["ملكك للأبد", "Yours forever", "Sonsuza dek senin", "À toi pour toujours", "Tuyo para siempre", "हमेशा के लिए आपकी"], "sk4Buy": ["شراء", "Buy", "Satın al", "Acheter", "Comprar", "खरीदें"], "sk4FlagSub": ["علم دولة · ملكية دائمة", "Country flag · owned forever", "Ülke bayrağı · kalıcı", "Drapeau · à vie", "Bandera · para siempre", "देश का झंडा · हमेशा के लिए"], "sk4MySkins": ["سكناتي القديمة", "My skins · Legacy", "Eski görünümlerim", "Mes skins · Anciens", "Mis aspectos · Antiguos", "मेरी पुरानी स्किन्स"], "sk4NoRes": ["ما في نتائج", "No results", "Sonuç yok", "Aucun résultat", "Sin resultados", "कोई नतीजा नहीं"], "sk4FreeN": ["{n} مجانية", "{n} free", "{n} ücretsiz", "{n} gratuits", "{n} gratis", "{n} मुफ़्त"], "sk4FlagsN": ["{n} علم", "{n} flags", "{n} bayrak", "{n} drapeaux", "{n} banderas", "{n} झंडे"], "sk4Keep": ["ملكك دائماً، بكل الأوضاع", "Yours to keep, in every mode", "Her modda kalıcı olarak senin", "À toi pour de bon, dans tous les modes", "Tuyo para siempre, en todos los modos", "हमेशा आपकी, हर मोड में"], "sk4Cont": ["متابعة", "Continue", "Devam", "Continuer", "Continuar", "जारी रखें"], "sk4Fine": ["دفع آمن عبر Stripe · يتأكد الخادم من الشراء", "Secure payment by Stripe · verified by the server", "Stripe ile güvenli ödeme · sunucu doğrular", "Paiement sécurisé Stripe · vérifié par le serveur", "Pago seguro con Stripe · verificado por el servidor", "Stripe से सुरक्षित भुगतान · सर्वर से सत्यापित"], "sk4Offers": ["العروض", "Offers", "Teklifler", "Offres", "Ofertas", "ऑफ़र"], "sk4ShopT": ["المتجر الملكي", "Royal Shop", "Kraliyet Mağazası", "Boutique royale", "Tienda real", "रॉयल शॉप"], "sk4BankT": ["العملات والجواهر", "Coins & Gems", "Altın ve Mücevher", "Pièces et gemmes", "Monedas y gemas", "सिक्के और रत्न"], "sk4Coins": ["عملات", "Coins", "Altın", "Pièces", "Monedas", "सिक्के"], "sk4SecPA": ["الخصوصية والتطبيق", "Privacy & App", "Gizlilik ve Uygulama", "Confidentialité et appli", "Privacidad y app", "प्राइवेसी और ऐप"], "sk4Help": ["المساعدة والشروط", "Help & legal", "Yardım ve yasal", "Aide et mentions", "Ayuda y legal", "मदद और कानूनी"], "sk4All": ["الكل", "All", "Tümü", "Tous", "Todos", "सभी"], "sk4Feat": ["مميّزة", "Featured", "Öne çıkan", "En vedette", "Destacadas", "चुनिंदा"], "sk4Arab": ["دول عربية", "Arab", "Arap", "Arabes", "Árabes", "अरब"], "sk4Eu": ["أوروبا", "Europe", "Avrupa", "Europe", "Europa", "यूरोप"], "sk4Am": ["الأمريكيتان", "Americas", "Amerika", "Amériques", "Américas", "अमेरिका"], "sk4Af": ["أفريقيا", "Africa", "Afrika", "Afrique", "África", "अफ़्रीका"], "sk4As": ["آسيا", "Asia", "Asya", "Asie", "Asia", "एशिया"], "sk4Oc": ["أوقيانوسيا", "Oceania", "Okyanusya", "Océanie", "Oceanía", "ओशिनिया"], "sk4Ntf": ["نبّهني", "Notify me", "Bana haber ver", "Me prévenir", "Avísame", "मुझे बताएं"], "sk4NtfOn": ["راح نعلّم التبويب أول ما توصل", "We'll mark this tab when they arrive", "Geldiklerinde bu sekmeyi işaretleyeceğiz", "On marquera cet onglet à leur arrivée", "Marcaremos esta pestaña cuando lleguen", "आने पर हम इस टैब पर निशान लगाएंगे"], "sk4Tease": ["لمحة عن القادم", "Sneak peek", "Ön izleme", "Avant-première", "Adelanto", "झलक"], "sk4PkAll": ["كل الأوضاع", "Every mode", "Her mod", "Tous les modes", "Todos los modos", "हर मोड"], "sk4PkSafe": ["دفع آمن", "Secure checkout", "Güvenli ödeme", "Paiement sécurisé", "Pago seguro", "सुरक्षित भुगतान"], "sk4Swap": ["بدّل", "Swap", "Değiştir", "Échanger", "Cambiar", "बदलें"], "sk4Rate": ["سعر التبديل", "Exchange rate", "Kur", "Taux", "Tipo de cambio", "विनिमय दर"], "sk4Bv": ["أفضل قيمة", "Best value", "En iyi değer", "Meilleure offre", "Mejor valor", "बेहतरीन कीमत"], "sk4Mine": ["سكناتي", "Mine", "Benimkiler", "Les miens", "Míos", "मेरी"]};
+          for (const k in SK_I18N) I18N[k] = SK_I18N[k];
+          const T4 = (k, o) => tv4(() => _t(k, o), k);
+          const ios4 = () => tv4(() => B13.ios(), false) || document.documentElement.hasAttribute("data-ss-ios");
+          const FREE = [2, 0, 1, 3, 4, 5, 6, 7, 9, 13]; // Pink (default) first, the 8 free classics, Galaxy, Coral Snake
+          const FLAG_USD = 499;
+          SK4.FREE = FREE;
+          // ---- catalog rules ----
+          const isFlag = (i) => i >= FLAG0 && i < FLAG0 + FLAGN;
+          for (let i = 0; i < FLAG0; i++) { const s = SKINS[i]; if (!s) continue;
+            if (FREE.includes(i)) { s.p = 0; delete s.cur; s.lv = 1; s.ret = ""; } else { s.sk4 = 1; if (!s.ret) s.ret = "sk4"; } }
+          for (let i = FLAG0; i < FLAG0 + FLAGN; i++) { const s = SKINS[i]; if (!s) continue; s.p = FLAG_USD; s.cur = "usd"; }
+          const RSK = Object.keys(ITEMS).filter((k) => ITEMS[k].c === "sk"); // Royal skins: no longer sold; Royal Pass ones stay Pass rewards
+          for (const k of RSK) { const it = ITEMS[k]; if (!it.ex) { it.ex = "sk4"; it.sk4 = 1; } }
+          SK4.RSK = RSK;
+          const ladderFix = () => { const L = window["__L" + "V4"]; if (!L || !L.LAD) return false;
+            for (const k of Object.keys(L.LAD)) if (/^s\d+$/.test(k) || /^rs_/.test(k)) delete L.LAD[k]; // skins left the level ladder (avatars/badges/arenas stay)
+            if (L.RET) for (let i = 0; i < FLAG0; i++) if (SKINS[i] && SKINS[i].sk4) L.RET["s" + i] = L.RET["s" + i] || "sk4";
+            for (const i of FREE) tv4(() => Object.defineProperty(SKINS[i], "lv", { value: 1, writable: true, configurable: true, enumerable: true }), 0);
+            return true; };
+          { let n = 0; const t = setInterval(() => { if (ladderFix() || ++n > 40) clearInterval(t); }, 250); }
+          const catFix = () => tv4(() => { for (const k of ["sk", "us", "id"]) { const ix = CATS.findIndex((c) => c[0] === k); if (ix >= 0) CATS.splice(ix, 1); } if (!CATS.some((c) => c[0] === SH2.cat)) SH2.cat = "tr"; }, 0);
+          catFix(); setTimeout(catFix, 0); setTimeout(catFix, 1500); // later modules add Premium (us) / VIP IDs (id) categories: duplicates of the tabs // Royal Shop: no Skins category
+          tv4(() => { for (let j = BUNDLES.length - 1; j >= 0; j--) if (BUNDLES[j].items.some((x) => ITEMS[x] && ITEMS[x].c === "sk")) BUNDLES.splice(j, 1); }, 0);
+          tv4(() => { const _f = pxFeatIds; pxFeatIds = function () { const ids = Object.keys(ITEMS).filter((k) => !ITEMS[k].ex && ITEMS[k].c !== "sk"), rg = nfRng(nfSeed("ss-feat-" + utcDay())), out = [];
+            const pool = ids.slice(); while (out.length < 3 && pool.length) { const k = pool.splice((rg() * pool.length) | 0, 1)[0]; if (!out.some((o) => ITEMS[o].c === ITEMS[k].c) || pool.length < 4) out.push(k); }
+            return out.length ? out : _f.apply(this, arguments); }; }, 0);
+          // ---- ownership / equip ----
+          const ownSk = (i) => FREE.includes(i) || !!tv4(() => P.own["s" + i], false);
+          const eqKey = () => { const o = tv4(() => NX.eq.sk, ""); return o ? o : "s" + tv4(() => skin, 2); };
+          const equipSk = (i) => { if (!ownSk(i)) return; skin = i; tv4(() => { if (NX.eq.sk) { NX.eq.sk = ""; tv4(() => B13C.saveLook(), 0); tv4(() => { if (player) nfDress(player); }, 0); } }, 0);
+            commit(); tv4(() => paintSkins(), 0); tv4(() => profile(), 0); toast("✓ " + nameOf("s" + i)); };
+          const equipIt = (id) => { if (!(id === "photo" ? !!PHOTO.spr : ENT.has(id))) return; if (NX.eq.sk !== id) nfEquip(id); tv4(() => B13C.saveLook(), 0); tv4(() => profile(), 0); toast("✓ " + nameOf(id)); };
+          const nameOf = (k) => k === "photo" ? T4("nfPhT") : /^s\d+$/.test(k) ? tv4(() => (isFlag(+k.slice(1)) ? flagName(FLAGS[+k.slice(1) - FLAG0]) : _t(SKINS[+k.slice(1)].n) || SKINS[+k.slice(1)].n), k) : tv4(() => itName(k), k);
+          // ---- state ----
+          const CATS4 = [["snakes", "🐍", "sk4Snakes", "sk4SnakesS"], ["flags", "🚩", "sk4Flags", "sk4FlagsS"], ["football", "⚽", "sk4Foot", "sk4FootS"],
+            ["basketball", "🏀", "sk4Bask", "sk4BaskS"], ["amfootball", "🏈", "sk4Amf", "sk4AmfS"], ["premium", "👑", "sk4Prem", "sk4PremS"]];
+          const ST4 = { cat: "snakes", sel: "", pg: 0, q: "", open: false, rg: "all", sf: "all", anim: 1 };
+          // flag filters: regions by ISO code (Arab = Arab League members; they also stay in their continent). "Featured" = a fixed curated order, not live popularity.
+          const RG4 = { arab: "DZ BH KM DJ EG IQ JO KW LB LY MR MA OM PS QA SA SO SD SY TN AE YE",
+            eu: "AL AD AT BY BE BA BG HR CY CZ DK EE FI FR DE GR HU IS IE IT LV LI LT LU MT MD MC ME NL MK NO PL PT RO RU SM RS SK SI ES SE CH UA GB VA XK",
+            am: "AG AR BS BB BZ BO BR CA CL CO CR CU DM DO EC SV GD GT GY HT HN JM MX NI PA PY PE KN LC VC SR TT US UY VE",
+            af: "DZ AO BJ BW BF BI CV CM CF TD KM CG CD CI DJ EG GQ ER SZ ET GA GM GH GN GW KE LS LR LY MG MW ML MR MU MA MZ NA NE NG RW ST SN SC SL SO ZA SS SD TZ TG TN UG ZM ZW",
+            oc: "AU FJ KI MH FM NR NZ PW PG WS SB TO TV VU" };
+          const RGS = {}; for (const k in RG4) RGS[k] = new Set(RG4[k].split(" "));
+          const inRg = (c, r) => r === "all" || r === "feat" ? true : r === "as" ? !RGS.eu.has(c) && !RGS.am.has(c) && !RGS.af.has(c) && !RGS.oc.has(c) : RGS[r] ? RGS[r].has(c) : true;
+          const FEAT4 = "IQ SA EG AE MA DZ JO KW QA PS LB SY TN BH OM YE LY SD BR AR FR DE ES IT PT GB US MX TR JP KR IN".split(" ");
+          const RGL = [["all", "sk4All"], ["feat", "sk4Feat"], ["arab", "sk4Arab"], ["eu", "sk4Eu"], ["am", "sk4Am"], ["af", "sk4Af"], ["as", "sk4As"], ["oc", "sk4Oc"]];
+          const ntf = (c) => tv4(() => localStorage.getItem("ss-sk4-ntf:" + c) === "1", false);
+          const RM4 = tv4(() => matchMedia("(prefers-reduced-motion: reduce)").matches, false);
+          SK4.st = ST4;
+          const legacy = () => { const a = [];
+            for (let i = 0; i < FLAG0; i++) if (!FREE.includes(i) && SKINS[i] && SKINS[i].n && tv4(() => P.own["s" + i], false)) a.push("s" + i);
+            for (const k of RSK) if (ENT.has(k)) a.push(k);
+            if (tv4(() => !!PHOTO.spr, false)) a.push("photo");
+            return a; };
+          const flagIds = () => { const q = ST4.q.trim().toLowerCase(), rg = q ? "all" : ST4.rg; const a = [];
+            for (let i = FLAG0; i < FLAG0 + FLAGN; i++) { const f = FLAGS[i - FLAG0]; if (rg === "feat" && !FEAT4.includes(f.c)) continue; if (!inRg(f.c, rg)) continue;
+              if (!q || nameOf("s" + i).toLowerCase().includes(q) || f.en.toLowerCase().includes(q) || f.c.toLowerCase() === q) a.push("s" + i); }
+            const lc = tv4(() => LANG, "en"), cd = (k) => FLAGS[+k.slice(1) - FLAG0].c;
+            a.sort((x, y) => (+ownSk(+y.slice(1)) - +ownSk(+x.slice(1))) || (rg === "feat" ? FEAT4.indexOf(cd(x)) - FEAT4.indexOf(cd(y)) : nameOf(x).localeCompare(nameOf(y), lc)));
+            return a; };
+          const snakeIds = () => { const f = FREE.map((i) => "s" + i), l = legacy(); return ST4.sf === "free" ? f : ST4.sf === "mine" ? (l.length ? l : f) : f.concat(l); };
+          const list = () => ST4.cat === "snakes" ? snakeIds() : ST4.cat === "flags" ? flagIds() : [];
+          const kind = (k) => k === "photo" ? "photo" : /^s\d+$/.test(k) ? (isFlag(+k.slice(1)) ? "flag" : FREE.includes(+k.slice(1)) ? "free" : "legacy") : (ITEMS[k] && ITEMS[k].ex === "pass" ? "pass" : "legacy");
+          const owned = (k) => k === "photo" ? tv4(() => !!PHOTO.spr, false) : /^s\d+$/.test(k) ? ownSk(+k.slice(1)) : ENT.has(k);
+          const rarOf = (k) => { const kd = kind(k); if (kd === "free") return [2, 9, 13].includes(+k.slice(1)) ? (+k.slice(1) === 2 ? 0 : 1) : 0; if (kd === "flag") return 1; if (ITEMS[k]) return ITEMS[k].r | 0; return 2; };
+          const RN4 = ["nfR0", "nfR1", "nfR2", "nfR3", "nfR4"];
+          // ---- renderer (approved mockup): rounded scale segments along a curve, game colours ----
+          const SR = 40, SPC = new Map();
+          const segSpr = (col, v, kk) => { const key = col + v + (kk || ""); if (SPC.has(key)) return SPC.get(key);
+            const n = SR * 2, c = document.createElement("canvas"); c.width = c.height = n; const g = c.getContext("2d"), r = SR * 0.75;
+            const shape = () => { g.beginPath(); g.moveTo(r, 1); g.arcTo(n - 1, 1, n - 1, n - 1, r); g.arcTo(n - 1, n - 1, 1, n - 1, r); g.arcTo(1, n - 1, 1, 1, r); g.arcTo(1, 1, n - 1, 1, r); g.closePath(); };
+            shape(); g.fillStyle = col; g.fill(); g.save(); shape(); g.clip();
+            if (v) { g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.ellipse(SR, SR, 15, 11, 0, 0, 6.283); g.fill(); }
+            for (let row = 0; row < 9; row++) { const y = 4 + row * 9, a = Math.abs(y - SR) / SR, sr = 7.5 * (0.6 + 0.4 * Math.cos(a * 1.3));
+              for (let x = (row & 1 ? 2 : 8); x < n + 8; x += 12) { g.fillStyle = "rgba(255,255,255,.07)"; g.beginPath(); g.arc(x, y, sr, Math.PI / 2, Math.PI * 1.5); g.fill();
+                g.strokeStyle = "rgba(0,0,0,.24)"; g.lineWidth = 1.3; g.beginPath(); g.arc(x, y, sr, Math.PI / 2, Math.PI * 1.5); g.stroke(); } }
+            const gr = g.createLinearGradient(0, 0, 0, n); gr.addColorStop(0, "rgba(0,0,0,.55)"); gr.addColorStop(0.2, "rgba(0,0,0,.14)"); gr.addColorStop(0.42, "rgba(0,0,0,0)");
+            gr.addColorStop(0.58, "rgba(0,0,0,0)"); gr.addColorStop(0.8, "rgba(0,0,0,.14)"); gr.addColorStop(1, "rgba(0,0,0,.55)"); g.fillStyle = gr; g.fillRect(0, 0, n, n); g.restore();
+            SPC.set(key, c); return c; };
+          const draw = (cv, k, big, ph) => { // ph: idle-wiggle phase (animated preview); undefined = still pose
+            const W = cv.clientWidth, H = cv.clientHeight; if (!W || !H) return; const dpr = Math.min(2, window.devicePixelRatio || 1), cw = Math.round(W * dpr), chh = Math.round(H * dpr);
+            if (cv.width !== cw || cv.height !== chh) { cv.width = cw; cv.height = chh; } const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+            const p0 = ph || 0, am = ph === undefined ? 1 : 0.85 + 0.15 * Math.sin(p0 * 0.6);
+            const rtl = document.documentElement.dir === "rtl", wd = big ? Math.min(W / 7.2, H / 4.2) : Math.min(H / 3.1, W / 8.5), N = big ? 26 : 17, pts = [];
+            for (let j = 0; j <= 300; j++) { const u = j / 300; let x, y;
+              if (big) { x = W * (0.14 + 0.66 * u + 0.012 * Math.sin(p0 * 0.5)); y = H * (0.58 - 0.16 * am * Math.sin(u * Math.PI * 1.9 - p0) - 0.08 * u); } else { x = W * (0.1 + 0.74 * u); y = H * (0.55 + 0.22 * am * Math.sin(u * Math.PI * 2.1 + 0.3 - p0)); }
+              pts.push([rtl ? W - x : x, y]); }
+            const len = [0]; for (let j = 1; j < pts.length; j++) len.push(len[j - 1] + Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]));
+            const TL = len[len.length - 1], at = (d) => { let j = 1; while (j < len.length - 1 && len[j] < d) j++; const a = pts[j - 1], b = pts[j]; return [b[0], b[1], Math.atan2(b[1] - a[1], b[0] - a[0])]; };
+            const sp = (TL - wd * 0.4) / N, si = /^s\d+$/.test(k) ? +k.slice(1) : -1, fl = si >= 0 && isFlag(si), spr = si < 0 && k !== "photo" ? tv4(() => ovsFor(k), null) : null;
+            const phI = k === "photo" ? tv4(() => PHOTO.spr, null) : null;
+            const col = (i) => si >= 0 ? tv4(() => segColor(si, i), "#888") : "#888";
+            if (rarOf(k) >= 3) { g.shadowColor = "rgba(255,194,41,.55)"; g.shadowBlur = big ? 16 : 8; }
+            for (let i = N; i >= 1; i--) { const d = TL - wd * 0.4 - i * sp, [x, y, a] = at(Math.max(0, d)), w = wd * (i > N - 6 ? 0.55 + 0.45 * (N - i) / 6 : 1);
+              g.save(); g.translate(x, y); g.rotate(a);
+              if (spr && spr.length) g.drawImage(spr[i % spr.length], -w * 0.55, -w * 0.55, w * 1.1, w * 1.1);
+              else if (phI && phI.length) g.drawImage(phI[i % phI.length], -w * 0.55, -w * 0.55, w * 1.1, w * 1.1);
+              else g.drawImage(segSpr(col(i), i % 4 === 0 ? 1 : 0, ""), -w * 0.55, -w / 2, w * 1.1, w);
+              g.restore(); }
+            g.shadowBlur = 0;
+            const [hx, hy, ha] = at(TL - wd * 0.2), hr = wd * 0.62; g.save(); g.translate(hx, hy); g.rotate(ha);
+            const hg = g.createRadialGradient(-hr * .2, -hr * .3, hr * .1, 0, 0, hr); hg.addColorStop(0, "rgba(255,255,255,.35)"); hg.addColorStop(.5, "rgba(255,255,255,0)"); hg.addColorStop(1, "rgba(0,0,0,.35)");
+            g.beginPath(); g.ellipse(0, 0, hr * 1.1, hr, 0, 0, 6.3);
+            if (spr && spr.length) { g.save(); g.clip(); g.drawImage(spr[0], -hr * 1.1, -hr * 1.1, hr * 2.2, hr * 2.2); g.restore(); } else { g.fillStyle = si >= 0 ? col(0) : "#9aa"; g.fill(); }
+            g.fillStyle = hg; g.beginPath(); g.ellipse(0, 0, hr * 1.1, hr, 0, 0, 6.3); g.fill();
+            if (fl) { const c = FLAGS[si - FLAG0].c; g.save(); g.rotate(-ha); g.beginPath(); g.arc(0, 0, hr * 0.82, 0, 6.3); g.clip();
+              if (tv4(() => FLAG_OK, true)) { g.font = `${hr * 2}px ${tv4(() => EMOJI_F, "sans-serif")}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(flagEmo(c), 0, hr * 0.08); }
+              else { g.fillStyle = "#0b1438"; g.fillRect(-hr, -hr, hr * 2, hr * 2); g.fillStyle = "#fff"; g.font = `900 ${hr * 0.8}px sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(c, 0, 0); }
+              g.restore(); g.strokeStyle = "#f0c45a"; g.lineWidth = hr * 0.09; g.beginPath(); g.arc(0, 0, hr * 0.82, 0, 6.3); g.stroke(); }
+            for (const sy of [-1, 1]) { const ex = hr * 0.42, ey = sy * hr * 0.5, er = hr * 0.3;
+              g.fillStyle = "#111"; g.beginPath(); g.arc(ex, ey, er * 1.12, 0, 6.3); g.fill(); g.fillStyle = "#ffd84a"; g.beginPath(); g.arc(ex, ey, er, 0, 6.3); g.fill();
+              g.fillStyle = "#111"; g.beginPath(); g.ellipse(ex + er * .25, ey, er * .28, er * .62, 0, 0, 6.3); g.fill(); }
+            g.restore(); };
+          // ---- UI ----
+          let ov = null, raf4 = 0, last4 = 0;
+          const anim = (t) => { raf4 = 0; if (!ov || !ST4.open || document.hidden) return; raf4 = requestAnimationFrame(anim); if (t - last4 < 33) return; last4 = t; const ph = t / 480; // ~30 fps, canvas only
+            const sh = ov.querySelector(".sk4-shade"); if (sh) { const c = $("sk4shc"); if (c) tv4(() => draw(c, sh.dataset.k, false, ph), 0); return; }
+            const p = $("sk4pvc"); if (p && ST4.sel) tv4(() => draw(p, ST4.sel, true, ph), 0);
+            const e = $("sk4emc"); if (e) tv4(() => draw(e, e.dataset.k, true, ph), 0); };
+          const kick = () => { if (!raf4 && !RM4) raf4 = requestAnimationFrame(anim); };
+          document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
+          const money4 = (c) => tv4(() => B13.money(c), "$" + (c / 100).toFixed(2));
+          const priceTag = (k) => { const kd = kind(k), own = owned(k), eq = eqKey() === k;
+            if (eq) return `<div class="sk4-tag own">${E4(T4("equipped"))}</div>`;
+            if (kd === "free") return `<div class="sk4-tag free">${E4(T4("sk4Free"))}</div>`;
+            if (own) return `<div class="sk4-tag own">✓ ${E4(kd === "legacy" ? T4("lv4Leg") : kd === "pass" ? T4("nfPass") : T4("owned"))}</div>`;
+            if (kd === "free") return `<div class="sk4-tag free">${E4(T4("sk4Free"))}</div>`;
+            if (kd === "flag") return ios4() ? `<div class="sk4-tag lk">🌐 ${E4(T4("sk4Web"))}</div>` : `<div class="sk4-tag buy"><bdi dir="ltr">${E4(money4(FLAG_USD))}</bdi><small>∞ ${E4(T4("b13cForever"))}</small></div>`;
+            return ""; };
+          const rbd = (k) => { const kd = kind(k); if (kd === "legacy") return `<span class="sk4-rb" style="--rc:#9aa6bd">${E4(T4("lv4Leg"))}</span>`; if (kd === "pass") return `<span class="sk4-rb" style="--rc:#ffc229">👑 ${E4(T4("nfPass"))}</span>`;
+            const r = rarOf(k); return `<span class="sk4-rb" style="--rc:var(--sk4r${r})">${E4(T4(RN4[r]))}</span>`; };
+          const PER = 8;
+          const paint = () => {
+            if (!ov) return; const b = ov.querySelector(".sk4-win"); const cat = ST4.cat, items = list(), pages = Math.max(1, Math.ceil(items.length / PER));
+            if (ST4.pg >= pages) ST4.pg = pages - 1; if (ST4.pg < 0) ST4.pg = 0;
+            if (!ST4.sel || !items.includes(ST4.sel)) ST4.sel = items.includes(eqKey()) ? eqKey() : items[0] || "";
+            const pgItems = items.slice(ST4.pg * PER, ST4.pg * PER + PER), an = ST4.anim; ST4.anim = 0;
+            const tabs = CATS4.map(([id, ic, n, s]) => `<button type="button" class="sk4-tab${id === cat ? " on" : ""}${id === "premium" ? " prem" : ""}${id !== "snakes" && id !== "flags" ? " soon" : ""}" data-sk4c="${id}" role="tab" aria-selected="${id === cat}"><span class="ic" aria-hidden="true">${ic}</span><span class="tx"><b>${E4(T4(n))}</b><small>${E4(T4(s))}</small></span>${ntf(id) ? '<span class="bell" aria-hidden="true">🔔</span>' : ""}</button>`).join("");
+            const head = `<div class="sk4-hd"><button type="button" class="sk4-x" data-sk4="x" aria-label="${E4(T4("hmClose"))}">✕</button><div class="sk4-ttl"><i aria-hidden="true">🐍</i><span>${E4(T4("sk4Title"))}</span></div><span class="sk4-lock">🔒 ${E4(T4("sk4Priv"))}</span><span class="sk4-sp"></span>` +
+              (cat === "flags" ? `<label class="sk4-srch"><span aria-hidden="true">🔍</span><input id="sk4q" type="search" value="${E4(ST4.q)}" placeholder="${E4(T4("sk4Search"))}" aria-label="${E4(T4("sk4Search"))}" dir="auto">${ST4.q ? `<button type="button" class="clr" data-sk4="qx" aria-label="✕">✕</button>` : ""}</label>` : "") +
+              `<button type="button" class="sk4-bal" data-sk4="bank"><i class="sk4-coin" aria-hidden="true"></i><bdi dir="ltr">${E4(tv4(() => num(P.coins), P.coins))}</bdi><span class="pl">+</span></button>` +
+              `<button type="button" class="sk4-bal" data-sk4="bank"><i class="sk4-gem" aria-hidden="true"></i><bdi dir="ltr">${E4(tv4(() => num(P.gems), P.gems))}</bdi><span class="pl">+</span></button></div>`;
+            let body;
+            if (cat !== "snakes" && cat !== "flags") {
+              const c = CATS4.find((x) => x[0] === cat), on = ntf(cat), pk = cat === "premium" ? "s9" : cat === "football" ? "s1" : cat === "basketball" ? "s4" : "s13";
+              const teas = [0, 1, 2, 3].map((j) => `<span class="sk4-tz" style="--d:${j * 0.35}s"><i aria-hidden="true">${c[1]}</i><b aria-hidden="true">?</b><span class="lk" aria-hidden="true">🔒</span></span>`).join("");
+              body = `<div class="sk4-empty sk4-e-${cat}${an ? " sk4-in" : ""}"><div class="sk4-eart" aria-hidden="true"><span class="ring"></span><canvas id="sk4emc" data-k="${pk}"></canvas><span class="ball">${c[1]}</span></div>` +
+                `<div class="sk4-etx"><span class="sk4-soonb">✦ ${E4(T4("sk4Soon"))}</span><h3>${E4(T4(c[2]))}</h3><p>${E4(T4("sk4SoonS", { x: T4(c[2]) }))}</p>` +
+                `<div class="sk4-tzw"><small>${E4(T4("sk4Tease"))}</small><div class="sk4-tzs">${teas}</div></div>` +
+                `<div class="sk4-eact"><button type="button" class="sk4-big sk4-ntf${on ? " on" : ""}" data-sk4="ntf" aria-pressed="${on}">${on ? "✓" : "🔔"} ${E4(T4("sk4Ntf"))}</button><button type="button" class="sk4-big gr" data-sk4c="snakes">🐍 ${E4(T4("sk4SeeFree"))}</button></div>` +
+                `<div class="sk4-ntfn${on ? "" : " off"}">${E4(T4("sk4NtfOn"))}</div></div></div>`;
+            } else {
+              const sel = ST4.sel, kd = kind(sel), own = owned(sel), eq = eqKey() === sel;
+              let act;
+              if (!sel) act = "";
+              else if (eq) act = `<div class="sk4-note">${E4(T4("sk4Cur"))}</div><button type="button" class="sk4-big gr eqd" disabled>${E4(T4("equipped"))}</button>`;
+              else if (own) act = `<div class="sk4-note">${E4(kd === "legacy" ? T4("lv4LegD") : kd === "free" ? T4("sk4FreeD") : T4("sk4Yours"))}</div><button type="button" class="sk4-big" data-sk4="eq">${E4(T4("equip"))}</button>`;
+              else if (kd === "flag") act = ios4() ? `<div class="sk4-note">🌐 ${E4(T4("b13WebOnly"))}</div><button type="button" class="sk4-big" disabled>🌐 ${E4(T4("sk4Web"))}</button>`
+                : `<div class="sk4-opt"><small>∞ ${E4(T4("b13cForever"))}</small><b dir="ltr">${E4(money4(FLAG_USD))}</b></div><button type="button" class="sk4-big" data-sk4="buy">${E4(T4("sk4Buy"))}</button>`;
+              else act = "";
+              const sub = kd === "flag" ? T4("sk4FlagSub") : kd === "legacy" ? T4("sk4MySkins") : kd === "pass" ? T4("nfPass") : kd === "photo" ? T4("nfPhD") : T4("sk4Snakes");
+              const rc = kd === "legacy" ? "#9aa6bd" : kd === "pass" ? "#ffc229" : `var(--sk4r${rarOf(sel)})`;
+              const pv = sel ? `<div class="sk4-pv r${rarOf(sel)}${eq ? " eq" : ""}${an ? " sk4-in" : ""}" style="--rc:${rc}"><div class="sk4-rays" aria-hidden="true"></div><div class="sk4-stage" aria-hidden="true"></div>${rbd(sel).replace('class="sk4-rb"', 'class="sk4-rb top"')}${eq ? `<span class="sk4-eqb">✓ ${E4(T4("equipped").replace(/\s*✓\s*/, ""))}</span>` : ""}<button type="button" class="sk4-arw l" data-sk4="prev" aria-label="‹">‹</button><button type="button" class="sk4-arw r" data-sk4="next" aria-label="›">›</button>` +
+                `<canvas id="sk4pvc" aria-hidden="true"></canvas><h3>${E4(nameOf(sel))}</h3><div class="sk4-sub">${E4(sub)}</div>${act}</div>` : `<div class="sk4-pv"></div>`;
+              const cards = pgItems.length ? pgItems.map((k, j) => { const eqd = eqKey() === k, kd2 = kind(k);
+                return `<button type="button" class="sk4-card r${rarOf(k)}${k === sel ? " sel" : ""}${eqd ? " eq" : ""}${kd2 === "legacy" || kd2 === "pass" ? " leg" : ""}${kd2 === "flag" && !owned(k) ? " fl" : ""}" style="--i:${j}" data-sk4k="${k}" aria-pressed="${k === sel}"><span class="top">${rbd(k)}${eqd ? '<span class="ck" aria-hidden="true">✓</span>' : ""}</span><canvas data-sk4cv="${k}" aria-hidden="true"></canvas><span class="nm">${E4(nameOf(k))}</span>${priceTag(k)}</button>`; }).join("")
+                : `<p class="sk4-none"><span aria-hidden="true">🔍</span>${E4(T4("sk4NoRes"))}</p>`;
+              const legN = legacy().length;
+              const chip = (on, attr, html) => `<button type="button" class="sk4-chip${on ? " on" : ""}" ${attr} aria-pressed="${on}">${html}</button>`;
+              const chips = cat === "snakes"
+                ? (legN ? chip(ST4.sf === "all", 'data-sk4f="all"', E4(T4("sk4All")) + ` <bdi dir="ltr" class="n">${FREE.length + legN}</bdi>`) : "") +
+                  chip(ST4.sf === "free" || (!legN && ST4.sf !== "mine"), 'data-sk4f="free"', `🎁 ${E4(T4("sk4Free"))} <bdi dir="ltr" class="n">${FREE.length}</bdi>`) +
+                  (legN ? chip(ST4.sf === "mine", 'data-sk4f="mine"', `🗂️ ${E4(T4("sk4Mine"))} <bdi dir="ltr" class="n">${legN}</bdi>`) : "") +
+                  `<span class="sk4-chip sk4-ph"><span aria-hidden="true">📷</span> ${E4(T4("nfPhT"))}<input class="nf-phin" type="file" accept="image/*" aria-label="${E4(T4("nfPhPick"))}"></span>`
+                : RGL.map(([id, n]) => chip(!ST4.q && ST4.rg === id, `data-sk4r="${id}"`, (id === "feat" ? "⭐ " : id === "arab" ? "🌙 " : "") + E4(T4(n)) + (id === "all" ? ` <bdi dir="ltr" class="n">${FLAGN}</bdi>` : ""))).join("");
+              body = `<div class="sk4-bd">${pv}<div class="sk4-gw"><div class="sk4-sort"><div class="sk4-chips${cat === "flags" ? " sc" : ""}">${chips}</div><span class="sk4-pg"><button type="button" data-sk4="pp" aria-label="‹" ${ST4.pg ? "" : "disabled"}>‹</button><bdi dir="ltr">${ST4.pg + 1}/${pages}</bdi><button type="button" data-sk4="np" aria-label="›" ${ST4.pg < pages - 1 ? "" : "disabled"}>›</button></span></div><div class="sk4-grid${an ? " sk4-in" : ""}">${cards}</div></div></div>`;
+            }
+            const q0 = document.activeElement && document.activeElement.id === "sk4q" ? document.activeElement.selectionStart : -1;
+            const csl = ov.querySelector(".sk4-chips.sc"), csx = csl ? csl.scrollLeft : 0;
+            b.innerHTML = head + `<div class="sk4-tabs" role="tablist">${tabs}</div>` + body;
+            if (q0 >= 0) { const q = $("sk4q"); if (q) { q.focus(); try { q.setSelectionRange(q0, q0); } catch (_) {} } }
+            const cs2 = ov.querySelector(".sk4-chips.sc"); if (cs2) { if (an === 2) { const o = cs2.querySelector(".sk4-chip.on"); if (o) tv4(() => o.scrollIntoView({ block: "nearest", inline: "nearest" }), 0); } else cs2.scrollLeft = csx; }
+            requestAnimationFrame(() => { if (!ov) return; ov.querySelectorAll("canvas[data-sk4cv]").forEach((c) => tv4(() => draw(c, c.dataset.sk4cv, false), 0)); const p = $("sk4pvc"); if (p && ST4.sel) tv4(() => draw(p, ST4.sel, true, RM4 ? undefined : last4 / 480), 0);
+              const e = $("sk4emc"); if (e) tv4(() => draw(e, e.dataset.k, true, RM4 ? undefined : last4 / 480), 0); kick(); });
+          };
+          const sheet = (k) => { // purchase sheet: forever only, $4.99, server-verified Stripe checkout (web only)
+            const box = document.createElement("div"); box.className = "sk4-shade"; box.innerHTML = `<div class="sk4-sheet" role="dialog" aria-modal="true"><button type="button" class="sk4-x" data-sk4="sx" aria-label="${E4(T4("hmClose"))}">✕</button>` +
+              `<div class="sk4-shh"><canvas id="sk4shc" aria-hidden="true"></canvas><div><div>${rbd(k)}</div><h3>${E4(nameOf(k))}</h3><div class="sk4-sub">${E4(T4("sk4FlagSub"))}</div></div></div>` +
+              `<div class="sk4-pks"><span>🎮 ${E4(T4("sk4PkAll"))}</span><span>🔒 ${E4(T4("sk4PkSafe"))}</span></div>` +
+              `<div class="sk4-co on"><span class="rad" aria-hidden="true"></span><small>∞ ${E4(T4("b13cForever"))}</small><b dir="ltr">${E4(money4(FLAG_USD))}</b><p>${E4(T4("sk4Keep"))}</p></div>` +
+              `<button type="button" class="sk4-big" data-sk4="pay">${E4(T4("sk4Cont"))} · <bdi dir="ltr">${E4(money4(FLAG_USD))}</bdi></button><div class="sk4-fine">🔒 ${E4(T4("sk4Fine"))}</div></div>`;
+            ov.appendChild(box); box.dataset.k = k; requestAnimationFrame(() => { const c = $("sk4shc"); if (c) tv4(() => draw(c, k, false), 0); kick(); }); };
+          const open = (cat) => {
+            if (tv4(() => state === "play", false)) return;
+            if (!ov) { ov = document.createElement("div"); ov.id = "sk4"; ov.className = "sk4-ov"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.innerHTML = `<div class="sk4-win"></div>`; document.body.appendChild(ov);
+              ov.addEventListener("click", onClick); ov.addEventListener("input", (e) => { if (e.target.id === "sk4q") { ST4.q = e.target.value; ST4.pg = 0; ST4.sel = ""; paint(); } }); }
+            if (cat) ST4.cat = cat; ST4.open = true; ST4.anim = 1; ov.classList.remove("x-hide"); document.body.classList.add("sk4-on"); paint(); kick(); };
+          const close = () => { if (!ov) return; ov.classList.add("x-hide"); ST4.open = false; document.body.classList.remove("sk4-on"); tv4(() => profile(), 0); };
+          SK4.open = open; SK4.close = close; SK4.paint = paint; SK4.sheet = (k) => { open("flags"); sheet(k); };
+          const onClick = (e) => {
+            const t = e.target; if (!t || !t.closest) return;
+            if (t.closest(".sk4-shade") && !t.closest(".sk4-sheet")) { t.closest(".sk4-shade").remove(); return; }
+            const c = t.closest("[data-sk4c]"); if (c) { if (ST4.cat === c.dataset.sk4c) return; ST4.cat = c.dataset.sk4c; ST4.pg = 0; ST4.sel = ""; ST4.q = ""; ST4.rg = "all"; ST4.anim = 1; paint(); return; }
+            const f = t.closest("[data-sk4f]"); if (f) { ST4.sf = f.dataset.sk4f; ST4.pg = 0; ST4.sel = ""; ST4.anim = 1; paint(); return; }
+            const r = t.closest("[data-sk4r]"); if (r) { ST4.rg = r.dataset.sk4r; ST4.q = ""; ST4.pg = 0; ST4.sel = ""; ST4.anim = 2; paint(); return; }
+            const card = t.closest("[data-sk4k]"); if (card) { ST4.sel = card.dataset.sk4k; paint(); return; }
+            const a = t.closest("[data-sk4]"); if (!a || a.disabled) return; const k = a.dataset.sk4;
+            if (k === "x") close();
+            else if (k === "bank") SK4.bank();
+            else if (k === "pp") { ST4.pg--; ST4.anim = 1; paint(); } else if (k === "np") { ST4.pg++; ST4.anim = 1; paint(); }
+            else if (k === "qx") { ST4.q = ""; ST4.pg = 0; ST4.sel = ""; paint(); }
+            else if (k === "ntf") { const on = !ntf(ST4.cat); tv4(() => localStorage.setItem("ss-sk4-ntf:" + ST4.cat, on ? "1" : "0"), 0); paint(); }
+            else if (k === "prev" || k === "next") { const it = list(), i = it.indexOf(ST4.sel); if (!it.length) return; ST4.sel = it[(i + (k === "next" ? 1 : -1) + it.length) % it.length]; ST4.pg = Math.floor(it.indexOf(ST4.sel) / PER); paint(); }
+            else if (k === "eq") { const s = ST4.sel; if (/^s\d+$/.test(s)) equipSk(+s.slice(1)); else equipIt(s); paint(); }
+            else if (k === "buy") { if (ios4()) { toast(T4("b13WebOnly")); return; } sheet(ST4.sel); }
+            else if (k === "sx") { const s = a.closest(".sk4-shade"); if (s) s.remove(); }
+            else if (k === "pay") { const s = a.closest(".sk4-shade"), id = s && s.dataset.k; if (!id || !isFlag(+id.slice(1)) || owned(id)) return; if (s) s.remove(); tv4(() => B13.itemUsd(id), 0); }
+          };
+          document.addEventListener("change", (e) => { if (ov && e.target && e.target.closest && e.target.closest("#sk4") && e.target.classList.contains("nf-phin")) setTimeout(() => { if (ST4.open) { ST4.sel = "photo"; paint(); } }, 1500); });
+          setInterval(() => { if (ST4.open && !document.hidden && !document.querySelector(".sk4-shade")) { const q = $("sk4q"); if (!(q && document.activeElement === q)) paint(); } }, 6000);
+          if (typeof NFH === "object" && NFH && NFH.relang) NFH.relang.push(() => { if (ST4.open) paint(); });
+          window.addEventListener("keydown", (e) => { if (e.key === "Escape" && ST4.open) { const s = document.querySelector(".sk4-shade"); if (s) s.remove(); else close(); } });
+          // ---- routing: Locker, "All skins", old shop Skins/Countries tabs -> Skins section; Premium -> Offers; coin/gem chips -> Coins & Gems ----
+          SK4.bank = () => { if (ST4.open) close(); tv4(() => { if (!tv4(() => ON.storeOk(), true) && !ios4()) { toast(T4("nfNoMoney")); return; } go4("nfongems"); }, 0); };
+          window.addEventListener("click", (e) => {
+            const t = e.target; if (!t || !t.closest || tv4(() => state === "play", false)) return;
+            if (t.closest("#sk4")) return;
+            const lk = t.closest('[data-hm="sk"], [data-kgo="locker"], #hmsk [data-go="shop"], [data-kshop="shop"], [data-ssbtab], [data-go="shop"]:not(#b13hnv *)');
+            if (lk && !t.closest("#b13hc, #b13hg")) { e.preventDefault(); e.stopImmediatePropagation(); tv4(() => { const s = document.querySelector(".h-sheet:not(.x-hide)"); if (s) { s.classList.add("x-hide"); const bd = $("b13hshb"); if (bd) bd.classList.add("x-hide"); } }, 0); open(lk.dataset.ssbtab !== undefined ? "flags" : null); return; }
+            const pr = t.closest('[data-kshop="b13prem"], [data-go="nfb13prem"]'); if (pr) { e.preventDefault(); e.stopImmediatePropagation(); go4("nfshop"); return; }
+            const bk = t.closest('#b13hc, #b13hg, .p10-pl.c, .p10-pl.g, .p10-plus, .px-pill, .on-plus, [data-kshop="ongems"]');
+            if (bk && !t.closest("#ongems")) { e.preventDefault(); e.stopImmediatePropagation(); SK4.bank(); return; }
+          }, true);
+          tv4(() => { const K = window.__K; if (K && K.openShop) { const _os = K.openShop; K.openShop = (id) => id === "shop" ? open() : id === "b13prem" ? _os("nfshop") : id === "ongems" ? SK4.bank() : _os(id); } }, 0);
+          // ---- Royal Shop: tabs = Offers + VIP IDs; skin offers hidden (server switches them off in 102); a shortcut to the Skins section ----
+          const shopFix = () => {
+            document.querySelectorAll(".k-shtabs").forEach((tb) => { const f = tb.querySelector('[data-kshop="nfshop"]'); if (f && f.textContent !== T4("sk4Offers")) f.textContent = T4("sk4Offers");
+              if (!tb.querySelector(".sk4-shc")) tb.insertAdjacentHTML("beforeend", `<button type="button" class="sk4-shc" data-hm="sk">🐍 ${E4(T4("sk4Title"))} ›</button>`); else { const s = tb.querySelector(".sk4-shc"); const tx = `🐍 ${T4("sk4Title")} ›`; if (s.textContent !== tx) s.textContent = tx; } });
+            const sb = $("nfsb"); if (sb) { sb.querySelectorAll(".ofx-c").forEach((c) => { if (c.querySelector(".ofx-sw") && !c.classList.contains("sk4-off")) c.classList.add("sk4-off"); });
+              const g = sb.querySelector(".ofx-g"); const sec = sb.querySelector("#ofx"); if (sec && g) sec.classList.toggle("sk4-off", !g.querySelector(".ofx-c:not(.sk4-off)"));
+              const h = sb.querySelector(".px-sh h2"); if (h && h.textContent !== T4("sk4ShopT")) h.textContent = T4("sk4ShopT");
+              const vis = [...sb.querySelectorAll(".ofx-c:not(.sk4-off)")]; let bv = null, bp = 0; // value badge on the deepest visible discount (display only)
+              for (const c of vis) { const d = c.querySelector(".ofx-d"), n = d ? Math.abs(parseInt(d.textContent.replace(/[^0-9]/g, ""), 10) || 0) : 0; if (n > bp) { bp = n; bv = c; } }
+              for (const c of vis) { const want = vis.length > 1 && c === bv; if (c.classList.contains("sk4-bv") !== want) c.classList.toggle("sk4-bv", want); if (want && c.dataset.bv !== T4("sk4Bv")) c.dataset.bv = T4("sk4Bv"); } }
+            document.querySelectorAll('#ongems .on-ghead [data-i18n="onGemsT"], #ongems .p10-ht h2 span').forEach((gh) => { if (gh.textContent !== T4("sk4BankT")) gh.textContent = T4("sk4BankT"); });
+            const gp = $("ongp"); if (gp && !$("sk4gx")) gp.insertAdjacentHTML("afterend", `<div class="sk4-gx" id="sk4gx"><span class="gxi" aria-hidden="true"><i class="sk4-coin"></i></span><b>${E4(T4("sk4Coins"))}<small>${E4(T4("gxSub"))}</small></b>` +
+              `<div class="gxr" role="img" aria-label="1 = 100"><span class="gxs"><i class="sk4-gem" aria-hidden="true"></i><bdi dir="ltr">1</bdi></span><span class="gxa" aria-hidden="true">⇄</span><span class="gxs c"><i class="sk4-coin" aria-hidden="true"></i><bdi dir="ltr">100</bdi></span><small>${E4(T4("sk4Rate"))}</small></div>` +
+              `<button type="button" data-sk4gx="1">${E4(T4("sk4Swap"))} <i class="sk4-gem" aria-hidden="true"></i><bdi dir="ltr">1</bdi></button></div>`);
+            if (gp && !gp.dataset.sk4) { gp.dataset.sk4 = "1"; gp.querySelectorAll(".on-pack").forEach((pk) => { if (pk.classList.contains("pop") || pk.classList.contains("best")) pk.classList.add("sk4-hl"); }); }
+            const sh = $("b13hsh"); if (sh && !sh.classList.contains("x-hide")) { // Compete: League · Ranked/leaderboard · Tournaments (Hard missions = the home Missions card; Achievements -> Profile). Social: Friends · Inbox (daily gift = the home gift icon)
+              if (sh.dataset.k === "compete") sh.querySelectorAll('[data-go="achs"], [data-go="nfb13mis"]').forEach((r) => r.remove());
+              if (sh.dataset.k === "social") sh.querySelectorAll('[data-go="gift"]').forEach((r) => r.remove()); }
+            const pb = $("kprofb"); if (pb && pb.offsetParent && !pb.querySelector(".sk4-ach")) { const host = pb.querySelector(".k-skt div") || pb; host.insertAdjacentHTML("beforeend", ` <button type="button" class="x-btn x-sub sk4-ach" data-go="achs">🏅 ${E4(T4("ach"))} ›</button>`); }
+          };
+          document.addEventListener("click", (e) => { const tb = e.target && e.target.closest && e.target.closest("#kset [data-ksec]"); if (!tb) return;
+            setTimeout(() => { const sb = document.querySelector("#kset .k-sbody"); if (sb) { sb.classList.remove("sk4-in"); void sb.offsetWidth; sb.classList.add("sk4-in"); } }, 0); });
+          let q4 = 0; new MutationObserver(() => { if (q4) return; q4 = requestAnimationFrame(() => { q4 = 0; tv4(shopFix, 0); }); }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+          document.addEventListener("click", async (e) => { const b = e.target && e.target.closest && e.target.closest("[data-sk4gx]"); if (!b || b.disabled) return; b.disabled = true;
+            try { const r = await ON.rpc("buy_shop_item", { p_item_id: "gx" }); tv4(() => wset(r.wallet), 0); toast("+100 🪙"); tv4(() => ON.sync(), 0); } catch (er) { toast(tv4(() => ON.err(er), "…")); } finally { setTimeout(() => { b.disabled = false; }, 600); } });
+        }
         // vs13u: VIP ID sold-out strings
         { const VS_I18N = {"vsSold": ["تم البيع", "SOLD OUT", "SATILDI", "VENDU", "VENDIDO", "बिक गया"], "vsSoldA": ["#{n} · تم البيع", "#{n} · sold out", "#{n} · satıldı", "#{n} · vendu", "#{n} · vendido", "#{n} · बिक गया"], "vsHeld": ["محجوز مؤقتاً", "Reserved", "Ayrıldı", "Réservé", "Reservado", "आरक्षित"], "vsGone": ["هذا الأيدي انباع للتو — اختر رقماً آخر", "This ID was just sold — pick another one", "Bu ID az önce satıldı — başka birini seç", "Cet ID vient d'être vendu — choisis-en un autre", "Este ID se acaba de vender: elige otro", "यह ID अभी-अभी बिक गई — कोई दूसरी चुनें"], "vsCongT": ["ألف مبروك! 🎉", "Congratulations! 🎉", "Tebrikler! 🎉", "Félicitations ! 🎉", "¡Enhorabuena! 🎉", "बहुत-बहुत बधाई! 🎉"], "vsCongB": ["مبروك على الأيدي المميز {n}! صار لك للأبد.", "Congratulations on your VIP ID {n}! It's yours forever.", "VIP ID'n {n} için tebrikler! Artık sonsuza dek senin.", "Félicitations pour ton ID VIP {n} ! Il est à toi pour toujours.", "¡Enhorabuena por tu ID VIP {n}! Es tuyo para siempre.", "आपकी VIP ID {n} के लिए बधाई! यह हमेशा के लिए आपकी है।"], "vsOk": ["يا سلام!", "Awesome!", "Harika!", "Génial !", "¡Genial!", "शानदार!"], "vsLeft": ["متبقي {n} من 49", "{n} of 49 left", "49'dan {n} kaldı", "{n} sur 49 restants", "Quedan {n} de 49", "49 में से {n} बचे"]}; for (const k in VS_I18N) if (!I18N[k]) I18N[k] = VS_I18N[k]; }
         // ---------- 13u lvl: one unlock ladder, levels 1 to 400 (server sql/100_lvl400.sql decides; this mirrors it) ----------
@@ -23566,6 +23841,289 @@ html[dir=rtl] #kadm .ibx-adm select.ibx-sel { background-position: 16px 50%, 11p
 [dir="rtl"] .nx13-bar.e { background: linear-gradient(270deg, #ff9a9a, #d84a4a); }
 .nx13w > .k-li > small, .nx13w-sec .k-li > small { width: auto !important; flex: 0 0 auto; text-align: end; white-space: nowrap; }
 .nx13w > .k-li > span, .nx13w-sec .k-li > span { flex: 1 1 auto; }
+</style>
+<style id="ss13u-sk">
+/* 13u-sk Skins section (approved mockup layout) */
+#sk4 { --sk4r0:#9aa6bd; --sk4r1:#3d9bff; --sk4r2:#b45cff; --sk4r3:#ffc229; --sk4r4:#ff3d6e; --g:#f0c45a; --ln:rgba(120,160,255,.28); --mu:#9fb0d8;
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: radial-gradient(ellipse at center, rgba(5,10,30,.55), rgba(3,6,20,.92)); color: #eef3ff; }
+#sk4.x-hide { display: none; }
+#sk4 * { box-sizing: border-box; }
+#sk4 button { font-family: inherit; line-height: 1.2; color: inherit; cursor: pointer; }
+.sk4-win { width: min(94vw, 1360px); height: min(94vh, 900px); display: flex; flex-direction: column; gap: 6px; padding: 7px 10px 9px; border-radius: 18px;
+  padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right));
+  background: linear-gradient(180deg, rgba(22,38,92,.98), rgba(9,16,46,.99)); border: 1.5px solid rgba(110,160,255,.55);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 0 24px rgba(60,120,255,.35), inset 0 1px 0 rgba(255,255,255,.12); }
+.sk4-hd { display: flex; align-items: center; gap: 8px; height: 34px; flex: none; }
+.sk4-x { width: 32px; height: 32px; border-radius: 50%; flex: none; display: grid; place-items: center; font: 700 15px/1 sans-serif; background: rgba(255,255,255,.06); border: 1.5px solid var(--ln); }
+.sk4-ttl { display: flex; align-items: center; gap: 6px; font-weight: 900; font-size: 20px; color: var(--g); text-shadow: 0 2px 0 #4a2e00, 0 0 12px rgba(240,196,90,.4); white-space: nowrap; }
+.sk4-ttl i { font-style: normal; font-size: 18px; }
+.sk4-lock { font-size: 10.5px; font-weight: 700; color: var(--mu); padding: 2px 7px; border: 1px solid var(--ln); border-radius: 99px; white-space: nowrap; }
+.sk4-sp { flex: 1; }
+.sk4-srch { width: min(30%, 280px); height: 30px; border-radius: 99px; display: flex; align-items: center; gap: 6px; padding: 0 10px; background: rgba(3,8,26,.7); border: 1px solid var(--ln); color: var(--mu); font-size: 12px; }
+.sk4-srch input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: #fff; font: inherit; font-size: 12.5px; }
+.sk4-bal { height: 30px; border-radius: 99px; display: flex; align-items: center; gap: 5px; padding: 0 4px 0 8px; background: rgba(3,8,26,.7); border: 1px solid var(--ln); font-weight: 800; font-size: 13px; }
+[dir=rtl] .sk4-bal { padding: 0 8px 0 4px; }
+.sk4-bal .pl { width: 21px; height: 21px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(#5fe36b,#22a83a); color: #fff; font-weight: 900; font-size: 15px; line-height: 1; }
+.sk4-coin { width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff3b0, #ffc629 45%, #c98a00); box-shadow: inset 0 0 0 2px rgba(150,90,0,.5); flex: none; }
+.sk4-gem { width: 16px; height: 18px; flex: none; background: linear-gradient(135deg,#9ff6ff,#3ad2ff 45%,#7b5cff); clip-path: polygon(50% 0,100% 30%,82% 100%,18% 100%,0 30%); }
+.sk4-tabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; height: 44px; flex: none; }
+.sk4-tab { display: flex; align-items: center; gap: 5px; padding: 0 7px; border-radius: 11px; min-width: 0; text-align: start;
+  background: linear-gradient(180deg, rgba(40,58,120,.55), rgba(16,26,64,.7)); border: 1.5px solid var(--c, var(--ln)); }
+.sk4-tab .ic { font-size: 18px; flex: none; line-height: 1; }
+.sk4-tab .tx { min-width: 0; display: block; }
+.sk4-tab b { display: block; font-size: 12.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sk4-tab small { display: block; font-size: 9.5px; color: var(--mu); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sk4-tab.on { --c: rgba(120,180,255,.9); background: linear-gradient(180deg, rgba(70,110,230,.55), rgba(25,45,120,.75)); box-shadow: 0 0 12px var(--c), inset 0 1px 0 rgba(255,255,255,.25); }
+.sk4-tab.prem { --c: rgba(255,194,41,.75); background: linear-gradient(180deg, rgba(120,90,20,.5), rgba(60,40,8,.6)); }
+.sk4-tab.prem b { color: var(--g); }
+.sk4-tab.prem.on { box-shadow: 0 0 12px rgba(255,194,41,.75); }
+.sk4-bd { flex: 1; min-height: 0; display: flex; gap: 10px; }
+.sk4-pv { width: 31%; flex: none; border-radius: 14px; position: relative; display: flex; flex-direction: column; align-items: center; padding: 8px 10px 10px;
+  background: radial-gradient(ellipse at 50% 42%, rgba(70,120,255,.35), rgba(10,18,52,.95) 70%); border: 1.5px solid var(--ln); }
+.sk4-pv canvas { width: 100%; height: 0; flex: 1; min-height: 0; }
+.sk4-stage { position: absolute; left: 14%; right: 14%; top: 46%; height: 22px; border-radius: 50%; background: radial-gradient(ellipse, rgba(90,170,255,.55), transparent 70%); }
+.sk4-rb.top { position: absolute; top: 8px; inset-inline-start: 8px; height: 20px; font-size: 11px; padding: 0 9px; }
+.sk4-arw { position: absolute; top: 34%; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 14px; background: rgba(5,10,30,.8); border: 1.5px solid var(--ln); direction: ltr; z-index: 1; }
+.sk4-arw.l { left: 7px; } .sk4-arw.r { right: 7px; }
+.sk4-pv h3 { font-size: 16px; font-weight: 900; margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.sk4-sub { font-size: 10.5px; color: var(--mu); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.sk4-note { font-size: 10px; color: var(--mu); text-align: center; margin-bottom: 6px; line-height: 1.3; }
+.sk4-opt { width: 100%; border-radius: 10px; padding: 4px 6px; text-align: center; border: 1.5px solid rgba(240,196,90,.7); background: rgba(3,8,26,.6); margin-bottom: 7px; }
+.sk4-opt small { display: block; font-size: 9.5px; color: var(--mu); font-weight: 700; }
+.sk4-opt b { font-size: 15px; font-weight: 900; color: var(--g); }
+.sk4-big { width: 100%; min-height: 34px; border-radius: 99px; border: 0; display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 900; font-size: 15px; color: #2a1800 !important; white-space: nowrap;
+  background: linear-gradient(180deg,#ffe58a,#f0b92e 60%,#d99a12); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 3px 0 #7a4f00; }
+.sk4-big.gr { background: linear-gradient(180deg,#8df59a,#33c24c 60%,#1f9a36); color: #06260c !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 3px 0 #0d5a1c; }
+.sk4-big:disabled { opacity: .9; cursor: default; }
+.sk4-gw { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.sk4-sort { display: flex; align-items: center; gap: 6px; height: 28px; flex: none; }
+.sk4-chip { position: relative; height: 26px; padding: 0 10px; border-radius: 99px; display: flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; color: var(--mu); background: rgba(3,8,26,.55); border: 1px solid var(--ln); white-space: nowrap; }
+.sk4-chip.on { color: #fff; border-color: var(--g); background: rgba(120,90,20,.35); box-shadow: 0 0 8px rgba(240,196,90,.35); }
+.sk4-ph { cursor: pointer; }
+.sk4-ph input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.sk4-pg { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--mu); }
+.sk4-pg button { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: rgba(3,8,26,.6); border: 1px solid var(--ln); direction: ltr; }
+.sk4-pg button:disabled { opacity: .35; }
+.sk4-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); gap: 8px; }
+.sk4-card { position: relative; border-radius: 12px; display: flex; flex-direction: column; align-items: center; padding: 5px 6px 6px; min-width: 0; min-height: 0; text-align: center;
+  background: linear-gradient(180deg, rgba(34,52,112,.75), rgba(12,20,56,.9)); border: 1.5px solid rgba(110,150,240,.3); }
+.sk4-card.sel { border-color: var(--g); box-shadow: 0 0 12px rgba(240,196,90,.5); }
+.sk4-card.r3 { border-color: rgba(255,194,41,.55); } .sk4-card.r4 { border-color: rgba(255,61,110,.6); }
+.sk4-card.leg { background: linear-gradient(180deg, rgba(60,60,80,.7), rgba(20,20,40,.9)); }
+.sk4-card .top { display: flex; width: 100%; justify-content: space-between; align-items: center; height: 16px; }
+.sk4-card canvas { width: 100%; flex: 1; min-height: 0; }
+.sk4-card .nm { font-size: 11.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.3; }
+.sk4-card .ck { width: 16px; height: 16px; border-radius: 50%; background: var(--g); color: #2a1800; display: grid; place-items: center; font-size: 10px; font-weight: 900; }
+.sk4-rb { display: inline-flex; align-items: center; gap: 3px; height: 16px; padding: 0 6px; border-radius: 99px; font-size: 9px; font-weight: 800; white-space: nowrap; color: #fff; background: rgba(3,8,26,.8); border: 1px solid var(--rc); max-width: 100%; overflow: hidden; }
+.sk4-rb::before { content: ""; width: 6px; height: 6px; border-radius: 2px; transform: rotate(45deg); background: var(--rc); flex: none; }
+.sk4-tag { width: 100%; min-height: 23px; margin-top: 3px; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 10.5px; font-weight: 900; white-space: nowrap; overflow: hidden; }
+.sk4-tag.free { background: linear-gradient(180deg,#5fe36b,#1f9a36); color: #04220a; }
+.sk4-tag.own { background: rgba(240,196,90,.18); border: 1px solid rgba(240,196,90,.6); color: var(--g); }
+.sk4-tag.lk { background: rgba(3,8,26,.7); border: 1px solid rgba(255,255,255,.15); color: #c8d2ee; }
+.sk4-tag.buy { background: rgba(3,8,26,.7); border: 1px solid rgba(240,196,90,.6); color: var(--g); }
+.sk4-tag.buy small { font-size: 8.5px; color: var(--mu); font-weight: 700; }
+.sk4-none { grid-column: 1 / -1; grid-row: 1 / -1; display: grid; place-items: center; color: var(--mu); font-weight: 700; }
+.sk4-empty { flex: 1; min-height: 0; border-radius: 14px; border: 1.5px dashed rgba(120,160,255,.35); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 10px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(70,120,255,.22), rgba(10,18,52,.6) 70%); }
+.sk4-eic { font-size: 54px; line-height: 1; filter: drop-shadow(0 0 14px rgba(120,180,255,.6)); }
+.sk4-empty h3 { margin: 0; font-size: 22px; font-weight: 900; color: var(--g); text-shadow: 0 2px 0 #4a2e00; }
+.sk4-empty p { margin: 0; font-size: 12.5px; color: #c8d2ee; max-width: 440px; }
+.sk4-empty .sk4-big { width: auto; padding: 0 22px; margin-top: 6px; }
+.sk4-shade { position: absolute; inset: 0; background: rgba(2,5,16,.72); display: grid; place-items: center; z-index: 2; }
+.sk4-sheet { position: relative; width: min(500px, 64vw); padding: 12px 16px 12px; border-radius: 18px; background: linear-gradient(180deg,#1b2d6a,#0b1438); border: 1.5px solid rgba(240,196,90,.6); box-shadow: 0 0 30px rgba(240,196,90,.25); }
+.sk4-sheet .sk4-x { position: absolute; top: 10px; inset-inline-end: 10px; width: 28px; height: 28px; }
+.sk4-shh { display: flex; align-items: center; gap: 12px; }
+.sk4-shh canvas { width: 160px; height: 82px; flex: none; border-radius: 12px; background: radial-gradient(ellipse, rgba(70,120,255,.35), rgba(5,10,30,.6) 70%); }
+.sk4-sheet h3 { font-size: 18px; font-weight: 900; margin: 4px 0 0; }
+.sk4-co { position: relative; margin: 10px 0; border-radius: 14px; padding: 8px 12px; border: 2px solid var(--g); background: rgba(120,90,20,.28); box-shadow: 0 0 14px rgba(240,196,90,.35); }
+.sk4-co .rad { position: absolute; top: 10px; inset-inline-end: 10px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--g); background: radial-gradient(circle, var(--g) 0 4px, transparent 5px); }
+.sk4-co small { font-size: 11px; color: var(--mu); font-weight: 700; }
+.sk4-co b { display: block; font-size: 22px; font-weight: 900; color: var(--g); }
+.sk4-co p { margin: 0; font-size: 10.5px; color: #c8d2ee; }
+.sk4-fine { font-size: 9.5px; color: var(--mu); text-align: center; margin-top: 7px; }
+@media (max-height: 400px) { .sk4-win { height: 96vh; gap: 5px; padding-top: 5px; } .sk4-tabs { height: 40px; } .sk4-tab small { font-size: 8.5px; } .sk4-hd { height: 30px; } .sk4-x { width: 28px; height: 28px; }
+  .sk4-ttl { font-size: 17px; } .sk4-big { min-height: 30px; font-size: 13.5px; } .sk4-grid { gap: 6px; } .sk4-card .nm { font-size: 10.5px; } .sk4-tag { min-height: 21px; font-size: 9.5px; } .sk4-sheet { padding: 10px 14px; } .sk4-co { margin: 7px 0; } }
+@media (max-width: 700px) { .sk4-tab { padding: 0 5px; gap: 3px; } .sk4-tab .ic { font-size: 15px; } .sk4-tab b { font-size: 10.5px; letter-spacing: -.01em; } .sk4-lock { display: none; } .sk4-chip { font-size: 10.5px; padding: 0 8px; } .sk4-pv { width: 30%; } }
+/* Royal Shop: Offers + VIP IDs only (skins/countries live in the Skins section, gems in Coins & Gems, Premium folded into Offers) */
+.k-shtabs [data-kshop="shop"], .k-shtabs [data-kshop="ongems"], .k-shtabs [data-kshop="b13prem"], .k-shtabs [data-ssbtab] { display: none !important; }
+.k-shtabs .sk4-shc { flex: 0 0 auto !important; margin-inline-start: auto; font-size: 12px !important; opacity: .92; border: 1px dashed rgba(240,196,90,.6) !important; background: transparent !important; color: #f0c45a !important; padding: 0 12px !important; }
+#ongems .k-shtabs { display: none !important; }
+#nfsb .ofx-c.sk4-off, #nfsb #ofx.sk4-off { display: none !important; }
+.sk4-gx { display: flex; align-items: center; gap: 10px; margin: 8px 0 2px; padding: 8px 12px; border-radius: 14px; background: linear-gradient(180deg, rgba(40,58,120,.55), rgba(16,26,64,.7)); border: 1px solid rgba(240,196,90,.45); text-align: start; }
+.sk4-gx i { font-style: normal; font-size: 26px; }
+.sk4-gx b { flex: 1; font-weight: 900; } .sk4-gx b small { display: block; font-weight: 600; font-size: 11px; opacity: .8; }
+.sk4-gx button { border: 0; border-radius: 99px; padding: 7px 14px; font-weight: 900; color: #2a1800; background: linear-gradient(180deg,#ffe58a,#f0b92e 60%,#d99a12); white-space: nowrap; }
+/* Settings: merged tabs get a small divider heading per former section */
+.k-sbody .sk4-div { margin: 14px 2px 4px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #f0c45a; opacity: .9; display: flex; align-items: center; gap: 8px; }
+.k-sbody .sk4-div::after { content: ""; flex: 1; height: 1px; background: rgba(240,196,90,.3); }
+/* ===== v2 polish (preview): motion, rarity shimmer, equipped glow, filters, teaser states, shop/bank/settings ===== */
+@keyframes sk4in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes sk4pop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes sk4sheen { 0%, 62% { transform: translateX(-130%) skewX(-18deg); } 100% { transform: translateX(260%) skewX(-18deg); } }
+@keyframes sk4pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@keyframes sk4spin { to { transform: rotate(360deg); } }
+@keyframes sk4bob { 0%, 100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-9px) rotate(8deg); } }
+#sk4 .sk4-in { animation: sk4in .26s cubic-bezier(.2,.8,.2,1) both; }
+#sk4 .sk4-grid.sk4-in > .sk4-card { animation: sk4pop .28s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 28ms); }
+.sk4-win { animation: sk4pop .22s ease-out both; background: radial-gradient(120% 70% at 50% -10%, rgba(80,130,255,.28), transparent 60%), linear-gradient(180deg, rgba(22,38,92,.98), rgba(9,16,46,.99)); }
+/* press feel */
+#sk4 button { -webkit-tap-highlight-color: transparent; transition: transform .09s ease, filter .12s ease, box-shadow .15s ease, border-color .15s ease; }
+#sk4 button:not(:disabled):active { transform: scale(.95); filter: brightness(1.12); }
+.sk4-big:not(:disabled):active { box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 0 #7a4f00 !important; transform: translateY(2px) scale(.98) !important; }
+.sk4-big { position: relative; overflow: hidden; }
+.sk4-big:not(:disabled)::after { content: ""; position: absolute; top: 0; bottom: 0; width: 34%; left: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent); animation: sk4sheen 3.6s ease-in-out infinite; pointer-events: none; }
+/* tabs: a colour per category (reference), coming-soon tabs dimmed */
+.sk4-tab { position: relative; --c: rgba(120,160,255,.32); }
+.sk4-tab[data-sk4c="flags"] { --c: rgba(110,170,255,.55); }
+.sk4-tab[data-sk4c="football"] { --c: rgba(60,215,190,.55); }
+.sk4-tab[data-sk4c="basketball"] { --c: rgba(255,140,60,.6); }
+.sk4-tab[data-sk4c="amfootball"] { --c: rgba(255,80,110,.55); }
+.sk4-tab.soon .ic { filter: saturate(.75); opacity: .85; }
+.sk4-tab.on { background: linear-gradient(180deg, rgba(70,110,230,.6), rgba(25,45,120,.8)); box-shadow: 0 0 14px var(--c), inset 0 1px 0 rgba(255,255,255,.28); }
+.sk4-tab.on::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: -1px; height: 3px; border-radius: 3px; background: var(--g); box-shadow: 0 0 8px var(--g); }
+.sk4-tab .bell { position: absolute; top: -5px; inset-inline-end: -3px; font-size: 11px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: #1b2d6a; border: 1px solid var(--g); }
+/* search clear */
+.sk4-srch .clr { width: 20px; height: 20px; border-radius: 50%; border: 0; background: rgba(255,255,255,.12); font-size: 10px; display: grid; place-items: center; flex: none; }
+.sk4-srch:focus-within { border-color: var(--g); box-shadow: 0 0 0 2px rgba(240,196,90,.18); }
+/* preview: rarity aura, rotating rays, equipped halo */
+.sk4-pv { overflow: hidden; background: radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--rc, #3d9bff) 34%, transparent), rgba(10,18,52,.96) 70%); border-color: color-mix(in srgb, var(--rc, #7aa0ff) 55%, transparent); }
+.sk4-rays { position: absolute; left: 50%; top: 36%; width: 150%; aspect-ratio: 1; margin-left: -75%; margin-top: -75%; border-radius: 50%; pointer-events: none; opacity: .22;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--rc, #3d9bff) 70%, transparent) 0 6deg, transparent 6deg 22deg); -webkit-mask: radial-gradient(circle, #000 18%, transparent 62%); mask: radial-gradient(circle, #000 18%, transparent 62%); animation: sk4spin 40s linear infinite; }
+.sk4-pv.r0 .sk4-rays { opacity: .1; }
+.sk4-pv canvas { position: relative; }
+.sk4-stage { background: radial-gradient(ellipse, color-mix(in srgb, var(--rc, #5aaaff) 65%, transparent), transparent 70%); }
+.sk4-pv.eq { border-color: rgba(95,227,107,.75); box-shadow: inset 0 0 22px rgba(95,227,107,.18), 0 0 14px rgba(95,227,107,.22); }
+.sk4-pv.eq .sk4-stage { background: radial-gradient(ellipse, rgba(95,227,107,.6), transparent 70%); animation: sk4pulse 2.4s ease-in-out infinite; }
+.sk4-eqb { position: absolute; top: 8px; inset-inline-end: 8px; height: 20px; padding: 0 9px; border-radius: 99px; display: inline-flex; align-items: center; font-size: 11px; font-weight: 900; color: #06260c; background: linear-gradient(180deg,#8df59a,#33c24c); box-shadow: 0 0 10px rgba(95,227,107,.55); white-space: nowrap; z-index: 1; }
+.sk4-pv h3 { font-size: 17px; text-shadow: 0 2px 0 rgba(0,0,0,.45); position: relative; }
+.sk4-big.eqd { opacity: 1 !important; background: rgba(95,227,107,.14); color: #8df59a !important; border: 1.5px solid rgba(95,227,107,.7); box-shadow: inset 0 0 12px rgba(95,227,107,.2); }
+/* cards: rarity edge + sheen, equipped ring, selected lift */
+.sk4-card { overflow: hidden; --rc: var(--sk4r0); border-color: color-mix(in srgb, var(--rc) 38%, transparent); }
+.sk4-card.r1 { --rc: var(--sk4r1); } .sk4-card.r2 { --rc: var(--sk4r2); } .sk4-card.r3 { --rc: var(--sk4r3); } .sk4-card.r4 { --rc: var(--sk4r4); }
+.sk4-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: radial-gradient(ellipse at 50% 38%, color-mix(in srgb, var(--rc) 22%, transparent), transparent 66%); }
+.sk4-card.r2::after, .sk4-card.r3::after, .sk4-card.r4::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 38%; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent); animation: sk4sheen 4.8s ease-in-out infinite; animation-delay: calc(var(--i, 0) * .3s); }
+.sk4-card.r3, .sk4-card.r4 { box-shadow: 0 0 10px color-mix(in srgb, var(--rc) 35%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--rc) 25%, transparent); }
+.sk4-card > * { position: relative; }
+.sk4-card.sel { border-color: var(--g); box-shadow: 0 0 0 1px var(--g), 0 0 14px rgba(240,196,90,.55); transform: translateY(-2px); }
+.sk4-card.eq { border-color: rgba(95,227,107,.85); }
+.sk4-card.eq::before { background: radial-gradient(ellipse at 50% 38%, rgba(95,227,107,.28), transparent 66%); animation: sk4pulse 2.4s ease-in-out infinite; }
+.sk4-card.eq .ck { background: linear-gradient(180deg,#8df59a,#33c24c); color: #06260c; box-shadow: 0 0 8px rgba(95,227,107,.7); }
+.sk4-card.eq .sk4-tag.own { background: rgba(95,227,107,.16); border-color: rgba(95,227,107,.7); color: #8df59a; }
+.sk4-card.leg canvas { filter: saturate(.9); }
+.sk4-tag.buy { background: linear-gradient(180deg, rgba(60,44,8,.85), rgba(25,18,4,.9)); }
+.sk4-tag.free { box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+/* filter chips */
+.sk4-sort { gap: 8px; }
+.sk4-chips { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
+.sk4-chips.sc { overflow-x: auto; scrollbar-width: none; -webkit-mask: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 14px), transparent); mask: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 14px), transparent); padding: 0 8px; scroll-snap-type: x proximity; }
+.sk4-chips.sc::-webkit-scrollbar { display: none; }
+.sk4-chips .sk4-chip { flex: none; scroll-snap-align: start; }
+button.sk4-chip:not(.on):hover { color: #fff; border-color: rgba(160,190,255,.55); }
+.sk4-chip .n { font-size: 10px; padding: 0 5px; border-radius: 99px; background: rgba(255,255,255,.12); line-height: 15px; }
+.sk4-chip.on .n { background: rgba(240,196,90,.3); color: #ffe7a6; }
+.sk4-none { gap: 6px; font-size: 13px; } .sk4-none span { font-size: 30px; opacity: .6; }
+/* coming soon: art + teaser + notify */
+.sk4-empty { flex-direction: row; gap: 18px; padding: 12px 22px; justify-content: center; border-style: solid; border-color: rgba(120,160,255,.28); --ec: #5aaaff;
+  background: radial-gradient(60% 90% at 25% 50%, color-mix(in srgb, var(--ec) 26%, transparent), transparent 70%), linear-gradient(180deg, rgba(20,34,84,.65), rgba(8,14,42,.75)); }
+.sk4-e-football { --ec: #3cd7be; } .sk4-e-basketball { --ec: #ff8c3c; } .sk4-e-amfootball { --ec: #ff506e; } .sk4-e-premium { --ec: #ffc229; border-color: rgba(255,194,41,.4); }
+.sk4-eart { position: relative; width: 36%; max-width: 360px; height: 100%; max-height: 260px; flex: none; display: grid; place-items: center; }
+.sk4-eart canvas { width: 100%; height: auto; aspect-ratio: 16 / 10; max-height: 100%; }
+.sk4-eart .ring { position: absolute; inset: 12% 10%; border-radius: 50%; border: 2px dashed color-mix(in srgb, var(--ec) 55%, transparent); animation: sk4spin 30s linear infinite; }
+.sk4-eart .ball { position: absolute; top: 8%; inset-inline-end: 12%; font-size: 40px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)) drop-shadow(0 0 12px color-mix(in srgb, var(--ec) 70%, transparent)); animation: sk4bob 2.2s ease-in-out infinite; }
+.sk4-etx { flex: 1; min-width: 0; max-width: 470px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; text-align: start; }
+.sk4-soonb { font-size: 11px; font-weight: 900; letter-spacing: .04em; padding: 3px 10px; border-radius: 99px; color: #1b1200; background: linear-gradient(180deg,#ffe58a,#f0b92e); box-shadow: 0 0 10px rgba(240,196,90,.45); }
+.sk4-empty h3 { font-size: 24px; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.5), 0 0 16px color-mix(in srgb, var(--ec) 60%, transparent); }
+.sk4-empty p { font-size: 12.5px; text-align: start; }
+.sk4-tzw small { display: block; font-size: 10px; font-weight: 800; color: var(--mu); margin: 2px 0 4px; letter-spacing: .03em; }
+.sk4-tzs { display: flex; gap: 7px; }
+.sk4-tz { position: relative; width: 62px; height: 54px; border-radius: 10px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(180deg, rgba(40,58,120,.6), rgba(12,20,56,.9)); border: 1px solid color-mix(in srgb, var(--ec) 40%, transparent); }
+.sk4-tz i { font-style: normal; font-size: 24px; filter: brightness(0) drop-shadow(0 0 1px color-mix(in srgb, var(--ec) 90%, transparent)); opacity: .55; }
+.sk4-tz b { position: absolute; font-size: 18px; font-weight: 900; color: color-mix(in srgb, var(--ec) 80%, #fff); text-shadow: 0 0 8px var(--ec); }
+.sk4-tz .lk { position: absolute; bottom: 2px; inset-inline-end: 3px; font-size: 9px; }
+.sk4-tz::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 45%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent); animation: sk4sheen 3.2s ease-in-out infinite; animation-delay: var(--d); }
+.sk4-eact { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.sk4-empty .sk4-eact .sk4-big { width: auto; padding: 0 16px; margin: 0; font-size: 13.5px; }
+.sk4-big.sk4-ntf { background: rgba(3,8,26,.6); color: var(--g) !important; border: 1.5px solid rgba(240,196,90,.7); box-shadow: none; }
+.sk4-big.sk4-ntf::after { display: none; }
+.sk4-big.sk4-ntf.on { background: rgba(240,196,90,.18); }
+.sk4-ntfn { font-size: 10.5px; color: #c9f5cf; font-weight: 700; } .sk4-ntfn.off { visibility: hidden; }
+/* purchase sheet */
+.sk4-shade { animation: sk4in .18s ease-out both; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+.sk4-sheet { animation: sk4pop .24s cubic-bezier(.2,.8,.2,1) both; background: radial-gradient(90% 60% at 50% 0%, rgba(240,196,90,.14), transparent 70%), linear-gradient(180deg,#1b2d6a,#0b1438); }
+.sk4-shh canvas { width: 180px; height: 90px; border: 1px solid rgba(120,160,255,.3); }
+.sk4-pks { display: flex; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
+.sk4-pks span { font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: 99px; background: rgba(3,8,26,.55); border: 1px solid var(--ln); color: #dfe7ff; white-space: nowrap; }
+.sk4-co { margin: 8px 0 10px; }
+@media (max-height: 400px) { .sk4-empty { padding: 8px 14px; gap: 12px; } .sk4-empty h3 { font-size: 19px; } .sk4-empty p { font-size: 11px; } .sk4-tz { width: 50px; height: 42px; } .sk4-tz i { font-size: 19px; }
+  .sk4-eart .ball { font-size: 30px; } .sk4-shh canvas { width: 150px; height: 74px; } .sk4-pks { margin-top: 6px; } .sk4-pks span { font-size: 9.5px; padding: 2px 7px; } .sk4-co { margin: 6px 0 8px; } .sk4-co b { font-size: 19px; } }
+@media (max-width: 700px) { .sk4-empty .sk4-eact .sk4-big { padding: 0 11px; font-size: 12px; } .sk4-eart { width: 32%; } .sk4-tzs { gap: 5px; } .sk4-tz { width: 44px; } .sk4-chip .n { display: none; } .sk4-pks span { font-size: 9px; } }
+@media (prefers-reduced-motion: reduce) { #sk4 *, #sk4 *::before, #sk4 *::after, #ongems .sk4-gx *, #kset .k-sbody.sk4-in > * { animation: none !important; } }
+/* Royal Shop tabs + offers */
+.k-shtabs .sk4-shc { border-style: solid !important; background: linear-gradient(180deg, rgba(120,90,20,.35), rgba(60,40,8,.35)) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
+.k-shtabs button { transition: transform .09s ease, filter .12s ease; } .k-shtabs button:active { transform: scale(.96); }
+#nfsb .ofx-c { position: relative; border-radius: 14px; transition: transform .09s ease; background: linear-gradient(180deg, rgba(44,64,138,.55), rgba(12,20,56,.85)); border: 1px solid rgba(120,160,255,.32); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+#nfsb .ofx-c:active { transform: scale(.98); }
+#nfsb .ofx-d { font-weight: 900; box-shadow: 0 0 10px rgba(255,61,110,.5); }
+#nfsb .ofx-c.sk4-bv { border-color: rgba(240,196,90,.8); box-shadow: 0 0 14px rgba(240,196,90,.3), inset 0 1px 0 rgba(255,255,255,.1); }
+#nfsb .ofx-c.sk4-bv::before { content: "★ " attr(data-bv); position: absolute; top: -8px; left: 50%; transform: translateX(-50%); padding: 1px 9px; line-height: 14px; border-radius: 99px; font-size: 9.5px; font-weight: 900; white-space: nowrap; color: #2a1800; background: linear-gradient(180deg,#ffe58a,#f0b92e); box-shadow: 0 2px 6px rgba(0,0,0,.4); z-index: 2; }
+#nfsb .ofx-l, #nfsb .ofx > header > span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 99px; background: rgba(255,90,90,.14); border: 1px solid rgba(255,120,120,.4); color: #ffc9c9; font-weight: 800; white-space: nowrap; }
+#nfsb .ofx > header b { color: #f0c45a; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+/* Coins & Gems */
+#ongems .on-pack { transition: transform .09s ease, filter .12s ease; }
+#ongems .on-pack:active { transform: scale(.96); filter: brightness(1.1); }
+#ongems .on-pack:is(.pop,.best) { overflow: visible; border-color: rgba(240,196,90,.85) !important; box-shadow: 0 0 16px rgba(240,196,90,.35), inset 0 0 18px rgba(240,196,90,.12) !important; }
+#ongems .on-pack.pop { border-color: rgba(95,227,107,.85) !important; box-shadow: 0 0 16px rgba(95,227,107,.32), inset 0 0 18px rgba(95,227,107,.1) !important; }
+#ongems .on-pack:is(.pop,.best) .on-tag { top: -10px !important; left: 50% !important; right: auto !important; transform: translateX(-50%); font-size: 11px !important; font-weight: 900; padding: 3px 11px !important; border-radius: 99px !important; white-space: nowrap; z-index: 2;
+  color: #06260c !important; background: linear-gradient(180deg,#8df59a,#33c24c) !important; box-shadow: 0 2px 8px rgba(0,0,0,.45), 0 0 10px rgba(95,227,107,.5); }
+#ongems .on-pack.best .on-tag { color: #2a1800 !important; background: linear-gradient(180deg,#ffe58a,#f0b92e) !important; box-shadow: 0 2px 8px rgba(0,0,0,.45), 0 0 10px rgba(240,196,90,.55); }
+#ongems .on-packs { padding-top: 10px; }
+#ongems .on-terms, #ongems .on-glinks { background: rgba(4,8,26,.72); border-radius: 10px; padding: 6px 10px; }
+#ongems .on-glinks { display: inline-flex; gap: 8px; padding: 4px 12px; }
+.sk4-gx { gap: 12px; padding: 9px 14px; border-radius: 16px; background: linear-gradient(90deg, rgba(120,90,20,.35), rgba(16,26,64,.85) 45%); border: 1.5px solid rgba(240,196,90,.55); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 12px rgba(240,196,90,.15); }
+.sk4-gx .gxi { width: 42px; height: 42px; flex: none; border-radius: 12px; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, rgba(255,230,140,.35), rgba(60,40,8,.6)); border: 1px solid rgba(240,196,90,.5); }
+.sk4-gx .gxi i { font-style: normal; font-size: 24px; }
+.sk4-gx b { font-size: 16px; color: #ffe7a6; }
+.sk4-gx .gxr { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; position: relative; padding: 4px 12px 14px; border-radius: 12px; background: rgba(3,8,26,.6); border: 1px solid rgba(120,160,255,.3); }
+.sk4-gx .gxr small { position: absolute; bottom: 1px; left: 0; right: 0; text-align: center; font-size: 9px; color: #9fb0d8; font-weight: 700; }
+.sk4-gx .gxs { display: inline-flex; align-items: center; gap: 4px; font-weight: 900; font-size: 15px; color: #bdf3ff; } .sk4-gx .gxs.c { color: #ffd76a; } .sk4-gx .gxs i { font-style: normal; }
+.sk4-gx .gxa { color: #f0c45a; font-weight: 900; }
+.sk4-gx button { min-height: 34px; padding: 0 16px; font-size: 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 3px 0 #7a4f00; transition: transform .09s ease; }
+.sk4-gx button:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 0 #7a4f00; }
+.sk4-gx button:disabled { filter: grayscale(.4) brightness(.85); }
+/* Settings: polished section headings, card sections, tab fade */
+#kset .k-sbody.sk4-in > * { animation: sk4in .24s cubic-bezier(.2,.8,.2,1) both; }
+#kset .k-sbody .sk4-div, #kset .s13s-grp > h4 { position: relative; display: flex; align-items: center; gap: 8px; margin: 14px 2px 6px; font-size: 12.5px; font-weight: 900; letter-spacing: .04em; color: #f0c45a; text-shadow: 0 1px 0 rgba(0,0,0,.5); opacity: 1; text-transform: none; }
+#kset .k-sbody .sk4-div::before, #kset .s13s-grp > h4::before { content: ""; width: 8px; height: 8px; flex: none; transform: rotate(45deg); border-radius: 2px; background: linear-gradient(135deg,#ffe58a,#d99a12); box-shadow: 0 0 6px rgba(240,196,90,.6); }
+#kset .k-sbody .sk4-div::after, #kset .s13s-grp > h4::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(240,196,90,.45), transparent); }
+[dir=rtl] #kset .k-sbody .sk4-div::after, [dir=rtl] #kset .s13s-grp > h4::after { background: linear-gradient(270deg, rgba(240,196,90,.45), transparent); }
+#kset .k-sbody .sk4-div:first-child { margin-top: 4px; }
+#kset .k-stabs button { transition: transform .09s ease, background .15s ease; } #kset .k-stabs button:active { transform: scale(.96); }
+#kset .x-seg button { transition: transform .08s ease, background .15s ease; } #kset .x-seg button:active { transform: scale(.94); }
+/* Compete / Social sheets */
+#b13hsh .h-sr { transition: transform .09s ease, border-color .15s ease, box-shadow .15s ease; }
+#b13hsh .h-sr:active { transform: scale(.97); }
+#b13hsh .h-sr:hover { border-color: rgba(240,196,90,.6); }
+#b13hsh .h-sr .h-ic { filter: drop-shadow(0 0 6px rgba(120,180,255,.45)); }
+#b13hsh .h-sr .h-chev { color: #f0c45a; font-weight: 900; }
+[dir=rtl] .sk4-empty { background: radial-gradient(60% 90% at 75% 50%, color-mix(in srgb, var(--ec) 26%, transparent), transparent 70%), linear-gradient(180deg, rgba(20,34,84,.65), rgba(8,14,42,.75)); }
+.sk4-gx .gxi .sk4-coin { width: 28px; height: 28px; }
+.sk4-gx .sk4-gem, .sk4-gx .sk4-coin { display: inline-block; vertical-align: middle; }
+.sk4-gx button { display: inline-flex; align-items: center; gap: 5px; }
+#ongems .on-gsub { text-shadow: 0 1px 2px #000, 0 0 10px rgba(0,0,0,.9); color: #e6ecff; }
+
+/* v2.1 (owner): every gem pack shows its gem amount clearly — a pill on top of the pack art (amount = the existing pack config, unchanged) */
+#ongems .on-pack { padding-top: 84px !important; }
+#ongems .on-pack > b { position: relative; z-index: 3; display: inline-flex !important; align-items: center; gap: 5px; margin: 0 0 3px; padding: 3px 11px 3px 9px; border-radius: 999px;
+  background: linear-gradient(180deg, rgba(10,22,58,.92), rgba(4,10,32,.95)); border: 1px solid rgba(130,225,255,.75); box-shadow: 0 2px 8px rgba(0,0,0,.55), 0 0 10px rgba(79,200,255,.35);
+  color: #fff !important; font-size: 18px !important; font-weight: 900; line-height: 1.15; letter-spacing: .01em; text-shadow: 0 1px 3px rgba(0,0,0,.7); white-space: nowrap; direction: ltr; }
+#ongems .on-pack > b::before { content: ""; width: 13px; height: 15px; flex: none; background: linear-gradient(135deg,#9ff6ff,#3ad2ff 45%,#7b5cff); clip-path: polygon(50% 0,100% 30%,82% 100%,18% 100%,0 30%); }
+#ongems .on-pack:nth-child(n+5) > b { border-color: rgba(255,214,110,.85); box-shadow: 0 2px 8px rgba(0,0,0,.55), 0 0 10px rgba(255,196,60,.35); }
+@media (max-height: 400px), (max-width: 700px) {
+  #ongems .on-pack { padding-top: 62px !important; }
+  #ongems .on-pack::before { width: 66px !important; height: 58px !important; top: 6px !important; }
+  #ongems .on-pack > b { font-size: 14px !important; padding: 2px 7px 2px 6px; gap: 3px; }
+  #ongems .on-pack > b::before { width: 10px; height: 12px; }
+}
 </style>
 <style id="ss13u-vs">
 /* vs13u: VIP ID store sold-out state */
