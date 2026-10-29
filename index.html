@@ -2868,6 +2868,10 @@
         onE_funds: ["رصيدك ما يكفي", "Not enough balance", "Bakiye yetersiz", "Solde insuffisant", "Saldo insuficiente", "बैलेंस कम है"],
         onE_claimed: ["استلمتها من قبل", "Already claimed", "Zaten alındı", "Déjà récupéré", "Ya reclamado", "पहले ही ले लिया"],
         onE_reach: ["لسا ما وصلت", "Not reached yet", "Henüz ulaşılmadı", "Pas encore atteint", "Aún no alcanzado", "अभी नहीं पहुँचे"],
+        q13RevEnd: ["انتهت الجولة، ما تقدر تحيي الآن", "This match already ended — revive isn't available", "Maç bitti — canlanma artık yok", "La partie est terminée — plus de réanimation", "La partida ya terminó — no puedes revivir", "मैच खत्म हो चुका है — अब फिर नहीं जी सकते"],
+        q13RevTwice: ["استخدمت الإحياء في هذي الجولة", "You've already revived this match", "Bu maçta zaten canlandın", "Tu as déjà été réanimé dans cette partie", "Ya reviviste en esta partida", "इस मैच में आप पहले ही फिर जी चुके हैं"],
+        q13RevLen: ["ما قدرنا نتحقق من طول الثعبان، جرّب جولة جديدة", "We couldn't verify your snake's length — try a new match", "Yılan uzunluğu doğrulanamadı — yeni maç dene", "Longueur du serpent non vérifiée — lance une nouvelle partie", "No pudimos verificar la longitud — prueba otra partida", "साँप की लंबाई सत्यापित नहीं हुई — नया मैच खेलें"],
+        q13RevMode: ["الإحياء غير متاح في هذا الطور", "Revive isn't available in this mode", "Bu modda canlanma yok", "Pas de réanimation dans ce mode", "Revivir no está disponible en este modo", "इस मोड में फिर जीना उपलब्ध नहीं"],
         onE_rate: ["بطّئ شوي وحاول بعد لحظة", "Too fast — try again in a moment", "Çok hızlı — birazdan tekrar dene", "Trop rapide — réessaie dans un instant", "Demasiado rápido — inténtalo en un momento", "बहुत तेज़ — थोड़ी देर में फिर करें"],
         onE_banned: ["حسابك محظور", "Your account is banned", "Hesabın yasaklandı", "Ton compte est suspendu", "Tu cuenta está suspendida", "आपका खाता प्रतिबंधित है"],
         onE_maint: ["السيرفر تحت الصيانة", "Server under maintenance", "Sunucu bakımda", "Serveur en maintenance", "Servidor en mantenimiento", "सर्वर रखरखाव में है"],
@@ -6140,7 +6144,7 @@
         function revOpen() {
           rvUsed = true; rvOn = true; rvT = 5; rvL = Math.floor(player.len); rvC = revCost(rvL); closeExit();
           const ok = P.coins >= rvC, b = $("revy");
-          b.textContent = _t(ok ? "revY" : "revLow", { c: rvC }); b.disabled = !ok;
+          b.innerHTML = esc(_t(ok ? "revY" : "revLow", { c: rvC })).replace("🪙", '<i class="q13-coin" aria-hidden="true"></i>'); b.disabled = !ok;
           $("revc").textContent = "5"; $("rev").classList.remove("x-hide");
           setTimeout(() => { if (rvOn) (ok ? b : $("rev").querySelector('[data-go="revN"]')).focus({ preventScroll: true }); }, 50);
         }
@@ -7575,7 +7579,7 @@
           if (hidPlay && state === "play" && player && player.alive) xBan(_t("resumed"));
           hidPlay = false;
         });
-        document.addEventListener("touchmove", (e) => { if (!e.target.closest(".x-ov")) e.preventDefault(); }, { passive: false });
+        document.addEventListener("touchmove", (e) => { const t = e.target; if (!t || !t.closest || t.closest(".x-ov")) return; for (let n = t; n && n !== document.body && n !== document.documentElement; n = n.parentElement) { if (n.scrollHeight > n.clientHeight + 1 || n.scrollWidth > n.clientWidth + 1) { const c = getComputedStyle(n); if (/(auto|scroll)/.test(c.overflowY + " " + c.overflowX)) return; } } e.preventDefault(); }, { passive: false });
         document.addEventListener("gesturestart", (e) => e.preventDefault());
         document.addEventListener("contextmenu", (e) => e.preventDefault());
 
@@ -9417,7 +9421,7 @@
           o.rpc = rpc; o.call = call;
           // server error code -> i18n key
           const EK = { avatar_locked: "avatar_locked", invalid_avatar: "avatar_locked", unknown_item: "p12EUnk", not_authenticated: "p12EAuth", no_profile: "p12EAuth", insufficient_funds: "onE_funds", already_claimed: "onE_claimed", not_reached: "onE_reach", not_ready: "onE_reach", rate_limited: "onE_rate", banned: "onE_banned",
-            maintenance: "onE_maint", level_too_low: "onE_level", already_owned: "onE_owned", invalid_login: "onE_login", user_not_found: "onE_nouser", id_only: "jIdOnly", cannot_add_self: "onE_self",
+            maintenance: "onE_maint", level_too_low: "onE_level", already_owned: "onE_owned", match_not_open: "q13RevEnd", already_revived: "q13RevTwice", implausible_length: "q13RevLen", revive_not_allowed: "q13RevMode", too_short: "q13RevLen", invalid_track: "onErr", invalid_login: "onE_login", user_not_found: "onE_nouser", id_only: "jIdOnly", cannot_add_self: "onE_self",
             already_friends: "onE_already", friends_full: "onE_full", their_friends_full: "onE_full", gift_limit: "onE_giftlim", already_sent: "onE_giftsent", not_friends: "onE_notfr",
             blocked: "onE_notfr", purchases_disabled: "onE_off", pass_disabled: "onE_off", season_not_active: "onE_off", premium_required: "onE_off", net: "onNet",
             username_taken: "taken", invalid_username: "unameBad", user_already_exists: "emailTaken", email_exists: "emailTaken", weak_password: "weakPw", transaction_belongs_to_other_user: "onPayOther" };
@@ -10912,7 +10916,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13p" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13q" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -11813,11 +11817,11 @@
           SEC.b13cps = () => {
             const st = tryv(() => ON.st.stats, {}) || {}, p = tryv(() => ON.st.profile, {}) || {}, lv = tryv(lvInfo, { n: 1 }), t = tryv(() => B13.tier(lv.n), 0), lg = tryv(() => B13D.LG, null), me = lg && lg.me;
             const id = p.vip_id || p.player_id, role = p.role === "owner" ? "OWNER" : p.role === "admin" ? "ADMIN" : "";
-            const k = (v, l) => `<span class="h-stc"><b dir="ltr">${v}</b><small>${esc(l)}</small></span>`;
+            const k = (v, l, x) => `<span class="h-stc${x ? " " + x : ""}"><b dir="ltr">${v}</b><small>${esc(l)}</small></span>`;
             pch.innerHTML = `<div class="h-pcl"><button type="button" class="h-pav" data-b13hav="1" aria-label="${esc(_t("b13hEditAv"))}">${tryv(() => avH(P), "")}<b class="h-plv" dir="ltr">${lv.n}</b></button>` +
               `<div class="h-pnm"><b class="h-disp h-t1 h-stroke"><bdi>${esc(P.name || "—")}</bdi></b><div class="h-row">${id ? (B13H.rid || ((x) => "#" + x))(id) : ""}<span class="h-tier">${esc(_t("b13T" + t))}</span>${role ? `<span class="h-role">${role}</span>` : ""}</div>` +
               `<small class="h-mu">${esc(_t("b13hTapAv"))}</small></div></div>` +
-              `<div class="h-stg">${k(fmt(st.games), _t("games"))}${k(fmt(st.kills), _t("kills"))}${k(fmt(st.best_len), _t("b13hBest"))}${k(fmt(st.eat), _t("b13hEaten"))}${k(fmt(st.trophies), _t("trophies"))}${k(esc(_t("b13dT" + (me ? me.tier | 0 : 0))), _t("b13dLg"))}</div>`;
+              `<div class="h-stg">${k(fmt(st.games), _t("games"))}${k(fmt(st.kills), _t("kills"))}${k(fmt(st.best_len), _t("b13hBest"))}${k(fmt(st.eat), _t("b13hEaten"))}${k(fmt(st.trophies), _t("trophies"))}${k(esc(_t("b13dT" + (me ? me.tier | 0 : 0))), _t("b13dLg"), "h-stl")}</div>`;
           };
           pch.addEventListener("click", (e) => { if (e.target.closest("[data-b13hav]")) { const a = $("b13cav"); if (a) a.scrollIntoView({ block: "start", behavior: "smooth" }); } });
 
@@ -13151,7 +13155,7 @@
             overVis().then((ok) => {
               if (!ok || state !== "over") return;
               const tg = [...document.querySelectorAll(".p10-pl.c")].find((e) => e.getClientRects().length) || null;
-              const win = st && +st.placement === 1 && +st.field_size >= 4;
+              const win = st && +st.placement === 1 && +st.field_size >= 4; if (win) { const kb = $("sskb") || document.querySelector("#pxrank .j-dc"); if (kb) kb.classList.add("x-hide"); }
               setTimeout(() => {
                 if (state !== "over") return;
                 const go = coins > 0 ? so.celebrate("coins", { from: $("pxrews").firstElementChild || "#pxrews", to: tg, amount: Math.min(coins, 280) }) : Promise.resolve();
@@ -17460,6 +17464,31 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
 #nfsb .ofx-c .px-bt button { width: 100%; min-height: 34px; }
 #nfsb .ofx-c .px-bt button.ofx-arm { background: linear-gradient(180deg, #ffcc33, #f0a500) !important; color: #1a1206 !important; font-size: 11px; }
 .p13-orig { word-break: break-word; }
+</style>
+<style id="ss13q-scroll">
+/* every horizontal scroller: native two-axis panning; the browser picks the axis, the track keeps horizontal overscroll to itself */
+.px-scr, .px-car, .nf-track, #menu .x-glass .x-skins, #skins, .on-tabs, .px-tabs2, #menu .x-mode, .h-tabs, .k-mrs, .ofx-row, .s13q-hs, .b13-pb, .ss-rp .ss-rpl, .ss-card {
+  touch-action: pan-x pan-y !important; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+.px-scr *, .px-car *, .nf-track *, .on-tabs *, .px-tabs2 *, .h-tabs *, .k-mrs *, #menu .x-mode * { touch-action: pan-x pan-y; }
+</style>
+<style id="ss13q-stats">
+.k-sg { align-items: stretch; }
+.k-st { height: auto !important; min-height: 56px; overflow: visible; box-sizing: border-box; }
+.k-st > * { flex: none !important; max-width: 100%; }
+.k-st small { line-height: 1.2; padding-bottom: 1px; white-space: normal !important; overflow-wrap: normal; }
+.k-st b { line-height: 1.15; }
+.k-st b em { white-space: nowrap; }
+#b13hpch .h-stc { height: auto; min-height: 44px; overflow: visible; box-sizing: border-box; }
+#b13hpch .h-stc > * { flex: none; }
+#b13hpch .h-stc small { white-space: normal !important; text-overflow: clip !important; overflow: visible !important; line-height: 1.15; text-align: center; }
+#b13hpch .h-stc.h-stl b { font-size: 13px; white-space: normal; text-overflow: clip; overflow: visible; text-align: center; }
+</style>
+<style id="ss13q-ui">
+.q13-coin { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.2em; margin-inline-start: 2px; background: url(ui/ic/coin.webp?v=13h1) center / contain no-repeat; }
+/* no rubber-band past an overlay's own edges (iOS showed the background above GAME OVER when dragged down) */
+html, body { overscroll-behavior: none; overflow: hidden; } body { position: fixed; inset: 0; width: 100%; height: 100%; }
+.x-ov { overscroll-behavior: none; }
+.x-ov .x-box, .x-ov [class*="-gr"], .x-ov ol, .x-spane { overscroll-behavior: contain; }
 </style>
 </body>
 </html>
