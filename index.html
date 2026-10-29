@@ -1271,7 +1271,7 @@
         <p class="x-chal x-hide" id="nfmapb" role="status" dir="auto"></p>
         <input class="x-name x-hide" id="room" maxlength="8" placeholder="كود الغرفة (اختياري)" data-i18n-ph="roomPh" autocomplete="off" aria-label="كود الغرفة" data-i18n-al="roomPh" />
         <div class="x-col x-hide" id="tml" style="width:100%;gap:8px;align-items:stretch">
-          <div class="x-seg" data-k="tf" style="width:100%"><button data-v="1" data-i18n="tf1">فردي</button><button data-v="2" data-i18n="tf2">ثنائي</button><button data-v="3" data-i18n="tf3">فرقة ثلاثية</button></div>
+          <div class="x-seg" data-k="tf" style="width:100%"><button data-v="1" data-i18n="tf1">فردي</button><button data-v="2" data-i18n="tf2">ثنائي</button><button data-v="3" data-i18n="tf3">ثلاثي</button><button data-v="4" data-i18n="tf4">فرقة رباعية</button></div>
           <div class="x-seg" id="tmt" style="width:100%"><button data-tt="l" data-i18n="tLobby">الفريق</button><button data-tt="b" data-i18n="tBoard">ترتيب الفرق</button></div>
           <div id="tmc" aria-live="polite"></div>
         </div>
@@ -2333,7 +2333,15 @@
         teamLose: ["خسر فريقك", "Your team lost", "Takımın kaybetti", "Ton équipe a perdu", "Tu equipo perdió", "आपकी टीम हारी"],
         tf1: ["فردي", "Solo", "Tekli", "Solo", "Individual", "सोलो"],
         tf2: ["ثنائي", "Duo", "İkili", "Duo", "Dúo", "डुओ"],
-        tf3: ["فرقة ثلاثية", "Squad", "Üçlü", "Escouade", "Escuadra", "स्क्वाड"],
+        tf3: ["ثلاثي", "Trio", "Üçlü", "Trio", "Trío", "ट्रायो"],
+        tf4: ["فرقة رباعية", "Squad", "Dörtlü", "Escouade", "Escuadra", "स्क्वाड"],
+        tmSpec: ["ترجع بعد {s} ث · تتفرج على {x}", "Respawn in {s}s · watching {x}", "{s} sn sonra dönüş · izlenen {x}", "Retour dans {s} s · tu regardes {x}", "Reapareces en {s} s · viendo a {x}", "{s} से. में वापसी · देख रहे {x}"],
+        tmNext: ["الزميل التالي", "Next teammate", "Sonraki takım arkadaşı", "Coéquipier suivant", "Siguiente compañero", "अगला साथी"],
+        tmGoW: ["فاز فريقك! المركز الأول من {n} فرق", "Your team won! #1 of {n} teams", "Takımın kazandı! {n} takım içinde 1.", "Ton équipe gagne ! 1re sur {n}", "¡Tu equipo ganó! #1 de {n}", "आपकी टीम जीती! {n} में #1"],
+        tmGoL: ["فريقك بالمركز {r} من {n} فرق", "Your team finished #{r} of {n}", "Takımın {n} içinde {r}. oldu", "Ton équipe finit {r}e sur {n}", "Tu equipo quedó #{r} de {n}", "आपकी टीम {n} में #{r}"],
+        tmOut: ["خرج", "Out", "Elendi", "Éliminée", "Eliminado", "बाहर"],
+        tmRsp: ["يرجع", "Respawning", "Dönüyor", "Réapparaît", "Reaparece", "वापसी"],
+        tmAlive: ["عايشين {a}/{n}", "{a}/{n} alive", "{a}/{n} hayatta", "{a}/{n} en vie", "{a}/{n} vivos", "{a}/{n} जीवित"],
         tLobby: ["الفريق", "Lobby", "Lobi", "Salon", "Sala", "लॉबी"],
         tBoard: ["ترتيب الفرق", "Team leaderboard", "Takım sıralaması", "Classement équipes", "Clasificación de equipos", "टीम लीडरबोर्ड"],
         tVs: ["فريقك ضد {n} فرق بوتات", "Your team vs {n} bot teams", "Takımın, {n} bot takımına karşı", "Ton équipe contre {n} équipes de bots", "Tu equipo contra {n} equipos de bots", "आपकी टीम बनाम {n} बॉट टीमें"],
@@ -3010,7 +3018,7 @@
         let QL = 1, QC = QCFG.h;
         function resize() {
           QL = Math.max(0, QS.indexOf(Q)); QC = QCFG[QS[QL]];
-          dpr = Math.min(window.devicePixelRatio || 1, QC.dpr); // 3 only on Ultra
+          dpr = Math.min(window.devicePixelRatio || 1, QC.dpr, window.__ssBsv ? 1.5 : 2); // 13s1: max 2 (1.5 in Battery saver)
           W = innerWidth; H = innerHeight; // landscape only: portrait is covered by the rotate screen, never rotated in software
           dprU = dpr; { const budget = [1.6e6, 3.7e6, 5.0e6, 6.5e6, 8.3e6][QL] || 3.7e6; dpr = Math.max(0.5, Math.min(dpr, Math.sqrt(budget / Math.max(1, W * H)))); dpr = Math.max(0.5, dpr * DRS); }
           cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
@@ -3317,8 +3325,10 @@
         // MODES: n classic, t teams, s survival, r ranked (rating), d daily, p private, l league. MD is the running match's mode
         let MD = "n", PB = 0, ROOM = "", tmRes = "";
         // team colors [marker, skin] (yours first), invited friend keys, bot count of a running team match, lobby tab
-        const TC = [["🔵", 1], ["🔴", 4], ["🟡", 3], ["🟣", 2]];
+        const TC = [["🔵", 1, "#00e5ff"], ["🔴", 4, "#ff3b1f"], ["🟡", 3, "#ffe600"], ["🟣", 2, "#ff2bd6"], ["🟢", 0, "#39ff14"], ["⚪", 5, "#ffffff"], ["🟠", 10, "#ff8a00"], ["🟤", 15, "#c9a46a"],
+          ["🟦", 11, "#6fd8ff"], ["🟪", 9, "#7a2cff"], ["🟩", 12, "#13d65a"], ["🟥", 13, "#e3121b"], ["🟨", 8, "#ffd700"], ["⚫", 14, "#6b7a2a"], ["🌈", 6, "#ff66cc"], ["🪩", 7, "#b45cff"]];
         let TI = [], TN = 0, tTab = "l";
+        const TMS = { sz: 2, n: 4, el: {}, spec: null, t0: 0, lim: 300, res: "", fin: 0 }; // 13s1 team match state
         const TXK = ["boss", "gold", "gift", "match", "lvl", "buy", "chest", "wheel", "mis", "league", "daily", "team", "surv", "rank", "gx", "pack", "ach", "fgift", "tp", "rev", "myst", "lm", "rp", "shop2", "crate", "story", "word", "admin", "migrate", "iap", "iap_refund", "pass", "stripe", "stripe_refund", "apple_iap", "apple_iap_refund", "apple_iap_sandbox", "offer"];
         const RT_T = [0, 1100, 1300, 1500, 1800], rtTier = (r) => RT_T.filter((x) => r >= x).length - 1;
         // every coin or gem change goes through pay(), which keeps the last 40 in the transaction log (P.tx: [unix s, reason, amount, "c"|"g"])
@@ -4304,8 +4314,8 @@
             const p = s.seg[i];
             addFood(p.x + rnd(-10, 10), p.y + rnd(-10, 10), rnd(2.4, 4.4), segColor(s.skin, i));
           }
-          if (s === player) { sDeath(); shake(11); nfDeath(s); if (revOk()) revOpen(); else gameOver(); }
-          else { s.respawn = 2; if (player && player.alive && Math.hypot(s.seg[0].x - player.seg[0].x, s.seg[0].y - player.seg[0].y) < 600) pendImp = true; }
+          if (s === player) { sDeath(); shake(11); nfDeath(s); if (TMS.die(s)) return; if (revOk()) revOpen(); else gameOver(); }
+          else { s.respawn = 2; TMS.die(s); if (player && player.alive && Math.hypot(s.seg[0].x - player.seg[0].x, s.seg[0].y - player.seg[0].y) < 600) pendImp = true; }
         }
         function syncBots() {
           const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || nfBotN() || Math.min(45, Math.max(2, (L.on ? Math.min(40, Math.round((8 + L.round * 4) * A / 4500)) : Math.min(45, Math.round((MD === "p" ? PB * A / A0 * 1.18 : (window.__s13sOpp ? __s13sOpp(S.bots, S.q, A / A0, state === "play" ? AD.bAdd : 0) : S.bots * A / A0 * 1.18))))) + (state === "play" ? AD.bAdd : 0)));
@@ -5364,7 +5374,7 @@
         const MM = document.createElement("canvas"), mmg = MM.getContext("2d"); let mmT = 0, mmK = "";
 
         function draw() {
-          const focus = player && player.alive ? player : state === "menu" ? snakes.find((s) => s.alive) : null;
+          const focus = player && player.alive ? player : TMS.spec && state === "play" ? TMS.watch() : state === "menu" ? snakes.find((s) => s.alive) : null;
           if (focus) B13C.cam(focus); // build13c: automatic camera (follow + look-ahead, zoom by length / boost)
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
           const M = MAPS[mapI], ak0 = A / A0; ctx.fillStyle = M.bg; ctx.fillRect(0, 0, W, H);
@@ -6101,7 +6111,7 @@
           if (CFG.mt && !isStaff() && !(ON.st && ON.st.is_admin)) { L.on = false; if (state !== "menu") home(); else show("mnt"); return; } // maintenance: admin only
           if (!KV.get("ss-tut")) { tuOpen(); return; } // first match ever: the 4-card tutorial runs first
           beep(660, 0.12, "triangle", 0.05, 990);
-          MD = L.on ? "l" : nfMode() ? "n" : S.mode; tmRes = "";
+          MD = L.on ? "l" : nfMode() ? "n" : S.mode; tmRes = ""; if (MD === "t" && (S.tf | 0) <= 1) MD = "n"; // 13s1: Solo = Classic free-for-all
           if (MD === "p") { // the room code seeds the map and bot count, so the same code gives the same match
             ROOM = ($("room").value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "") || Math.random().toString(36).slice(2, 8)).toUpperCase().slice(0, 8);
             let h = 7; for (const c of ROOM) h = (h * 31 + c.charCodeAt(0)) >>> 0;
@@ -6111,7 +6121,8 @@
           if (A !== Math.round(A0 * (MAPS[mapI].sz || 1))) setMap(mapI);
           snakes = snakes.filter((s) => s.bot); adStart();
           if (MD === "d") { AD.mod = Object.keys(AD_MODS)[today() % 4]; adMod(); }
-          TN = MD === "t" ? tCnt() * tSz() - 1 : 0; syncBots(); tSetup();
+          if (MD === "t") { TMS.sz = tSz(); TMS.n = tCntFor(); TMS.el = {}; TMS.spec = null; TMS.t0 = time; TMS.res = ""; TMS.fin = 0; TMS.ui(); }
+          TN = MD === "t" ? TMS.n * TMS.sz - 1 : 0; syncBots(); tSetup();
           for (const s of snakes) { if (MD === "s") Object.assign(s, makeSnake(s.name, s.skin, true), { len: rnd(20, 70) }); }
           player = makeSnake(((ON.on && P.name) ? P.name : $("nick").value.replace(CTRL0g, "").trim().slice(0, 20)) || P.name || _t("you"), skin, false);
           snakes.push(player); if (MD === "t") player.tm = 0;
@@ -6129,14 +6140,47 @@
         }
         // no pause: a match only ends by dying, the league clock, or exiting (a forfeit that counts as a death)
         const xq = () => $("xq");
-        function askExit() { if (state === "play" && player && player.alive) { xq().classList.remove("x-hide"); $("xqn").focus(); } }
+        function askExit() { if (state === "play" && player && (player.alive || (MD === "t" && TMS.spec))) { xq().classList.remove("x-hide"); $("xqn").focus(); } }
         function closeExit() { xq().classList.add("x-hide"); }
         function forfeit() {
           closeExit();
-          if (state !== "play" || !player || !player.alive) return;
+          if (state !== "play" || !player) return;
+          TMS.left = 1; // 13s1: leaving is final in every mode (no team respawn)
+          if (!player.alive) { if (MD === "t" && TMS.spec) { TMS.spec = null; TMS.ui(); gameOver(); } return; }
           player.inv = 0; player.shield = 0; player.psh = 0; rvUsed = true; kill(player);
         }
         function toggleMute() { S.sound = S.sound ? 0 : 1; applySettings(); }
+        // ---- 13s1: leave on app close = result as of that moment ----
+        const LV13 = (() => {
+          const K = "ss-left13";
+          const get = () => { try { return JSON.parse(localStorage.getItem(K) || "null"); } catch (_) { return null; } };
+          const clr = () => { try { localStorage.removeItem(K); } catch (_) {} };
+          const snap = () => {
+            try {
+              if (state !== "play" || !player || !ON.on || !ON.mid || cur !== "@on") return null;
+              const ex = { end: "left" }; if (L.on) { ex.league_round = L.round; ex.league_qualified = false; }
+              const st = ON.stats(Math.floor(player.len), ex);
+              const v = { uid: ON.uid, mid: ON.mid, st, at: Date.now() }; localStorage.setItem(K, JSON.stringify(v)); return v;
+            } catch (_) { return null; }
+          };
+          document.addEventListener("visibilitychange", () => { if (document.hidden) snap(); else if (state === "play") clr(); });
+          addEventListener("pagehide", () => { const v = (state === "play" && snap()) || null; if (v && ON.beacon) ON.beacon("submit_match", { p_match_id: v.mid, p_stats: v.st }); });
+          let busy = false;
+          const flush = async () => { // a snapshot from a match that was closed: land it once we are signed in again and not playing
+            const v = get(); if (!v || busy) return;
+            if (Date.now() - v.at > 6 * 3600e3) { clr(); return; }
+            if (!ON.on || ON.uid !== v.uid || state === "play") return;
+            busy = true;
+            try { await ON.rpc("submit_match", { p_match_id: v.mid, p_stats: v.st }); clr(); try { ON.sync(); } catch (_) {} }
+            catch (e) { if (!e || e.code !== "net") clr(); }
+            finally { busy = false; }
+          };
+          setInterval(flush, 5000);
+          setTimeout(() => { try { if (typeof NFH === "object" && NFH && NFH.start) NFH.start.push(() => { TMS.left = 0; }); } catch (_) {} }, 0);
+          return { snap, get, clr, flush };
+        })();
+        window.__LV13 = LV13;
+
         function home() {
           nfHome(); closeExit(); revHide(); state = "menu"; release(); L.on = false; MD = "n"; TN = 0; tSetup(); paintMode();
           if (pendRem) { pendRem = false; setTimeout(() => toast(_t("saveRem")), 300); }
@@ -6242,6 +6286,7 @@
             $("lvpt").textContent = mx ? _t("lvMax", { l: v.n }) : _t("lvNext", { l: v.n, x: v.need - v.x, n: v.n + 1 }); }
           SHR.lv = level(); setTimeout(shareCard, 0);
           $("earn").textContent = `+${co} 🪙 · +${xp} ${_t("xp")}` + (level() > lv ? ` · ${_t("newLv")} ${level()}! 🎉 ${_t("lvRew")} +${rw} 🪙` : "") + (tmRes ? " · " + tmRes : "");
+          try { LV13.clr(); } catch (_) {}
           if (!L.on) ON.over(onS);
           nfOver(l);
           release();
@@ -6251,7 +6296,10 @@
 
         // TEAMS: S.tf players a team (1 solo, 2 duo, 3 squad); your team vs 3 bot teams (2 in squad). Your slots take invited friends
         // (accounts on this device, steered by the computer) first, then bots; every bot is named with 🤖
-        const tCnt = () => (S.tf === 3 ? 3 : 4), tSz = () => (S.tf === 3 ? 5 : 4);
+        const tSz = () => Math.max(2, Math.min(4, S.tf | 0)); // 13s1: Duo 2 · Trio 3 · Squad 4 per team (Solo plays Classic)
+        const tOpp = () => { try { return window.__s13sOpp ? window.__s13sOpp(S.bots, S.q, A / A0, 0) : S.bots; } catch (_) { return S.bots || 30; } };
+        const tCntFor = () => Math.max(2, Math.min(TC.length, Math.round((tOpp() + 1) / tSz())));
+        const tCnt = () => (state === "play" || state === "over" ? TMS.n : tCntFor());
         function tSetup() {
           $("tmr").classList.add("x-hide");
           const f = S.tf, bots = snakes.filter((s) => s.bot && !s.ad);
@@ -6294,17 +6342,97 @@
           else if (b.dataset.ti !== undefined) { const k = b.dataset.ti; TI = TI.includes(k) ? TI.filter((x) => x !== k) : [...TI, k]; paintTeam(); beep(620, 0.08, "triangle", 0.05, 900); }
         });
 
+
+        // ===================== 13s1 team match system (TMS) =====================
+        {
+          const mates = (t, alive) => snakes.filter((s) => s.tm === t && !s.ad && (!alive || s.alive));
+          const fmtT = (x) => { x = Math.max(0, Math.ceil(x)); return Math.floor(x / 60) + ":" + String(x % 60).padStart(2, "0"); };
+          TMS.order = (sc) => sc.map((v, i) => i).sort((a, b) => { const ea = TMS.el[a], eb = TMS.el[b];
+            if (ea === undefined && eb === undefined) return sc[b] - sc[a]; if (ea === undefined) return -1; if (eb === undefined) return 1; return eb - ea; });
+          TMS.watch = () => { const m = mates(0, true).filter((s) => s !== player); if (!m.length) return null; TMS.spec.i = ((TMS.spec.i | 0) % m.length + m.length) % m.length; return m[TMS.spec.i]; };
+          let box = null;
+          TMS.ui = () => {
+            if (!box) { box = document.createElement("div"); box.id = "tmsp"; box.className = "tmsp x-hide"; box.setAttribute("role", "status");
+              box.innerHTML = `<span class="tmsp-t" aria-live="polite"></span><button type="button" class="tmsp-n" data-tmsn="1"></button>`; document.body.appendChild(box);
+              box.addEventListener("click", (e) => { if (e.target.closest("[data-tmsn]") && TMS.spec) { e.preventDefault(); e.stopPropagation(); TMS.spec.i = (TMS.spec.i | 0) + 1; TMS.paint(); } }); }
+            box.classList.toggle("x-hide", !(TMS.spec && state === "play" && MD === "t")); box.dir = LANG === "ar" ? "rtl" : "ltr";
+          };
+          TMS.paint = () => { if (!box || !TMS.spec) return; const w = TMS.watch();
+            box.querySelector(".tmsp-t").textContent = "💀 " + _t("tmSpec", { s: Math.max(0, Math.ceil(TMS.spec.at - time)), x: w ? String(w.name || "") : "—" });
+            const nb = box.querySelector(".tmsp-n"); nb.textContent = "👁 " + _t("tmNext"); nb.hidden = mates(0, true).filter((s) => s !== player).length < 2; };
+          const out = (t) => { // the whole team is dead at once: eliminated, nobody of it respawns
+            if (TMS.el[t] !== undefined) return; TMS.el[t] = time;
+            for (const s of mates(t, false)) if (s !== player) s.respawn = Infinity;
+          };
+          const winCheck = () => { if (TMS.fin || state !== "play") return; const left = []; for (let t = 0; t < TMS.n; t++) if (TMS.el[t] === undefined) left.push(t);
+            if (left.length <= 1) TMS.finish(); };
+          TMS.die = (s) => { // returns true when the player's death must NOT end his match (a teammate is still alive)
+            if (MD !== "t" || s.tm === undefined || TMS.fin) return false;
+            if (s === player && TMS.left) { TMS.spec = null; TMS.ui(); if (!mates(s.tm, true).filter((x) => x !== s).length) out(s.tm); return false; } // 13s1: left the match
+            const live = mates(s.tm, true).filter((x) => x !== s);
+            if (live.length) {
+              if (s === player) { TMS.spec = { at: time + 30, i: 0 }; TMS.ui(); TMS.paint(); return true; }
+              s.respawn = 30; return false;
+            }
+            out(s.tm);
+            if (s === player) { TMS.spec = null; TMS.ui(); winCheck(); return TMS.fin ? true : false; }
+            if (s.tm === 0 && TMS.spec) { TMS.spec = null; TMS.ui(); if (state === "play") gameOver(); return false; } // my last teammate fell while I was waiting: team out
+            winCheck(); return false;
+          };
+          TMS.finish = () => { if (TMS.fin || state !== "play") return; TMS.fin = 1; TMS.spec = null; TMS.ui();
+            if (player && player.alive) { player.inv = 1e9; try { sKill(); } catch (_) {} } gameOver(); };
+          TMS.tick = () => {
+            if (MD !== "t" || state !== "play") { if (box && !box.classList.contains("x-hide")) TMS.ui(); return; }
+            if (TMS.spec) {
+              if (time >= TMS.spec.at && TMS.el[0] === undefined) { // back in at a safe spot, small, with spawn protection
+                const keep = { name: player.name, skin: player.skin, tm: 0, hat: player.hat, trail: player.trail, kills: player.kills, fk13: player.fk13, u: player.u };
+                Object.assign(player, makeSnake(player.name, player.skin, false), keep); player.inv = 2; player.pX = null;
+                const h = player.seg[0]; cam.x = h.x; cam.y = h.y; cam.vx = cam.vy = 0; TMS.spec = null; TMS.ui();
+              } else if (!TMS.watch()) { TMS.spec.i = 0; } else TMS.paint();
+            }
+            if (time - TMS.t0 >= TMS.lim) TMS.finish();
+          };
+          TMS.hud = () => { const sc = tScores(), rk = TMS.order(sc), me = rk.indexOf(0), left = TMS.lim - (time - TMS.t0);
+            const al = mates(0, true).length, nl = sc.filter((_, t) => TMS.el[t] === undefined).length;
+            return `${TC[0][0]} ${Math.floor(sc[0])} · #${me + 1}/${nl} · 👥 ${_t("tmAlive", { a: al, n: TMS.sz })} · ⏱ ${fmtT(left)}`; };
+          const pers = (n) => { try { const S2 = window.__SSB; return S2 && S2.isP && S2.isP(n) ? S2.persona(String(n).replace(/^[^\p{L}\p{N}]+/u, "")) : null; } catch (_) { return null; } };
+          const lvC = (v) => `<small class="ssb-lv">${esc(_t("ssbLvl"))} <b dir="ltr">${v | 0}</b></small>`;
+          TMS.board = (sc, rk) => {
+            TMS.rows = [];
+            const card = (t, i) => {
+              const ms = mates(t, false).sort((a, b) => (b === player) - (a === player) || b.len - a.len), ol = TMS.el[t] !== undefined;
+              const mh = ms.map((s) => {
+                const k = TMS.rows.push(s) - 1, me = s === player, p = me ? null : pers(s.name);
+                const av = me ? avH(P) : p ? (() => { try { return B13G.h(p.av, "ssb-pt ssb-ps"); } catch (_) { return "🐍"; } })() : "🐍";
+                const lv = me ? level() : p ? p.lv : B13C.lvOf(s), id = me ? (() => { try { const q = ON.st.profile; return q.vip_id || q.player_id; } catch (_) { return 0; } })() : 0;
+                const stt = s.alive ? "" : ol ? "✖" : "⏳";
+                return `<button type="button" class="tmb-m${me ? " me" : ""}${s.alive ? "" : " dead"}" data-tmw="${k}"><span class="tmb-av">${av}</span><span class="tmb-nm"><b><bdi>${esc(String(s.name || ""))}</bdi></b>` +
+                  `<span class="tmb-sub">${lvC(lv)}${id ? `<small class="tmb-id" dir="ltr">#${Number(id).toLocaleString("en-US")}</small>` : ""}</span></span><span class="tmb-l" dir="ltr">${stt ? stt + " " : ""}${Math.floor(s.len)}</span></button>`;
+              }).join("");
+              return `<div class="tmb-t${t ? "" : " own"}${ol ? " out" : ""}" style="--tc:${TC[t][2]}"><div class="tmb-h"><i dir="ltr">${i + 1}</i><b>${TC[t][0]} ${esc(t ? _t("tTeam", { n: t + 1 }) : _t("tYours"))}</b>` +
+                `${ol ? `<small class="tmb-out">${esc(_t("tmOut"))}</small>` : ""}<span dir="ltr">${Math.floor(sc[t])}</span></div><div class="tmb-ms">${mh}</div></div>`;
+            };
+            return `<h3>🏁 ${esc(_t("tBoard"))}</h3>` + rk.map(card).join("");
+          };
+          document.addEventListener("click", (e) => {
+            const b = e.target && e.target.closest && e.target.closest("#tmr [data-tmw]"); if (!b) return;
+            const s = (TMS.rows || [])[+b.dataset.tmw]; if (!s) return; e.preventDefault();
+            if (s === player) { try { __K.openProfile("p"); } catch (_) {} return; }
+            try { if (window.__SSB && __SSB.isP(s.name)) return __SSB.open(String(s.name), { n: String(s.name), len: Math.round(s.len || 0), sk: s.skin, bot: 1 }); } catch (_) {}
+            try { window.__SM && __SM.openWho({ n: String(s.name), len: Math.round(s.len || 0), sk: s.skin, bot: 1 }); } catch (_) {}
+          }, true);
+          if (typeof NFH === "object" && NFH.home) NFH.home.push(() => { TMS.spec = null; TMS.ui(); });
+        }
         // per-mode result line for the game-over screen; pays gems and moves the ranked rating
         function modeEnd(l) {
           const rivals = snakes.filter((s) => s !== player && s.alive && !s.ad);
           if (MD === "s" && player.alive) { if (player.kills < 2) return "⚔️ " + B13.winNote(); pay(30, "surv"); PST.sw++; return _t("survWin"); }
           if (MD === "t") { // rank the teams by shared score, then move the team rating (Elo vs each bot team)
-            const sc = tScores(l), rk = sc.map((v, i) => i).sort((a, b) => sc[b] - sc[a]), me = rk.indexOf(0), w = me === 0, rb = 900 + S.diff * 100;
-            const dl = Math.round((32 / (sc.length - 1)) * sc.slice(1).reduce((a, v) => a + (sc[0] >= v ? 1 : 0) - 1 / (1 + 10 ** ((rb - P.tr) / 400)), 0));
+            const sc = tScores(l), rk = TMS.order(sc), me = rk.indexOf(0), w = me === 0, rb = 900 + S.diff * 100;
+            const dl = Math.round((32 / (sc.length - 1)) * sc.slice(1).reduce((a, v, j) => a + (me < rk.indexOf(j + 1) ? 1 : 0) - 1 / (1 + 10 ** ((rb - P.tr) / 400)), 0));
             P.tr = Math.max(0, P.tr + dl); P.tg++; if (w) { pay(15, "team"); PST.tw++; }
             const $r = $("tmr"); $r.classList.remove("x-hide");
-            $r.innerHTML = `<h3>🏁 ${_t("tBoard")}</h3>` + rk.map((t, i) => `<div class="x-it${t ? "" : " own"}"><i>${i + 1}</i><b>${TC[t][0]} ${t ? _t("tTeam", { n: t + 1 }) : _t("tYours")}<small>${
-              esc(t ? snakes.filter((s) => s.tm === t && !s.ad).map((s) => s.name).join(" · ") : [player.name, ...snakes.filter((s) => s.tm === 0 && s !== player).map((s) => s.name)].join(" · "))}</small></b><span>${Math.floor(sc[t])}</span></div>`).join("");
+            $r.innerHTML = TMS.board(sc, rk); TMS.res = _t(w ? "tmGoW" : "tmGoL", { r: me + 1, n: sc.length });
             return _t(w ? "teamWin" : "teamLose") + " · " + _t("tRes", { r: me + 1, n: sc.length, x: P.tr, d: (dl >= 0 ? "+" : "") + dl });
           }
           if (MD === "r") {
@@ -6319,7 +6447,7 @@
         // daily challenge: today's modifier and length goal come from the date
         const dGoal = () => 120 + ((cur === "@on" && ON.dayN ? ON.dayN : today()) % 6) * 30;
         function modeHud() {
-          if (MD === "t") return tScores().map((v, i) => `${TC[i][0]} ${Math.floor(v)}`).join(" · ");
+          if (MD === "t") return TMS.hud();
           if (MD === "s") return "⚔️ " + _t("survLeft", { n: snakes.filter((x) => x.bot && !x.ad && x.alive).length });
           if (MD === "r") return `${TE[rtTier(P.rt)]} ${_t("rating")} ${P.rt}`;
           if (MD === "d") return P.dc === today() ? _t("dDone") : `🎯 ${player ? Math.floor(player.len) : 0}/${dGoal()}`;
@@ -6327,6 +6455,7 @@
           return "";
         }
         function modeTick() {
+          TMS.tick();
           if (state !== "play" || !player || !player.alive) return;
           if (MD === "s" && !snakes.some((x) => x.bot && !x.ad && x.alive)) { player.inv = 1e9; sKill(); gameOver(); }
           else if (MD === "d" && P.dc !== today() && player.len >= dGoal()) { P.dc = today(); PST.dly++; pay(0, "daily", 1); profile(); xBan(_t("dGot")); beep(784, 0.3, "triangle", 0.06, 1568); }
@@ -7240,7 +7369,7 @@
         // cat: "c" classic skins or "f" flags (A-Z, searchable, shown FL_PAGE at a time so weak phones never build 197 rows at once)
         const SF = { q: "", r: -1, o: "a", s: "d", sel: -1, cat: "c", lim: FL_PAGE };
         const skOwn = (i) => !SKINS[i].p || !!P.own["s" + i];
-        const skCost = (s) => s.cur === "usd" ? `<bdi dir="ltr">${B13.ios() ? "🌐" : B13.money(s.p)}</bdi>` : `<bdi dir="ltr">${s.p} ${s.cur ? "💎" : "🪙"}</bdi>`;
+        const skCost = (s) => s.cur === "usd" ? `<bdi dir="ltr">${B13.ios() ? "🌐" : B13.money(s.p)}</bdi>` : `<bdi dir="ltr">${s.p} ${s.cur ? "💎" : '<i class="q13-coin" aria-hidden="true"></i>'}</bdi>`;
         const skSub = (i) => { const s = SKINS[i], lv = skinLv(s);
           return skOwn(i) ? _t(s.p ? "owned" : "skFree") : (level() < lv ? `🔒 ${_t("requires")} ${_t("lvl")} ${lv} · ` : "") + skCost(s); };
         function skBtn(i) {
@@ -7386,7 +7515,7 @@
         profile();
 
         let toastT = 0;
-        function toast(m) { const t = $("toast"); t.textContent = m; t.classList.remove("x-hide"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.add("x-hide"), 2200); }
+        function toast(m) { const t = $("toast"); if (/🪙/.test(String(m))) t.innerHTML = esc(String(m)).replace(/🪙/g, '<i class="q13-coin" aria-hidden="true"></i>'); else t.textContent = m; t.classList.remove("x-hide"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.add("x-hide"), 2200); }
         $("tabs").addEventListener("click", (e) => {
           const b = e.target.closest("button[data-t]"); if (!b) return;
           [...$("tabs").children].forEach((x) => x.classList.toggle("on", x === b));
@@ -7689,13 +7818,42 @@
           } catch (_) { bgCovV = false; }
           return bgCovV;
         }
+
+        // ---- 13s1 perf: battery saver + loop parking ----
+        const BSV = (() => { let on = false, cap = window.__ssCap || 0; try { on = localStorage.getItem("ss-bsv") === "1"; } catch (_) {}
+          try { Object.defineProperty(window, "__ssCap", { configurable: true, get: () => (on ? 30 : cap), set: (v) => { cap = +v || 0; } }); } catch (_) {}
+          try { Object.defineProperty(window, "__ssBsv", { configurable: true, get: () => on }); } catch (_) {}
+          const set = (v) => { on = !!v; try { localStorage.setItem("ss-bsv", on ? "1" : "0"); } catch (_) {} try { resize(); } catch (_) {} try { if (window.B13H && B13H.paint) B13H.paint(); } catch (_) {} };
+          window.__ssBsvSet = set; return { set, get on() { return on; } }; })();
+        const PK13 = { parked: false, tm: 0, lt: 0, ema: 0, hot: 0, cd: 0, told: false };
+        PK13.skPv = () => !($("shop").classList.contains("x-hide") || $("items").classList.contains("x-hide"));
+        PK13.need = () => {
+          if (document.hidden) return false;
+          if (state === "play") return true;
+          const now = performance.now(), gv = !$("game").classList.contains("x-hide");
+          if (state !== "menu" && gv) return true;                                   // death moment / revive / league round end: arena still on screen
+          if (state === "menu" && mFz === 0 && !(menuOpq(now) || bgCov(now)) && gv) return true; // menu backdrop needs its one still frame
+          return prevVis(now) || PK13.skPv();                                          // live previews (home skin, shop skin)
+        };
+        PK13.poll = () => { PK13.tm = 0; if (PK13.need()) { PK13.parked = false; last = performance.now(); requestAnimationFrame(loop); } else PK13.tm = setTimeout(PK13.poll, document.hidden ? 400 : 100); };
+        PK13.sched = () => { if (PK13.need()) requestAnimationFrame(loop); else if (!PK13.tm) { PK13.parked = true; PK13.tm = setTimeout(PK13.poll, document.hidden ? 400 : 100); } };
+        document.addEventListener("visibilitychange", () => { if (!document.hidden && PK13.parked && PK13.tm) { clearTimeout(PK13.tm); PK13.poll(); } });
+        PK13.cpu = (ms, raw) => { // adaptive: sustained CPU time per frame above budget → one quality step down
+          if (state !== "play" || raw > 0.25) return; PK13.ema = PK13.ema ? PK13.ema * 0.95 + ms * 0.05 : ms;
+          if (PK13.cd > 0) { PK13.cd -= raw; return; }
+          const bud = window.__ssCap ? 22 : 12; PK13.hot = PK13.ema > bud ? PK13.hot + raw : 0;
+          if (PK13.hot >= 3 && QL > 1) { S.q = QS[QL - 1]; applySettings(); PK13.hot = 0; PK13.cd = 6; PK13.ema = 0; try { aqReset(6); } catch (_) {}
+            if (!PK13.told) { PK13.told = true; try { toast(_t("aqDown", { x: _t(QN[S.q]) })); } catch (_) {} } }
+        };
+        window.__PK = PK13;
+        try { Object.assign(I18N, { bsvHint: ["30 إطار بالثانية ودقة أقل: الجهاز يبرد والبطارية تطول", "30 fps and lower resolution: the phone stays cooler and the battery lasts longer", "30 fps ve daha düşük çözünürlük: telefon serin kalır, pil daha uzun gider", "30 i/s et résolution réduite : le téléphone chauffe moins et l'autonomie augmente", "30 fps y menor resolución: el móvil se calienta menos y la batería dura más", "30 fps और कम रिज़ॉल्यूशन: फ़ोन ठंडा रहता है और बैटरी ज़्यादा चलती है"] }); } catch (_) {}
         function loop(now) {
-          if (document.hidden || rotOn) { last = now; requestAnimationFrame(loop); return; } // paused while hidden or held upright
-          if (window.__ssCap && now - last < 1000 / window.__ssCap - 4) { requestAnimationFrame(loop); return; } // build13m: 30 fps cap
+          if (document.hidden || rotOn) { last = now; PK13.sched(); return; } // paused while hidden or held upright
+          if (window.__ssCap && now - last < 1000 / window.__ssCap - 4) { PK13.sched(); return; } // build13m: 30 fps cap
           const FP = loop.fp || (loop.fp = { pt: 0, iv: new Float32Array(32), n: 0, vs: 0, iqr: 9, div: 1, we: 0, miss: 0, cnt: 0, hold: 0, err: 0 });
           { const iv = now - FP.pt; FP.pt = now; if (iv > 2 && iv < 60) { FP.iv[FP.n++ & 31] = iv; if ((FP.n & 15) === 0 && FP.n >= 32) { const a = Array.from(FP.iv).sort((x, y) => x - y); if (!FP.vs || a[8] < FP.vs) FP.vs = a[8]; FP.iqr = a[24] - a[8]; } /* first estimate, then only ever lowered (menus usually measure the true refresh) */ } }
-          const VS = FP.vs || 16.67, hi = VS < 9.5 && !window.__ssCap; if (!hi) FP.div = 1;
-          if (FP.div > 1 && now - last < FP.div * VS - VS * 0.5) { requestAnimationFrame(loop); return; } // half-rate slot skipped
+          const VS = FP.vs || 16.67, hi = VS < 9.5 && !window.__ssCap; if (!hi) FP.div = 1; else if (FP.div < 2) FP.div = 2; // 13s1: 60 fps max on 120 Hz
+          if (FP.div > 1 && now - last < FP.div * VS - VS * 0.5) { PK13.sched(); return; } // half-rate slot skipped
           const raw = Math.max(0, (now - last) / 1000), exp = (window.__ssCap ? Math.max(VS, 1000 / window.__ssCap) : FP.div * VS) / 1000;
           let dt = Math.abs(raw - exp) < exp * 0.3 ? exp : raw; FP.err += raw - dt; if (Math.abs(FP.err) > 0.1) FP.err = 0; dt += FP.err * 0.1; FP.err -= FP.err * 0.1;
           dt = Math.min(0.05, Math.max(0, dt));
@@ -7704,11 +7862,12 @@
           { const fv = !!(S.fps && state === "play" && player && player.alive); if (fv !== loop.fv) { loop.fv = fv; $("fps").classList.toggle("x-hide", !fv); } } // FPS only during active play
           if (S.fps && ++fpsN && (fpsT += raw) >= 0.5) { $("fps").textContent = Math.round(fpsN / fpsT) + " FPS"; fpsN = fpsT = 0; }
           autoQ(raw);
+          if (state !== "play" && now - PK13.lt < 31) { PK13.sched(); return; } PK13.lt = now; // 13s1: previews outside a match <= 30 fps
           if (state !== "menu") mFz = 0;
           if (!(state === "menu" && (menuOpq(now) || bgCov(now) || mFz > 0))) {
             if (state === "menu") mFz++; // behind a menu panel the world is only a backdrop: draw it once, then keep that still frame
-            update(dt);
-            draw(); hud(dt);
+            if (!(state !== "play" && $("game").classList.contains("x-hide"))) { update(dt);
+            draw(); hud(dt); }
           }
           if (state === "menu" && prevVis(now)) drawPrev();
           drawSkPv();
@@ -7727,7 +7886,8 @@
               else if (!FP.lock && fps > tgt * 0.95 && DRS < 1 && (FP.ups || 0) < 3) { if (++FP.up >= 5) { DRS = Math.min(1, DRS / 0.85); FP.up = 0; FP.ups = (FP.ups || 0) + 1; FP.drT = now + 1500; resize(); } }
               else FP.up = 0; } }
           else FP.ft = 0;
-          requestAnimationFrame(loop);
+          PK13.cpu(performance.now() - w0, raw);
+          PK13.sched();
         }
         window.__ssFP = () => loop.fp ? { vs: +(loop.fp.vs || 0).toFixed(2), iqr: +loop.fp.iqr.toFixed(2), div: loop.fp.div, we: +loop.fp.we.toFixed(2), drs: +DRS.toFixed(3), lock: !!loop.fp.lock, dpr: +dpr.toFixed(3) } : null;
 
@@ -9448,6 +9608,7 @@
           }
           const rpc = async (fn, args) => (await call("/rest/v1/rpc/" + fn, args || {})).j;
           o.rpc = rpc; o.call = call;
+          o.beacon = (fn, args) => { try { if (!o.sess || typeof fetch !== "function") return false; fetch(SBU + "/rest/v1/rpc/" + fn, { method: "POST", keepalive: true, headers: { apikey: SBK, "Content-Type": "application/json", Authorization: "Bearer " + o.sess.access_token }, body: JSON.stringify(args || {}) }).catch(() => {}); return true; } catch (_) { return false; } }; // 13s1: leave-on-close
           // server error code -> i18n key
           const EK = { avatar_locked: "avatar_locked", invalid_avatar: "avatar_locked", unknown_item: "p12EUnk", not_authenticated: "p12EAuth", no_profile: "p12EAuth", insufficient_funds: "onE_funds", already_claimed: "onE_claimed", not_reached: "onE_reach", not_ready: "onE_reach", rate_limited: "onE_rate", banned: "onE_banned",
             maintenance: "onE_maint", level_too_low: "onE_level", already_owned: "onE_owned", match_not_open: "q13RevEnd", already_revived: "q13RevTwice", implausible_length: "q13RevLen", revive_not_allowed: "q13RevMode", too_short: "q13RevLen", invalid_track: "onErr", invalid_login: "onE_login", user_not_found: "onE_nouser", id_only: "jIdOnly", cannot_add_self: "onE_self",
@@ -9605,9 +9766,9 @@
               duration_s: Math.max(0, Math.round((performance.now() - (o.mx.t0 || performance.now())) / 1000)) };
             try {
               if (MD === "s") st.survived = !!(pl && pl.alive);
-              { const rv = snakes.filter((s) => s !== pl && s.alive && !s.ad); st.placement = pl && pl.alive && MD === "s" ? 1 : rv.filter((s) => s.len > l).length + 1; st.field_size = rv.length + 1; st.fire_kills = (pl && pl.fk13) | 0; }
+              { const rv = snakes.filter((s) => s !== pl && (s.alive || MD === "t") && !s.ad); st.placement = pl && pl.alive && MD === "s" ? 1 : rv.filter((s) => s.len > l).length + 1; st.field_size = rv.length + 1; st.fire_kills = (pl && pl.fk13) | 0; }
               if (MD === "r") { const rv = snakes.filter((s) => s !== pl && s.alive && !s.ad); st.placement = rv.filter((s) => s.len > l).length + 1; st.field_size = rv.length + 1; }
-              if (MD === "t") { const sc = tScores(l), rk = sc.map((v, i) => i).sort((a, b) => sc[b] - sc[a]); st.team_rank = rk.indexOf(0) + 1; st.team_count = sc.length; }
+              if (MD === "t") { const sc = tScores(l), rk = TMS.order(sc); st.team_rank = rk.indexOf(0) + 1; st.team_count = sc.length; }
             } catch (e) {}
             return Object.assign(st, extra || {});
           };
@@ -10462,8 +10623,8 @@
               ctx.save(); ctx.globalAlpha = 0.95;
               if (t === 7) { const g = ctx.createLinearGradient(px, 0, px + pw, 0); ["#ff3b3b", "#ffd21a", "#36ff7a", "#36c8ff", "#b45cff"].forEach((c, i) => g.addColorStop(((i / 4) + (time * 0.4)) % 1, c)); ctx.fillStyle = g; }
               else ctx.fillStyle = TCOL[t];
-              if (t === 6) { ctx.shadowColor = "#ff3b3b"; ctx.shadowBlur = 8; }
               ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(px, py, pw, 14, 4); else ctx.rect(px, py, pw, 14); ctx.fill();
+              if (t === 6) { ctx.lineWidth = 2.5; ctx.strokeStyle = "rgba(255,59,59,.55)"; ctx.stroke(); } // 13s1: glow stroke, no shadowBlur
               ctx.shadowBlur = 0; ctx.fillStyle = t === 0 || t >= 4 && t <= 6 ? "#fff" : "#1a1206"; ctx.font = "800 10px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText(s, px + pw / 2, py + 10.5);
               ctx.restore();
             } catch (_) {}
@@ -10629,7 +10790,7 @@
             let d; try { d = await ON.rpc("get_inbox13"); } catch (_) { return; }
             B13.inb = d || { items: [], unread: 0 }; B13.badges();
             const seen = B13.seen || (B13.seen = {}), first = !B13.inbInit; B13.inbInit = 1;
-            for (const it of (d.items || []).slice().reverse()) {
+            for (const it of (B13.inb.items || []).slice().reverse()) {
               if (it.read || seen[it.id]) continue; seen[it.id] = 1;
               const nm = (it.from && it.from.username) || "?";
               if (it.kind === "invite" && !it.expired && state !== "play") {
@@ -10641,7 +10802,7 @@
               } else if (it.kind === "invite_no" && !first) toast(_t("b13Declined", { x: nm }));
               else if (it.kind === "gift" && !first) toast("🎁 " + _t("b13GiftGot", { x: nm, i: B13.name((it.payload || {}).item || "") }));
             }
-            const rd = (d.items || []).filter((x) => !x.read && x.kind !== "invite").map((x) => x.id);
+            const rd = (B13.inb.items || []).filter((x) => !x.read && x.kind !== "invite").map((x) => x.id);
             if (rd.length && !first) ON.rpc("mark_inbox13", { p_ids: rd }).catch(() => {});
           };
           $("b13pop").addEventListener("click", async (e) => {
@@ -10889,14 +11050,13 @@
             ctx.globalAlpha = sn.pg > 0 ? 0.55 : 1;
             rr(x, y, w, h, h / 2); ctx.fillStyle = me ? "rgba(26,20,6,.86)" : "rgba(6,10,24,.82)"; ctx.fill();
             const fr = me && typeof FRC === "object" && FRC[NX.eq.fr];
-            ctx.lineWidth = me ? 1.6 : 1; ctx.strokeStyle = fr ? fr[0] : me ? "#ffd45a" : sn.tm !== undefined && TC[sn.tm] ? TC[sn.tm][1] || "rgba(255,255,255,.4)" : "rgba(255,255,255,.4)"; ctx.stroke();
+            ctx.lineWidth = me ? 1.6 : 1; ctx.strokeStyle = fr ? fr[0] : me ? "#ffd45a" : sn.tm !== undefined && TC[sn.tm] ? TC[sn.tm][2] || "rgba(255,255,255,.4)" : "rgba(255,255,255,.4)"; ctx.stroke();
             let cx = x + 6;
             if (lv) { // tier level badge
               const by = y + 3, bh = h - 6;
               if (t === 7) { const g = ctx.createLinearGradient(cx, 0, cx + bw, 0); ["#ff3b3b", "#ffd21a", "#36ff7a", "#36c8ff", "#b45cff"].forEach((c, i) => g.addColorStop(((i / 4) + time * 0.4) % 1, c)); ctx.fillStyle = g; }
               else ctx.fillStyle = TCOL[t];
-              if (t === 6) { ctx.shadowColor = "#ff3b3b"; ctx.shadowBlur = 6; }
-              rr(cx, by, bw, bh, 4); ctx.fill(); ctx.shadowBlur = 0;
+              rr(cx, by, bw, bh, 4); ctx.fill(); if (t === 6) { ctx.lineWidth = 2.5; ctx.strokeStyle = "rgba(255,59,59,.55)"; ctx.stroke(); }
               ctx.fillStyle = t === 0 || (t >= 4 && t <= 6) ? "#fff" : "#1a1206"; ctx.font = "800 10px system-ui, sans-serif"; ctx.textAlign = "center";
               ctx.fillText(ls, cx + bw / 2, by + bh / 2 + 0.5); ctx.textAlign = "left"; cx += bw + 5;
             }
@@ -10979,7 +11139,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13s" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13s1" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -11507,7 +11667,7 @@
           function pNav() {
             const n = tryv(() => { const s = ON.st || {}; return (s.unread_chat | 0) + (s.incoming_requests | 0) + (B13.chatUn | 0) + ((B13.inb && B13.inb.unread) | 0); }, 0);
             const it = (k, icn, lab, attr, bd) => `<button type="button" class="nv${k === "battle" ? " on" : ""}" ${attr}>${ic(icn)}<span>${esc(lab)}</span>${bd ? `<em class="h-bd">${bd}</em>` : ""}</button>`;
-            $("b13hnv").innerHTML = it("shop", "shop", _t("shop"), 'data-go="shop"') + it("locker", "locker", _t("b13hLocker"), 'data-hm="sk"') + it("battle", "battle", _t("b13hBattle"), 'data-go="mplay"') +
+            $("b13hnv").innerHTML = it("shop", "shop", _t("shop"), 'data-go="shop"') + it("locker", "locker", _t("b13hLocker"), 'data-hm="sk"') +
               it("compete", "tournaments", _t("b13hCompete"), 'data-b13s="compete"') + it("social", "friends", _t("b13hSocial"), 'data-b13s="social"', n ? String(Math.min(99, n)) : "");
           }
           // equipped snake on the stand: same sprites as the match (body bands, royal overlay, head, flag)
@@ -11642,8 +11802,8 @@
           // build13i hotfix: block-scoped name. A sloppy-mode block `function loop` (Annex B) overwrote the game's main loop, so matches never ran.
           const hLoop = (tm) => {
             raf = 0; if (!visible()) return;
-            if (!drawn || HS.sp.length || (!still() && tm - (HS.lt13r || 0) >= 31)) { HS.lt13r = tm; drawSnake(tm); } // 13r: idle motion at 30 fps
-            if (!still() || HS.sp.length) raf = requestAnimationFrame(hLoop);
+            if (!drawn || HS.sp.length || (!still() && !window.__ssBsv && tm - (HS.lt13r || 0) >= 64)) { HS.lt13r = tm; drawSnake(tm); } // 13s1: idle motion at 15 fps (still in Battery saver)
+            if ((!still() && !window.__ssBsv) || HS.sp.length) raf = requestAnimationFrame(hLoop);
           };
           document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
           if (RM.addEventListener) RM.addEventListener("change", () => kick());
@@ -12001,6 +12161,7 @@
           { const _dcx = DCX; DCX = (s, o, k) => { _dcx(s, o, k); requestAnimationFrame(() => requestAnimationFrame(snapDeath)); }; }
           J.dcText = (d, alive) => {
             if (window.__SM && __SM.dcOk) d = __SM.dcOk(d, alive);
+            try { if (alive && MD === "t" && TMS.fin) { if (TMS.res) return TMS.res; const sc = tScores(), rk = TMS.order(sc), me = rk.indexOf(0); return _t(me === 0 ? "tmGoW" : "tmGoL", { r: me + 1, n: sc.length }); } } catch (_) {} // 13s1
             if (alive || !d) return window.__SM && __SM.endText ? __SM.endText(d, alive) : _t("jDcUnk");
             const x = String(d.nm || "").replace(/^[^\p{L}\p{N}]+/u, "") || "?";
             return d.k === "wall" ? _t("jDcWall") : d.k === "head" ? _t("jDcHead", { x }) : d.k === "fire" ? _t("jDcFire", { x }) : d.k === "quit" ? _t("jDcQuit") : d.k === "body" ? _t("jDcBody", { x }) : (window.__SM && __SM.endText ? __SM.endText(d, alive) : _t("jDcUnk"));
@@ -12178,7 +12339,7 @@
             kids.forEach((k, i) => k.classList.add("j-col" + i));
             const _go = gameOver;
             gameOver = function () {
-              const me = player, tot = snakes.length, rk = me ? 1 + snakes.filter((s) => s !== me && s.alive && s.len > me.len).length : 0, pb = best, kills = me ? me.kills | 0 : 0, dur = Math.max(0, time - (AD.t0 || 0));
+              const me = player, tot = MD === "t" ? snakes.filter((s) => !s.ad).length : snakes.length, rk = me ? 1 + snakes.filter((s) => s !== me && (s.alive || MD === "t") && !s.ad && s.len > me.len).length : 0, pb = best, kills = me ? me.kills | 0 : 0, dur = Math.max(0, time - (AD.t0 || 0));
               _go();
               if (!me) return;
               try {
@@ -12192,6 +12353,7 @@
                 else if (kills === 1) line = _t("jGoKill1");
                 else if (kills > 1) line = _t("jGoKills", { n: kills });
                 else line = _t("jGoTip", { n: nf(Math.max(pb, l)) });
+                if (MD === "t" && TMS.res) line = TMS.res; // 13s1: the team result, never "Champion" for a team that lost
                 const cg = $("chg"), chOn = cg && !cg.classList.contains("x-hide");
                 $("ngo").textContent = line; $("ngo").classList.toggle("x-hide", !!chOn);
                 const nfo = $("nfo"); if (nfo) nfo.classList.add("x-hide");
@@ -12448,7 +12610,8 @@
 
           // ---------- medals catalogue (art: ui/md/<id>.webp, original generated crests) ----------
           const MEDALS = ["owner", "early", "vip", "champ_week", "podium", "legend_month", "lg_gold", "lg_diamond", "lg_legend", "story_clear", "story_stars",
-            "rp_10", "rp_30", "rp_50", "kills_100", "kills_1000", "len_500", "len_2000", "streak_3", "streak_5", "friends_5", "friends_20", "evo_5", "event_win"]; window.__s13sMedals = MEDALS;
+            "rp_10", "rp_30", "rp_50", "kills_100", "kills_1000", "kills_p", "len_500", "len_2000", "streak_3", "streak_5", "friends_5", "friends_20", "evo_5", "event_win",
+            "gm_g", "gm_r", "gm_p", "w1_g", "w1_r", "w1_p", "pt_g", "pt_r", "pt_p", "tu_g", "tu_r", "tu_p"]; window.__s13sMedals = MEDALS;
           const mImg = (id, cls) => `<img class="k-mi${cls ? " " + cls : ""}" src="${MI(id)}" alt="${esc(_t("km_" + id))}" loading="lazy" decoding="async" draggable="false">`;
           // ID title by tier: Owner #1 · Legend #2 · Royal #3–5 · Antique #6–20 · Diamond #21–50 · Gold #51–999 · Classic 1000+
           const idTitle = (id) => { id = +id || 0; return id === 1 ? "owner" : id === 2 ? "legend" : id <= 5 ? "royal" : id <= 20 ? "antique" : id <= 50 ? "diamond" : id <= 999 ? "gold" : "classic"; };
@@ -12627,7 +12790,7 @@
               const o = [["1", _t("kOn")], ["0", _t("kOff")]];
               h += (window.__SM && __SM.on ? __SM.appHTML() + `<section class="k-sec">${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>` : `<section class="k-sec">${row(_t("kSound"), seg("s:sound", o, S.sound ? 1 : 0))}${row(_t("kMusic"), seg("s:music", o, S.music ? 1 : 0))}${row(_t("kVib"), seg("vib", o, vibOn() ? 1 : 0))}${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>`) +
                 `<section class="k-sec">${row(_t("kLang"), seg("lang", [["ar", "العربية"], ["en", "English"], ["tr", "Türkçe"], ["fr", "Français"], ["es", "Español"], ["hi", "हिन्दी"]], LANG))}` +
-                `${row(_t("kGfx"), seg("gfx", [["h", _t("kGfxHi")], ["m", _t("kGfxMid")], ["l", _t("kGfxLo")]], gfx()))}${row(_t("kBattery"), seg("bat", o, S.q === "l" || S.q === "lo" ? 1 : 0))}</section>` +
+                `${row(_t("kGfx"), seg("gfx", [["h", _t("kGfxHi")], ["m", _t("kGfxMid")], ["l", _t("kGfxLo")]], gfx()))}${row(_t("kBattery"), seg("bat", o, window.__ssBsv ? 1 : 0)) + `<p class="k-hint s13s-bsvh">${esc(_t("bsvHint"))}</p>`}</section>` +
                 `<section class="k-sec"><button type="button" class="x-btn x-sub" data-kset="controls">🎮 ${esc(_t("kControls"))} ›</button></section>`;
             } else {
               const pr = ST.purch, lg = ST.ledger;
@@ -12663,7 +12826,7 @@
               else if (k === "vib") { try { localStorage.setItem("ss-vib", v); } catch (_) {} }
               else if (k === "alerts") { try { localStorage.setItem("ss-alerts", v); } catch (_) {} document.body.classList.toggle("k-noalerts", v === "0"); }
               else if (k === "lang") { const x = document.querySelector(`.x-seg[data-k="lang"] button[data-v="${v}"]`); if (x) x.click(); setTimeout(() => { setTitle("kset", _t("kSet")); setPaint(); }, 120); return; }
-              else if (k === "gfx" || k === "bat") { const q = k === "bat" ? (v === "1" ? "l" : "h") : v; const opts = [...document.querySelectorAll('#set .x-seg[data-k="q"] button')].map((b) => b.dataset.v);
+              else if (k === "bat") { try { window.__ssBsvSet(v === "1"); } catch (_) {} } else if (k === "gfx") { const q = k === "bat" ? (v === "1" ? "l" : "h") : v; const opts = [...document.querySelectorAll('#set .x-seg[data-k="q"] button')].map((b) => b.dataset.v);
                 const want = q === "h" ? "h" : q === "m" ? "m" : opts.includes("l") ? "l" : opts[opts.length - 1]; const x = document.querySelector(`#set .x-seg[data-k="q"] button[data-v="${want}"]`); if (x) x.click(); }
               else if (k.startsWith("pv:")) { const kk = k.slice(3); try { const r = await ON.rpc("set_profile_extra", { p_privacy: { [kk]: v === "1" } }); const p = me(); if (p) p.privacy = r.privacy; toast(_t("kSaved")); } catch (er) { toast(errT(er)); } }
               setPaint(); return;
@@ -14106,7 +14269,7 @@
           const row = (r) => `<li class="s13l-r${r.me ? " me" : ""}"><b class="s13l-rk" dir="ltr">${r.rank | 0}</b>${bdg(r.tier, "b13d-sm")}${avH(r, "s13l-avr")}` +
             `<span class="s13l-rn"><bdi class="s13l-un">${esc(r.username)}</bdi><small>${idH(r)} · ${esc(tn(r.tier))}${r.level ? " · " + esc(_t("s13lLv", { n: r.level | 0 })) : ""}${r.medals ? ` · <span class="s13l-md">🎖<b dir="ltr">${r.medals | 0}</b></span>` : ""}${r.crowns ? ` · <span class="s13l-md">🏅<b dir="ltr">${r.crowns | 0}</b></span>` : ""}</small></span>` +
             `<span class="s13l-rp"><b dir="ltr">${fmt(r.points)}</b><small dir="ltr">⚔ ${fmt(r.kills)}</small></span></li>`;
-          const coin = (c, g) => `${c ? `<span class="s13l-c"><b dir="ltr">+${fmt(c)}</b> 🪙</span>` : ""}${g ? `<span class="s13l-g"><b dir="ltr">+${fmt(g)}</b> 💎</span>` : ""}`;
+          const coin = (c, g) => `${c ? `<span class="s13l-c"><b dir="ltr">+${fmt(c)}</b> <i class="q13-coin" aria-hidden="true"></i></span>` : ""}${g ? `<span class="s13l-g"><b dir="ltr">+${fmt(g)}</b> 💎</span>` : ""}`;
           const rewards = (rw) => {
             rw = rw || RW0;
             const tiers = TN.map((_, i) => `<li>${bdg(i, "b13d-md")}<b>${esc(tn(i))}</b>${coin(rw.tier_coins[i], rw.tier_gems[i])}</li>`).join("");
@@ -14267,23 +14430,22 @@
             return tv(() => d.toLocaleDateString(LANG === "ar" ? "ar-u-nu-latn" : LANG, { month: "short", year: "numeric" }), d.getFullYear() + "-" + (d.getMonth() + 1)); };
           const portrait = (p, cls) => tv(() => B13G.h(p.av, cls || "ssb-pt"), "");
           const lvChip = (p) => `<small class="ssb-lv">${E(_t("ssbLvl"))} <b dir="ltr">${p.lv}</b></small>`;
-          const head = (p) => `<div class="ssb-hd">${portrait(p)}<span class="ssb-nm"><b><bdi>${E(p.n)}</bdi></b>${lvChip(p)}</span><span class="ssb-fl" title="${E(cName(p.cc))}" aria-label="${E(cName(p.cc))}">${fEmo(p.cc)}</span></div>`;
+          const head = (p) => `<div class="ssb-hd"><button type="button" class="ssb-x" data-b13x="1" aria-label="${E(_t("ssbBack"))}">✕</button>${portrait(p)}<span class="ssb-nm"><b><bdi>${E(p.n)}</bdi></b>${lvChip(p)}</span><span class="ssb-fl" title="${E(cName(p.cc))}" aria-label="${E(cName(p.cc))}">${fEmo(p.cc)}</span></div>`;
           const acts = (view) => `<p class="ssb-msg" role="status"></p><div class="ssb-acts">` +
             (view ? `<button type="button" class="x-btn x-sub" data-ssba="back">‹ ${E(_t("ssbBack"))}</button>` : `<button type="button" class="x-btn x-sub" data-ssba="view">👤 ${E(_t("ssbView"))}</button>`) +
-            `<button type="button" class="x-btn x-sub" data-ssba="add">➕ ${E(_t("ssbAdd"))}</button><button type="button" class="x-btn x-sub" data-ssba="rep">⚑ ${E(_t("onReport"))}</button></div>` +
-            `<div class="b13-row2"><button type="button" class="x-btn x-main" data-b13x="1">OK</button></div>`;
+            `<button type="button" class="x-btn x-sub" data-ssba="add">➕ ${E(_t("ssbAdd"))}</button><button type="button" class="x-btn x-sub" data-ssba="rep">⚑ ${E(_t("onReport"))}</button></div>`;
           const cardH = (p, x) => `<div class="j-pcw ssb-card">${head(p)}` +
             (x && x.len ? `<p class="ssb-now">${E(_t("ssbNow"))} · ${E(_t("kLen"))} <b dir="ltr">${NF(x.len)}</b></p>` : "") + acts(false) + `</div>`;
-          const st = (k, v) => `<div class="ssb-st"><small>${E(_t(k))}</small><b dir="auto">${v}</b></div>`;
+          const st = (k, v) => `<div class="ssb-st"><b dir="auto">${v}</b><small>${E(_t(k))}</small></div>`;
           const viewH = (p) => `<div class="j-pcw ssb-card ssb-view">${head(p)}<div class="ssb-sts">` +
-            st("ssbLvl", `<span dir="ltr">${p.lv}</span>`) + st("ssbMatches", `<span dir="ltr">${NF(p.m)}</span>`) + st("ssbBest", `<span dir="ltr">${NF(p.best)}</span>`) +
-            st("ssbCountry", `${fEmo(p.cc)} ${E(cName(p.cc))}`) + st("ssbSince", E(since(p))) + `</div>` + acts(true) + `</div>`;
+            st("ssbMatches", `<span dir="ltr">${NF(p.m)}</span>`) + st("ssbBest", `<span dir="ltr">${NF(p.best)}</span>`) +
+            st("ssbCountry", E(cName(p.cc))) + st("ssbSince", E(since(p))) + `</div>` + acts(true) + `</div>`;
           const repH = (p) => {
             const rs = ["cheating", "name", "photo", "teaming", "other"];
             return `<div class="j-pcw ss-rep ssb-card"><h3>⚑ ${E(_t("onRepT", { x: p.n }))}</h3><div class="ss-repr" role="radiogroup">` +
               rs.map((k, i) => `<button type="button" role="radio" aria-checked="${i ? "false" : "true"}" class="x-btn x-sub${i ? "" : " on"}" data-ssr="${k}">${E(_t("onRep_" + k))}</button>`).join("") +
               `</div><textarea id="ssbrepn" rows="2" maxlength="300" dir="auto" placeholder="${E(_t("smRepNote"))}"></textarea><p class="x-err" id="ssbrepm" role="alert"></p>` +
-              `<div class="b13-row2"><button type="button" class="x-btn x-main" data-ssba="send">${E(_t("kSend"))}</button><button type="button" class="x-btn x-sub" data-ssba="back">${E(_t("onCancel"))}</button></div></div>`;
+              `<div class="b13-row2"><button type="button" class="x-btn x-main" data-ssba="send">${E(_t("kSend"))}</button><button type="button" class="x-btn x-sub" data-ssba="rback">${E(_t("onCancel"))}</button></div></div>`;
           };
           const popH = (h) => { tv(() => $("b13pop").classList.remove("j-pp"), 0); B13.pop(h); };
           SSB.open = (n, x) => { const p = persona(strip(n)); SSB.cur = { p, x: x || null, v: 0 }; popH(cardH(p, x)); };
@@ -14294,7 +14456,8 @@
             e.preventDefault(); e.stopPropagation();
             const { p } = SSB.cur, a = b.dataset.ssba, box = b.closest(".ssb-card"), msg = box && box.querySelector(".ssb-msg");
             if (a === "view") { SSB.cur.v = 1; popH(viewH(p)); }
-            else if (a === "back") popH(SSB.cur.v ? viewH(p) : cardH(p, SSB.cur.x));
+            else if (a === "back") { SSB.cur.v = 0; popH(cardH(p, SSB.cur.x)); } // 13s1: Back on the profile view returns to the card (it re-rendered the view before)
+            else if (a === "rback") popH(SSB.cur.v ? viewH(p) : cardH(p, SSB.cur.x));
             else if (a === "add") { if (msg) msg.textContent = _t("ssbNoReq"); b.disabled = true; } // no request is created and nothing pretends one was sent
             else if (a === "rep") popH(repH(p));
             else if (a === "send") {
@@ -14374,9 +14537,9 @@
             document.querySelectorAll(".k-shtabs").forEach((tb) => {
               const sk = tb.querySelector('[data-kshop="shop"]'); if (!sk) return;
               let b = tb.querySelector("[data-ssbtab]"); if (!b) { sk.insertAdjacentHTML("afterend", `<button type="button" role="tab" data-ssbtab="ctry"></button>`); b = tb.querySelector("[data-ssbtab]"); }
-              const inShop = !!tb.closest("#shop"), on = inShop && shOn && SSB.cm === "f", t = _t("ssbCtry");
+              const inShop = !!tb.closest("#shop"), itOn = !$("items").classList.contains("x-hide"), on = inShop && shOn && itOn && SSB.cm === "f", t = _t("ssbCtry");
               if (b.textContent !== t) b.textContent = t; b.classList.toggle("on", on); b.setAttribute("aria-selected", String(on));
-              if (inShop) { const sOn = !on; if (sk.classList.contains("on") !== sOn) sk.classList.toggle("on", sOn); sk.setAttribute("aria-selected", String(sOn)); }
+              if (inShop) { const sOn = !on && itOn; if (sk.classList.contains("on") !== sOn) sk.classList.toggle("on", sOn); sk.setAttribute("aria-selected", String(sOn)); }
             });
           };
           SSB.putCT = putCT;
@@ -14397,7 +14560,9 @@
           document.addEventListener("click", (e) => {
             const t = e.target && e.target.closest ? e.target : null; if (!t) return;
             const dm = t.closest("[data-ssbdm]"); if (dm) { e.preventDefault(); e.stopPropagation(); if (SSB.dm !== dm.dataset.ssbdm) { SSB.dm = dm.dataset.ssbdm; tv(() => paintSkins(), 0); const el = $("skins"); if (el) el.scrollTop = 0; } return; }
-            const ct = t.closest("[data-ssbtab]"); if (ct) { e.preventDefault(); e.stopPropagation(); if (!ct.classList.contains("on")) SSB.ctry(); return; }
+            const ct = t.closest("[data-ssbtab]"); if (ct) { e.preventDefault(); e.stopPropagation(); tv(() => { const ib = Q('#shop #tabs [data-t="items"]'); if (ib && $("items").classList.contains("x-hide")) ib.click(); }, 0); if (!ct.classList.contains("on")) SSB.ctry(); return; }
+            if (t.closest('#shop .k-shtabs [data-kshop="shop"]') && $("items").classList.contains("x-hide")) setTimeout(() => tv(() => { const ib = Q('#shop #tabs [data-t="items"]'); if (ib) ib.click(); if (SSB.cm === "f") { SSB.cm = "c"; SF.cat = "c"; SF.sel = -1; paintShop(); } putCT(); }, 0), 0);
+            if (t.closest("#shop #tabs [data-t]")) setTimeout(() => tv(putCT, 0), 0);
             if (t.closest("#hmsk .p10-all") && SSB.dm === "f") setTimeout(() => tv(SSB.ctry, 0), 60); // "All countries" opens the shop on the Countries tab
           }, true);
 
@@ -14583,16 +14748,22 @@
           S13.loadMe = loadMe;
           // harder medal rules + playtime medals only once the server runs them (sql 62); before that the old texts stay
           let mdv = 1;
+          const MD3T = {"km_pt_g_d": ["العب 6000 دقيقة", "Play 6,000 minutes", "6.000 dakika oyna", "Joue 6 000 minutes", "Juega 6.000 minutos", "6,000 मिनट खेलें"], "km_pt_r_d": ["العب 30000 دقيقة", "Play 30,000 minutes", "30.000 dakika oyna", "Joue 30 000 minutes", "Juega 30.000 minutos", "30,000 मिनट खेलें"], "km_pt_p_d": ["العب 90000 دقيقة", "Play 90,000 minutes", "90.000 dakika oyna", "Joue 90 000 minutes", "Juega 90.000 minutos", "90,000 मिनट खेलें"], "km_tu_g_d": ["اشحن $1000 بالمجموع", "Top up $1,000 in total", "Toplam $1.000 yükle", "Recharge 1 000 $ au total", "Recarga 1.000 $ en total", "कुल $1,000 टॉप-अप करें"], "km_tu_r_d": ["اشحن $5000 بالمجموع", "Top up $5,000 in total", "Toplam $5.000 yükle", "Recharge 5 000 $ au total", "Recarga 5.000 $ en total", "कुल $5,000 टॉप-अप करें"], "km_tu_p_d": ["اشحن $10000 بالمجموع", "Top up $10,000 in total", "Toplam $10.000 yükle", "Recharge 10 000 $ au total", "Recarga 10.000 $ en total", "कुल $10,000 टॉप-अप करें"], "km_kills_100_d": ["1300 قضاء على خصوم", "1,300 kills", "1.300 leş", "1 300 éliminations", "1.300 eliminaciones", "1,300 किल"], "km_kills_1000_d": ["6500 قضاء على خصوم", "6,500 kills", "6.500 leş", "6 500 éliminations", "6.500 eliminaciones", "6,500 किल"], "km_kills_p_d": ["20000 قضاء على خصوم", "20,000 kills", "20.000 leş", "20 000 éliminations", "20.000 eliminaciones", "20,000 किल"], "km_gm_g_d": ["العب 600 مباراة", "Play 600 matches", "600 maç oyna", "Joue 600 parties", "Juega 600 partidas", "600 मैच खेलें"], "km_gm_r_d": ["العب 3000 مباراة", "Play 3,000 matches", "3.000 maç oyna", "Joue 3 000 parties", "Juega 3.000 partidas", "3,000 मैच खेलें"], "km_gm_p_d": ["العب 9500 مباراة", "Play 9,500 matches", "9.500 maç oyna", "Joue 9 500 parties", "Juega 9.500 partidas", "9,500 मैच खेलें"], "km_w1_g_d": ["المركز الأول في 75 مباراة", "Finish #1 in 75 matches", "75 maçta 1. ol", "Termine 1er dans 75 parties", "Termina 1.º en 75 partidas", "75 मैचों में #1"], "km_w1_r_d": ["المركز الأول في 400 مباراة", "Finish #1 in 400 matches", "400 maçta 1. ol", "Termine 1er dans 400 parties", "Termina 1.º en 400 partidas", "400 मैचों में #1"], "km_w1_p_d": ["المركز الأول في 1150 مباراة", "Finish #1 in 1,150 matches", "1.150 maçta 1. ol", "Termine 1er dans 1 150 parties", "Termina 1.º en 1.150 partidas", "1,150 मैचों में #1"], "km_lg_gold_d": ["36000 نقطة دوري بالمجموع", "36,000 league points in total", "Toplam 36.000 lig puanı", "36 000 points de ligue au total", "36.000 puntos de liga en total", "कुल 36,000 लीग अंक"], "km_lg_diamond_d": ["180000 نقطة دوري بالمجموع", "180,000 league points in total", "Toplam 180.000 lig puanı", "180 000 points de ligue au total", "180.000 puntos de liga en total", "कुल 180,000 लीग अंक"], "km_lg_legend_d": ["540000 نقطة دوري بالمجموع", "540,000 league points in total", "Toplam 540.000 lig puanı", "540 000 points de ligue au total", "540.000 puntos de liga en total", "कुल 540,000 लीग अंक"], "km_rp_10_d": ["50 مستوى باس بالمجموع", "Reach 50 Royal Pass tiers in total", "Toplam 50 Kraliyet Pası kademesi", "50 paliers du pass au total", "50 niveles del pase en total", "कुल 50 रॉयल पास टियर"], "km_rp_30_d": ["150 مستوى باس بالمجموع", "Reach 150 Royal Pass tiers in total", "Toplam 150 Kraliyet Pası kademesi", "150 paliers du pass au total", "150 niveles del pase en total", "कुल 150 रॉयल पास टियर"], "km_rp_50_d": ["400 مستوى باس بالمجموع", "Reach 400 Royal Pass tiers in total", "Toplam 400 Kraliyet Pası kademesi", "400 paliers du pass au total", "400 niveles del pase en total", "कुल 400 रॉयल पास टियर"], "km_len_500_d": ["طول 3000 في مباراة", "Reach length 3,000 in a match", "Bir maçta 3.000 uzunluğa ulaş", "Atteins la longueur 3 000", "Alcanza longitud 3.000", "किसी मैच में लंबाई 3,000"], "km_len_2000_d": ["طول 6000 في مباراة", "Reach length 6,000 in a match", "Bir maçta 6.000 uzunluğa ulaş", "Atteins la longueur 6 000", "Alcanza longitud 6.000", "किसी मैच में लंबाई 6,000"], "km_streak_3_d": ["استلم الجائزة اليومية 30 يوم ورا بعض", "Claim daily rewards 30 days in a row", "Günlük ödülü 30 gün üst üste al", "Récupère la récompense quotidienne 30 jours de suite", "Reclama la recompensa diaria 30 días seguidos", "लगातार 30 दिन डेली रिवॉर्ड लें"], "km_streak_5_d": ["استلم الجائزة اليومية 100 يوم ورا بعض", "Claim daily rewards 100 days in a row", "Günlük ödülü 100 gün üst üste al", "Récupère la récompense quotidienne 100 jours de suite", "Reclama la recompensa diaria 100 días seguidos", "लगातार 100 दिन डेली रिवॉर्ड लें"], "km_friends_5_d": ["25 صديق", "Have 25 friends", "25 arkadaşın olsun", "Avoir 25 amis", "Ten 25 amigos", "25 दोस्त बनाएँ"], "km_friends_20_d": ["100 صديق", "Have 100 friends", "100 arkadaşın olsun", "Avoir 100 amis", "Ten 100 amigos", "100 दोस्त बनाएँ"], "km_pt_g": ["محارب قديم", "Veteran", "Kıdemli", "Vétéran", "Veterano", "अनुभवी"], "km_pt_r": ["عدّاء الماراثون", "Marathoner", "Maratoncu", "Marathonien", "Maratonista", "मैराथनर"], "km_pt_p": ["الثعبان الخالد", "Eternal Serpent", "Ebedi Yılan", "Serpent éternel", "Serpiente eterna", "अमर नाग"], "km_tu_g": ["داعم", "Patron", "Destekçi", "Mécène", "Mecenas", "संरक्षक"], "km_tu_r": ["داعم كبير", "Benefactor", "Hayırsever", "Bienfaiteur", "Benefactor", "दानदाता"], "km_tu_p": ["الداعم الأعظم", "Grand Patron", "Büyük Destekçi", "Grand mécène", "Gran mecenas", "महासंरक्षक"], "km_kills_p": ["المُبيد", "Annihilator", "Yok Edici", "Annihilateur", "Aniquilador", "विनाशक"], "km_gm_g": ["مخضرم", "Seasoned", "Tecrübeli", "Aguerri", "Curtido", "मंझा हुआ"], "km_gm_r": ["صلب المعارك", "Battle-Hardened", "Savaş Ustası", "Endurci", "Templado en batalla", "जंग में तपा"], "km_gm_p": ["أسطورة الساحة", "Arena Legend", "Arena Efsanesi", "Légende de l'arène", "Leyenda de la arena", "अखाड़े का लीजेंड"], "km_w1_g": ["بطل", "Champion", "Şampiyon", "Champion", "Campeón", "चैंपियन"], "km_w1_r": ["فاتح", "Conqueror", "Fatih", "Conquérant", "Conquistador", "विजेता"], "km_w1_p": ["بلا منازع", "Undisputed", "Rakipsiz", "Incontesté", "Indiscutible", "निर्विवाद"], "km_rp_10": ["متمرّس الباس", "Pass Adept", "Pas Ustası", "Adepte du pass", "Experto del pase", "पास एक्सपर्ट"], "km_streak_3": ["وفي", "Loyal", "Sadık", "Fidèle", "Leal", "वफ़ादार"], "km_streak_5": ["مُخلص", "Devoted", "Adanmış", "Dévoué", "Devoto", "समर्पित"]}; try { Object.assign(I18N, MD3T); } catch (_) {} // 13s1 (sql 65): one medal config, hard curve
           const mdV = (v) => {
-            if (v !== 2 || mdv === 2) return; mdv = 2;
+            if (v >= 3) { // 13s1: v3 list + texts; undo a v2 pass that may have run earlier in this session
+              if (mdv === 3) return; mdv = 3; try { Object.assign(I18N, MD3T); } catch (_) {}
+              const M = window.__s13sMedals; if (Array.isArray(M)) for (const id of ["pt_60", "pt_300", "pt_1000", "pt_3000", "pt_10000"]) { const i = M.indexOf(id); if (i >= 0) M.splice(i, 1); }
+              return; }
+            if (v !== 2 || mdv >= 2) return; mdv = 2;
             try { Object.assign(I18N, {"km_lg_gold_d": ["500 نقطة دوري في أسبوع", "500 league points in a week", "Bir haftada 500 lig puanı", "500 points de ligue en une semaine", "500 puntos de liga en una semana", "एक सप्ताह में 500 लीग अंक"], "km_lg_diamond_d": ["1500 نقطة دوري في أسبوع", "1,500 league points in a week", "Bir haftada 1.500 lig puanı", "1 500 points de ligue en une semaine", "1.500 puntos de liga en una semana", "एक सप्ताह में 1,500 लीग अंक"], "km_lg_legend_d": ["4000 نقطة دوري في أسبوع", "4,000 league points in a week", "Bir haftada 4.000 lig puanı", "4 000 points de ligue en une semaine", "4.000 puntos de liga en una semana", "एक सप्ताह में 4,000 लीग अंक"], "km_rp_10_d": ["الوصول للمستوى 15 في الباس", "Reach Royal Pass tier 15", "Kraliyet Pası 15. kademeye ulaş", "Atteins le palier 15 du pass", "Llega al nivel 15 del pase", "रॉयल पास टियर 15 तक पहुँचें"], "km_rp_30_d": ["الوصول للمستوى 35 في الباس", "Reach Royal Pass tier 35", "Kraliyet Pası 35. kademeye ulaş", "Atteins le palier 35 du pass", "Llega al nivel 35 del pase", "रॉयल पास टियर 35 तक पहुँचें"], "km_kills_100_d": ["250 قضاء على خصوم", "250 kills", "250 leş", "250 éliminations", "250 eliminaciones", "250 किल"], "km_kills_1000_d": ["2500 قضاء على خصوم", "2,500 kills", "2.500 leş", "2 500 éliminations", "2.500 eliminaciones", "2,500 किल"], "km_len_500_d": ["طول 800 في مباراة", "Reach length 800 in a match", "Bir maçta 800 uzunluğa ulaş", "Atteins la longueur 800", "Alcanza longitud 800", "किसी मैच में लंबाई 800"], "km_len_2000_d": ["طول 3000 في مباراة", "Reach length 3,000 in a match", "Bir maçta 3.000 uzunluğa ulaş", "Atteins la longueur 3 000", "Alcanza longitud 3.000", "किसी मैच में लंबाई 3,000"], "km_streak_3_d": ["4 مباريات متتالية بالمركز الأول", "Finish #1 in 4 matches in a row", "Üst üste 4 maçta 1. ol", "Termine 1er 4 parties de suite", "Termina 1.º en 4 partidas seguidas", "लगातार 4 मैचों में #1"], "km_streak_5_d": ["7 مباريات متتالية بالمركز الأول", "Finish #1 in 7 matches in a row", "Üst üste 7 maçta 1. ol", "Termine 1er 7 parties de suite", "Termina 1.º en 7 partidas seguidas", "लगातार 7 मैचों में #1"], "km_friends_5_d": ["8 أصدقاء", "Have 8 friends", "8 arkadaşın olsun", "Avoir 8 amis", "Ten 8 amigos", "8 दोस्त बनाएँ"], "km_friends_20_d": ["30 صديقاً", "Have 30 friends", "30 arkadaşın olsun", "Avoir 30 amis", "Ten 30 amigos", "30 दोस्त बनाएँ"], "km_pt_60_d": ["العب 60 دقيقة", "Play 60 minutes", "60 dakika oyna", "Joue 60 minutes", "Juega 60 minutos", "60 मिनट खेलें"], "km_pt_300_d": ["العب 300 دقيقة", "Play 300 minutes", "300 dakika oyna", "Joue 300 minutes", "Juega 300 minutos", "300 मिनट खेलें"], "km_pt_1000_d": ["العب 1000 دقيقة", "Play 1,000 minutes", "1.000 dakika oyna", "Joue 1 000 minutes", "Juega 1.000 minutos", "1,000 मिनट खेलें"], "km_pt_3000_d": ["العب 3000 دقيقة", "Play 3,000 minutes", "3.000 dakika oyna", "Joue 3 000 minutes", "Juega 3.000 minutos", "3,000 मिनट खेलें"], "km_pt_10000_d": ["العب 10000 دقيقة", "Play 10,000 minutes", "10.000 dakika oyna", "Joue 10 000 minutes", "Juega 10.000 minutos", "10,000 मिनट खेलें"], "km_pt_60": ["مُحمّي", "Warmed Up", "Isındı", "Échauffé", "Calentado", "वार्म-अप"], "km_pt_300": ["لاعب دائم", "Regular", "Müdavim", "Habitué", "Habitual", "नियमित"], "km_pt_1000": ["محارب قديم", "Veteran", "Kıdemli", "Vétéran", "Veterano", "अनुभवी"], "km_pt_3000": ["عدّاء الماراثون", "Marathoner", "Maratoncu", "Marathonien", "Maratonista", "मैराथनर"], "km_pt_10000": ["الثعبان الخالد", "Eternal Serpent", "Ebedi Yılan", "Serpent éternel", "Serpiente eterna", "अमर नाग"]}); } catch (_) {}
             const M = window.__s13sMedals; if (Array.isArray(M)) for (const id of ["pt_60", "pt_300", "pt_1000", "pt_3000", "pt_10000"]) if (!M.includes(id)) M.push(id);
           };
           const PT = [60, 300, 1000, 3000, 10000];
           const ptCard = (pl) => {
-            const m = pl ? pl.minutes | 0 : null, nx = pl ? pl.next : null, prev = pl ? PT.filter((x) => x <= m).pop() || 0 : 0;
+            const PTs = mdv >= 3 ? (pl && Array.isArray(pl.steps) && pl.steps.length ? pl.steps : [6000, 30000, 90000]) : PT, PTI = ["pt_g", "pt_r", "pt_p"];
+            const m = pl ? pl.minutes | 0 : null, nx = pl ? pl.next : null, prev = pl ? PTs.filter((x) => x <= m).pop() || 0 : 0;
             const pc = pl == null ? 0 : nx ? Math.max(2, Math.min(100, Math.round(((m - prev) / (nx - prev)) * 100))) : 100;
-            const md = mdv === 2 ? `<span class="s13s-ptm">${PT.map((x) => `<img src="ui/md/pt_${x}.webp?v=13s" alt="" class="${m != null && m >= x ? "on" : ""}" loading="lazy" decoding="async" draggable="false">`).join("")}</span>` : "";
+            const md = mdv >= 2 ? `<span class="s13s-ptm">${PTs.map((x, i) => `<img src="ui/md/${mdv >= 3 ? PTI[Math.min(i, 2)] : "pt_" + x}.webp?v=${mdv >= 3 ? "13s1" : "13s"}" alt="" class="${m != null && m >= x ? "on" : ""}" title="${mdv >= 3 ? esc3(T("km_" + PTI[Math.min(i, 2)])) + " · " + esc3(nf3(x)) : ""}" loading="lazy" decoding="async" draggable="false">`).join("")}</span>` : "";
             return `<div class="s13s-pt" role="group" aria-label="${esc3(T("s13sPt"))}"><span class="s13s-pti" aria-hidden="true">⏱</span>` +
               `<span class="s13s-ptv"><b dir="ltr">${m == null ? "…" : esc3(nf3(m))}</b><small>${esc3(T("s13sPt"))}</small></span>` +
               `<span class="s13s-ptb"><span class="s13s-ptl">${esc3(m == null ? "" : nx ? T("s13sPtNext", { n: nf3(nx) }) : T("s13sPtMax"))}</span><i><u style="width:${pc}%"></u></i></span>${md}</div>`;
@@ -14646,8 +14817,8 @@
                 const w = Math.min(130, ctx.measureText(lab).width + 14), h = 13, x = Math.round(tx - w / 2), y = Math.round(y0 - 15 - h - 3);
                 const g = ctx.createLinearGradient(x, 0, x + w, 0), k = ((typeof time === "number" ? time : 0) * 0.35) % 1;
                 g.addColorStop(0, c[0]); g.addColorStop(Math.max(0.05, Math.min(0.95, k)), c[1]); g.addColorStop(1, c[0]);
-                if (S.q !== "l") { ctx.shadowColor = c[0]; ctx.shadowBlur = 8; }
-                ctx.globalAlpha = sn.pg > 0 ? 0.5 : 0.95; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, 6.5); else ctx.rect(x, y, w, h); ctx.fillStyle = g; ctx.fill();
+                ctx.globalAlpha = sn.pg > 0 ? 0.5 : 0.95; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, 6.5); else ctx.rect(x, y, w, h);
+                if (S.q !== "l") { const ga = ctx.globalAlpha; ctx.globalAlpha = ga * 0.45; ctx.lineWidth = 4; ctx.strokeStyle = c[0]; ctx.stroke(); ctx.globalAlpha = ga; } ctx.fillStyle = g; ctx.fill(); // 13s1: no shadowBlur
                 ctx.shadowBlur = 0; ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,.75)"; ctx.stroke();
                 ctx.fillStyle = "#1a0e02"; ctx.fillText(lab, tx, y + h / 2 + 0.5, w - 6); ctx.restore();
               } catch (_) {}
@@ -14680,6 +14851,438 @@
               decoHome();
             } catch (_) {}
           }, 1500);
+        }
+        // ===================== 13s Spectate Friends /*s13s-spec-v1*/ =====================
+        // Matches run on the player's device, so a friend watches through a compact low-rate state stream: while a player is in a
+        // match his client holds a private Supabase Realtime topic 'spec:<sid>' (server-issued per match, RLS: only his friends may
+        // join, only he may broadcast). Frames (8 Hz, 6 Hz on Low/Battery saver) are sent ONLY while at least one viewer's presence is
+        // on the topic. The viewer interpolates and draws its own lightweight top-down view; it never sends game input.
+        // Rules: only const arrows (no block-level function declarations), every hook guarded, nothing blocks taps.
+        {
+          const SPX = (window.__SPX = window.__SPX || {});
+          const WSU = "wss://btmvxfiwprkgqcgquozq.supabase.co/realtime/v1/websocket?apikey=sb_publishable_o0TaQLE_ZaFJrqe_ZemmBQ_uHo5nnne&vsn=1.0.0";
+          const g$ = (id) => document.getElementById(id);
+          const tv5 = (f, d) => { try { const v = f(); return v === undefined || v === null ? d : v; } catch (_) { return d; } };
+          const esc5 = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+          const isOn = () => tv5(() => cur === "@on" && !!ON.on && !!ON.uid && !!ON.rpc && !!ON.sess, false);
+          const playing = () => tv5(() => state === "play", false);
+          const tok = () => tv5(() => ON.sess.access_token, "");
+          try { Object.assign(I18N, {"spxWatch": ["شاهد", "Watch", "İzle", "Regarder", "Ver", "देखें"], "spxWatchL": ["شاهد المباراة مباشرة", "Watch this match live", "Bu maçı canlı izle", "Regarder ce match en direct", "Ver esta partida en directo", "यह मैच लाइव देखें"], "spxWatchLive": ["شاهد مباشرة", "Watch live", "Canlı izle", "Regarder en direct", "Ver en directo", "लाइव देखें"], "spxSpect": ["تشاهد {x}", "Spectating {x}", "{x} izleniyor", "Tu regardes {x}", "Viendo a {x}", "{x} को देख रहे हैं"], "spxExit": ["خروج", "Exit", "Çık", "Quitter", "Salir", "बाहर निकलें"], "spxLen": ["الطول", "Length", "Uzunluk", "Longueur", "Longitud", "लंबाई"], "spxRank": ["الترتيب", "Rank", "Sıra", "Rang", "Puesto", "रैंक"], "spxKills": ["القضاء", "Kills", "Leş", "Éliminations", "Eliminaciones", "किल"], "spxTime": ["الوقت", "Time", "Süre", "Temps", "Tiempo", "समय"], "spxConn": ["جاري الاتصال بمباراة {x}…", "Connecting to {x}'s match…", "{x} adlı oyuncunun maçına bağlanılıyor…", "Connexion au match de {x}…", "Conectando con la partida de {x}…", "{x} के मैच से जुड़ रहे हैं…"], "spxDown": ["{x} خرج من الحلبة…", "{x} is out…", "{x} elendi…", "{x} est éliminé·e…", "{x} ha caído…", "{x} आउट हो गया/गई…"], "spxOverK": ["انتهت المباراة", "Game over", "Oyun bitti", "Partie terminée", "Fin de la partida", "गेम ओवर"], "spxOver": ["النتيجة النهائية", "Final result", "Son sonuç", "Résultat final", "Resultado final", "अंतिम परिणाम"], "spxLeft": ["خرج من المباراة · النتيجة", "Left the match · result", "Maçtan ayrıldı · sonuç", "A quitté le match · résultat", "Salió de la partida · resultado", "मैच छोड़ा · परिणाम"], "spxNotNow": ["{x} مو في مباراة الحين", "{x} isn't in a match right now", "{x} şu an maçta değil", "{x} n'est pas en match pour l'instant", "{x} no está en una partida ahora", "{x} अभी किसी मैच में नहीं है"], "spxAgain": ["شاهد المباراة الجاية", "Watch next match", "Sonraki maçı izle", "Regarder le prochain match", "Ver la próxima partida", "अगला मैच देखें"], "spxWait": ["بانتظار المباراة الجاية لـ {x}…", "Waiting for {x}'s next match…", "{x} adlı oyuncunun sonraki maçı bekleniyor…", "En attente du prochain match de {x}…", "Esperando la próxima partida de {x}…", "{x} के अगले मैच का इंतज़ार…"], "spxWaitEnd": ["ما بدأ {x} مباراة جديدة. جرّب بعدين", "{x} hasn't started a new match. Try again later", "{x} yeni maça başlamadı. Daha sonra dene", "{x} n'a pas lancé de nouveau match. Réessaie plus tard", "{x} no ha empezado otra partida. Inténtalo más tarde", "{x} ने नया मैच शुरू नहीं किया। बाद में देखें"], "spxPriv": ["هذا اللاعب ما يسمح بالمشاهدة", "This player doesn't allow spectators", "Bu oyuncu izleyiciye izin vermiyor", "Ce joueur n'autorise pas les spectateurs", "Este jugador no permite espectadores", "यह खिलाड़ी दर्शकों की अनुमति नहीं देता"], "spxNoFr": ["تقدر تشاهد أصدقاءك فقط", "You can only watch your friends", "Sadece arkadaşlarını izleyebilirsin", "Tu ne peux regarder que tes amis", "Solo puedes ver a tus amigos", "आप सिर्फ़ अपने दोस्तों को देख सकते हैं"], "spxLost": ["انقطع الاتصال، جاري إعادة الاتصال…", "Connection lost, reconnecting…", "Bağlantı koptu, yeniden bağlanılıyor…", "Connexion perdue, reconnexion…", "Conexión perdida, reconectando…", "कनेक्शन टूटा, फिर से जुड़ रहे हैं…"], "spxWatching": ["{x} يشاهدك الحين", "{x} is watching you", "{x} seni izliyor", "{x} te regarde", "{x} te está viendo", "{x} आपको देख रहा/रही है"], "spxEyeS": ["يشاهدون", "watching", "izliyor", "spectateurs", "viendo", "देख रहे"], "spxSetT": ["الأصدقاء يقدرون يشاهدون مبارياتي", "Friends can watch my matches", "Arkadaşlarım maçlarımı izleyebilir", "Mes amis peuvent regarder mes matchs", "Mis amigos pueden ver mis partidas", "दोस्त मेरे मैच देख सकते हैं"], "spxSetS": ["أصدقاؤك فقط، وقت ما تلعب", "Only your friends, only while you play", "Sadece arkadaşların, sadece oynarken", "Seulement tes amis, seulement pendant que tu joues", "Solo tus amigos, solo mientras juegas", "सिर्फ़ आपके दोस्त, सिर्फ़ जब आप खेलें"]}); } catch (_) {}
+          const T = (k, v) => tv5(() => _t(k, v), k);
+          const nf5 = (n) => tv5(() => Math.round(Number(n || 0)).toLocaleString(LANG === "ar" ? "ar-u-nu-latn" : LANG), String(Math.round(n || 0)));
+          const clean = (s, n) => String(s == null ? "" : s).replace(/[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, "").slice(0, n || 24);
+          const fin = (x, d) => (typeof x === "number" && isFinite(x) ? x : d);
+
+          // ---------------- Realtime (Phoenix) channel on its own small socket, private topic, auto re-join ----------------
+          const mkRT = (topic, key, hd) => {
+            const o = { ws: null, ok: false, dead: false, ref: 1, jr: "1", hb: 0, tries: 0, lt: "" }, tp = "realtime:" + topic;
+            const raw = (w, m) => { try { if (w && w.readyState === 1) { w.send(JSON.stringify(m)); return true; } } catch (_) {} return false; };
+            const send = (ev, payload) => raw(o.ws, { topic: tp, event: ev, payload, ref: String(o.ref++), join_ref: o.jr });
+            const open = () => {
+              if (o.dead || typeof WebSocket !== "function") return; let w; try { w = new WebSocket(WSU); } catch (_) { return; } o.ws = w;
+              w.onopen = () => {
+                o.jr = String(o.ref); o.lt = tok();
+                send("phx_join", { access_token: o.lt, config: { broadcast: { self: false }, presence: { key, enabled: true }, private: true } });
+                clearInterval(o.hb);
+                o.hb = setInterval(() => { raw(w, { topic: "phoenix", event: "heartbeat", payload: {}, ref: String(o.ref++) }); const t = tok(); if (t && t !== o.lt) { o.lt = t; send("access_token", { access_token: t }); } }, 25000);
+              };
+              w.onmessage = (m) => {
+                if (typeof m.data !== "string" || m.data.length > 200000) return; let j; try { j = JSON.parse(m.data); } catch (_) { return; }
+                if (!j || j.topic !== tp) return;
+                if (j.event === "phx_reply" && j.ref === o.jr) {
+                  if (j.payload && j.payload.status === "ok") { o.ok = true; o.tries = 0; if (hd.join) hd.join(); }
+                  else { o.dead = true; clearInterval(o.hb); try { w.close(); } catch (_) {} if (hd.deny) hd.deny(); }
+                  return;
+                }
+                const p = j.payload || {};
+                if (j.event === "broadcast") { if (hd.bc) hd.bc(p.event, p.payload); }
+                else if (j.event === "presence_state") { if (hd.ps) hd.ps(p, true); }
+                else if (j.event === "presence_diff") { if (hd.ps) hd.ps(p, false); }
+                else if (j.event === "phx_error" || j.event === "phx_close" || (j.event === "system" && p.status === "error")) { try { w.close(); } catch (_) {} }
+              };
+              w.onclose = () => { clearInterval(o.hb); o.ok = false; if (o.ws === w) o.ws = null; if (o.dead) return; if (o.tries++ < 4) setTimeout(open, 1200 * o.tries); else if (hd.lost) hd.lost(); };
+              w.onerror = () => { try { w.close(); } catch (_) {} };
+            };
+            o.bc = (ev, p) => send("broadcast", { type: "broadcast", event: ev, payload: p });
+            o.track = (p) => send("presence", { type: "presence", event: "track", payload: p });
+            o.close = () => { if (o.dead && !o.ws) return; o.dead = true; clearInterval(o.hb); const w = o.ws; if (w) { send("phx_leave", {}); setTimeout(() => { try { w.close(); } catch (_) {} }, 60); } o.ws = null; o.ok = false; };
+            open(); return o;
+          };
+          const presApply = (map, p, full) => {
+            if (full) { for (const k in map) delete map[k]; for (const k in p) map[k] = p[k]; return; }
+            for (const k in p.joins || {}) map[k] = p.joins[k];
+            for (const k in p.leaves || {}) delete map[k];
+          };
+
+          // ================= PLAYER SIDE: stream my match to watching friends =================
+          const SP = { gen: 0, sid: null, rt: null, pres: {}, v: 0, hb: 0, iv: 0, t0: 0, ids: new WeakMap(), nid: 1, sent: new Set(), full: true, n: 0, seenV: {}, bytes: 0, frames: 0 };
+          SPX.sp = SP;
+          const eye = (() => { let e = g$("spxeye"); if (!e) { e = document.createElement("div"); e.id = "spxeye"; e.className = "spx-eye x-hide"; e.setAttribute("aria-live", "polite"); document.body.appendChild(e); } return e; })();
+          const paintEye = () => { const on = SP.v > 0 && playing(); eye.classList.toggle("x-hide", !on); if (on) eye.innerHTML = `<i aria-hidden="true">👁</i><b dir="ltr">${SP.v}</b><span>${esc5(T("spxEyeS"))}</span>`; };
+          const onPres = (p, full) => {
+            presApply(SP.pres, p, full); const ks = Object.keys(SP.pres).filter((k) => k !== "p"), was = SP.v; SP.v = ks.length;
+            for (const k of ks) if (!SP.seenV[k]) { SP.seenV[k] = 1; const m = tv5(() => SP.pres[k].metas[0], {}); if (playing()) toast("👁 " + T("spxWatching", { x: clean(m.n, 20) || "…" })); }
+            if (SP.v > was) SP.full = true; // a new viewer: resend names + map
+            paintEye();
+          };
+          const idOf = (s) => { let i = SP.ids.get(s); if (!i) { i = SP.nid++; SP.ids.set(s, i); } return i; };
+          const samp = (s, max) => {
+            const g = s.seg, n = g ? g.length : 0; if (!n) return null;
+            const st = Math.max(1, Math.ceil(n / max)), h = g[0], o = [Math.round(h.x), Math.round(h.y)]; let px = o[0], py = o[1];
+            for (let i = st; i < n; i += st) { const q = g[i], x = Math.round(q.x), y = Math.round(q.y); o.push(x - px, y - py); px = x; py = y; }
+            if ((n - 1) % st) { const q = g[n - 1], x = Math.round(q.x), y = Math.round(q.y); o.push(x - px, y - py); }
+            return o;
+          };
+          const rankOf = (l) => { const al = snakes.filter((s) => s !== player && s.alive && !s.ad); return [al.filter((s) => s.len > l).length + 1, al.length + 1]; };
+          const skinK = (k) => (typeof k === "number" ? k : typeof k === "string" ? k.slice(0, 16) : 0);
+          const nameEnt = (s) => [clean(s.name, 24), skinK(s.skin), s === player ? 0 : tv5(() => B13C.lvOf(s), 0) | 0, typeof s.tm === "number" ? s.tm : -1, s.boss ? 1 : 0];
+          const frame = () => {
+            const me = player, h = me && me.seg && me.seg[0]; if (!h) return null;
+            const hx = h.x, hy = h.y, R = 1750, out = [], nm = {};
+            const add = (s, max) => { const id = idOf(s), pts = samp(s, max); if (!pts) return; out.push([id, Math.round(s.r * 10) / 10, (s.boost ? 1 : 0) | (s === me ? 2 : 0), ...pts]); if (SP.full || !SP.sent.has(id)) { nm[id] = nameEnt(s); SP.sent.add(id); } };
+            if (me.alive) add(me, 64);
+            const near = [];
+            for (const s of snakes) {
+              if (s === me || !s.alive || !s.seg || !s.seg.length || s.ad) continue;
+              const q = s.seg[0], d = Math.hypot(q.x - hx, q.y - hy); if (d < R + Math.min(900, s.seg.length * 4)) near.push([d, s]);
+            }
+            near.sort((a, b) => a[0] - b[0]);
+            for (let i = 0; i < near.length && i < 18; i++) add(near[i][1], near[i][0] < 900 ? 30 : 20);
+            const l = Math.round(me.len), rk = rankOf(me.len);
+            const F = { t: Date.now() - SP.t0, me: idOf(me), a: [me.alive ? 1 : 0, l, me.kills | 0, rk[0], rk[1]], s: out, c: [Math.round(hx), Math.round(hy)] };
+            if (SP.full || (SP.n & 15) === 0) F.m = [mapI | 0, Math.round(A)];
+            if (Object.keys(nm).length) F.n = nm;
+            if ((SP.n & 3) === 0) { // food near the camera, 2 Hz (a few colours)
+              const pal = [], fl = [];
+              for (const f of food) { if (fl.length >= 270) break; const dx = f.x - hx, dy = f.y - hy; if (dx > -1150 && dx < 1150 && dy > -720 && dy < 720) { const c = String(f.c || "#fff").slice(0, 24); let ci = pal.indexOf(c); if (ci < 0) { if (pal.length < 10) { pal.push(c); ci = pal.length - 1; } else ci = 0; } fl.push(Math.round(dx), Math.round(dy), ci); } }
+              F.f = fl; F.fc = pal;
+            }
+            SP.full = false; SP.n++; return F;
+          };
+          const tick = () => {
+            if (!SP.rt || !SP.rt.ok || SP.v <= 0 || !playing() || !player) return;
+            if (SP.lowQ && (SP.n & 3) === 3) { SP.n++; return; } // 6 Hz on Low / Battery saver
+            const F = tv5(frame, null); if (!F) return;
+            if (SP.rt.bc("f", F)) { SP.frames++; if (SP.frames < 400) SP.bytes += JSON.stringify(F).length; }
+          };
+          const stStop = (sum) => {
+            const sid = SP.sid, rt = SP.rt; SP.gen++; clearInterval(SP.hb); clearInterval(SP.iv); SP.sid = null; SP.rt = null; SP.v = 0; SP.pres = {}; paintEye();
+            if (rt) { if (sum && rt.ok) { rt.bc("o", sum); setTimeout(() => { try { rt.bc("o", sum); } catch (_) {} }, 700); } setTimeout(() => rt.close(), sum ? 2600 : 50); }
+            if (sid && isOn()) ON.rpc("spx_hb", { p_sid: sid, p_live: false, p_summary: sum || null }).catch(() => {});
+          };
+          const stStart = async () => {
+            if (SP.sid) stStop(null); if (!isOn()) return; const gen = ++SP.gen;
+            SP.t0 = Date.now(); SP.ids = new WeakMap(); SP.nid = 1; SP.sent = new Set(); SP.full = true; SP.n = 0; SP.seenV = {}; SP.lowQ = tv5(() => !!window.__ssBsv || S.q === "l" || S.q === "lo", false);
+            let r = null; try { r = await ON.rpc("spx_start", { p_mode: String(tv5(() => MD, "") || "").slice(0, 8), p_map: tv5(() => mapI, 0) | 0 }); } catch (_) { return; }
+            if (gen !== SP.gen || !r || !r.sid || !r.topic || r.fr === 0) return; // no friends: nobody could watch, no socket
+            SP.sid = r.sid;
+            SP.rt = mkRT(r.topic, "p", { join: () => { if (SP.rt) SP.rt.track({ o: 1 }); }, ps: onPres, deny: () => {}, lost: () => {} });
+            SP.hb = setInterval(() => { if (SP.sid && playing() && isOn()) ON.rpc("spx_hb", { p_sid: SP.sid, p_live: true }).catch(() => {}); }, 15000);
+            SP.iv = setInterval(tick, 125);
+          };
+          SPX.allow = true;
+          if (typeof NFH === "object" && NFH) {
+            NFH.start.push(() => { try { stStart(); } catch (_) {} });
+            NFH.over.push((l) => {
+              try { if (!SP.sid && !SP.gen) return; const L5 = Math.round(fin(l, tv5(() => player.len, 0))), rk = tv5(() => rankOf(L5), [0, 0]);
+                stStop({ len: L5, kills: tv5(() => player.kills | 0, 0), rank: rk[0], of: rk[1], secs: Math.round((Date.now() - SP.t0) / 1000) }); } catch (_) {}
+              return "";
+            });
+            NFH.home.push(() => { try { if (SP.sid || SP.rt) stStop({ len: Math.round(tv5(() => player.len, 0)), kills: tv5(() => player.kills | 0, 0), left: 1, secs: Math.round((Date.now() - SP.t0) / 1000) }); } catch (_) {} });
+          }
+
+          // ================= VIEWER SIDE =================
+          const VW = { on: false, f: null, sid: null, rt: null, fr: [], nm: {}, map: 0, A: 3000, food: [], fc: [], ft: 0, st: "", raf: 0, last: 0, off: null, cam: null, prev: null, wait: 0, lastRx: 0, chk: 0, hud: 0, ownerUp: false, pres: {} };
+          SPX.vw = VW;
+          const ov = (() => {
+            let e = g$("spx"); if (e) return e;
+            e = document.createElement("div"); e.id = "spx"; e.className = "x-ov spx x-hide"; e.setAttribute("role", "dialog"); e.setAttribute("aria-modal", "true");
+            e.innerHTML = `<canvas id="spxc" aria-hidden="true"></canvas><canvas id="spxmm" class="spx-mm" width="96" height="96" aria-hidden="true"></canvas>` +
+              `<div class="spx-bar"><span class="spx-live" aria-hidden="true"><i></i>LIVE</span><b class="spx-tt" id="spxtt"></b><button type="button" class="spx-x" data-spx="exit" id="spxx"></button></div>` +
+              `<div class="spx-hud" id="spxhud"></div><div class="spx-msg x-hide" id="spxmsg" role="status"></div><div class="spx-over x-hide" id="spxov"></div>`;
+            document.body.appendChild(e); return e;
+          })();
+          const cv = g$("spxc"), cx = cv.getContext("2d"), mm = g$("spxmm"), mx = mm.getContext("2d");
+          const setMsg = (t, spin) => { const m = g$("spxmsg"); if (!t) { m.classList.add("x-hide"); return; } m.classList.remove("x-hide"); m.innerHTML = (spin ? `<i class="spx-spin" aria-hidden="true"></i>` : "") + `<span>${esc5(t)}</span>`; };
+          const fname = () => clean(VW.f && VW.f.username, 20) || "…";
+          const fid = () => (VW.f ? VW.f.vip_id || VW.f.player_id : 0);
+          const paintBar = () => {
+            ov.dir = LANG === "ar" ? "rtl" : "ltr"; ov.classList.toggle("spx-off", VW.st !== "live");
+            const id = fid(), mp = tv5(() => (MAPS[VW.map] ? MAPS[VW.map].e + " " + _t("map" + VW.map) : ""), "");
+            g$("spxtt").innerHTML = `<span class="spx-eyei" aria-hidden="true">👁</span><span class="spx-ttx">${esc5(T("spxSpect", { x: "\u2068" + fname() + "\u2069" }))}</span>${id ? `<em class="spx-id" dir="ltr">#${id}</em>` : ""}${mp && VW.st === "live" ? `<small class="spx-mp">${esc5(mp)}</small>` : ""}`;
+            g$("spxx").textContent = T("spxExit");
+          };
+          const paintHud = (a) => {
+            const h = g$("spxhud"); if (!a) { h.innerHTML = ""; h.dataset.h = ""; return; }
+            const k = (ic, v, l) => `<span class="spx-c"><i aria-hidden="true">${ic}</i><b dir="ltr">${v}</b><small>${esc5(l)}</small></span>`;
+            const html = k("🐍", nf5(a[1]), T("spxLen")) + k("🏆", "#" + (a[3] | 0) + `<u>/${a[4] | 0}</u>`, T("spxRank")) + k("⚔️", nf5(a[2]), T("spxKills"));
+            if (h.dataset.h !== html) { h.innerHTML = html; h.dataset.h = html; }
+          };
+          const resize5 = () => { const d = Math.min(2, window.devicePixelRatio || 1), w = innerWidth, h = innerHeight; if (cv.width !== Math.round(w * d) || cv.height !== Math.round(h * d)) { cv.width = Math.round(w * d); cv.height = Math.round(h * d); } VW.dpr = d; };
+          addEventListener("resize", () => { if (VW.on) resize5(); });
+
+          // ---- frames: decode + validate (everything from the stream is treated as untrusted) ----
+          const decode = (p) => {
+            if (!p || typeof p !== "object" || !Array.isArray(p.s) || !Array.isArray(p.a)) return null;
+            const F = { t: fin(p.t, 0), me: fin(p.me, 0), a: p.a.slice(0, 5).map((x) => fin(x, 0)), S: new Map(), c: Array.isArray(p.c) ? [fin(p.c[0], 0), fin(p.c[1], 0)] : null };
+            for (const s of p.s.slice(0, 24)) {
+              if (!Array.isArray(s) || s.length < 5) continue;
+              const id = fin(s[0], -1), r = Math.max(4, Math.min(80, fin(s[1], 11))), fl = fin(s[2], 0) | 0, n = Math.min(80, (s.length - 3) >> 1), pts = new Float32Array(n * 2);
+              let x = fin(s[3], 0), y = fin(s[4], 0); pts[0] = x; pts[1] = y;
+              for (let i = 1; i < n; i++) { x += fin(s[3 + i * 2], 0); y += fin(s[4 + i * 2], 0); pts[i * 2] = x; pts[i * 2 + 1] = y; }
+              F.S.set(id, { r, fl, pts });
+            }
+            if (p.n && typeof p.n === "object") { let c = 0; for (const k in p.n) { if (c++ > 40) break; const e = p.n[k]; if (Array.isArray(e)) VW.nm[k] = [clean(e[0], 24), typeof e[1] === "number" || typeof e[1] === "string" ? (typeof e[1] === "string" ? e[1].slice(0, 16) : e[1]) : 0, fin(e[2], 0) | 0, fin(e[3], -1) | 0, e[4] ? 1 : 0]; } }
+            if (Array.isArray(p.m)) { const m = fin(p.m[0], 0) | 0; if (tv5(() => !!MAPS[m], false)) VW.map = m; VW.A = Math.max(500, Math.min(40000, fin(p.m[1], VW.A))); }
+            if (Array.isArray(p.f) && F.c) { const fl = [], pal = Array.isArray(p.fc) ? p.fc.slice(0, 10).map((c) => (/^(#[0-9a-f]{3,8}|rgba?\([0-9., %]+\)|hsla?\([0-9., %]+\))$/i.test(String(c)) ? String(c) : "#fff")) : [];
+              for (let i = 0; i + 2 < p.f.length && i < 900; i += 3) fl.push(F.c[0] + fin(p.f[i], 0), F.c[1] + fin(p.f[i + 1], 0), fin(p.f[i + 2], 0) | 0);
+              VW.food = fl; VW.fc = pal; }
+            return F;
+          };
+          const onBc = (ev, p) => {
+            if (!VW.on) return;
+            if (ev === "f") {
+              const F = decode(p); if (!F) return; const now = performance.now(); F.rx = now; VW.lastRx = now;
+              const o = now - F.t; VW.off = VW.off === null || o < VW.off ? o : VW.off + Math.min(30, (o - VW.off) * 0.02); // follows the fastest arrival, slowly forgives
+              VW.fr.push(F); if (VW.fr.length > 12) VW.fr.shift();
+              if (VW.st !== "live") { VW.st = "live"; setMsg(""); paintBar(); g$("spxov").classList.add("x-hide"); }
+              if (now - VW.hud > 250) { VW.hud = now; paintHud(F.a); if (!F.a[0]) setMsg(T("spxDown", { x: fname() })); else if (g$("spxmsg").textContent) setMsg(""); }
+            } else if (ev === "o") overShow(p && typeof p === "object" ? p : {});
+          };
+          const onVPres = (p, full) => { presApply(VW.pres, p, full); VW.ownerUp = !!VW.pres.p; };
+
+          // ---- render (own canvas; the game loop idles behind this opaque overlay) ----
+          const lerp = (a, b, t) => a + (b - a) * t;
+          const pick = (now) => {
+            const fr = VW.fr; if (!fr.length) return null; const rt = now - (VW.off || 0) - 230;
+            let b = fr.length - 1; while (b > 0 && fr[b - 1].t > rt) b--;
+            const B = fr[b], A5 = b > 0 ? fr[b - 1] : null;
+            if (!A5 || B.t <= rt) return { F: B, P: B, k: 1 };
+            const k = Math.max(0, Math.min(1, (rt - A5.t) / Math.max(1, B.t - A5.t))); return { F: B, P: A5, k };
+          };
+          const ptsAt = (sB, sA, k) => {
+            if (!sA || k >= 1) return sB.pts; const a = sA.pts, b = sB.pts, n = b.length, o = new Float32Array(n), m = Math.min(a.length, n);
+            for (let i = 0; i < n; i++) o[i] = i < m ? lerp(a[i], b[i], k) : b[i]; return o;
+          };
+          const smooth = (a) => { // one Chaikin pass: sampled points (up to ~40 world units apart) become a rounded body
+            const n = a.length >> 1; if (n < 3) return a; const o = new Float32Array((n - 1) * 4); o[0] = a[0]; o[1] = a[1]; let k = 2;
+            for (let i = 0; i < n - 1; i++) { const x0 = a[i * 2], y0 = a[i * 2 + 1], x1 = a[i * 2 + 2], y1 = a[i * 2 + 3];
+              if (i > 0) { o[k++] = x0 * 0.75 + x1 * 0.25; o[k++] = y0 * 0.75 + y1 * 0.25; }
+              if (i < n - 2) { o[k++] = x0 * 0.25 + x1 * 0.75; o[k++] = y0 * 0.25 + y1 * 0.75; } }
+            o[k++] = a[(n - 1) * 2]; o[k++] = a[(n - 1) * 2 + 1]; return o.subarray(0, k);
+          };
+          const colr = (sk, i) => { try { const c = segColor(sk, i); return typeof c === "string" ? c : "#57e389"; } catch (_) { return "#57e389"; } };
+          const tagRR = (x, y, w, h, r) => { cx.beginPath(); if (cx.roundRect) cx.roundRect(x, y, w, h, r); else cx.rect(x, y, w, h); };
+          const draw5 = (now) => {
+            const W = innerWidth, H = innerHeight, d = VW.dpr || 1; cx.setTransform(d, 0, 0, d, 0, 0);
+            const M = tv5(() => MAPS[VW.map], null) || { bg: "#05070f", floor: "#0a0f22", grid: "rgba(120,140,255,.12)", wc: "255,60,80" }, A5 = VW.A;
+            cx.fillStyle = M.bg || "#05070f"; cx.fillRect(0, 0, W, H);
+            const P = pick(now); if (!P) return;
+            const F = P.F, me = F.S.get(F.me), meA = P.P.S.get(F.me), hp = me ? ptsAt(me, meA, P.k) : null;
+            const tgx = hp ? hp[0] : F.c ? F.c[0] : A5 / 2, tgy = hp ? hp[1] : F.c ? F.c[1] : A5 / 2, len = F.a[1] || 20;
+            const vw = 1100 + Math.min(1300, len * 0.55), z = Math.max(W, H * 1.6) / vw;
+            const c = VW.cam || (VW.cam = { x: tgx, y: tgy, z }); const e = Math.min(1, ((now - (VW.last || now)) / 1000) * 6);
+            c.x = lerp(c.x, tgx, e); c.y = lerp(c.y, tgy, e); c.z = lerp(c.z, z, e * 0.3); if (Math.hypot(c.x - tgx, c.y - tgy) > 1500) { c.x = tgx; c.y = tgy; }
+            const Z = c.z, ox = W / 2 - c.x * Z, oy = H * 0.52 - c.y * Z, sx = (x) => ox + x * Z, sy = (y) => oy + y * Z;
+            // floor + texture + grid + walls
+            const fx0 = Math.max(0, sx(0)), fy0 = Math.max(0, sy(0)), fx1 = Math.min(W, sx(A5)), fy1 = Math.min(H, sy(A5));
+            if (fx1 > fx0 && fy1 > fy0) {
+              cx.fillStyle = M.floor || "#0a0f22"; cx.fillRect(fx0, fy0, fx1 - fx0, fy1 - fy0);
+              const pt = tv5(() => (VW.lowQ ? null : txPat(VW.map)), null);
+              if (pt) { try { const im = TXI[VW.map], sc = (fin(tv5(() => TXW[VW.map], 0), 0) || 600) / Math.max(1, Math.min(1024, im.naturalWidth || 1024)) * Z;
+                if (pt.setTransform) pt.setTransform(new DOMMatrix([sc, 0, 0, sc, ox, oy])); cx.fillStyle = pt; cx.fillRect(fx0, fy0, fx1 - fx0, fy1 - fy0);
+                cx.globalAlpha = fin(tv5(() => TXA[VW.map], 0.3), 0.3); cx.fillStyle = M.floor || "#000"; cx.fillRect(fx0, fy0, fx1 - fx0, fy1 - fy0); cx.globalAlpha = 1; } catch (_) {} }
+              cx.strokeStyle = M.grid || "rgba(255,255,255,.08)"; cx.lineWidth = 1; cx.beginPath(); const G = 120;
+              for (let x = Math.ceil(Math.max(0, (fx0 - ox) / Z) / G) * G; sx(x) <= fx1; x += G) { cx.moveTo(sx(x), fy0); cx.lineTo(sx(x), fy1); }
+              for (let y = Math.ceil(Math.max(0, (fy0 - oy) / Z) / G) * G; sy(y) <= fy1; y += G) { cx.moveTo(fx0, sy(y)); cx.lineTo(fx1, sy(y)); }
+              cx.stroke();
+              cx.strokeStyle = `rgba(${M.wc || "255,60,80"},.9)`; cx.lineWidth = Math.max(3, 14 * Z); cx.strokeRect(sx(0), sy(0), A5 * Z, A5 * Z);
+              cx.strokeStyle = `rgba(${M.wc || "255,60,80"},.25)`; cx.lineWidth = Math.max(8, 40 * Z); cx.strokeRect(sx(0), sy(0), A5 * Z, A5 * Z);
+            }
+            // food (2 Hz snapshot)
+            const fo = VW.food, pal = VW.fc, fr = Math.max(1.6, 5 * Z);
+            for (let i = 0; i < fo.length; i += 3) { const x = sx(fo[i]), y = sy(fo[i + 1]); if (x < -10 || y < -10 || x > W + 10 || y > H + 10) continue; cx.fillStyle = pal[fo[i + 2]] || "#fff"; cx.globalAlpha = 0.85; cx.beginPath(); cx.arc(x, y, fr, 0, 6.283); cx.fill(); }
+            cx.globalAlpha = 1;
+            // snakes: tail first, the watched friend on top
+            const list = []; for (const [id, s] of F.S) list.push([id, s]); list.sort((a, b) => (a[0] === F.me ? 1 : 0) - (b[0] === F.me ? 1 : 0));
+            const tags = [];
+            for (const [id, sB] of list) {
+              const sA = P.P.S.get(id), p = smooth(ptsAt(sB, sA, P.k)), n = p.length >> 1; if (n < 1) continue;
+              const nm = VW.nm[id] || ["", 0, 0, -1, 0], sk = nm[1], rr = sB.r * Z, isMe = id === F.me;
+              let vis = false; for (let i = 0; i < n; i += 3) { const x = sx(p[i * 2]), y = sy(p[i * 2 + 1]); if (x > -60 && y > -60 && x < W + 60 && y < H + 60) { vis = true; break; } }
+              if (!vis) continue;
+              cx.lineCap = "round"; cx.lineJoin = "round";
+              if (n > 1) {
+                const wd = (i) => { const t = i / Math.max(1, n - 1); return Math.max(2, rr * 2 * (t < 0.55 ? 1 : 1 - (t - 0.55) * 1.4)); };
+                if (sB.fl & 1) { cx.beginPath(); cx.moveTo(sx(p[0]), sy(p[1])); for (let i = 1; i < n; i++) cx.lineTo(sx(p[i * 2]), sy(p[i * 2 + 1])); cx.strokeStyle = "rgba(255,255,255,.2)"; cx.lineWidth = rr * 2 + 9; cx.stroke(); } // boost glow
+                cx.strokeStyle = "rgba(0,0,0,.32)"; // outline, tapering with the body
+                for (let i = n - 1; i >= 1; i--) { cx.lineWidth = wd(i) + 3; cx.beginPath(); cx.moveTo(sx(p[i * 2]), sy(p[i * 2 + 1])); cx.lineTo(sx(p[i * 2 - 2]), sy(p[i * 2 - 1])); cx.stroke(); }
+                for (let i = n - 1; i >= 1; i--) { // banded body
+                  cx.strokeStyle = colr(sk, i * 2); cx.lineWidth = wd(i);
+                  cx.beginPath(); cx.moveTo(sx(p[i * 2]), sy(p[i * 2 + 1])); cx.lineTo(sx(p[i * 2 - 2]), sy(p[i * 2 - 1])); cx.stroke();
+                }
+              }
+              const hx = sx(p[0]), hy = sy(p[1]), an = n > 1 ? Math.atan2(p[1] - p[3], p[0] - p[2]) : 0;
+              if (isMe) { cx.strokeStyle = "rgba(255,212,90," + (0.45 + 0.25 * Math.sin(now / 260)) + ")"; cx.lineWidth = 3; cx.beginPath(); cx.arc(hx, hy, rr * 1.9 + 6, 0, 6.283); cx.stroke(); }
+              cx.fillStyle = colr(sk, 0); cx.beginPath(); cx.arc(hx, hy, rr * 1.12, 0, 6.283); cx.fill();
+              for (const sd of [-1, 1]) { const ex = hx + Math.cos(an) * rr * 0.45 + Math.cos(an + sd * 1.57) * rr * 0.5, ey = hy + Math.sin(an) * rr * 0.45 + Math.sin(an + sd * 1.57) * rr * 0.5;
+                cx.fillStyle = "#fff"; cx.beginPath(); cx.arc(ex, ey, Math.max(1.5, rr * 0.36), 0, 6.283); cx.fill();
+                cx.fillStyle = "#111"; cx.beginPath(); cx.arc(ex + Math.cos(an) * rr * 0.12, ey + Math.sin(an) * rr * 0.12, Math.max(0.8, rr * 0.18), 0, 6.283); cx.fill(); }
+              tags.push([hx, hy - rr * 1.3 - 8, isMe ? fname() : nm[0], isMe ? 0 : nm[2], isMe, nm[3]]);
+            }
+            // name tags (pill: level badge + name, the friend gold with his ID)
+            cx.textBaseline = "middle"; cx.textAlign = "left";
+            for (const [x0, y0, name, lv, isMe, tm] of tags) {
+              if (!name) continue; const id = isMe ? "#" + fid() : "";
+              cx.font = `${isMe ? 800 : 700} 11px system-ui, sans-serif`; const tw = Math.min(140, cx.measureText(name).width), iw = id ? cx.measureText(id).width + 6 : 0;
+              const bw = lv ? 8 + String(lv).length * 6 : 0, h = 18, w = 8 + bw + (lv ? 4 : 0) + tw + iw + 8, x = Math.round(x0 - w / 2), y = Math.round(y0 - h);
+              tagRR(x, y, w, h, 9); cx.fillStyle = isMe ? "rgba(26,20,6,.88)" : "rgba(6,10,24,.8)"; cx.fill();
+              cx.lineWidth = isMe ? 1.6 : 1; cx.strokeStyle = isMe ? "#ffd45a" : "rgba(255,255,255,.35)"; cx.stroke();
+              let tx = x + 8;
+              if (lv) { tagRR(tx, y + 3, bw, h - 6, 4); cx.fillStyle = tv5(() => ["#cd7f32", "#c9d3e0", "#ffcc33", "#36e0ff", "#3d7bff", "#b45cff", "#ff3b3b", "#ffffff"][B13.tier(lv)], "#c9d3e0"); cx.fill();
+                cx.fillStyle = "#1a1206"; cx.font = "800 9px system-ui, sans-serif"; cx.textAlign = "center"; cx.fillText(String(lv), tx + bw / 2, y + h / 2 + 0.5); cx.textAlign = "left"; tx += bw + 4; }
+              cx.font = `${isMe ? 800 : 700} 11px system-ui, sans-serif`; cx.fillStyle = isMe ? "#ffe9a8" : "#fff"; cx.fillText(name, tx, y + h / 2 + 0.5, 140);
+              if (id) { cx.fillStyle = "#ffd45a"; cx.fillText(id, tx + tw + 6, y + h / 2 + 0.5); }
+            }
+            // minimap: arena + the friend + nearby snakes
+            if ((VW.mmT = (VW.mmT || 0) + 1) % 6 === 0) {
+              const S5 = 96, k = S5 / A5; mx.clearRect(0, 0, S5, S5); mx.fillStyle = "rgba(6,10,26,.78)"; mx.fillRect(0, 0, S5, S5); mx.strokeStyle = "rgba(120,170,255,.6)"; mx.lineWidth = 2; mx.strokeRect(1, 1, S5 - 2, S5 - 2);
+              for (const [id, s] of F.S) { if (id === F.me) continue; mx.fillStyle = "rgba(255,255,255,.55)"; mx.fillRect(s.pts[0] * k - 1, s.pts[1] * k - 1, 2.5, 2.5); }
+              if (hp) { mx.fillStyle = "#ffd45a"; mx.beginPath(); mx.arc(hp[0] * k, hp[1] * k, 3.5, 0, 6.283); mx.fill(); }
+            }
+          };
+          const loop5 = (now) => {
+            if (!VW.on) { VW.raf = 0; return; }
+            VW.raf = requestAnimationFrame(loop5);
+            if (document.hidden) return;
+            if (VW.lowQ && now - (VW.last || 0) < 31) return; // 30 fps on Low / Battery saver
+            try { draw5(now); } catch (_) {}
+            VW.last = now;
+          };
+
+          // ---- open / connect / over / wait / exit ----
+          const disconnect = () => { if (VW.rt) { VW.rt.close(); VW.rt = null; } VW.sid = null; VW.fr = []; VW.pres = {}; VW.ownerUp = false; VW.off = null; };
+          const connect = (r) => {
+            disconnect(); VW.sid = r.sid; VW.st = "conn"; VW.lastRx = performance.now(); VW.cam = null; VW.nm = {}; VW.food = []; VW.map = fin(r.map, VW.map) | 0;
+            paintBar(); paintHud(null); g$("spxov").classList.add("x-hide"); setMsg(T("spxConn", { x: fname() }), 1);
+            const myName = clean(tv5(() => P.name || ON.st.profile.username, ""), 20);
+            VW.rt = mkRT(r.topic, ON.uid, { join: () => { if (VW.rt) VW.rt.track({ u: ON.uid, n: myName }); }, bc: onBc, ps: onVPres, deny: () => check(true), lost: () => check(true) });
+          };
+          const tiles = (s) => {
+            const k = (v, l) => `<span class="spx-t"><b dir="ltr">${v}</b><small>${esc5(l)}</small></span>`, mm5 = (x) => { x = x | 0; return Math.floor(x / 60) + ":" + String(x % 60).padStart(2, "0"); };
+            return `<div class="spx-tl">${k(nf5(s.len), T("spxLen"))}${k(nf5(s.kills), T("spxKills"))}${k(s.rank ? "#" + (s.rank | 0) : "—", T("spxRank"))}${k(s.secs ? mm5(s.secs) : "—", T("spxTime"))}</div>`;
+          };
+          const overShow = (s) => {
+            if (!VW.on) return; disconnect(); VW.st = "over"; setMsg(""); paintBar();
+            const has = s && (fin(s.len, -1) >= 0 || fin(s.kills, -1) >= 0);
+            const o = g$("spxov"); o.classList.remove("x-hide");
+            o.innerHTML = `<div class="spx-oc"><p class="spx-ok">${esc5(T("spxOverK"))}</p><h3><bdi>${esc5(fname())}</bdi></h3><p class="spx-os">${esc5(T(s && s.left ? "spxLeft" : "spxOver"))}</p>` +
+              (has ? tiles(s) : "") + `<div class="spx-ob"><button type="button" class="x-btn x-main" data-spx="again">👁 ${esc5(T("spxAgain"))}</button><button type="button" class="x-btn x-sub" data-spx="exit">${esc5(T("spxExit"))}</button></div></div>`;
+          };
+          const check = async (lost) => {
+            if (!VW.on || !VW.f || VW.chk) return; VW.chk = 1; let r = null;
+            try { r = await ON.rpc("spx_watch", { p_friend: VW.f.id }); } catch (e) { r = { err: tv5(() => e.message || e.code, "") }; }
+            VW.chk = 0; if (!VW.on) return;
+            if (r && r.live && r.sid) { if (r.sid !== VW.sid || lost || !VW.rt) connect(r); else if (VW.st === "live" && performance.now() - VW.lastRx > 5000) setMsg(T("spxLost"), 1); return; }
+            if (r && r.err) { if (/spx_private|spx_not_friend/.test(String(r.err))) { overMsg(T(/private/.test(r.err) ? "spxPriv" : "spxNoFr")); return; } if (lost) setMsg(T("spxLost"), 1); return; }
+            if (VW.st === "wait") return;
+            overShow((r && r.summary) || {});
+          };
+          const overMsg = (t) => { disconnect(); VW.st = "over"; setMsg(""); const o = g$("spxov"); o.classList.remove("x-hide");
+            o.innerHTML = `<div class="spx-oc"><h3><bdi>${esc5(fname())}</bdi></h3><p class="spx-os">${esc5(t)}</p><div class="spx-ob"><button type="button" class="x-btn x-sub" data-spx="exit">${esc5(T("spxExit"))}</button></div></div>`; };
+          const waitStart = () => { disconnect(); VW.st = "wait"; VW.wait = Date.now(); g$("spxov").classList.add("x-hide"); paintHud(null); paintBar(); setMsg(T("spxWait", { x: fname() }), 1); };
+          setInterval(() => {
+            if (!VW.on) return; const now = performance.now();
+            if (VW.st === "wait") { if (Date.now() - VW.wait > 15 * 60000) { overMsg(T("spxWaitEnd", { x: fname() })); return; } if ((now / 1000 | 0) % 5 === 0) check(false); return; }
+            if ((VW.st === "live" || VW.st === "conn") && now - VW.lastRx > (VW.st === "conn" ? 9000 : 7000)) { VW.lastRx = now; check(false); }
+          }, 1000);
+          const exit5 = () => {
+            if (!VW.on) return; VW.on = false; disconnect(); ov.classList.add("x-hide"); if (VW.raf) cancelAnimationFrame(VW.raf); VW.raf = 0;
+            const back = VW.prev; VW.prev = null; try { show(back || "menu"); } catch (_) {}
+            setTimeout(() => { try { if (SPX.poll) SPX.poll(true); } catch (_) {} }, 300);
+          };
+          SPX.exit = exit5;
+          const open5 = async (id) => {
+            if (!isOn() || playing() || !id || VW.on || SPX.busy) return;
+            let r; SPX.busy = 1; setTimeout(() => { SPX.busy = 0; }, 1500);
+            try { r = await ON.rpc("spx_watch", { p_friend: id }); } catch (e) { const m = tv5(() => e.message || e.code, ""); toast(/private/.test(m) ? T("spxPriv") : /not_friend/.test(m) ? T("spxNoFr") : tv5(() => ON.err(e), T("spxLost"))); return; }
+            if (playing()) return;
+            VW.f = { id, username: r.username, player_id: r.player_id, vip_id: r.vip_id }; VW.on = true; VW.lowQ = tv5(() => !!window.__ssBsv || S.q === "l" || S.q === "lo", false);
+            VW.prev = tv5(() => OV.find((o) => g$(o) && !g$(o).classList.contains("x-hide")), "menu") || "menu";
+            try { const pp = g$("b13pop"); if (pp && !pp.classList.contains("x-hide")) pp.classList.add("x-hide"); } catch (_) {}
+            try { show(null); } catch (_) {}
+            resize5(); ov.classList.remove("x-hide"); paintBar(); paintHud(null); cx.setTransform(1, 0, 0, 1, 0, 0); cx.fillStyle = "#04070f"; cx.fillRect(0, 0, cv.width, cv.height);
+            if (!VW.raf) VW.raf = requestAnimationFrame(loop5);
+            if (r.live && r.sid) connect(r); else if (r.summary) overShow(r.summary); else { VW.st = ""; overShow({}); g$("spxov").querySelector(".spx-os").textContent = T("spxNotNow", { x: fname() }); }
+          };
+          SPX.open = open5;
+          ov.addEventListener("click", (e) => {
+            const b = e.target.closest && e.target.closest("[data-spx]"); if (!b) return; e.preventDefault(); e.stopPropagation();
+            if (b.dataset.spx === "exit") exit5(); else if (b.dataset.spx === "again") waitStart();
+          });
+          addEventListener("keydown", (e) => { if (VW.on && e.key === "Escape") exit5(); });
+
+          // ================= friends list / player card: live status + Watch =================
+          const LIVE = new Map(); let pollT = 0, pollBusy = 0;
+          SPX.live = LIVE;
+          const visible = (el) => !!el && el.offsetParent !== null && el.getClientRects().length > 0;
+          const rowsJ = () => { const l = g$("jfl"); return visible(l) ? [...l.querySelectorAll(".j-frow")] : []; };
+          const rowsOld = () => { const l = g$("onfrl"); return visible(l) ? [...l.querySelectorAll(".b13-frr")] : []; };
+          const cards = () => [...document.querySelectorAll(".j-pc[data-jid]")].filter(visible);
+          const anyVis = () => rowsJ().length || rowsOld().length || cards().length;
+          const wBtn = (id, cls, txt) => `<button type="button" class="${cls} spx-w" data-spxw="${esc5(id)}" aria-label="${esc5(T("spxWatchL"))}">👁 <span>${esc5(txt)}</span></button>`;
+          const decorate = () => {
+            for (const r of rowsJ()) {
+              const b = r.querySelector("[data-jpa][data-id]"), id = b && b.dataset.id, w = r.querySelector(".spx-w"); if (!id) continue;
+              if (LIVE.has(id)) { if (!w) { r.insertAdjacentHTML("beforeend", `<button type="button" class="spx-wbar spx-w" data-spxw="${esc5(id)}" aria-label="${esc5(T("spxWatchL"))}"><span class="spx-live"><i></i>LIVE</span><b>👁 ${esc5(T("spxWatchLive"))}</b></button>`); r.classList.add("spx-lv"); const st = r.querySelector(".j-fn .j-pmu"); if (st) st.textContent = T("b13InMatch"); const dt = r.querySelector(".b13-dot"); if (dt) dt.className = "b13-dot m"; } }
+              else if (w) { w.remove(); r.classList.remove("spx-lv"); }
+            }
+            for (const r of rowsOld()) {
+              const b = r.querySelector("[data-fa][data-id]"), id = b && b.dataset.id, w = r.querySelector(".spx-w"); if (!id) continue;
+              if (LIVE.has(id)) { if (!w) { const m = r.querySelector('[data-fa="more"]'); if (m) m.insertAdjacentHTML("beforebegin", wBtn(id, "on-ib b13-inv", T("spxWatch"))); } }
+              else if (w) w.remove();
+            }
+            for (const c of cards()) {
+              const id = c.dataset.jid, w = c.querySelector(".spx-w"), ba = c.querySelector(".j-pba"); if (!id || !ba) continue;
+              if (LIVE.has(id)) { if (!w) { ba.insertAdjacentHTML("afterbegin", wBtn(id, "x-btn x-main spx-wc", T("spxWatchLive"))); const mu = c.querySelector(".j-pmu"); if (mu) mu.textContent = T("b13InMatch"); } }
+              else if (w) w.remove();
+            }
+          };
+          const poll = async (force) => {
+            if (pollBusy || !isOn() || playing()) return; const n = Date.now(); if (!force && n - pollT < 8000) return; pollT = n; pollBusy = 1;
+            try { const r = await ON.rpc("spx_friends"); LIVE.clear(); for (const x of r || []) if (x && x.id) LIVE.set(String(x.id), x); } catch (_) {}
+            pollBusy = 0; decorate();
+          };
+          SPX.poll = poll;
+          // privacy row: Settings › Privacy › "Friends can watch my matches"
+          let allowLoaded = 0;
+          const privRow = () => {
+            const b = g$("ksetb"); if (!b || !visible(b)) return; const anchor = b.querySelector('[data-kseg="pv:show_online"]'); if (!anchor || b.querySelector(".spx-sec")) return;
+            const sec = anchor.closest(".k-sec"); if (!sec) return;
+            const on = SPX.allow !== false, o = [["1", T("kOn")], ["0", T("kOff")]];
+            sec.insertAdjacentHTML("afterend", `<section class="k-sec spx-sec"><div class="k-row"><span class="k-rl">👁 ${esc5(T("spxSetT"))}<small>${esc5(T("spxSetS"))}</small></span><span class="k-rc"><div class="k-seg" data-spxseg="1">${o.map(([v, l]) => `<button type="button" data-v="${v}" class="${(on ? "1" : "0") === v ? "on" : ""}">${esc5(l)}</button>`).join("")}</div></span></div></section>`);
+            if (!allowLoaded && isOn()) { allowLoaded = 1; ON.rpc("spx_get").then((r) => { SPX.allow = !(r && r.allow === false); const s = b.querySelector(".spx-sec"); if (s) s.remove(); privRow(); }).catch(() => { allowLoaded = 0; }); }
+          };
+          document.addEventListener("click", (e) => {
+            const t = e.target.closest && e.target.closest("[data-spxw], [data-spxseg] button"); if (!t) return;
+            e.preventDefault(); e.stopPropagation();
+            if (t.dataset.spxw) { open5(t.dataset.spxw); return; }
+            const v = t.dataset.v === "1", was = SPX.allow !== false; if (v === was) return;
+            const rep = () => { const s = document.querySelector(".spx-sec"); if (s) s.remove(); privRow(); };
+            SPX.allow = v; rep(); const q = (SPX.aseq = (SPX.aseq | 0) + 1); // optimistic; the newest tap wins
+            ON.rpc("spx_set_allow", { p_allow: v }).then((r) => { if (q !== SPX.aseq) return; SPX.allow = !(r && r.allow === false); toast(T("kSaved")); rep(); })
+              .catch((er) => { if (q !== SPX.aseq) return; SPX.allow = was; rep(); toast(tv5(() => ON.err(er), "…")); });
+          }, true);
+          setInterval(() => {
+            if (playing() || VW.on || document.hidden) return;
+            try { privRow(); } catch (_) {}
+            if (!anyVis()) return;
+            try { decorate(); } catch (_) {}
+            poll(false);
+          }, 1000);
+          if (typeof NFH === "object" && NFH && NFH.relang) NFH.relang.push(() => { try { document.querySelectorAll(".spx-w, .spx-sec").forEach((x) => x.remove()); decorate(); if (VW.on) paintBar(); } catch (_) {} });
+          SPX.bench = (n) => { const t0 = performance.now(); let b = 0; const sv = [SP.full, SP.n, SP.sent]; SP.sent = new Set(); for (let i = 0; i < (n | 0); i++) { const F = frame(); if (F) b += JSON.stringify(F).length; } SP.full = sv[0]; SP.n = sv[1]; SP.sent = sv[2]; return { ms: (performance.now() - t0) / Math.max(1, n | 0), bytes: Math.round(b / Math.max(1, n | 0)) }; };
+          SPX.stats = () => ({ streaming: !!SP.sid, viewers: SP.v, frames: SP.frames, avgBytes: SP.frames ? Math.round(SP.bytes / Math.min(SP.frames, 400)) : 0, watching: VW.on, vst: VW.st, live: [...LIVE.keys()] });
         }
         requestAnimationFrame(loop);
       })();
@@ -18961,6 +19564,150 @@ body.s13s-lq .s13s-ban::after, body.s13s-lq .s13s-lfr::before, body.s13s-lq .jid
 html.ss-reduced .s13s-ban::after, html.ss-reduced .s13s-lfr::before, html.ss-reduced .jid.s13s-glow, html.ss-reduced .s13s-lt { animation: none !important; }
 /* the Controls & gameplay tab keeps its full name: it takes the width it needs, the others share the rest */
 .k-stabs button[data-ksec="ctl"] { flex: 0 0 auto !important; padding: 0 12px; overflow: visible; }
+</style>
+<style id="ss13s1-hf">
+/* 13s1 opponent card: compact, one stats row, one action row, ✕ close */
+.b13-pb:has(> .ssb-card) { width: min(480px, calc(100vw - 20px)) !important; max-height: calc(100vh - 12px) !important; max-height: calc(100dvh - 12px) !important; min-height: 0 !important; height: auto !important; padding: 10px 12px !important; box-sizing: border-box; }
+.ssb-card { position: relative; min-width: 0 !important; width: 100%; max-width: none !important; display: block !important; height: auto !important; min-height: 0 !important; }
+.ssb-card .ssb-hd { padding-inline-end: 38px; min-height: 0; }
+.ssb-card .ssb-fl { font-size: 26px; line-height: 1; flex: none; }
+.ssb-card .ssb-x { position: absolute; top: 0; inset-inline-end: 0; width: 32px !important; height: 32px !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important; border-radius: 50% !important; display: grid; place-items: center; background: rgba(8, 14, 44, .72) !important; border: 1.5px solid rgba(255, 214, 89, .55) !important; color: #ffe7a8; font: 800 15px/1 var(--sans, system-ui); cursor: pointer; z-index: 2; }
+.ssb-card .ssb-sts { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; grid-auto-rows: auto; gap: 6px !important; margin: 10px 0 0 !important; }
+.ssb-card .ssb-st { align-items: center; justify-content: center; text-align: center; padding: 6px 4px !important; gap: 1px; }
+.ssb-card .ssb-st b { font-size: 15px; line-height: 1.15; white-space: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; }
+.ssb-card .ssb-st small { font-size: 11px; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ssb-card .ssb-now { margin: 6px 0 0 !important; text-align: start; }
+.ssb-card .ssb-acts { margin-top: 10px !important; }
+.ssb-card .ssb-msg { margin: 6px 0 0 !important; font-size: 12px; text-align: center; }
+.ssb-card .ssb-msg:empty { display: none; }
+@media (max-height: 420px) { .ssb-card .ssb-sts { margin-top: 8px !important; } .ssb-card .ssb-acts { margin-top: 8px !important; } .ssb-card .ssb-st b { font-size: 14px; } }
+/* 13s1 Game Over: killed-by strip keeps the level chip inside; the cause wraps to 2 lines */
+body #over #pxrank .j-dc.ss-kb { align-items: center; overflow: hidden; }
+body #over #pxrank .ss-kbt { flex-wrap: wrap; white-space: normal; column-gap: 6px; row-gap: 1px; min-width: 0; max-width: 100%; }
+body #over #pxrank .ss-kbt > small:not(.ssb-lv) { flex: 0 0 100%; }
+body #over #pxrank .ss-kbt > b { flex: 0 0 auto; min-width: 0; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body #over #pxrank .ss-kbt small .h-ei, body #over #pxrank .ss-kbt small img { width: 14px !important; height: 14px !important; min-width: 0 !important; flex: none; display: inline-block; vertical-align: -3px; margin-inline-end: 3px; }
+body #over #pxrank .ss-kbt .ssb-lv { flex: none; margin-inline-start: 0 !important; white-space: nowrap; }
+body #over #pxrank .ss-kbm { white-space: normal !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2 !important; }
+/* 13s1 Game Over: Final Rank card and the stat tiles share the same column edges (no more scale(.8) on short screens) */
+body #over #pxrank { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; justify-self: stretch; margin-inline: 0 !important; }
+body #over .j-col0 > .x-res { width: 100% !important; box-sizing: border-box; margin-inline: 0 !important; }
+body #over .j-col0 > #ngo { width: 100%; text-align: center !important; margin-inline: 0 !important; }
+@media (max-height: 500px) {
+  body #over #pxrank { transform: none; margin-block: 0 !important; padding: 7px 12px !important; column-gap: 10px !important; }
+  body #over #pxrank .j-rav { width: 58px !important; height: 58px !important; }
+  body #over #pxrank .j-rk b { font-size: 34px !important; }
+  body #over #pxrank .j-rk small { font-size: 10px !important; }
+}
+/* 13s1: gold coin asset sized to the text wherever it replaces the 🪙 emoji (shop rows, buttons, toasts) */
+i.q13-coin, #skl i.q13-coin, .x-skl i.q13-coin, #shop i.q13-coin, #toast i.q13-coin { font-size: inherit !important; width: 1.15em !important; height: 1.15em !important; min-width: 0 !important; min-height: 0 !important; max-width: 1.15em !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: url(ui/ic/coin.webp?v=13s1) center / contain no-repeat !important; flex: none !important; display: inline-block !important; vertical-align: -0.2em; margin: 0 0 0 3px !important; position: static !important; }
+[dir="rtl"] i.q13-coin { margin: 0 3px 0 0 !important; }
+/* 13s1: toast above the content while the Shop is open (it covered the Lucky wheel) */
+body:has(#shop:not(.x-hide)) #toast { top: calc(max(8px, env(safe-area-inset-top)) + 46px) !important; bottom: auto !important; transform: translateX(-50%) !important; left: 50% !important; right: auto !important; }
+/* 13s1: bottom nav without Battle: 4 even items, centered */
+#b13h .h-nav { justify-content: space-evenly !important; }
+#b13h .h-nav > .nv { flex: 0 1 25%; }
+</style>
+<style id="ss13s1-teams">
+/* 13s1 team match: spectate bar, rich team leaderboard, Game Over columns top-aligned */
+.tmsp { position: fixed; left: 50%; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 70px); transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border-radius: 14px; background: rgba(6, 12, 34, .88); border: 1px solid rgba(255, 214, 89, .6); color: #fff; font: 800 14px/1.2 var(--sans, system-ui); box-shadow: 0 8px 24px rgba(0, 0, 0, .5); max-width: calc(100vw - 24px); }
+.tmsp.x-hide { display: none !important; }
+.tmsp .tmsp-n { min-height: 34px; padding: 4px 12px; border-radius: 10px; border: 1px solid rgba(79, 227, 255, .6); background: rgba(16, 34, 80, .9); color: #e8f6ff; font: 800 13px/1 var(--sans, system-ui); white-space: nowrap; cursor: pointer; }
+body #over .x-box > .p10-oc { justify-content: flex-start !important; }
+#tmr .tmb-t { border-radius: 12px; border: 1px solid rgba(255, 255, 255, .12); border-inline-start: 4px solid var(--tc); background: rgba(10, 16, 44, .72); padding: 6px 8px; margin: 0 0 6px; }
+#tmr .tmb-t.own { border-color: rgba(255, 214, 89, .75); border-inline-start-color: var(--tc); background: rgba(46, 36, 8, .55); box-shadow: 0 0 0 1px rgba(255, 214, 89, .25) inset; }
+#tmr .tmb-t.out { opacity: .72; }
+#tmr .tmb-h { display: flex; align-items: center; gap: 8px; font: 800 14px/1.2 var(--sans, system-ui); }
+#tmr .tmb-h > i { font-style: normal; min-width: 22px; text-align: center; color: #ffe07a; }
+#tmr .tmb-h > b { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#tmr .tmb-h > span { color: #7cff9e; font-weight: 900; }
+#tmr .tmb-out { font: 800 10px/1 var(--sans, system-ui); text-transform: uppercase; color: #ff9aa2; border: 1px solid rgba(255, 90, 100, .5); border-radius: 6px; padding: 2px 5px; }
+#tmr .tmb-ms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin-top: 5px; }
+#tmr .tmb-m { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 40px; padding: 3px 6px; border-radius: 9px; border: 1px solid rgba(255, 255, 255, .08); background: rgba(255, 255, 255, .04); color: #fff; text-align: start; cursor: pointer; font: inherit; }
+#tmr .tmb-m.me { border-color: rgba(255, 214, 89, .8); background: rgba(255, 214, 89, .14); }
+#tmr .tmb-m.dead { opacity: .65; }
+#tmr .tmb-av { flex: none; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-size: 18px; }
+#tmr .tmb-av img, #tmr .tmb-av .x-avi, #tmr .tmb-av > * { width: 30px !important; height: 30px !important; border-radius: 50%; object-fit: cover; flex: none; }
+#tmr .tmb-nm { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; gap: 1px; }
+#tmr .tmb-nm b { font: 800 12.5px/1.15 var(--sans, system-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#tmr .tmb-sub { display: flex; align-items: center; gap: 4px; min-width: 0; }
+#tmr .tmb-sub .ssb-lv { font-size: 9.5px; padding: 1px 5px; margin: 0 !important; }
+#tmr .tmb-id { font: 800 9.5px/1 var(--sans, system-ui); color: #ffe07a; }
+#tmr .tmb-l { flex: none; font: 900 12px/1 var(--sans, system-ui); color: #c9d4ff; }
+@media (max-width: 700px) { #tmr .tmb-ms { grid-template-columns: minmax(0, 1fr); } }
+</style>
+<style id="ss13s1-pf">
+#kprof > .x-box > .p10-hd { background: linear-gradient(180deg, #0a1030, #10184a) !important; opacity: 1 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; margin-left: -12px !important; margin-right: -12px !important; width: auto !important; box-sizing: border-box; isolation: isolate; box-shadow: 0 8px 14px rgba(2, 4, 16, .65) !important; }
+#kprof > .x-box > .p10-hd::after { content: ""; position: absolute; inset: 0 -40px; z-index: -1; background: #0a1030; pointer-events: none; }
+#kprof .k-body { padding-top: 6px; }
+#kprof .k-tabs { background: #0b1238 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+#kprof .k-hero { scroll-margin-top: calc(var(--p10h, 44px) + 6px); }
+#kprof .k-st { justify-content: flex-start !important; padding: 9px 4px 7px !important; gap: 3px !important; overflow: visible !important; }
+#kprof .k-st > .k-ic { display: block; flex: none !important; width: 22px !important; height: 22px !important; margin: 0 auto !important; background-size: contain !important; background-position: center !important; }
+@media (max-height: 400px) { #kprof .k-st { padding: 7px 4px 5px !important; min-height: 0 !important; } #kprof .k-st > .k-ic { width: 19px !important; height: 19px !important; } }
+</style><style id="ss13s1-perf">.s13s-bsvh { margin: -2px 0 6px; font-size: 11.5px; line-height: 1.3; color: #9fb0e6; }</style><style id="s13s-spec">
+/* 13s Spectate Friends (s13s-spec-v1) */
+#spx.x-ov { z-index: 150; background: #04070f; overflow: hidden; touch-action: none; animation: none; display: block; padding: 0; }
+#spx.x-hide { display: none !important; }
+#spxc { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#spx .spx-mm { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); inset-inline-start: calc(env(safe-area-inset-left, 0px) + 10px); width: 72px; height: 72px; border-radius: 10px; opacity: .92; pointer-events: none; }
+#spx .spx-bar { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; max-width: calc(100% - 200px); box-sizing: border-box;
+  padding: 5px 6px 5px 10px; border-radius: 999px; background: linear-gradient(180deg, rgba(20, 16, 4, .9), rgba(8, 8, 16, .9)); border: 1px solid rgba(255, 212, 90, .55); box-shadow: 0 4px 18px rgba(0, 0, 0, .45); color: #fff6d6; }
+#spx[dir="rtl"] .spx-bar { padding: 5px 10px 5px 6px; }
+@keyframes spx-bl { 50% { opacity: .25; } }
+#spx .spx-tt { display: flex; align-items: center; gap: 6px; min-width: 0; font: 800 13px/1.15 system-ui, sans-serif; }
+#spx .spx-ttx { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+#spx .spx-eyei { flex: none; }
+#spx .spx-id { flex: none; font-style: normal; font-weight: 800; font-size: 11px; color: #1a1206; background: linear-gradient(180deg, #ffe08a, #e8b23a); padding: 2px 6px; border-radius: 6px; }
+#spx .spx-mp { flex: none; font-weight: 600; font-size: 11px; opacity: .75; white-space: nowrap; }
+#spx .spx-x { flex: none; min-width: 64px; min-height: 32px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .35); background: rgba(255, 255, 255, .12); color: #fff; font: 800 13px/1 system-ui, sans-serif; cursor: pointer; }
+#spx .spx-x:active { transform: scale(.96); }
+#spx .spx-hud { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 54px); left: 50%; transform: translateX(-50%); display: flex; gap: 6px; pointer-events: none; }
+#spx .spx-c { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(6, 10, 26, .78); border: 1px solid rgba(120, 170, 255, .35); color: #fff; font: 700 11px/1 system-ui, sans-serif; white-space: nowrap; }
+#spx .spx-c i { font-style: normal; }
+#spx .spx-c b { font-size: 14px; font-weight: 800; }
+#spx .spx-c b u { text-decoration: none; font-size: 11px; opacity: .65; font-weight: 700; }
+#spx .spx-c small { font-size: 10px; opacity: .7; font-weight: 600; }
+#spx .spx-msg { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); transform: translateX(-50%); display: flex; align-items: center; gap: 8px; max-width: calc(100% - 40px);
+  padding: 9px 16px; border-radius: 999px; background: rgba(6, 10, 26, .86); border: 1px solid rgba(255, 255, 255, .18); color: #fff; font: 700 13px/1.2 system-ui, sans-serif; text-align: center; }
+#spx .spx-spin { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .25); border-top-color: #ffd45a; animation: spx-sp .9s linear infinite; }
+@keyframes spx-sp { to { transform: rotate(360deg); } }
+#spx .spx-over { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(3, 5, 14, .62); padding: 12px; box-sizing: border-box; }
+#spx .spx-oc { width: min(440px, 100%); max-height: calc(100% - 8px); overflow: auto; box-sizing: border-box; padding: 16px 18px 14px; border-radius: 18px; text-align: center; color: #fff;
+  background: linear-gradient(180deg, rgba(28, 22, 8, .97), rgba(10, 12, 26, .97)); border: 1px solid rgba(255, 212, 90, .5); box-shadow: 0 10px 40px rgba(0, 0, 0, .6); }
+#spx .spx-ok { margin: 0; font: 800 11px/1 system-ui, sans-serif; letter-spacing: .12em; color: #ffd45a; text-transform: uppercase; }
+#spx .spx-oc h3 { margin: 6px 0 2px; font: 800 20px/1.15 system-ui, sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#spx .spx-os { margin: 0 0 10px; font: 600 13px/1.3 system-ui, sans-serif; opacity: .82; }
+#spx .spx-tl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 0 0 12px; }
+#spx .spx-t { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px; border-radius: 12px; background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .1); min-width: 0; }
+#spx .spx-t b { font: 800 17px/1 system-ui, sans-serif; color: #ffe9a8; }
+#spx .spx-t small { font: 600 10px/1.1 system-ui, sans-serif; opacity: .72; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+#spx .spx-ob { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+#spx .spx-ob .x-btn { min-height: 40px; flex: 1 1 150px; max-width: 240px; font-size: 15px; line-height: 1.1; white-space: nowrap; padding-inline: 12px; }
+#spx.spx-off .spx-live { background: rgba(255, 255, 255, .18); }
+#spx.spx-off .spx-live i { animation: none; opacity: .5; }
+@media (max-height: 400px) { #spx .spx-oc { padding: 12px 14px 10px; } #spx .spx-oc h3 { font-size: 17px; } #spx .spx-t { padding: 6px 3px; } #spx .spx-tl { margin-bottom: 8px; } #spx .spx-os { margin-bottom: 8px; } }
+@media (max-width: 700px) { #spx .spx-bar { max-width: calc(100% - 100px); } #spx .spx-mp { display: none; } #spx .spx-ob .x-btn { font-size: 14px; } }
+/* player HUD: how many friends are watching */
+.spx-eye { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); left: 50%; transform: translateX(-50%); z-index: 60; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px;
+  background: rgba(20, 14, 2, .78); border: 1px solid rgba(255, 212, 90, .55); color: #ffe9a8; font: 700 11px/1 system-ui, sans-serif; pointer-events: none; }
+.spx-eye i { font-style: normal; }
+.spx-eye b { font-size: 13px; }
+.spx-eye.x-hide { display: none; }
+/* friends list / card */
+.spx-w { white-space: nowrap; }
+.b13-frr .spx-w { background: linear-gradient(180deg, #ffe08a, #e8a92a) !important; color: #1a1206 !important; border-color: rgba(255, 220, 120, .9) !important; font-weight: 800; }
+.j-frow.spx-lv { flex-wrap: wrap; row-gap: 6px; }
+.j-frow .spx-wbar { flex: 1 0 100%; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 32px; padding: 0 12px; border-radius: 10px; cursor: pointer;
+  background: linear-gradient(180deg, #ffe08a, #e8a92a); color: #1a1206; border: 1px solid rgba(255, 230, 150, .95); font: 800 13px/1 system-ui, sans-serif; box-shadow: 0 2px 10px rgba(232, 169, 42, .35); }
+.j-frow .spx-wbar:active { transform: scale(.98); }
+.spx-wbar .spx-live, #spx .spx-live { display: inline-flex; align-items: center; gap: 4px; font: 800 10px/1 system-ui, sans-serif; letter-spacing: .06em; color: #fff; background: #e23b4a; padding: 4px 7px; border-radius: 999px; flex: none; }
+.spx-wbar .spx-live i, #spx .spx-live i { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: spx-bl 1.2s ease-in-out infinite; }
+.j-frow.spx-lv { border-color: rgba(255, 212, 90, .6); }
+.j-pba .spx-wc { order: -1; }
+@media (prefers-reduced-motion: reduce) { .spx-wbar .spx-live i, #spx .spx-live i, #spx .spx-spin { animation: none; } }
+.j-pba .spx-wc { background: linear-gradient(180deg, #ffe08a, #e8a92a) !important; color: #1a1206 !important; border-color: rgba(255, 230, 150, .95) !important; font-weight: 800; }
+#spx[dir="rtl"] .spx-ok, #spx[dir="rtl"] .spx-live { letter-spacing: 0; }
 </style>
 </body>
 </html>
