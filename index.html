@@ -3550,8 +3550,8 @@
         // DIFFICULTY: a = bot hunting chance, s = bot reaction speed, r = XP and coin multiplier; d4 (Legends) needs level 30
         const DIFF = [{ a: 0.4, s: 0.65, r: 0.75 }, { a: 1, s: 1, r: 1 }, { a: 1.5, s: 1.3, r: 1.25 }, { a: 2, s: 1.6, r: 1.5 }, { a: 2.8, s: 2, r: 2 }], LEG_LV = 30;
         const DF = () => DIFF[state === "play" || state === "over" ? (MD === "r" ? 2 : S.diff) : S.diff] || DIFF[1]; // ranked is always Hard
-        const LV_MAX = 100, xpNeed = (n) => Math.round(100 * n ** 1.6);
-        const lvReward = (n) => 10 * n + (n % 10 === 0 ? 200 : 0); // coins on reaching level n, bonus every 10th
+        const LV_MAX = 400, xpNeed = (n) => (n <= 10 ? Math.round(100 * n ** 1.6) : 4000 + 10 * (n - 10)); // 13u: levels 1-10 as before, then +10 XP per level up to 400
+        const lvReward = (n) => (n <= 10 ? 10 * n : 100) + (n % 10 === 0 ? 200 : 0); // coins on reaching level n, bonus every 10th
         // SAFE JSON: every parse of stored or imported data drops __proto__ / constructor / prototype keys (prototype-pollution guard);
         // jBad tells the caller one was seen, so a save code carrying one is rejected outright
         const BADK = new Set(["__proto__", "constructor", "prototype"]);
@@ -6848,7 +6848,7 @@
           else if (g === "admx") admAct(b.dataset.a);
         });
 
-        // LEVELS 1 to 100: level n needs xp(n) = round(100·n^1.6) XP to reach n+1
+        // LEVELS 1 to 400: level n needs round(100·n^1.6) XP up to 10, then 4000 + 10·(n−10)
         function lvInfo() { let n = 1, x = P.xp, need = xpNeed(1); while (n < LV_MAX && x >= need) { x -= need; n++; need = xpNeed(n); } return { n, x: Math.floor(n < LV_MAX ? x : need), need }; }
         function level() { return lvInfo().n; }
         function profile() {
@@ -10908,18 +10908,18 @@
           B13.ios = ios; B13.online = online;
           const money = (c) => { try { return new Intl.NumberFormat(LANG === "ar" ? "ar-u-nu-latn" : LANG, { style: "currency", currency: "USD" }).format(c / 100); } catch (_) { return "$" + (c / 100).toFixed(2); } };
           B13.money = money;
-          // ---------- level tiers: Bronze 1-9, Silver 10-19, Gold 20-29, Platinum 30-39, Diamond 40-59, Crown 60-79, Ace 80-99, Conqueror 100 ----------
-          const TIER = (n) => (n >= 100 ? 7 : n >= 80 ? 6 : n >= 60 ? 5 : n >= 40 ? 4 : n >= 30 ? 3 : n >= 20 ? 2 : n >= 10 ? 1 : 0);
+          // ---------- level tiers (13u): Bronze 1-9, Silver 10-29, Gold 30-59, Platinum 60-99, Diamond 100-149, Crown 150-249, Ace 250-399, Conqueror 400 ----------
+          const TIER = (n) => (n >= 400 ? 7 : n >= 250 ? 6 : n >= 150 ? 5 : n >= 100 ? 4 : n >= 60 ? 3 : n >= 30 ? 2 : n >= 10 ? 1 : 0);
           const TCOL = ["#cd7f32", "#c9d3e0", "#ffcc33", "#36e0ff", "#3d7bff", "#b45cff", "#ff3b3b", "#ffffff"];
           B13.tier = TIER;
-          B13.lv = (n) => { n = Math.max(1, Math.min(100, n | 0)); const t = TIER(n); return `<span class="b13-lv t${t}" dir="ltr" title="${esc(_t("b13T" + t))}">${n}</span>`; };
+          B13.lv = (n) => { n = Math.max(1, Math.min(400, n | 0)); const t = TIER(n); return `<span class="b13-lv t${t}" dir="ltr" title="${esc(_t("b13T" + t))}">${n}</span>`; };
           B13.idH = (pid, vip) => vip ? `<span class="b13-vip" dir="ltr">#${vip}</span>` : `<bdi dir="ltr">#${num(pid)}</bdi>`;
           // canvas name tag pill (in-game): drawn to the left of the name
           B13.tag = (x, y, sn) => {
             try {
               if (!sn || sn.ad) return;
               let n = sn === player ? level() : sn.lv13;
-              if (!n) { const b = player ? level() : 5; sn.lv13 = n = Math.max(1, Math.min(100, Math.round(b + (Math.random() * 2 - 1) * Math.max(3, b * 0.35)))); }
+              if (!n) { const b = player ? level() : 5; sn.lv13 = n = Math.max(1, Math.min(400, Math.round(b + (Math.random() * 2 - 1) * Math.max(3, b * 0.35)))); }
               const t = TIER(n), w = ctx.measureText(sn.name || "").width, s = String(n), pw = 8 + s.length * 7, px = x - w / 2 - pw - 5 - (sn === player && avReady() ? 12 : 0), py = y - 11;
               ctx.save(); ctx.globalAlpha = 0.95;
               if (t === 7) { const g = ctx.createLinearGradient(px, 0, px + pw, 0); ["#ff3b3b", "#ffd21a", "#36ff7a", "#36c8ff", "#b45cff"].forEach((c, i) => g.addColorStop(((i / 4) + (time * 0.4)) % 1, c)); ctx.fillStyle = g; }
@@ -11339,7 +11339,7 @@
           const rr = (x, y, w, h, r) => { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); };
           B13C.lvOf = (sn) => {
             if (sn === player) return level();
-            if (!sn.lv13) { const b = player ? level() : 5; sn.lv13 = Math.max(1, Math.min(100, Math.round(b + (Math.random() * 2 - 1) * Math.max(3, b * 0.35)))); }
+            if (!sn.lv13) { const b = player ? level() : 5; sn.lv13 = Math.max(1, Math.min(400, Math.round(b + (Math.random() * 2 - 1) * Math.max(3, b * 0.35)))); }
             return sn.lv13;
           };
           B13C.tag = (sn, tx, y0) => {
@@ -13861,13 +13861,14 @@
             let lv = 1; try { lv = level(); } catch (_) {}
             const nx = B13G.L.filter((a) => a.u === "l" && !B13G.open(a.id)).sort((a, b) => a.q - b.q)[0];
             let box = $("ssnx");
-            if (!nx) { if (box) box.remove(); nxK = ""; return; }
-            const k = nx.id + "|" + lv + "|" + LANG;
+            const n4 = (() => { try { return __LV4.next(); } catch (_) { return null; } })(), u4 = !!n4 && (!nx || n4.lv < nx.q);
+            if (!nx && !n4) { if (box) box.remove(); nxK = ""; return; }
+            const k = (u4 ? n4.k : nx.id) + "|" + lv + "|" + LANG;
             if (box && k === nxK) return;
             if (!box) { box = document.createElement("div"); box.id = "ssnx"; box.setAttribute("aria-hidden", "true"); st.appendChild(box); }
             nxK = k;
-            so.teaser(box, { label: so.t("next_unlock") + " · " + B13G.name(nx.id), value: Math.min(lv, nx.q), max: nx.q, icon: B13G.src(nx.id) });
-            box.querySelector("span[dir=ltr]").textContent = "Lv " + Math.min(lv, nx.q) + "/" + nx.q;
+            const q4 = u4 ? n4.lv : nx.q; so.teaser(box, { label: so.t("next_unlock") + " · " + (u4 ? n4.n : B13G.name(nx.id)), value: Math.min(lv, q4), max: q4, icon: u4 ? "" : B13G.src(nx.id) });
+            box.querySelector("span[dir=ltr]").textContent = "Lv " + Math.min(lv, q4) + "/" + q4;
           };
           SM.dots = paintDots;
           // ---------- mount / init ----------
@@ -14856,7 +14857,7 @@
           const decoShop = () => {
             const sh = $("shop"), it = $("items"); if (!sh || !it) return; const f = SSB.cm === "f";
             sh.classList.toggle("ssb-ctry", f);
-            const h3 = it.querySelector(":scope > h3"); if (h3 && it.querySelector(":scope > .x-sk")) h3.innerHTML = f ? `${E(_t("ssbCtry"))} · <bdi dir="ltr">${FLAGN}</bdi>` : `${E(_t("ssbSkins"))} · <bdi dir="ltr">${FLAG0 - 1}</bdi>`;
+            const h3 = it.querySelector(":scope > h3"); if (h3 && it.querySelector(":scope > .x-sk")) h3.innerHTML = f ? `${E(_t("ssbCtry"))} · <bdi dir="ltr">${FLAGN}</bdi>` : `${E(_t("ssbSkins"))} · <bdi dir="ltr">${FLAG0 - 1 - tv(() => Object.keys(__LV4.RET).filter((k) => !skOwn(+k.slice(1))).length, 0)}</bdi>`;
             putCT();
           };
           { const _ps = paintShop; paintShop = function () {
@@ -17860,7 +17861,7 @@
 
           // ---------- item → sheet data { ic, nm, cat, rar, what, how[], pg, st } ----------
           const ID_T = [["owner", 1, 1], ["legend", 2, 2], ["royal", 3, 5], ["antique", 6, 20], ["diamond", 21, 50], ["gold", 51, 999], ["classic", 1000, 0]];
-          const LV_T = [[1, 9], [10, 19], [20, 29], [30, 39], [40, 59], [60, 79], [80, 99], [100, 100]];
+          const LV_T = [[1, 9], [10, 29], [30, 59], [60, 99], [100, 149], [150, 249], [250, 399], [400, 400]];
           const LG_TH = [0, 100, 300, 600, 1000, 1600, 2500];
           const D = {
             sk: (i) => {
@@ -17868,9 +17869,10 @@
               const fl = s.t === "fl", own = tv(() => skOwn(+i), false), eq = tv(() => skin === +i, false), lv = s.p ? tv(() => skinLv(s), 1) : 1;
               const r = s.t13 ? T13[s.t13] : s.r;
               const how = []; let state, prog = null;
-              if (!s.p) how.push(T("dsH_free"));
+              if (s.ret) how.push(T("lv4LegD"));
+              else if (!s.p) how.push(T("dsH_free"));
               else { if (lv > 1) how.push(T("b13gLv", { n: lv })); how.push(buyHow(s.cur === "usd" ? "usd" : s.cur ? "gems" : "coins")); }
-              if (eq) state = st("eq"); else if (own) state = st("own"); else if (lvNow() < lv) { state = st("lock"); prog = lvPg(lv); } else state = st("avail");
+              if (eq) state = st("eq"); else if (own) state = st("own"); else if (s.ret) state = st("info"); else if (lvNow() < lv) { state = st("lock"); prog = lvPg(lv); } else state = st("avail");
               return { ic: icSw(swatch(s)), nm: s.n || "", cat: fl ? T("skFlags") : T1("kShopSkins", "skins"), rar: r >= 0 ? r : s.p ? null : 0,
                 what: fl ? T("dsW_fl", { n: s.n || "" }) : T("dsW_sk", { p: T("dsP_" + (s.t && I18N["dsP_" + s.t] ? s.t : "an")) }), how, pg: prog, st: state };
             },
@@ -17882,8 +17884,8 @@
                 const tp = tv(() => pxTierOf(id), null);
                 how.push(tp ? T("dsH_pass", { n: tp.t, k: T(tp.p ? "dsPremTr" : "dsFreeTr") }) : T("b13gPass")); how.push(T("dsH_rpXP")); if (tp && tp.p) how.push(T("dsH_rpPrem"));
                 if (!own && tp) { const t = tv(() => rpTier(), 0); prog = pg(t, tp.t, T("dsTierOf", { a: nf(t), b: nf(tp.t) })); }
-              } else how.push(buyHow(tv(() => B13.cur(id), it.pg ? "gems" : "coins")));
-              state = eq ? st("eq") : own ? st("own") : it.ex ? st("lock") : st("avail");
+              } else { const n4 = tv(() => __LV4.need(id), 1); if (n4 > 1) how.push(T("b13gLv", { n: n4 })); how.push(buyHow(tv(() => B13.cur(id), it.pg ? "gems" : "coins"))); if (!own && lvNow() < n4) prog = lvPg(n4); }
+              state = eq ? st("eq") : own ? st("own") : it.ex ? st("lock") : lvNow() < tv(() => __LV4.need(id), 1) ? st("lock") : st("avail");
               return { ic: icE(it.e), nm: tv(() => itName(id), id), cat: it.c === "sk" ? T("dsC_rs") : T("nfC" + it.c), rar: it.r,
                 what: T("dsW_" + (it.c === "sk" ? "rs" : it.c)), how, pg: prog, st: state };
             },
@@ -17900,12 +17902,12 @@
             h: (id) => {
               const h = tv(() => HATS.find((x) => x.id === id), null); if (!h) return null;
               const own = tv(() => !!P.own["h" + id], false), eq = tv(() => P.hat === id, false);
-              return { ic: icE(h.e), nm: T("h_" + id) || id, cat: T("hats"), rar: null, what: T("dsW_hat"), how: [buyHow(h.g ? "gems" : tv(() => B13.cur("h" + id), "coins"))], pg: null, st: eq ? st("eq") : own ? st("own") : st("avail") };
+              return { ic: icE(h.e), nm: T("h_" + id) || id, cat: T("hats"), rar: null, what: T("dsW_hat"), how: (tv(() => __LV4.need("h" + id), 1) > 1 ? [T("b13gLv", { n: tv(() => __LV4.need("h" + id), 1) })] : []).concat([buyHow(h.g ? "gems" : tv(() => B13.cur("h" + id), "coins"))]), pg: !own && lvNow() < tv(() => __LV4.need("h" + id), 1) ? lvPg(tv(() => __LV4.need("h" + id), 1)) : null, st: eq ? st("eq") : own ? st("own") : lvNow() < tv(() => __LV4.need("h" + id), 1) ? st("lock") : st("avail") };
             },
             t: (id) => {
               const x = tv(() => TRAILS.find((y) => y.id === id), null); if (!x) return null;
               const own = tv(() => !!P.own["t" + id], false), eq = tv(() => P.trail === id, false);
-              return { ic: icE(x.e), nm: T("t_" + id) || id, cat: T("nfCtr"), rar: null, what: T("dsW_otr"), how: [buyHow(x.g ? "gems" : tv(() => B13.cur("t" + id), "coins"))], pg: null, st: eq ? st("eq") : own ? st("own") : st("avail") };
+              return { ic: icE(x.e), nm: T("t_" + id) || id, cat: T("nfCtr"), rar: null, what: T("dsW_otr"), how: (tv(() => __LV4.need("t" + id), 1) > 1 ? [T("b13gLv", { n: tv(() => __LV4.need("t" + id), 1) })] : []).concat([buyHow(x.g ? "gems" : tv(() => B13.cur("t" + id), "coins"))]), pg: !own && lvNow() < tv(() => __LV4.need("t" + id), 1) ? lvPg(tv(() => __LV4.need("t" + id), 1)) : null, st: eq ? st("eq") : own ? st("own") : lvNow() < tv(() => __LV4.need("t" + id), 1) ? st("lock") : st("avail") };
             },
             av: (id) => {
               const a = tv(() => B13G.BY[id], null); if (!a) return null;
@@ -18116,7 +18118,7 @@
           // ---------- Item guide: every category, every item ----------
           const GD = { el: null, tab: "sk", q: "" };
           const SECS = () => [
-            ["sk", T1("kShopSkins", "skins"), () => tv(() => SKINS.map((s, i) => [s, i]).filter(([s]) => s.t !== "fl" && s.n).map(([, i]) => ["sk", i]), [])],
+            ["sk", T1("kShopSkins", "skins"), () => tv(() => SKINS.map((s, i) => [s, i]).filter(([s, i]) => s.t !== "fl" && s.n && !(s.ret && !tv(() => skOwn(i), false))).map(([, i]) => ["sk", i]), [])],
             ["fl", T("skFlags"), () => tv(() => (flSorted().a || []).map((i) => ["sk", i]), tv(() => SKINS.map((s, i) => [s, i]).filter(([s]) => s.t === "fl").map(([, i]) => ["sk", i]), []))],
             ["rs", T("dsC_rs"), () => tv(() => Object.keys(ITEMS).filter((k) => ITEMS[k].c === "sk").map((k) => ["it", k]), [])],
             ["tr", T("nfCtr"), () => tv(() => Object.keys(ITEMS).filter((k) => ITEMS[k].c === "tr").map((k) => ["it", k]), []).concat(tv(() => TRAILS.map((x) => ["t", x.id]), []))],
@@ -18656,6 +18658,80 @@
           };
           { let n = 0; const t = setInterval(() => { n++; if (hookAdmin() || n > 8) { clearInterval(t); if (!(window.__srwA && __srwA.__nx)) hookAdmin(); } }, 600); }
           { let tries = 0; const keep = setInterval(() => { if (++tries > 60) clearInterval(keep); const a = window.__srwA; if (a && !a.__nx) hookAdmin(); }, 1000); } // the rewards module may (re)define its hooks later
+        }
+        // ---------- 13u lvl: one unlock ladder, levels 1 to 400 (server sql/100_lvl400.sql decides; this mirrors it) ----------
+        // LAD key -> [ladder level, old level]; accounts that existed at the switch keep their old gates (floor from lv13u_state).
+        // RET: duplicate skins taken out of the shop; owners keep them (Locker shows them as Legacy). Only const arrows, every hook guarded.
+        {
+          const LV4 = (window.__LV4 = window.__LV4 || {});
+          const LAD = {"s22":[2,2],"em_angry":[11,1],"s44":[13,2],"s57":[15,2],"em_cool":[17,1],"s23":[19,2],"s36":[21,2],"s58":[23,2],"av_ninja":[25,5],"em_laugh":[27,1],"s71":[29,2],"s37":[31,2],"em_love":[32,1],"s50":[34,2],"s72":[37,2],"tr_bubbles":[39,1],"s29":[42,2],"s51":[44,2],"s64":[47,2],"tr_hearts":[49,1],"av_wolf":[50,10],"s30":[52,2],"s43":[55,2],"de_confetti":[57,1],"s65":[60,2],"s31":[62,4],"em_fire":[66,1],"s53":[70,4],"hglass":[74,1],"av_eagle":[75,15],"s8":[78,5],"em_skull":[83,1],"s66":[87,4],"s79":[91,4],"fr_neon":[95,1],"s92":[99,4],"av_shark":[100,20],"s32":[103,4],"tr_stars":[107,1],"s45":[111,4],"hhorns":[115,1],"s9":[119,8],"de_fw":[124,1],"s67":[128,4],"s24":[132,4],"tr_petals":[136,1],"s46":[140,4],"s59":[144,4],"de_pixel":[148,1],"av_cobra":[150,30],"s25":[152,4],"s10":[156,8],"tspark":[160,1],"tr_pixel":[165,1],"s38":[169,4],"s60":[173,4],"fr_fire":[177,1],"s73":[181,4],"s99":[185,4],"fr_ice":[189,1],"s39":[193,4],"s11":[197,8],"av_phoenix":[200,40],"tfire":[201,1],"rs_toxic":[206,1],"s52":[210,4],"s74":[214,4],"rs_frost":[218,1],"s100":[222,4],"s80":[230,7],"hcrown":[243,1],"av_warlord":[250,50],"s95":[256,7],"s84":[266,14],"s112":[280,14],"s105":[295,14],"av_dragon":[300,60],"s117":[309,14],"s98":[324,14],"s110":[338,14],"av_hydra":[350,80],"s118":[353,14],"s91":[367,14],"s111":[382,14],"s119":[396,14],"av_conqueror":[400,100]}, RET = {"s78": "s0", "s85": "s50", "s86": "s4", "s93": "s5"};
+          const LV_I18N = {"lv4Leg": ["قديم", "Legacy", "Eski", "Ancien", "Legado", "पुराना"], "lv4LegD": ["لم يعد يُباع — يبقى عندك وتقدر تلبسه.", "No longer sold — you keep it and can still wear it.", "Artık satılmıyor — sende kalır ve giymeye devam edebilirsin.", "Plus en vente — tu le gardes et tu peux toujours le porter.", "Ya no se vende: lo conservas y puedes seguir usándolo.", "अब नहीं बिकता — यह आपके पास रहेगा और आप इसे पहन सकते हैं।"]};
+          LV4.cap = 400; LV4.floor = 0; LV4.uid = ""; LV4.LAD = LAD; LV4.RET = RET; LV4.tries = 0;
+          const tv4 = (f, d) => { try { return f(); } catch (_) { return d; } };
+          for (const k in LV_I18N) if (!I18N[k]) I18N[k] = LV_I18N[k];
+          const eff = (k) => { const q = LAD[k]; if (!q) return 1; return q[1] <= LV4.floor ? q[1] : q[0]; };
+          const lvl = () => tv4(() => level(), 1);
+          for (const k in LAD) {
+            if (/^s\d+$/.test(k)) { const s = SKINS[+k.slice(1)]; if (s) Object.defineProperty(s, "lv", { get: () => eff(k), set: () => {}, configurable: true, enumerable: true }); }
+            else if (/^av_/.test(k)) { const a = tv4(() => B13G.BY[k.slice(3)], null); if (a) Object.defineProperty(a, "q", { get: () => eff(k), set: () => {}, configurable: true, enumerable: true }); }
+          }
+          for (const k in RET) { const s = SKINS[+k.slice(1)]; if (s) s.ret = RET[k]; }
+          const owns = (k) => tv4(() => (/^s\d+$/.test(k) ? skOwn(+k.slice(1)) : ITEMS[k] ? ENT.has(k) : /^av_/.test(k) ? B13G.open(k.slice(3)) : !!P.own[k]), false);
+          LV4.need = (k) => eff(k);
+          LV4.tier = (n) => tv4(() => B13.tier(n), -1); LV4.badge = (n) => tv4(() => B13.lv(n), ""); LV4.avq = (id) => tv4(() => B13G.BY[id].q, -1); LV4.lv = () => lvl(); // QA / support
+          LV4.locked = (k) => !!LAD[k] && !owns(k) && lvl() < eff(k);
+          const em4 = (k) => tv4(() => (/^s\d+$/.test(k) ? "🐍" : ITEMS[k] ? ITEMS[k].e : (k[0] === "h" ? HATS : TRAILS).find((x) => x.id === k.slice(1)).e), "");
+          const nm4 = (k) => em4(k) + " " + tv4(() => (/^s\d+$/.test(k) ? SKINS[+k.slice(1)].n : ITEMS[k] ? itName(k) : _t((k[0] === "h" ? "h_" : "t_") + k.slice(1))), k);
+          LV4.next = () => { const n = lvl(); let best = null; // next ladder item above the current level (avatars are shown by their own teaser)
+            for (const k in LAD) { if (/^av_/.test(k)) continue; const q = eff(k); if (q > n && !owns(k) && (!best || q < best.lv)) best = { k, lv: q }; }
+            if (best) best.n = nm4(best.k);
+            for (let i = 8; i < 28; i++) { const f = tv4(() => window.__MU.info(i), null); // arenas that open by level (they stay on their own levels)
+              if (f && f.unlock === "level" && !f.ok && f.level > n && (!best || f.level < best.lv)) best = { k: "map" + i, lv: f.level, n: "🏟️ " + tv4(() => _t("map" + i), "") }; }
+            return best; };
+          const lockTxt = (n) => "🔒 " + _t("b13gLvS", { n });
+          const deco = () => {
+            if (tv4(() => state === "play", false)) return;
+            document.querySelectorAll('[data-go="nfbuy"][data-id], button[data-k]').forEach((b) => {
+              const k = b.dataset.id || b.dataset.k; if (!LAD[k] || /^s\d+$/.test(k)) return;
+              if (LV4.locked(k)) { const t = lockTxt(eff(k)); if (b.dataset.p11n) { b.dataset.lv4n = b.dataset.p11n; delete b.dataset.p11n; } // no "not enough gems" top-up for a locked item
+                if (b.dataset.lv4 !== t) { if (!b.dataset.lv4) b.dataset.lv4o = b.innerHTML; b.dataset.lv4 = t; b.textContent = t; b.classList.add("lv4-lk"); b.setAttribute("aria-disabled", "true"); } }
+              else if (b.dataset.lv4) { b.innerHTML = b.dataset.lv4o || ""; if (b.dataset.lv4n) { b.dataset.p11n = b.dataset.lv4n; delete b.dataset.lv4n; } delete b.dataset.lv4; delete b.dataset.lv4o; b.classList.remove("lv4-lk"); b.removeAttribute("aria-disabled"); }
+            });
+            document.querySelectorAll("[data-sv]").forEach((r) => { const s = SKINS[+r.dataset.sv]; const leg = !!(s && s.ret); const c = r.querySelector(".lv4-leg");
+              if (leg && !c) { const b = r.querySelector("b"); if (b) b.insertAdjacentHTML("beforeend", ` <em class="lv4-leg">${esc(_t("lv4Leg"))}</em>`); } else if (c && c.textContent !== _t("lv4Leg")) c.textContent = _t("lv4Leg"); });
+          };
+          const lockerDeco = () => {
+            const el = $("skins"); if (!el) return;
+            [...el.children].forEach((b, i) => {
+              const s = SKINS[i]; if (!s) return; const own = tv4(() => skOwn(i), false), off = !!s.ret && !own, leg = !!s.ret && own;
+              if (b.classList.contains("lv4-off") !== off) b.classList.toggle("lv4-off", off);
+              const c = b.querySelector(".lv4-leg");
+              if (leg && !c) b.insertAdjacentHTML("beforeend", `<em class="lv4-leg">${esc(_t("lv4Leg"))}</em>`); else if (!leg && c) c.remove(); else if (c && c.textContent !== _t("lv4Leg")) c.textContent = _t("lv4Leg");
+              const o = b.classList.contains("p11-lk") && s.p && !s.fl ? String(10 + (s.lv | 0)) : ""; if (b.style.order !== o) b.style.order = o; // locked cards in ladder order
+            });
+          };
+          { const _pk = paintSkins; paintSkins = function () { const r = _pk.apply(this, arguments); tv4(lockerDeco, 0); return r; }; }
+          { const _si = skIds; skIds = function () {
+              let a = _si.apply(this, arguments).filter((i) => !(SKINS[i] && SKINS[i].ret && !tv4(() => skOwn(i), false)));
+              if (SF.cat !== "f" && SF.s === "d") a = a.slice().sort((x, y) => ((SKINS[x].p ? SKINS[x].lv | 0 : 0) - (SKINS[y].p ? SKINS[y].lv | 0 : 0)) || x - y); // shop order = unlock order
+              return a; }; }
+          tv4(() => { const _bl = B13.list; B13.list = (c) => _bl(c).filter((k) => !RET[k]); }, 0); // gift / store lists: no retired skins
+          const rep = () => { tv4(() => { if (!$("shop").classList.contains("x-hide")) paintShop(); }, 0); tv4(paintSkins, 0); tv4(deco, 0); };
+          const pull = async () => {
+            const on = tv4(() => cur === "@on" && ON.on && !!ON.rpc, false), uid = on ? String(tv4(() => ON.uid, "") || "") : "";
+            if (uid === LV4.uid && (LV4.ok || !uid || LV4.tries > 4)) return;
+            if (uid !== LV4.uid) { LV4.uid = uid; LV4.floor = 0; LV4.ok = false; LV4.tries = 0; if (!uid) { rep(); return; } }
+            LV4.tries++;
+            try { const r = await ON.rpc("lv13u_state"); if (LV4.uid === uid && r && typeof r === "object") { LV4.floor = Math.max(0, r.floor | 0); LV4.ok = true; rep(); } } catch (_) {}
+          };
+          setInterval(() => { pull(); }, 3000); setTimeout(() => { pull(); }, 900);
+          let dq = 0; new MutationObserver(() => { if (dq) return; dq = setTimeout(() => { dq = 0; tv4(deco, 0); }, 120); }).observe(document.body, { childList: true, subtree: true });
+          window.addEventListener("click", (e) => {
+            const b = e.target && e.target.closest && e.target.closest('[data-go="nfbuy"][data-id], button[data-k]'); if (!b) return;
+            const k = b.dataset.id || b.dataset.k; if (!LAD[k] || /^s\d+$/.test(k) || !LV4.locked(k)) return;
+            e.stopImmediatePropagation(); e.preventDefault(); tv4(() => toast("🔒 " + _t("needLv", { n: eff(k) })), 0);
+          }, true);
+          if (typeof NFH === "object" && NFH && NFH.relang) NFH.relang.push(() => tv4(() => { deco(); lockerDeco(); }, 0));
         }
         requestAnimationFrame(loop);
       })();
@@ -23478,6 +23554,13 @@ html[dir=rtl] #kadm .ibx-adm select.ibx-sel { background-position: 16px 50%, 11p
 [dir="rtl"] .nx13-bar.e { background: linear-gradient(270deg, #ff9a9a, #d84a4a); }
 .nx13w > .k-li > small, .nx13w-sec .k-li > small { width: auto !important; flex: 0 0 auto; text-align: end; white-space: nowrap; }
 .nx13w > .k-li > span, .nx13w-sec .k-li > span { flex: 1 1 auto; }
+</style>
+<style id="ss13u-lvl">
+.lv4-lk { filter: saturate(.55); opacity: .82; }
+#skins > button.lv4-off, #menu .hm-sk #skins > button.lv4-off { display: none !important; }
+.lv4-leg { position: absolute; top: 3px; inset-inline-start: 3px; z-index: 2; font: 800 8px/1 var(--sans, system-ui); letter-spacing: .02em; padding: 2px 4px; border-radius: 6px;
+  background: rgba(8, 14, 36, .88); color: #f2c75a; border: 1px solid rgba(242, 199, 90, .6); font-style: normal; pointer-events: none; white-space: nowrap; }
+[data-sv] .lv4-leg { position: static; display: inline-block; vertical-align: middle; margin-inline-start: 4px; font-size: 9px; }
 </style>
 </body>
 </html>
