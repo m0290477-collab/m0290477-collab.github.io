@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head><script>(function(){var Q=window.__ssEQ=window.__ssEQ||[];function p(k,m,s,l,c,st){if(Q.length<20)Q.push([k,String(m||"").slice(0,300),String(s||"").slice(0,200),l|0,c|0,String(st||"").slice(0,1500)]);}window.addEventListener("error",function(e){if(!(e instanceof ErrorEvent))return;p("error",e.message,e.filename,e.lineno,e.colno,e.error&&e.error.stack)},true);window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;p("rejection",r&&(r.message||r.code)||String(r),"",0,0,r&&r.stack)});})();</script>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co; media-src 'none'; object-src 'none'; frame-src 'self'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co https://super-snake-realtime.molierk.workers.dev wss://super-snake-realtime.molierk.workers.dev; media-src 'none'; object-src 'none'; frame-src 'self'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
     <meta name="referrer" content="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>Super Snake</title>
@@ -1182,7 +1182,125 @@
       .nf-ph { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid #ffd84a; }
       @media (orientation: landscape) and (min-width: 600px) { .nf-ed { grid-template-columns: minmax(0, 1fr) 260px; align-items: start; } .nf-edc { width: min(100%, 74vh); } }
     </style>
-  </head>
+  <style id="ss-onb">
+/* ss-onb-v1: first-match tutorial v2 + Sound / Music / Vibration settings */
+#tut.tb { position: fixed; inset: 0; z-index: 950; display: flex; align-items: center; justify-content: center;
+  padding: max(8px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  background: radial-gradient(120% 100% at 50% 35%, rgba(16, 32, 72, .84), rgba(4, 10, 28, .96)); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  color: #e6ecff; animation: tb-fade .25s ease-out; touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+#tut.tb.x-hide { display: none !important; }
+#tut .tb-card { position: relative; box-sizing: border-box; width: min(780px, 100%); max-height: 100%; display: grid; grid-template-columns: minmax(0, 46fr) minmax(0, 54fr); gap: clamp(12px, 2.4vw, 24px); align-items: center;
+  padding: clamp(12px, 2.2vw, 22px); border-radius: 22px; border: 2.5px solid transparent;
+  background: linear-gradient(180deg, rgba(34, 48, 108, .97), rgba(13, 19, 52, .98)) padding-box, var(--h-gold, linear-gradient(135deg, #fff6c4 0%, #e6b04a 22%, #fff0b0 42%, #b5761c 62%, #ffe08a 82%, #a8681a 100%)) border-box;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, .45), 0 0 36px rgba(255, 190, 60, .18), inset 0 1px 0 rgba(255, 240, 180, .25); }
+#tut .tb-card::after { content: ""; position: absolute; inset: 0; border-radius: 20px; pointer-events: none; background: linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 38%); }
+#tut .tb-vis { position: relative; width: 100%; aspect-ratio: 8 / 5; max-height: calc(100vh - 64px); max-height: calc(100dvh - 64px); border-radius: 16px; overflow: hidden; border: 1px solid rgba(242, 199, 90, .5);
+  background-image: linear-gradient(rgba(79, 227, 255, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 227, 255, .07) 1px, transparent 1px), radial-gradient(circle at 50% 40%, #183473, #0a1534 72%);
+  background-size: 20px 20px, 20px 20px, auto; box-shadow: inset 0 0 30px rgba(0, 0, 0, .5); }
+#tut .tb-vis svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; direction: ltr; unicode-bidi: isolate; }
+#tut .tb-txt { min-width: 0; display: flex; flex-direction: column; }
+#tut .tb-step { font: 800 11px/1 var(--disp, system-ui); letter-spacing: .14em; text-transform: uppercase; color: #4fe3ff; }
+#tut[dir="rtl"] .tb-step { letter-spacing: 0; font-size: 12.5px; }
+#tut h3 { margin: 6px 0 8px; font: 400 clamp(21px, 3.1vw, 30px)/1.08 var(--disp, system-ui); color: #ffe08a; overflow-wrap: anywhere; }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) { #tut h3 { background: linear-gradient(180deg, #fff3c2, #f2c75a 60%, #d99a2b); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .45)); } }
+#tut p { margin: 0; font-size: clamp(13.5px, 1.9vw, 16.5px); line-height: 1.45; color: #dfe6ff; min-height: 4.35em; overflow-wrap: anywhere; }
+#tut .tb-bar { display: flex; align-items: center; gap: 6px; margin-top: clamp(10px, 2.2vh, 18px); }
+#tut .tb-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 12px; }
+#tut .tb-dots { flex: none; display: flex; gap: 5px; }
+#tut .tb-dots i { flex: none; width: 7px; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, .2); }
+#tut .tb-dots i.dn { background: rgba(242, 199, 90, .55); }
+#tut .tb-dots i.on { width: 20px; background: #f2c75a; box-shadow: 0 0 8px rgba(242, 199, 90, .6); }
+#tut button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; cursor: pointer; font-family: inherit; }
+#tut .tb-go { flex: none; margin-inline-start: auto; min-width: 112px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 13px; font: 400 16px/1 var(--disp, system-ui); color: #3a2400; white-space: nowrap;
+  background: linear-gradient(180deg, #fff0a8, #f2c75a 45%, #e09a2a); box-shadow: 0 4px 0 #9a5e14, inset 0 1px 0 rgba(255, 255, 255, .7); }
+#tut .tb-go.tb-last { color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, .3); background: linear-gradient(180deg, #8ff56a, #35c44f 50%, #1d9a3c); box-shadow: 0 4px 0 #0e5e25, inset 0 1px 0 rgba(255, 255, 255, .6); }
+#tut .tb-go:active { transform: translateY(2px); box-shadow: 0 2px 0 #9a5e14, inset 0 1px 0 rgba(255, 255, 255, .7); }
+#tut .tb-go.tb-last:active { box-shadow: 0 2px 0 #0e5e25; }
+#tut .tb-gh { flex: none; min-height: 44px; min-width: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: #a9b8ea; font-weight: 700; font-size: 14px; white-space: nowrap; }
+#tut .tb-gh:active { background: rgba(255, 255, 255, .08); }
+#tut .tb-gh.tb-off { visibility: hidden; }
+#tut button:focus-visible { outline: 2px solid #4fe3ff; outline-offset: 2px; }
+#tut .tb-in .tb-vis svg, #tut .tb-in .tb-txt > h3, #tut .tb-in .tb-txt > p { animation: tb-rise .32s ease-out both; }
+#tut .tb-in .tb-txt > h3 { animation-delay: .04s; } #tut .tb-in .tb-txt > p { animation-delay: .08s; }
+@keyframes tb-fade { from { opacity: 0; } }
+@keyframes tb-rise { from { opacity: 0; transform: translateY(8px); } }
+/* short landscape phones (iPhone SE / mini, Safari bars showing) */
+@media (max-height: 400px) { #tut .tb-card { padding: 11px 14px; gap: 14px; border-radius: 18px; } #tut .tb-vis { max-height: calc(100vh - 44px); max-height: calc(100dvh - 44px); }
+  #tut h3 { font-size: 21px; margin: 5px 0 6px; } #tut p { font-size: 13.5px; line-height: 1.4; min-height: 4.2em; } #tut .tb-bar { margin-top: 10px; } }
+@media (max-height: 340px) { #tut .tb-card { grid-template-columns: minmax(0, 40fr) minmax(0, 60fr); padding: 9px 12px; } #tut .tb-vis { aspect-ratio: 4 / 3; }
+  #tut h3 { font-size: 19px; } #tut p { font-size: 13px; line-height: 1.35; min-height: 0; } #tut .tb-go { min-width: 96px; font-size: 15px; } #tut .tb-gh { padding: 0 6px; font-size: 13px; } }
+/* iPad / desktop */
+@media (min-height: 640px) and (min-width: 900px) { #tut .tb-card { width: min(880px, 100%); padding: 24px 26px; border-radius: 26px; } #tut p { font-size: 17px; } #tut .tb-go { min-height: 50px; font-size: 18px; min-width: 132px; } #tut .tb-gh { font-size: 15px; } }
+@media (orientation: portrait) and (max-width: 600px) { #tut .tb-card { grid-template-columns: 1fr; } }
+/* vignettes */
+#tut .tb-sn { fill: none; stroke: #34d399; stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 5px rgba(52, 211, 153, .55)); }
+#tut .tb-red { stroke: #ff5a6e; filter: drop-shadow(0 0 5px rgba(255, 90, 110, .55)); }
+#tut .tb-hd { fill: #34d399; stroke: #eafff5; stroke-width: 2.5; }
+#tut .tb-hdred { fill: #ff5a6e; stroke: #ffe0e5; }
+#tut .tb-run { stroke-dasharray: 42 100; animation: tb-run 3s linear infinite; }
+@keyframes tb-run { from { stroke-dashoffset: 30; } to { stroke-dashoffset: -112; } }
+#tut .tb-jb { fill: rgba(9, 20, 48, .75); stroke: rgba(242, 199, 90, .8); stroke-width: 2.5; }
+#tut .tb-jk { fill: #f2c75a; filter: drop-shadow(0 0 6px rgba(242, 199, 90, .85)); animation: tb-knob 3s ease-in-out infinite; }
+@keyframes tb-knob { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(11px, -12px); } 50% { transform: translate(15px, -3px); } 75% { transform: translate(7px, 10px); } }
+#tut .tb-fg { animation: tb-fing 3s ease-in-out infinite; }
+@keyframes tb-fing { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(44px, -34px); } }
+#tut .tb-ar { fill: none; stroke: #f2c75a; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+#tut .tb-tbn { transform-box: fill-box; transform-origin: center; animation: tb-press 1.5s ease-in-out infinite; }
+#tut .tb-d2 { animation-delay: .75s; }
+#tut .tb-tilt { transform-box: view-box; transform-origin: 120px 55px; animation: tb-tilt 3s ease-in-out infinite; }
+@keyframes tb-tilt { 0%, 100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
+@keyframes tb-press { 0%, 100% { transform: scale(1); } 45% { transform: scale(.88); } }
+#tut .tb-fast { stroke-dasharray: 16 6; animation: tb-flow .35s linear infinite; }
+@keyframes tb-flow { to { stroke-dashoffset: -22; } }
+#tut .tb-spd path { stroke: rgba(79, 227, 255, .65); stroke-width: 3; stroke-linecap: round; }
+#tut .tb-spd { animation: tb-lines .5s linear infinite; }
+@keyframes tb-lines { from { transform: translateX(14px); opacity: .2; } 50% { opacity: 1; } to { transform: translateX(-16px); opacity: 0; } }
+#tut .tb-bb { fill: rgba(255, 90, 208, .88); stroke: #ffd6f5; stroke-width: 3; filter: drop-shadow(0 0 10px rgba(255, 90, 208, .7)); }
+#tut .tb-bst { transform-box: fill-box; transform-origin: center; animation: tb-press 1s ease-in-out infinite; }
+#tut .tb-grow { stroke-dasharray: 24 600; animation: tb-grow 3.2s linear infinite; }
+@keyframes tb-grow { from { stroke-dasharray: 24 600; stroke-dashoffset: 0; } to { stroke-dasharray: 120 600; stroke-dashoffset: -100; } }
+#tut .tb-or { transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 5px currentColor); }
+#tut .tb-o0 { animation: tb-e0 3.2s linear infinite; } #tut .tb-o1 { animation: tb-e1 3.2s linear infinite; } #tut .tb-o2 { animation: tb-e2 3.2s linear infinite; } #tut .tb-o3 { animation: tb-e3 3.2s linear infinite; } #tut .tb-o4 { animation: tb-e4 3.2s linear infinite; }
+@keyframes tb-e0 { 0%, 16% { opacity: 1; transform: scale(1); } 20%, 97% { opacity: 0; transform: scale(1.9); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes tb-e1 { 0%, 33% { opacity: 1; transform: scale(1); } 37%, 97% { opacity: 0; transform: scale(1.9); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes tb-e2 { 0%, 51% { opacity: 1; transform: scale(1); } 55%, 97% { opacity: 0; transform: scale(1.9); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes tb-e3 { 0%, 68% { opacity: 1; transform: scale(1); } 72%, 97% { opacity: 0; transform: scale(1.9); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes tb-e4 { 0%, 86% { opacity: 1; transform: scale(1); } 90%, 97% { opacity: 0; transform: scale(1.9); } 100% { opacity: 1; transform: scale(1); } }
+#tut .tb-me { stroke-dasharray: 16 6; animation: tb-flow 1.2s linear infinite; }
+#tut .tb-riv { animation: tb-riv 3.2s ease-in infinite; }
+@keyframes tb-riv { 0% { transform: translateY(-70px); opacity: 1; } 50% { transform: translateY(0); opacity: 1; } 54%, 100% { transform: translateY(0); opacity: 0; } }
+#tut .tb-boom { transform-box: fill-box; transform-origin: center; animation: tb-boom 3.2s ease-out infinite; }
+@keyframes tb-boom { 0%, 49% { transform: scale(0); opacity: 0; } 56% { transform: scale(1.1); opacity: 1; } 78%, 100% { transform: scale(1.5); opacity: 0; } }
+#tut .tb-drop { animation: tb-drop 3.2s ease-out infinite; }
+@keyframes tb-drop { 0%, 52% { opacity: 0; transform: translateY(6px); } 62%, 90% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; } }
+#tut .tb-pk { animation: tb-bob 2s ease-in-out infinite; }
+#tut .tb-p1 { animation-delay: -.5s; } #tut .tb-p2 { animation-delay: -1s; } #tut .tb-p3 { animation-delay: -1.5s; }
+@keyframes tb-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+#tut .tb-ring { animation: tb-ringp 2s ease-in-out infinite; }
+@keyframes tb-ringp { 0%, 100% { stroke-opacity: .2; } 50% { stroke-opacity: .7; } }
+#tut .tb-10 { fill: #f2c75a; font: 800 15px var(--disp, system-ui); letter-spacing: .06em; }
+#tut .tb-wall { fill: #ff5a6e; filter: drop-shadow(0 0 10px rgba(255, 90, 110, .85)); animation: tb-glow 1.2s ease-in-out infinite alternate; }
+@keyframes tb-glow { from { opacity: .7; } to { opacity: 1; } }
+#tut .tb-hit { stroke-dasharray: 60 400; animation: tb-hit 3.2s ease-in infinite; }
+@keyframes tb-hit { 0% { stroke-dashoffset: 60; opacity: 1; } 50% { stroke-dashoffset: -114; opacity: 1; } 54%, 100% { stroke-dashoffset: -114; opacity: 0; } }
+#tut .tb-safe { animation-duration: 3.2s; }
+@media (prefers-reduced-motion: reduce) { #tut .tb-vis *, #tut .tb-in * { animation: none !important; } }
+.ss-reduced #tut .tb-vis *, .ss-reduced #tut .tb-in * { animation: none !important; }
+/* Settings > App: Sound / Music / Vibration */
+.ssa { display: flex; flex-direction: column; }
+.ssa .ssa-r { border-bottom: 1px solid rgba(255, 255, 255, .07); padding: 2px 0; min-height: 44px; }
+.ssa .k-rl { min-width: 0; }
+.ssa .ssa-rc { display: flex; align-items: center; gap: 8px; flex: 0 1 56%; max-width: 440px; justify-content: flex-end; }
+.ssa .ssa-rc input[type=range] { flex: 1 1 auto; min-width: 110px; accent-color: #ffcf4a; height: 30px; margin: 0; touch-action: pan-y; }
+.ssa .ssa-rc output { flex: none; width: 30px; text-align: end; font-weight: 800; font-size: 12px; opacity: .85; }
+.ssa .ssa-dim { opacity: .5; }
+.ssa .k-seg button { min-height: 32px; touch-action: manipulation; }
+.ssa .ssa-hint { margin: 0 0 4px; font-size: 12px; line-height: 1.35; color: #9fb0e6; }
+.ssa-tut .ssa-rp, #kset.x-ov .k-sec.ssa-tut .x-btn.ssa-rp { width: auto !important; height: auto !important; min-height: 44px !important; margin: 0 !important; padding: 0 16px !important; white-space: nowrap; touch-action: manipulation; }
+.ssa-tut .k-rl { min-width: 0; }
+#kssoul .ss-set { margin-top: 2px; }
+</style>
+</head>
   <body>
     <!--
       LANDSCAPE ONLY. The game never lays out in portrait: a phone or tablet held upright sees only the rotate cover below, and the match
@@ -1437,10 +1555,10 @@
         <a class="x-btn x-sub" id="privL" href="/privacy.html" rel="noopener" style="display:block;text-align:center;text-decoration:none" data-i18n="privacy">سياسة الخصوصية</a>
         <button class="x-btn" data-go="back" data-i18n="back">رجوع</button>
       </div></div>
-      <div id="tut" class="x-hide" role="dialog" aria-modal="true"><div class="tu-card">
-        <div class="tu-vis" id="tuV"></div>
-        <div class="tu-txt"><div class="tu-step" id="tuN"></div><h3 id="tuH"></h3><p id="tuP"></p></div>
-        <div class="tu-bar"><div class="tu-dots" id="tuD"><i></i><i></i><i></i><i></i></div><button class="tu-sk" id="tuS" data-i18n="tuSkip">تخطي</button><button class="x-btn x-main" id="tuB"></button></div>
+      <div id="tut" class="tb x-hide" role="dialog" aria-modal="true" aria-labelledby="tuH" aria-describedby="tuP"><div class="tb-card">
+        <div class="tb-vis" id="tuV" aria-hidden="true"></div>
+        <div class="tb-txt"><div class="tb-top"><div class="tb-step" id="tuN"></div><div class="tb-dots" id="tuD" aria-hidden="true"></div></div><h3 id="tuH"></h3><p id="tuP" aria-live="polite"></p>
+          <div class="tb-bar"><button type="button" class="tb-gh" id="tuS"></button><button type="button" class="tb-gh tb-off" id="tuK"></button><button type="button" class="tb-go" id="tuB"></button></div></div>
       </div></div>
       <div class="x-ov x-hide" id="how"><div class="x-box">
         <h2 class="x-cy" data-i18n="how">كيف تلعب</h2>
@@ -3510,6 +3628,7 @@
         const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "`": "&#96;" };
         const esc = (s) => String(s ?? "").replace(/[&<>"'`]/g, (c) => ESC[c]);
         const num = (v) => (Number.isFinite(+v) ? +v : 0); // stored numbers shown in markup are coerced, never inserted raw
+        var RTX = { on: false }, MM13 = null; // 13t: realtime multiplayer state, premium minimap
         let snakes = [], food = [], player = null, state = "menu", best = 0, time = 0, skin = 0, back = "menu";
         const cam = { x: A / 2, y: A / 2, s: 1, t: 0.95, vx: 0, vy: 0, vs: 0, vt: 0 };
         // SPATIAL GRID: uniform buckets, rebuilt each frame (food, snake heads, snake segments)
@@ -4089,14 +4208,14 @@
             o.type = type || "sine"; o.frequency.setValueAtTime(f, t);
             if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
             g.gain.setValueAtTime(vol || 0.06, t); g.gain.exponentialRampToValueAtTime(0.001, t + d);
-            o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + d + 0.02);
+            o.connect(g); g.connect(window.__ssFxBus ? __ssFxBus(AC) : AC.destination); o.start(t); o.stop(t + d + 0.02);
           } catch (e) {}
         }
         // procedural sounds: every call picks a variant different from the last one
         const PEN = [0, 2, 4, 7, 9], WAVES = ["sine", "triangle", "square", "sawtooth"], lastS = {};
         let combo = 0, comboT = -9, vibT = -9, killT = -1, pendImp = false;
         const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
-        function vib(p, gap) { if (gap && time - vibT < gap) return; vibT = time; try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
+        function vib(p, gap) { if (window.__ssVibOK && !__ssVibOK()) return; if (gap && time - vibT < gap) return; vibT = time; try { if (navigator.vibrate) navigator.vibrate(p); else if (window.__ssHapN) __ssHapN(p); } catch (e) {} }
         function actx() {
           if (!S.sound) return null;
           try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); return AC; } catch (e) { return null; }
@@ -4127,8 +4246,8 @@
         }
         function musTick() {
           const a = AC; if (!a) return;
-          const want = S.sound && S.music && a.state === "running" ? (state === "play" ? "m" : window.__SM && __SM.on ? "" : "l") : "";
-          if (!MUS.g) { MUS.g = a.createGain(); MUS.g.gain.value = 0.0001; MUS.g.connect(a.destination);
+          const want = S.music && a.state === "running" ? (state === "play" ? "m" : window.__SM && __SM.on ? "" : "l") : "";
+          if (!MUS.g) { MUS.g = a.createGain(); MUS.g.gain.value = 0.0001; MUS.g.connect(window.__ssMuBus ? __ssMuBus(a) : a.destination);
             const n = Math.ceil(a.sampleRate * 0.06), b = a.createBuffer(1, n, a.sampleRate), c = b.getChannelData(0); for (let i = 0; i < n; i++) c[i] = Math.random() * 2 - 1; MUS.nb = b; }
           const now = a.currentTime;
           if (want !== MUS.mode) { MUS.mode = want; MUS.g.gain.cancelScheduledValues(now); MUS.g.gain.setTargetAtTime(want === "m" ? 0.09 : want ? 0.06 : 0.0001, now, want ? 0.4 : 0.05); MUS.next = 0; }
@@ -4138,7 +4257,7 @@
           while (MUS.next < now + 0.25) { musStep(a, MUS.step++, MUS.next, sd); MUS.next += sd; }
         }
         // the AudioContext may only start inside a user gesture on iOS: every tap/key (cheap once it runs) creates or resumes it for the music
-        for (const ev of ["pointerdown", "touchend", "keydown"]) document.addEventListener(ev, () => { if (S.sound && S.music && (!AC || AC.state !== "running")) actx(); }, { passive: true, capture: true });
+        for (const ev of ["pointerdown", "touchend", "keydown"]) document.addEventListener(ev, () => { if (S.music && (!AC || AC.state !== "running")) { if (S.sound) actx(); else try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); } catch (e) {} } }, { passive: true, capture: true });
         // SCREEN SHAKE: offsets the camera's projection centre for a moment (no canvas transform, so nothing is uncovered); calmer with reduced motion
         let shk = 0;
         const RMO = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -4154,7 +4273,7 @@
           const t = a.currentTime + (t0 || 0), o = a.createOscillator(), g = a.createGain();
           o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d); if (det) o.detune.value = det;
           g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-          o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + 0.03);
+          o.connect(g); g.connect(window.__ssFxBus ? __ssFxBus(a) : a.destination); o.start(t); o.stop(t + d + 0.03);
         }
         function nz(a, d, vol, f0, f1, t0, type) {
           const t = a.currentTime + (t0 || 0), n = Math.ceil(a.sampleRate * d), b = a.createBuffer(1, n, a.sampleRate), ch = b.getChannelData(0);
@@ -4162,7 +4281,7 @@
           const s = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain();
           s.buffer = b; fl.type = type || "lowpass"; fl.frequency.setValueAtTime(f0, t); fl.frequency.exponentialRampToValueAtTime(f1, t + d);
           g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-          s.connect(fl); fl.connect(g); g.connect(a.destination); s.start(t); s.stop(t + d + 0.02);
+          s.connect(fl); fl.connect(g); g.connect(window.__ssFxBus ? __ssFxBus(a) : a.destination); s.start(t); s.stop(t + d + 0.02);
         }
         function sEat() {
           vib(6, 0.15); const a = actx(); if (!a) return;
@@ -4318,6 +4437,7 @@
           else { s.respawn = 2; TMS.die(s); if (player && player.alive && Math.hypot(s.seg[0].x - player.seg[0].x, s.seg[0].y - player.seg[0].y) < 600) pendImp = true; }
         }
         function syncBots() {
+          if (RTX.on) return; // 13t
           const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || nfBotN() || Math.min(45, Math.max(2, (L.on ? Math.min(40, Math.round((8 + L.round * 4) * A / 4500)) : Math.min(45, Math.round((MD === "p" ? PB * A / A0 * 1.18 : (window.__s13sOpp ? __s13sOpp(S.bots, S.q, A / A0, state === "play" ? AD.bAdd : 0) : S.bots * A / A0 * 1.18))))) + (state === "play" ? AD.bAdd : 0)));
           while (bots.length < nb) {
             const b = makeSnake(bn(bots.length), botSkin(), true);
@@ -4721,7 +4841,7 @@
         function adStart() {
           snakes = snakes.filter((s) => !s.ad); Object.assign(AD, { fog: null, rain: 0, t: 30, last: "", t0: time, agg: 0.1 + AD.skill * 0.4, smart: 1, bAdd: 0, food: 1 });
           const ks = Object.keys(AD_MODS).filter((k) => k !== AD.lastMod); AD.mod = AD.lastMod = ks[(R() * ks.length) | 0]; adMod();
-          setTimeout(() => { if (state === "play") xBan(`${_t("adName")} · ${_t("modLbl")}: ${_t("mod" + cap(AD.mod))}`); }, 900);
+          setTimeout(() => { if (state === "play" && AD.mod) xBan(`${_t("adName")} · ${_t("modLbl")}: ${_t("mod" + cap(AD.mod))}`); }, 900);
         }
         function adUpdate(dt) {
           if (state !== "play" || !player || !player.alive) return;
@@ -4914,10 +5034,10 @@
           for (let i = floats.length - 1; i >= 0; i--) if ((floats[i].l -= dt) <= 0) floats.splice(i, 1);
           for (const s of snakes) for (const k of ["spd", "pg", "pm", "frz", "frzT", "fire", "psh"]) if (s[k] > 0) s[k] -= dt;
           const pwN = p12N();
-          if (xPl !== player) { xPl = player; bossT = 0; pups = []; while (pups.length < pwN) xPup(); }
-          if (pups.length < pwN && (pwCd -= dt) <= 0) { pwCd = 4; xPup(); }
-          p12Pick();
-          if (player && player.alive) {
+          if (!RTX.on && xPl !== player) { xPl = player; bossT = 0; pups = []; while (pups.length < pwN) xPup(); }
+          if (!RTX.on && pups.length < pwN && (pwCd -= dt) <= 0) { pwCd = 4; xPup(); }
+          if (!RTX.on) p12Pick();
+          if (!RTX.on && player && player.alive) {
             if ((bossT += dt) >= 180 && !snakes.some((s) => s.boss && s.alive)) {
               bossT = 0; const b = makeSnake(_t("bossName"), "gold", false);
               Object.assign(b, { boss: true, len: 400, hat: "crown" }); snakes.push(b);
@@ -5003,6 +5123,7 @@
             else if (ptr.active) { const w = unpr(ptr.x, ptr.y), ph = player.seg[0], dx = w.x - ph.x, dy = w.y - ph.y; if (dx * dx + dy * dy > (player.r + 22) * (player.r + 22)) player.ta = Math.atan2(dy, dx); }
             player.boost = boostOn || mouseBoost || !!keys[" "] || !!keys.ArrowUp || nfVB();
           }
+          if (RTX.on) { RTX.update(dt); return; } // 13t online match
           for (const s of snakes) {
             if (!s.alive) {
               if (s.bot && !(MD === "s" && state === "play") && (s.respawn -= dt) <= 0) Object.assign(s, makeSnake(s.name, s.tm !== undefined ? s.skin : botSkin(), true));
@@ -5646,37 +5767,7 @@
 
           ctx.drawImage(sky(M), 0, 0, W, CY); xDraw2(vis); nfDrawTop(vis);
 
-          if (S.map && player && state === "play") {
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            const m = Math.round(Math.min(72, W * 0.19)), k = m / A; // build12: compact minimap
-            const x = (window.P10SA ? P10SA.l : 0) + 10, y = (window.P10SA ? P10SA.t : 0) + 8; // build10: minimap at the top-left
-            const mk2 = m + "|" + dpr + "|" + mapI;
-            if ((mmT -= fdt) <= 0 || mk2 !== mmK) { // redraw the cached minimap at ~5 Hz
-              mmT = 0.2; mmK = mk2; const pm = Math.round((m + 4) * dpr);
-              if (MM.width !== pm) MM.width = MM.height = pm;
-              const g = mmg; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, pm, pm); g.setTransform(dpr, 0, 0, dpr, 2 * dpr, 2 * dpr);
-              g.fillStyle = "rgba(6,14,38,.72)"; g.strokeStyle = "rgba(79,227,255,.8)"; g.lineWidth = 1.5;
-              g.save(); g.beginPath(); g.rect(0, 0, m, m); g.fill(); g.stroke(); g.clip();
-              mpMini(g, k); g.fillStyle = "rgba(255,255,255,.22)";
-              for (const o of obs) { if (o.w) { g.fillRect((o.x - o.w) * k, (o.y - o.h) * k, Math.max(1.5, 2 * o.w * k), Math.max(1.5, 2 * o.h * k)); continue; } g.beginPath(); g.arc(o.x * k, o.y * k, Math.max(1.5, o.r * k), 0, 6.283); g.fill(); }
-              for (const sn of snakes) {
-                if (!sn.alive || sn === player) continue;
-                const hd = sn.seg[0];
-                g.fillStyle = segColor(sn.skin, 0); g.beginPath(); g.arc(hd.x * k, hd.y * k, 2 + Math.min(2, sn.len / 150), 0, 6.283); g.fill();
-              }
-              g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 1;
-              g.beginPath();
-              [c0, c1, c3, c2].forEach((c, i) => g[i ? "lineTo" : "moveTo"](clamp(c.x, -A, 2 * A) * k, clamp(c.y, -A, 2 * A) * k));
-              g.closePath(); g.stroke();
-              if (player.alive) {
-                const ph = player.seg[0]; // soft halo instead of shadowBlur
-                g.fillStyle = "rgba(255,255,255,.3)"; g.beginPath(); g.arc(ph.x * k, ph.y * k, 6.5, 0, 6.283); g.fill();
-                g.fillStyle = "#fff"; g.beginPath(); g.arc(ph.x * k, ph.y * k, 3.5, 0, 6.283); g.fill();
-              }
-              g.restore();
-            }
-            ctx.globalAlpha = 0.55; ctx.drawImage(MM, x - 2, y - 2, m + 4, m + 4); ctx.globalAlpha = 1;
-          }
+          if (S.map && (player || TMS.spec) && state === "play" && MM13) MM13(c0, c1, c2, c3); // 13t premium minimap
         }
 
         const pv = $("prev"), pc = pv.getContext("2d");
@@ -5760,7 +5851,7 @@
           $("zoom").value = S.zoom; $("fps").classList.toggle("x-hide", !(S.fps && state === "play")); loop.fv = undefined;
           syncBots();
           if (S.lang !== LANG) { applyLang(S.lang); relang(); }
-          const mu = $("mute"); mu.classList.toggle("x-off", !S.sound); mu.setAttribute("aria-label", _t(S.sound ? "mute" : "unmute"));
+          const mu = $("mute"); mu.classList.toggle("x-off", !(S.sound || S.music)); mu.setAttribute("aria-label", _t(S.sound || S.music ? "mute" : "unmute"));
           paintDiff(); paintMode();
           commit();
           try { window.__SM && __SM.gameSet(); } catch (_) {}
@@ -6084,32 +6175,210 @@
           } else if (b.dataset.t !== undefined) { const id = b.dataset.t; if (id && !P.ach[id]) return; P.title = id; beep(620, 0.08, "triangle", 0.05, 900); }
           achR = aReady(); profile(); paintAch();
         });
-        // FIRST-RUN TUTORIAL: shown once (KV "ss-tut") before the first match; Skip or the last card starts the match
-        const TU_V = [
-          '<svg viewBox="0 0 220 160"><path class="tu-sn" d="M20 120 C60 120 70 60 110 60 S170 100 200 40"/><g class="tu-fg"><circle cx="120" cy="110" r="14" fill="rgba(255,255,255,.18)"/><path d="M116 96 v22 l-6 -4 a4 4 0 0 0 -5 6 l12 12 h14 a6 6 0 0 0 6 -6 v-14 a4 4 0 0 0 -8 0 v-4 a4 4 0 0 0 -8 0 v-12 a4 4 0 0 0 -5 0z" fill="#fff"/></g></svg>',
-          '<svg viewBox="0 0 220 160"><circle class="tu-or" cx="70" cy="80" r="6" fill="#7dd3fc" style="animation-delay:-2.4s"/><circle class="tu-or" cx="110" cy="80" r="6" fill="#f472b6" style="animation-delay:-2s"/><circle class="tu-pl" cx="160" cy="80" r="11" fill="#fbbf24" style="filter:drop-shadow(0 0 8px #fbbf24)"/><text x="186" y="50" font-size="22">🧬</text><path class="tu-sn" d="M10 80 H210"/></svg>',
-          '<svg viewBox="0 0 220 160"><path d="M150 20 V140" stroke="#f97316" stroke-width="14" stroke-linecap="round" fill="none"/><path class="tu-sn" d="M20 80 H150" style="stroke-dasharray:60 400;animation-duration:2.4s"/><g class="tu-bm"><circle cx="146" cy="80" r="22" fill="none" stroke="#ef4444" stroke-width="4"/><path d="M134 68 l24 24 M158 68 l-24 24" stroke="#ef4444" stroke-width="5" stroke-linecap="round"/></g><rect x="206" y="6" width="8" height="148" rx="3" fill="#ef4444" opacity=".7"/></svg>',
-          '<svg viewBox="0 0 220 160"><path class="tu-sn" d="M10 70 H210" style="animation-duration:1.1s"/><path d="M30 92 H90 M50 102 H110" stroke="rgba(52,211,153,.5)" stroke-width="3" stroke-linecap="round"/><g class="tu-pl"><circle cx="175" cy="120" r="24" fill="rgba(201,165,74,.25)" stroke="#c9a54a" stroke-width="3"/><path d="M178 106 l-12 16 h9 l-3 12 12 -16 h-9z" fill="#fbbf24"/></g></svg>',
-        ];
-        let tuI = 0;
-        function tuDraw() {
-          const n = tuI + 1, c = S.ctrl === "joy" ? "j" : S.ctrl === "btns" ? "b" : "f";
-          $("tuV").innerHTML = TU_V[tuI];
-          $("tuN").textContent = n + " / 4";
-          $("tuH").textContent = _t("tuH" + n);
-          $("tuP").textContent = _t(n === 1 ? "tuP1" + c : "tuP" + n);
-          $("tuB").textContent = _t(n === 4 ? "tuGo" : "tuNext");
-          [...$("tuD").children].forEach((d, i) => d.classList.toggle("on", i === tuI));
-        }
-        function tuOpen() { tuI = 0; tuDraw(); $("tut").classList.remove("x-hide"); $("tuB").focus(); }
-        function tuDone() { KV.set("ss-tut", "1"); $("tut").classList.add("x-hide"); start(); }
-        $("tuB").addEventListener("click", () => { beep(520, 0.06, "triangle", 0.04); if (tuI < 3) { tuI++; tuDraw(); } else tuDone(); });
-        $("tuS").addEventListener("click", tuDone);
+        // /*ss-onb-v1*/ FIRST-MATCH TUTORIAL v2 (6 cards, once per account, replay from Settings > App) + separate Sound / Music / Vibration
+        // Seen-flag: local "ss-tut2:<uid>" + server spf_settings key "tut" (sent once; the server keeps it once "tut" is in private.spf_allow).
+        const TU2 = (() => {
+          const L6 = (a) => a; // [ar, en, tr, fr, es, hi] like I18N
+          Object.assign(I18N, {
+            obH1: L6(["وجّه ثعبانك", "Steer your snake", "Yılanını yönlendir", "Dirige ton serpent", "Dirige tu serpiente", "अपना साँप चलाएँ"]),
+            obP1j: L6(["اسحب عصا التحكم للاتجاه اللي تريده، والثعبان يلف وياها.", "Drag the joystick toward where you want to go. Your snake turns with it.", "Joystick'i gitmek istediğin yöne sürükle; yılanın onunla döner.", "Fais glisser le joystick vers où tu veux aller : ton serpent tourne avec.", "Arrastra el joystick hacia donde quieras ir y tu serpiente girará.", "जॉयस्टिक को उस दिशा में खींचें जहाँ जाना है, साँप उसी ओर मुड़ेगा।"]),
+            obP1f: L6(["حط إصبعك واسحب بأي مكان بالشاشة، والثعبان يلحق إصبعك.", "Touch and drag anywhere on the screen. Your snake follows your finger.", "Ekranda herhangi bir yere dokunup sürükle; yılanın parmağını izler.", "Touche et fais glisser n'importe où : ton serpent suit ton doigt.", "Toca y arrastra en cualquier parte: tu serpiente sigue tu dedo.", "स्क्रीन पर कहीं भी छूकर खींचें, साँप आपकी उंगली के पीछे चलेगा।"]),
+            obP1b: L6(["اضغط زر اليسار واليمين حتى يلف الثعبان.", "Tap the left and right buttons to turn your snake.", "Yılanını döndürmek için sol ve sağ tuşlara dokun.", "Appuie sur les boutons gauche et droite pour tourner.", "Pulsa los botones izquierda y derecha para girar.", "साँप मोड़ने के लिए बाएँ और दाएँ बटन दबाएँ।"]),
+            obP1t: L6(["ميّل جهازك حتى توجّه الثعبان. تقدر تغيّرها لعصا التحكم من الإعدادات.", "Tilt your device to steer. You can switch to the joystick in Settings.", "Yönlendirmek için cihazını eğ. Ayarlar'dan joystick'e geçebilirsin.", "Incline ton appareil pour diriger. Tu peux passer au joystick dans les Paramètres.", "Inclina tu dispositivo para dirigir. Puedes cambiar al joystick en Ajustes.", "दिशा बदलने के लिए डिवाइस झुकाएँ। सेटिंग्स में जॉयस्टिक चुन सकते हैं।"]),
+            obH2: L6(["التسريع", "Boost", "Hızlan", "Boost", "Turbo", "बूस्ट"]),
+            obP2: L6(["اضغط مطوّل على زر التسريع حتى تنطلق. ياكل شوية من طولك، فاستخدمه بوقته.", "Hold Boost to speed up. It burns a little length, so save it for the right moment.", "Hızlanmak için Hızlan tuşunu basılı tut. Biraz boy harcar, doğru anı bekle.", "Maintiens Boost pour accélérer. Ça coûte un peu de longueur : garde-le pour le bon moment.", "Mantén Turbo para acelerar. Gasta un poco de longitud: úsalo en el momento justo.", "तेज़ चलने के लिए बूस्ट दबाए रखें। इससे थोड़ी लंबाई घटती है, सही मौके पर इस्तेमाल करें।"]),
+            obH3: L6(["كُل وكبر", "Eat and grow", "Ye ve büyü", "Mange et grandis", "Come y crece", "खाओ और बढ़ो"]),
+            obP3: L6(["كُل الأكل المضيء حتى تطول. كل ما طلت أكثر، تحاصر خصوم أكثر.", "Eat the glowing food to grow longer. A longer body traps more rivals.", "Uzamak için parlayan yemleri ye. Uzun gövde daha çok rakibi kapana kıstırır.", "Mange la nourriture lumineuse pour grandir. Un corps plus long piège plus de rivaux.", "Come la comida brillante para crecer. Un cuerpo más largo atrapa a más rivales.", "लंबा होने के लिए चमकता खाना खाएँ। लंबा शरीर ज़्यादा विरोधियों को घेरता है।"]),
+            obH4: L6(["خلّيهم يصطدمون بيك", "Make them crash", "Onları çarptır", "Fais-les s'écraser", "Haz que choquen", "उन्हें टकराने दो"]),
+            obP4: L6(["الخصم يطلع إذا راسه ضرب بجسمك، وإنت تطلع إذا راسك ضرب بجسمه. اقطع طريقهم!", "A rival is out when its head hits your body, and so are you if your head hits theirs. Cut them off!", "Rakibin başı gövdene çarparsa o elenir; senin başın onunkine çarparsa sen. Önlerini kes!", "Un rival est éliminé si sa tête touche ton corps, et toi si ta tête touche le sien. Coupe-leur la route !", "Un rival cae si su cabeza toca tu cuerpo, y tú si tu cabeza toca el suyo. ¡Córtales el paso!", "विरोधी का सिर आपके शरीर से टकराए तो वह बाहर, आपका सिर उसके शरीर से टकराए तो आप। उनका रास्ता काटें!"]),
+            obH5: L6(["قوى مجانية", "Free power-ups", "Ücretsiz güçler", "Bonus gratuits", "Poderes gratis", "मुफ़्त पावर-अप"]),
+            obP5: L6(["التقط القوى من الخريطة لمدة ١٠ ثواني: ⚡ سرعة · 🧲 مغناطيس · 🔥 نار · 🛡️ درع.", "Grab power-ups on the map for 10 s: ⚡ Speed · 🧲 Magnet · 🔥 Fire · 🛡️ Shield.", "Haritadaki güçleri 10 sn kullan: ⚡ Hız · 🧲 Mıknatıs · 🔥 Ateş · 🛡️ Kalkan.", "Ramasse les bonus sur la carte (10 s) : ⚡ Vitesse · 🧲 Aimant · 🔥 Feu · 🛡️ Bouclier.", "Recoge poderes en el mapa (10 s): ⚡ Velocidad · 🧲 Imán · 🔥 Fuego · 🛡️ Escudo.", "मैप पर 10 सेकंड के पावर-अप उठाएँ: ⚡ स्पीड · 🧲 चुंबक · 🔥 आग · 🛡️ ढाल।"]),
+            obH6: L6(["انتبه للحدود", "Mind the border", "Sınıra dikkat", "Attention au bord", "Cuidado con el borde", "किनारे से बचें"]),
+            obP6: L6(["إذا لمست جدار حدود الساحة تطلع. ادفع الخصوم صوبه بدالك.", "Touching the arena's border wall knocks you out. Push rivals toward it instead.", "Arenanın sınır duvarına değersen elenirsin. Bunun yerine rakipleri oraya it.", "Toucher le mur du bord de l'arène t'élimine. Pousse plutôt les rivaux vers lui.", "Tocar el muro del borde te elimina. Empuja a los rivales hacia él.", "अखाड़े की किनारे वाली दीवार छूते ही आप बाहर। विरोधियों को उसकी ओर धकेलें।"]),
+            obStep: L6(["الخطوة {n} من {t}", "Step {n} of {t}", "Adım {n}/{t}", "Étape {n} sur {t}", "Paso {n} de {t}", "चरण {n} / {t}"]),
+            obDone: L6(["تمام", "Done", "Tamam", "Terminé", "Listo", "हो गया"]),
+            obSfxVol: L6(["مستوى الأصوات", "Sound volume", "Ses seviyesi", "Volume des effets", "Volumen de efectos", "साउंड वॉल्यूम"]),
+            obMusVol: L6(["مستوى الموسيقى", "Music volume", "Müzik seviyesi", "Volume de la musique", "Volumen de música", "संगीत वॉल्यूम"]),
+            obVibNo: L6(["هذا الجهاز أو المتصفح ما يدعم الاهتزاز (متصفحات الآيفون ما تدعمه).", "This device or browser can't vibrate (iPhone browsers don't support it).", "Bu cihaz veya tarayıcı titreşimi desteklemiyor (iPhone tarayıcıları desteklemez).", "Cet appareil ou navigateur ne peut pas vibrer (non pris en charge sur iPhone).", "Este dispositivo o navegador no puede vibrar (no compatible en iPhone).", "यह डिवाइस या ब्राउज़र वाइब्रेट नहीं कर सकता (iPhone ब्राउज़र में यह सपोर्ट नहीं है)।"]),
+            obTut: L6(["الشرح", "Tutorial", "Eğitim", "Tutoriel", "Tutorial", "ट्यूटोरियल"]),
+            obTutRow: L6(["طريقة اللعب بست بطاقات سريعة", "How to play in 6 quick cards", "6 kısa kartta nasıl oynanır", "Comment jouer en 6 cartes", "Cómo jugar en 6 tarjetas", "6 छोटे कार्ड में खेलना सीखें"]),
+            obReplay: L6(["إعادة الشرح", "Replay tutorial", "Eğitimi tekrar izle", "Revoir le tutoriel", "Repetir tutorial", "ट्यूटोरियल दोबारा देखें"]),
+          });
+          const tt = (k, o) => _t(k, o);
+          const esc4 = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+          // ---------- the 6 animated vignettes (SVG, 240 x 150, CSS-animated; static frames still read without motion) ----------
+          const SN = (d, c, x) => `<path class="tb-sn${c ? " " + c : ""}" d="${d}"${c && /tb-run/.test(c) ? ' pathLength="100"' : ""}${x || ""}/>`;
+          const V = {
+            j: `<svg viewBox="0 0 240 150"><g class="tb-joy"><circle cx="58" cy="96" r="30" class="tb-jb"/><circle cx="58" cy="96" r="12" class="tb-jk"/></g>${SN("M118 128 C150 128 150 70 178 58 S222 52 226 30", "tb-run")}</svg>`,
+            f: `<svg viewBox="0 0 240 150">${SN("M30 120 C80 120 90 50 140 52 S200 96 222 40", "tb-run")}<g class="tb-fg"><circle cx="150" cy="104" r="15" fill="rgba(79,227,255,.22)"/><path d="M146 90 v22 l-6 -4 a4 4 0 0 0 -5 6 l12 12 h14 a6 6 0 0 0 6 -6 v-14 a4 4 0 0 0 -8 0 v-4 a4 4 0 0 0 -8 0 v-12 a4 4 0 0 0 -5 0z" fill="#fff"/></g></svg>`,
+            b: `<svg viewBox="0 0 240 150">${SN("M40 110 C90 110 110 50 160 50 S210 80 222 60", "tb-run")}<g class="tb-tbn"><rect x="22" y="40" width="44" height="44" rx="12" class="tb-jb"/><path d="M50 50 l-12 12 12 12" class="tb-ar"/></g><g class="tb-tbn tb-d2"><rect x="174" y="92" width="44" height="44" rx="12" class="tb-jb"/><path d="M190 102 l12 12 -12 12" class="tb-ar"/></g></svg>`,
+            t: `<svg viewBox="0 0 240 150">${SN("M30 120 C80 120 100 60 150 56 S210 70 222 36", "tb-run")}<g class="tb-tilt"><rect x="78" y="30" width="84" height="50" rx="10" class="tb-jb"/><circle cx="152" cy="55" r="3" fill="#f2c75a"/></g></svg>`,
+            2: `<svg viewBox="0 0 240 150"><g class="tb-spd"><path d="M20 52 H70 M36 66 H96 M14 80 H60" /></g>${SN("M24 66 H170", "tb-fast")}<circle class="tb-hd" cx="172" cy="66" r="8"/><g class="tb-bst"><circle cx="196" cy="112" r="26" class="tb-bb"/><path d="M199 96 l-11 16 h9 l-3 13 12 -17 h-9z" fill="#fff6c4"/></g></svg>`,
+            3: `<svg viewBox="0 0 240 150">${[[70, "#7dd3fc", 0], [104, "#f472b6", 1], [138, "#fbbf24", 2], [172, "#a7f3d0", 3], [206, "#c4b5fd", 4]].map(([x, c, i]) => `<circle class="tb-or tb-o${i}" cx="${x}" cy="75" r="${i === 2 ? 8 : 6}" fill="${c}"/>`).join("")}${SN("M14 75 H226", "tb-grow")}</svg>`,
+            4: `<svg viewBox="0 0 240 150">${SN("M24 100 H200", "tb-me")}<circle class="tb-hd" cx="204" cy="100" r="9"/><g class="tb-riv">${SN("M122 -60 V82", "tb-red")}<circle class="tb-hd tb-hdred" cx="122" cy="84" r="8"/></g><g class="tb-boom"><circle cx="122" cy="90" r="20" fill="none" stroke="#ffd659" stroke-width="4"/><path d="M110 78 l24 24 M134 78 l-24 24" stroke="#ff5a6e" stroke-width="5" stroke-linecap="round"/></g><g class="tb-drop">${[[96, 70], [112, 60], [132, 62], [148, 72], [104, 50], [140, 48]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#ff8a9a"/>`).join("")}</g></svg>`,
+            5: `<svg viewBox="0 0 240 150">${[["⚡", "#4fe3ff", 42], ["🧲", "#f472b6", 94], ["🔥", "#fb923c", 146], ["🛡️", "#a7f3d0", 198]].map(([e, c, x], i) => `<g class="tb-pk tb-p${i}"><circle cx="${x}" cy="72" r="22" fill="rgba(9,20,48,.85)" stroke="${c}" stroke-width="3"/><circle cx="${x}" cy="72" r="27" fill="none" stroke="${c}" stroke-opacity=".35" stroke-width="2" class="tb-ring"/><text x="${x}" y="80" text-anchor="middle" font-size="22">${e}</text></g>`).join("")}<text x="120" y="130" text-anchor="middle" class="tb-10">10 s</text></svg>`,
+            6: `<svg viewBox="0 0 240 150"><rect x="212" y="8" width="14" height="134" rx="6" class="tb-wall"/>${SN("M30 48 H204", "tb-red tb-hit")}<g class="tb-boom tb-b6"><circle cx="208" cy="48" r="18" fill="none" stroke="#ffd659" stroke-width="4"/><path d="M198 38 l20 20 M218 38 l-20 20" stroke="#ff5a6e" stroke-width="5" stroke-linecap="round"/></g>${SN("M24 112 C110 112 150 112 180 92 S196 64 170 58", "tb-run tb-safe")}</svg>`,
+          };
+          const N = 6;
+          const U = { i: 0, mode: 0, open: false, hooked: false, sent: false, tap: 0, mu: null, px: 0, py: 0, pid: -1 };
+          const uidK = () => (cur === "@on" && ON && ON.uid ? "ss-tut2:" + ON.uid : "");
+          const hook = () => { // learn the server flag from the settings sync's own spf_get_settings answer (no extra call)
+            if (U.hooked || !ON || typeof ON.rpc !== "function") return; U.hooked = true;
+            const r0 = ON.rpc;
+            ON.rpc = function (fn, a) {
+              const p = r0.apply(this, arguments);
+              if (fn === "spf_get_settings" && p && typeof p.then === "function") p.then((r) => { try { if (r && r.s && +r.s.tut >= 1) mark(true); } catch (_) {} }, () => {});
+              return p;
+            };
+          };
+          setTimeout(hook, 0);
+          const need = () => { hook(); const k = uidK(); return !!k && KV.get(k) !== "1"; };
+          const mark = (fromServer) => {
+            const k = uidK(); if (!k) return; KV.set(k, "1");
+            if (fromServer || U.sent) return; U.sent = true;
+            try { const p = ON.rpc("spf_set_settings", { p_patch: { tut: 1 } }); if (p && p.catch) p.catch(() => {}); } catch (_) {}
+          };
+          const ctl = () => (S.ctrl === "joy" ? "j" : S.ctrl === "btns" ? "b" : S.ctrl === "tilt" ? "t" : "f");
+          const draw = () => {
+            const n = U.i + 1, last = n === N, c = ctl();
+            $("tuV").innerHTML = n === 1 ? V[c] : V[n];
+            $("tuN").textContent = tt("obStep", { n, t: N });
+            $("tuH").textContent = tt("obH" + n);
+            $("tuP").textContent = tt(n === 1 ? "obP1" + c : "obP" + n).replace(/(⚡|🧲|🔥|🛡️) /g, "$1\u00a0"); // emoji stays with its word
+            const b = $("tuB"); b.textContent = last ? tt(U.mode ? "obDone" : "tuGo") : tt("tuNext"); b.classList.toggle("tb-last", last);
+            $("tuS").textContent = tt("tuSkip"); $("tuS").classList.toggle("x-hide", last);
+            const k = $("tuK"); k.textContent = tt("back"); k.classList.toggle("tb-off", U.i === 0); k.setAttribute("aria-hidden", U.i === 0 ? "true" : "false"); k.tabIndex = U.i === 0 ? -1 : 0;
+            const d = $("tuD"); if (d.children.length !== N) d.innerHTML = "<i></i>".repeat(N);
+            [...d.children].forEach((x, j) => { x.classList.toggle("on", j === U.i); x.classList.toggle("dn", j < U.i); });
+            const cd = $("tut").querySelector(".tb-card"); if (cd) { cd.classList.remove("tb-in"); void cd.offsetWidth; cd.classList.add("tb-in"); }
+          };
+          const open = (mode) => {
+            U.mode = mode ? 1 : 0; U.i = 0; U.open = true; draw();
+            const o = $("tut"); o.classList.remove("x-hide"); o.setAttribute("dir", LANG === "ar" ? "rtl" : "ltr");
+            try { if (window.matchMedia && matchMedia("(pointer: fine)").matches) $("tuB").focus({ preventScroll: true }); } catch (_) {}
+          };
+          const close = (play) => {
+            U.open = false; $("tut").classList.add("x-hide"); mark(false);
+            if (play && !U.mode) start();
+          };
+          const next = () => { if (!U.open) return; try { beep(520, 0.06, "triangle", 0.04); } catch (_) {} if (U.i < N - 1) { U.i++; draw(); } else close(true); };
+          const prev = () => { if (!U.open || U.i === 0) return; U.i--; draw(); };
+          // iOS-safe taps: act on pointerup (finger lifted on the same button, little movement); the click that follows is ignored
+          const act = (id) => { if (id === "tuB") next(); else if (id === "tuS") close(true); else if (id === "tuK") prev(); };
+          const ov = $("tut");
+          ov.addEventListener("pointerdown", (e) => { U.px = e.clientX; U.py = e.clientY; U.pid = e.pointerId; }, { passive: true });
+          ov.addEventListener("pointerup", (e) => {
+            if (!U.open) return; const dx = e.clientX - U.px, dy = e.clientY - U.py;
+            const b = e.target.closest && e.target.closest("#tuB, #tuS, #tuK");
+            if (b && Math.abs(dx) < 14 && Math.abs(dy) < 14) { U.tap = Date.now(); act(b.id); return; }
+            if (!b && Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) { const fwd = (LANG === "ar" ? dx > 0 : dx < 0); if (fwd) { if (U.i < N - 1) next(); } else prev(); } // swipe
+          });
+          ov.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("#tuB, #tuS, #tuK"); if (!b || !U.open) return; if (Date.now() - U.tap < 700) return; act(b.id); }); // keyboard / missed pointerup
+          document.addEventListener("keydown", (e) => {
+            if (!U.open) return; const rtl = LANG === "ar";
+            const k = e.key, fw = rtl ? "ArrowLeft" : "ArrowRight", bk = rtl ? "ArrowRight" : "ArrowLeft";
+            if (k === "Enter" && !(document.activeElement && document.activeElement.closest && document.activeElement.closest("#tut button"))) { e.preventDefault(); e.stopPropagation(); next(); return; } // focused buttons get their own click
+            if (k !== "Escape" && k !== fw && k !== bk && k !== "ArrowUp" && k !== "ArrowDown" && k !== "m" && k !== "M") return;
+            e.preventDefault(); e.stopPropagation(); // the game's own key handler (Escape = back, m = mute) must not act behind the card
+            if (k === "Escape") close(true); else if (k === fw) { if (U.i < N - 1) next(); } else if (k === bk) prev();
+          }, true);
+
+          // ---------- audio buses: game beeps / procedural music follow the Sound effects and Music volumes ----------
+          const BUS = { fx: 1, mu: 1, n: [] };
+          const bus = (a, k) => { const key = "__ssB" + k; if (!a[key]) { const g = a.createGain(); g.gain.value = BUS[k]; g.connect(a.destination); a[key] = g; BUS.n.push({ g, a, k }); } return a[key]; };
+          window.__ssFxBus = (a) => { try { return bus(a, "fx"); } catch (_) { return a.destination; } };
+          window.__ssMuBus = (a) => { try { return bus(a, "mu"); } catch (_) { return a.destination; } };
+          window.__ssAudUpd = (pp) => { // soul prefs changed (called from syncPrefs). Defaults (sfx .9, music .6, master .9) = loudness unchanged
+            const m = Math.max(0, +pp.master || 0);
+            BUS.fx = Math.min(1.25, Math.max(0, +pp.sfx || 0) * m / 0.81); BUS.mu = Math.min(1.5, Math.max(0, +pp.music || 0) * m / 0.54);
+            for (const x of BUS.n) { try { x.g.gain.setTargetAtTime(Math.max(0.0001, x.k === "fx" ? BUS.fx : BUS.mu), x.a.currentTime, 0.04); } catch (_) {} }
+            try { AUD.sync(); } catch (_) {}
+          };
+          // ---------- vibration: one switch for every buzz (game + soul); native haptics when the iOS app has the Capacitor plugin ----------
+          let vibC = { t: 0, v: true }, hapT = 0;
+          window.__ssVibOK = () => { const n = Date.now(); if (n - vibC.t > 400) { vibC.t = n; try { vibC.v = localStorage.getItem("ss-vib") !== "0"; } catch (_) { vibC.v = true; } } return vibC.v; };
+          const capH = () => { try { const C = window.Capacitor; return (C && C.Plugins && C.Plugins.Haptics) || null; } catch (_) { return null; } };
+          window.__ssHapN = (p) => {
+            const H = capH(); if (!H || !window.__ssVibOK()) return; const n = Date.now(); if (n - hapT < 60) return; hapT = n;
+            const d = Array.isArray(p) ? Math.max(...p) : +p || 10;
+            try { const r = H.impact({ style: d >= 50 ? "HEAVY" : d >= 18 ? "MEDIUM" : "LIGHT" }); if (r && r.catch) r.catch(() => {}); } catch (_) {}
+          };
+          const vibCan = () => !!(navigator.vibrate || capH());
+
+          // ---------- Settings > App: Sound / Music / Vibration rows (replace the soul's Master / Music / Sound effects / Haptics rows) ----------
+          const AUD = {
+            last: (() => { try { return JSON.parse(localStorage.getItem("ss-aud-last") || "{}") || {}; } catch (_) { return {}; } })(),
+            drag: 0,
+            so: () => (window.SSoul && SSoul.getPrefs && window.__SM && __SM.on ? SSoul : null),
+            keep: () => { try { localStorage.setItem("ss-aud-last", JSON.stringify(AUD.last)); } catch (_) {} },
+            seg: (k, on) => `<span class="k-seg" data-ssa="${k}" role="group"><button type="button" data-v="1" class="${on ? "on" : ""}" aria-pressed="${on}">${esc4(tt("kOn"))}</button><button type="button" data-v="0" class="${on ? "" : "on"}" aria-pressed="${!on}">${esc4(tt("kOff"))}</button></span>`,
+            rng: (k, v) => `<span class="k-rc ssa-rc"><input type="range" min="0" max="100" step="5" data-ssr="${k}" value="${v}" aria-label="${esc4(tt(k === "sfx" ? "obSfxVol" : "obMusVol"))}"><output>${v}</output></span>`,
+            st: () => { const p = AUD.so().getPrefs(), m = +p.master > 0; return { snd: m && +p.sfx > 0, mus: m && +p.music > 0, vib: !!p.haptics, sfx: Math.round((+p.sfx > 0 ? +p.sfx : +AUD.last.sfx || 0.9) * 100), music: Math.round((+p.music > 0 ? +p.music : +AUD.last.music || 0.6) * 100) }; },
+            html: () => {
+              if (!AUD.so()) return "";
+              const s = AUD.st(), r = (l, c, cls) => `<div class="k-row ssa-r${cls ? " " + cls : ""}"><span class="k-rl">${esc4(l)}</span>${c}</div>`;
+              return `<div class="ssa" id="ssaw">` +
+                r(tt("kSound"), `<span class="k-rc">${AUD.seg("snd", s.snd)}</span>`) + r(tt("obSfxVol"), AUD.rng("sfx", s.sfx), "ssa-v" + (s.snd ? "" : " ssa-dim")) +
+                r(tt("kMusic"), `<span class="k-rc">${AUD.seg("mus", s.mus)}</span>`) + r(tt("obMusVol"), AUD.rng("music", s.music), "ssa-v" + (s.mus ? "" : " ssa-dim")) +
+                r(tt("kVib"), `<span class="k-rc">${AUD.seg("vib", s.vib)}</span>`) + (vibCan() ? "" : `<p class="k-hint ssa-hint">${esc4(tt("obVibNo"))}</p>`) + `</div>`;
+            },
+            post: (h) => { // hide the soul rows that the switches above replace
+              if (!h || !AUD.so() || !document.getElementById("ssaw")) return;
+              h.querySelectorAll(".ss-sr").forEach((r) => { if (r.querySelector('input[data-k="master"], input[data-k="music"], input[data-k="sfx"], .ss-seg[data-k="haptics"]')) r.remove(); });
+            },
+            sync: () => { // repaint switch states / slider values after any prefs change (not while a slider is dragged)
+              const w = document.getElementById("ssaw"); if (!w || !AUD.so() || Date.now() - AUD.drag < 400) return; const s = AUD.st();
+              for (const [k, on] of [["snd", s.snd], ["mus", s.mus], ["vib", s.vib]]) w.querySelectorAll(`[data-ssa="${k}"] button`).forEach((b) => { const o = (b.dataset.v === "1") === on; b.classList.toggle("on", o); b.setAttribute("aria-pressed", String(o)); });
+              for (const [k, v, on] of [["sfx", s.sfx, s.snd], ["music", s.music, s.mus]]) { const i = w.querySelector(`input[data-ssr="${k}"]`); if (i) { if (+i.value !== v) i.value = String(v); i.nextElementSibling.textContent = String(v); i.closest(".ssa-r").classList.toggle("ssa-dim", !on); } }
+            },
+            set: (k, on) => {
+              const so = AUD.so(); if (!so) return; const p = so.getPrefs(), pa = {};
+              if (k === "vib") { pa.haptics = !!on; try { localStorage.setItem("ss-vib", on ? "1" : "0"); } catch (_) {} vibC.t = 0; }
+              else { const f = k === "snd" ? "sfx" : "music", d = k === "snd" ? 0.9 : 0.6;
+                if (on) { pa[f] = +p[f] > 0 ? +p[f] : +AUD.last[f] > 0 ? +AUD.last[f] : d; if (!(+p.master > 0)) pa.master = 0.9; }
+                else { if (+p[f] > 0) { AUD.last[f] = +p[f]; AUD.keep(); } pa[f] = 0; } }
+              so.setPrefs(pa); AUD.sync();
+              if (k === "vib" && on) { try { so.haptic("success"); } catch (_) {} }
+            },
+            vol: (f, v) => {
+              const so = AUD.so(); if (!so) return; const p = so.getPrefs(), pa = { [f]: v / 100 };
+              if (v > 0) { AUD.last[f] = v / 100; AUD.keep(); if (!(+p.master > 0)) pa.master = 0.9; }
+              AUD.drag = Date.now(); so.setPrefs(pa);
+              const w = document.getElementById("ssaw"); if (w) { const i = w.querySelector(`input[data-ssr="${f}"]`); if (i) i.nextElementSibling.textContent = String(v); const k = f === "sfx" ? "snd" : "mus", on = v > 0;
+                w.querySelectorAll(`[data-ssa="${k}"] button`).forEach((b) => { const o = (b.dataset.v === "1") === on; b.classList.toggle("on", o); b.setAttribute("aria-pressed", String(o)); }); if (i) i.closest(".ssa-r").classList.toggle("ssa-dim", !on); }
+            },
+          };
+          document.addEventListener("click", (e) => {
+            const b = e.target.closest && e.target.closest("[data-ssa] button"); if (b) { AUD.set(b.parentElement.dataset.ssa, b.dataset.v === "1"); return; }
+            const r = e.target.closest && e.target.closest("[data-ssatut]"); if (r && !playing0()) { e.preventDefault(); open(1); }
+          });
+          document.addEventListener("input", (e) => { const i = e.target; if (i && i.dataset && i.dataset.ssr) AUD.vol(i.dataset.ssr, Math.max(0, Math.min(100, Math.round(+i.value || 0)))); }, { passive: true });
+          document.addEventListener("change", (e) => { const i = e.target; if (i && i.dataset && i.dataset.ssr === "sfx" && +i.value > 0) { try { beep(660, 0.08, "triangle", 0.05, 880); } catch (_) {} } }, { passive: true });
+          const playing0 = () => state === "play";
+          const muteAll = () => { // in-match speaker button: silences sound effects AND music; tap again to bring back what was on
+            const so = AUD.so();
+            if (so) { const p = so.getPrefs(), m = +p.master > 0, on = m && (+p.sfx > 0 || +p.music > 0);
+              if (on) { U.mu = { sfx: m ? +p.sfx : 0, music: m ? +p.music : 0 }; if (+p.sfx > 0) AUD.last.sfx = +p.sfx; if (+p.music > 0) AUD.last.music = +p.music; AUD.keep(); so.setPrefs({ sfx: 0, music: 0 }); }
+              else { const o = U.mu && (U.mu.sfx > 0 || U.mu.music > 0) ? U.mu : { sfx: +AUD.last.sfx || 0.9, music: +AUD.last.music || 0.6 }; const pa = { sfx: o.sfx, music: o.music }; if (!m) pa.master = 0.9; so.setPrefs(pa); }
+              return true;
+            }
+            if (S.sound || S.music) { U.mu = { s: S.sound, m: S.music }; S.sound = 0; S.music = 0; } else { const o = U.mu && (U.mu.s || U.mu.m) ? U.mu : { s: 1, m: 1 }; S.sound = o.s ? 1 : 0; S.music = o.m ? 1 : 0; }
+            try { applySettings(); } catch (_) {} return true;
+          };
+          const tutHTML = () => `<section class="k-sec ssa-tut"><h4>${esc4(tt("obTut"))}</h4><div class="k-row"><span class="k-rl">${esc4(tt("obTutRow"))}</span><span class="k-rc"><button type="button" class="x-btn x-sub ssa-rp" data-ssatut="1">${esc4(tt("obReplay"))}</button></span></div></section>`;
+          window.__ssAud = { html: AUD.html, post: AUD.post, sync: AUD.sync };
+          window.__ssTut = { open: (m) => open(m), need, mark, html: tutHTML, muteAll, isOpen: () => U.open, _reset: () => { const k = uidK(); if (k) KV.del(k); U.sent = false; } };
+          return { need, open, close, draw };
+        })();
+        let tuI = 0; // kept for older hooks
+        function tuDraw() { TU2.draw(); }
+        function tuOpen(m) { TU2.open(m); }
+        function tuDone() { TU2.close(true); }
         function start() {
           lockLand(); // every way into a match is a tap or key press, so this stays inside the user gesture
           if (!cur && !ON.guest) { show("login"); return; }
           if (CFG.mt && !isStaff() && !(ON.st && ON.st.is_admin)) { L.on = false; if (state !== "menu") home(); else show("mnt"); return; } // maintenance: admin only
-          if (!KV.get("ss-tut")) { tuOpen(); return; } // first match ever: the 4-card tutorial runs first
+          if (TU2.need()) { tuOpen(0); return; } // first match on this account: the 6-card tutorial runs first (ss-onb-v1)
           beep(660, 0.12, "triangle", 0.05, 990);
           MD = L.on ? "l" : nfMode() ? "n" : S.mode; tmRes = ""; if (MD === "t" && (S.tf | 0) <= 1) MD = "n"; // 13s1: Solo = Classic free-for-all
           if (MD === "p") { // the room code seeds the map and bot count, so the same code gives the same match
@@ -6133,7 +6402,7 @@
           if (player.big) player.len = 60;
           cam.x = player.seg[0].x; cam.y = player.seg[0].y; cam.vx = cam.vy = cam.vs = cam.vt = 0;
           release(); applySettings(); lbS = 1; lbT = 0; rvUsed = false; revHide();
-          nfStart(); ON.mStart();
+          nfStart(); if (!RTX.begin()) ON.mStart();
           state = "play"; last = performance.now(); aqReset(3);
           try { window.__SM && __SM.start(); } catch (_) {}
           show(null); $("game").classList.remove("x-hide");
@@ -6146,10 +6415,11 @@
           closeExit();
           if (state !== "play" || !player) return;
           TMS.left = 1; // 13s1: leaving is final in every mode (no team respawn)
+          if (RTX.on) { RTX.forfeit(); return; } // 13t: the server ends the run and sends the result
           if (!player.alive) { if (MD === "t" && TMS.spec) { TMS.spec = null; TMS.ui(); gameOver(); } return; }
           player.inv = 0; player.shield = 0; player.psh = 0; rvUsed = true; kill(player);
         }
-        function toggleMute() { S.sound = S.sound ? 0 : 1; applySettings(); }
+        function toggleMute() { if (window.__ssTut && __ssTut.muteAll()) return; S.sound = S.sound ? 0 : 1; applySettings(); }
         // ---- 13s1: leave on app close = result as of that moment ----
         const LV13 = (() => {
           const K = "ss-left13";
@@ -8141,12 +8411,12 @@
           if (NFM.m !== "myst") return "";
           if (NX.my === utcDay()) return "";
           NX.my = utcDay(); pay(20, "myst"); nfSXP(100, "myst"); profile();
-          return "❓ " + _t("nfMyRew", { n: 50 });
+          return "❓ " + (cur === "@on" ? _t("nfMyst") + " · " + _t("srwChk") : _t("nfMyRew", { n: 20 }));
         });
         NFH.home.push(() => { NFS.botN = 0; });
         NFCARDS.push(() => {
           const r = mystToday(), done = NX.my === utcDay();
-          return nfCard("❓", _t("nfMyst") + ": " + r.e + " " + mystName(r), _t("nfMy_d_" + r.k) + " · " + (done ? _t("nfMyDone") : _t("nfMyRewT", { n: 50 })),
+          return nfCard("❓", _t("nfMyst") + ": " + r.e + " " + mystName(r), _t("nfMy_d_" + r.k) + " · " + (done ? _t("nfMyDone") : _t("nfMyRewT", { n: (window.__srw && __srw.rule ? __srw.rule("myst_coins", 20) : 20) })),
             `<button data-go="nfplay" data-m="myst">${esc(_t("play"))}</button>`);
         });
 
@@ -8310,7 +8580,7 @@
           const h = player.seg[0];
           for (const l of LMP) {
             if (NX.lm[l.key] || Math.hypot(h.x - l.x, h.y - l.y) > 100 + player.r) continue;
-            NX.lm[l.key] = 1; pay(15, "lm"); nfSXP(50, "lm");
+            NX.lm[l.key] = 1; (NFS.lmf = NFS.lmf || []).push(l.key); pay(15, "lm"); nfSXP(50, "lm");
             const got = LMP.filter((q) => NX.lm[q.key]).length;
             if (got === LMP.length) pay(0, "lm", 1);
             burst(l.x, l.y, 30, 45); shake(4); vib([20, 30, 20]); beep(988, 0.3, "triangle", 0.06, 1976);
@@ -9144,7 +9414,7 @@
           if (!NFS.win) return "📖 " + _t("nfStFail", { n: i + 1 });
           const st = NFS.wt <= s.par ? 3 : NFS.wt <= s.par * 1.6 ? 2 : 1, first = i >= NX.cp;
           NX.cs[i] = Math.max(NX.cs[i] || 0, st); if (first) NX.cp = i + 1;
-          const co = first ? 40 + 10 * i : 0; if (co) pay(co, "story"); nfSXP(first ? 150 : 40, "story"); profile();
+          const co = cur === "@on" ? 0 : first ? 40 + 10 * i : 0; if (co) pay(co, "story"); nfSXP(first ? 150 : 40, "story"); profile();
           let line = `🏆 ${_t("nfStage", { n: i + 1 })} ${"★".repeat(st)}${"☆".repeat(3 - st)}` + (co ? ` +${co} 🪙` : "");
           if (i + 1 < STG.length) { NFM.st = i + 1; line += " · " + _t("nfStNext", { n: i + 2 }); } else line += " · " + _t("nfStEnd");
           return line;
@@ -9219,7 +9489,7 @@
         NFH.over.push(() => {
           if (NFM.m !== "word") return ""; const n = NFS.wc || 0; NX.wd += n;
           if (n) { pay(4 * n, "word"); nfSXP(15 * n, "word"); profile(); }
-          return "🔤 " + _t("nfWords", { n }) + (n ? ` +${10 * n} 🪙` : "");
+          return "🔤 " + _t("nfWords", { n }) + (n && cur !== "@on" ? ` +${(window.__srw && __srw.rule ? __srw.rule("word_coins", 4) : 4) * n} 🪙` : "");
         });
         NFCARDS.push(() => nfCard("🔤", _t("nfWordT"), _t("nfWordD") + (NX.wd ? " · " + _t("nfWords", { n: NX.wd }) : ""), `<button data-go="nfplay" data-m="word">${esc(_t("play"))}</button>`));
         NFCARDS.unshift(NFCARDS.pop(), NFCARDS.pop()); // story and words near the top
@@ -9673,7 +9943,7 @@
           o.rstApply = (st) => { // the server reset this account: drop every device-only copy of its old progress, then start fresh once
             const uid = st.profile.id, ra = String(st.profile.reset_at);
             try {
-              const exact = ["ss-on-" + uid, "ss-photo:" + uid, "ss-ph:@on", "ss-migskip-" + uid, "ss-recent-" + uid, "ss-lk-seen-" + uid, "ss-tut", "ss-shop-seen", "ss-streak-auto", "ss-soul-seen", "ss-soul-last", "ss-and-@on", "ss-13n-skfix-@on", "ss-pending-checkout"];
+              const exact = ["ss-on-" + uid, "ss-photo:" + uid, "ss-ph:@on", "ss-migskip-" + uid, "ss-recent-" + uid, "ss-lk-seen-" + uid, "ss-tut", "ss-tut2:" + uid, "ss-shop-seen", "ss-streak-auto", "ss-soul-seen", "ss-soul-last", "ss-and-@on", "ss-13n-skfix-@on", "ss-pending-checkout"];
               const pre = ["ss-gh:@on:"];
               const ks = []; try { for (let i = 0; i < localStorage.length; i++) ks.push(localStorage.key(i)); } catch (_) {}
               for (const k of new Set(exact.concat(ks.filter((k) => k && pre.some((p) => k.startsWith(p)))))) KV.del(k);
@@ -9778,11 +10048,18 @@
             const mp = o.mp, mid0 = o.mid; o.mid = null; o.mp = null;
             const out = (txt) => { el.textContent = txt; el.classList.remove("px-gone"); const pr = $("pxrews"); if (pr) pr.innerHTML = txt.split(" · ").filter(Boolean).map((p, i) => `<span dir="auto" style="animation-delay:${(0.1 + i * 0.1).toFixed(2)}s">${esc(p)}</span>`).join(""); };
             (async () => {
-              const mid = mid0 || (mp && (await mp));
+              let r = null, err = null, mid = null; const rtp = o.rtp; o.rtp = null;
+              if (rtp) { // 13t: the realtime server's signed result for this run
+                const x = await Promise.race([rtp, sleep(15000).then(() => null)]);
+                if (x && x.rewards) r = x;
+                else { out(!x ? _t("rtLost") : x.reason === "guest" ? _t("onGuestEarn") : x.detail && /limit/.test(x.detail) ? _t("rtNoRw") : _t("onNoTicket")); o.syncSoon(); return; }
+              } else {
+              mid = mid0 || (mp && (await mp));
               if (!mid) { out(_t("onNoTicket")); o.syncSoon(); return; }
-              let r = null, err = null;
               for (let i = 0; i < 3 && !r; i++) { try { r = await rpc("submit_match", { p_match_id: mid, p_stats: st }); } catch (e) { err = e; if (e.code !== "net") break; await sleep(1500 * (i + 1)); } }
               if (!r) { out(o.err(err)); o.syncSoon(); return; }
+              if (r.practice) { out(_t("rtOff")); o.syncSoon(); return; }
+              }
               if (r.too_short) out(_t("onShort"));
               else if (r.expired) out(_t("onNoTicket"));
               else {
@@ -9794,7 +10071,7 @@
                 if (x.season_xp > 0) parts.push(`👑 +${x.season_xp} ${_t("onSxp")}` + (x.season_premium ? " (×1.5)" : ""));
                 if (typeof tmRes === "string" && tmRes) parts.push(tmRes);
                 out(parts.join(" · "));
-                try { window.__SM && __SM.overR(r, c, lv, st); } catch (_) {}
+                try { window.__SM && __SM.overR(r, c, lv, st); } catch (_) {} try { window.__srw && __srw.after(mid, r, st); } catch (_) {}
               }
               if (r.wallet) wset(r.wallet);
               o.sync();
@@ -11139,7 +11416,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13s1" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13t" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -12001,7 +12278,7 @@
             const done = tryv(() => NX.my === utcDay(), false), left = (utcDay() + 1) * 864e5 - Date.now();
             const evHtml = `<div class="h-evt"><span class="h-art" style="background-image:url(ui/bn_event.webp?v=13s1)"></span><span class="pill r">${esc(_t("b13hLive"))} · ${esc(fmtLeft(left))}</span>` +
               `<small class="h-lab o">${esc(_t("nfMyst"))}</small><b class="h-disp h-t1 h-stroke">${esc(mystName(r))}</b><p>${esc(_t("nfMy_d_" + r.k))}</p></div>` +
-              `<div class="h-evb"><div class="h-row">${ic(done ? "missions" : "gift", "h-c28")}<span><b>${esc(done ? _t("nfMyDone") : _t("nfMyRewT", { n: 50 }))}</b></span></div>` +
+              `<div class="h-evb"><div class="h-row">${ic(done ? "missions" : "gift", "h-c28")}<span><b>${esc(done ? _t("nfMyDone") : _t("nfMyRewT", { n: (window.__srw && __srw.rule ? __srw.rule("myst_coins", 20) : 20) }))}</b></span></div>` +
               `<button type="button" class="h-btn green" data-go="nfplay" data-m="myst">${esc(_t("b13hPlayEv"))}</button></div>`;
             if (evh._lh !== evHtml) { evh._lh = evHtml; evh.innerHTML = evHtml; deEmoji(evh, "nfmodes"); }
             const l = $("nfml"); if (l) l.querySelectorAll(".x-it").forEach((c) => { const b = c.querySelector('[data-m="myst"]'); c.classList.toggle("h-live", !!b); });
@@ -12791,7 +13068,7 @@
               h += (window.__SM && __SM.on ? __SM.appHTML() + `<section class="k-sec">${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>` : `<section class="k-sec">${row(_t("kSound"), seg("s:sound", o, S.sound ? 1 : 0))}${row(_t("kMusic"), seg("s:music", o, S.music ? 1 : 0))}${row(_t("kVib"), seg("vib", o, vibOn() ? 1 : 0))}${row(_t("kAlerts"), seg("alerts", o, alertsOn() ? 1 : 0))}</section>`) +
                 `<section class="k-sec">${row(_t("kLang"), seg("lang", [["ar", "العربية"], ["en", "English"], ["tr", "Türkçe"], ["fr", "Français"], ["es", "Español"], ["hi", "हिन्दी"]], LANG))}` +
                 `${row(_t("kGfx"), seg("gfx", [["h", _t("kGfxHi")], ["m", _t("kGfxMid")], ["l", _t("kGfxLo")]], gfx()))}${row(_t("kBattery"), seg("bat", o, window.__ssBsv ? 1 : 0)) + `<p class="k-hint s13s-bsvh">${esc(_t("bsvHint"))}</p>`}</section>` +
-                `<section class="k-sec"><button type="button" class="x-btn x-sub" data-kset="controls">🎮 ${esc(_t("kControls"))} ›</button></section>`;
+                (window.__ssTut ? __ssTut.html() : "") + `<section class="k-sec"><button type="button" class="x-btn x-sub" data-kset="controls">🎮 ${esc(_t("kControls"))} ›</button></section>`;
             } else {
               const pr = ST.purch, lg = ST.ledger;
               h += (window.__SM && __SM.on ? __SM.moreHTML() : "") + `<section class="k-sec"><h4>${esc(_t("kPurch"))}</h4><div class="k-list">${pr === null ? "…" : pr.length ? pr.map((x) => `<div class="k-li"><span><b>${esc(String(x.product || "").replace(/^web\./, "").replace(/^com\.billke\.supersnake\.gems(\d+)$/, (m, n) => (+n).toLocaleString("en-US") + " 💎 · App Store"))}</b><small>${esc(fmtD(x.at, 1))}${x.env && /^(test|sandbox)$/i.test(x.env) ? " · TEST" : ""}</small></span><span dir="ltr">${x.amount_cents ? "$" + (x.amount_cents / 100).toFixed(2) : ""} · ${esc(x.status)}</span></div>`).join("") : `<p class="k-note">${esc(_t("kNoPurch"))}</p>`}</div>` +
@@ -12948,7 +13225,7 @@
             (acts && b.active ? `<div class="k-inl"><button type="button" class="x-btn x-sub" data-ka="lift" data-id="${b.id}">${esc(_t("kaUnban"))}</button><button type="button" class="x-btn x-sub" data-ka="editban" data-id="${b.id}">${esc(_t("kaEditBan"))}</button></div>` : "") + `</div>`;
           const admPaintK = () => {
             const b = $("kadmb"); if (!b) return;
-            const tabs0 = [["dash", "kaDash"], ["players", "kaPlayers"], ["bans", "kaBans"], ["reports", "kaReports"], ["sup", "kaSupport"], ["log", "kaLog"], ["ann", "kaAnn"]], tabs = window.__P13 && __P13.admTabs ? __P13.admTabs(tabs0) : tabs0;
+            const tabs0 = [["dash", "kaDash"], ["players", "kaPlayers"], ["bans", "kaBans"], ["reports", "kaReports"], ["sup", "kaSupport"], ["log", "kaLog"], ["ann", "kaAnn"]], tabs = (window.__srwA ? __srwA.tabs : (x) => x)(window.__P13 && __P13.admTabs ? __P13.admTabs(tabs0) : tabs0);
             let h = `<div class="k-tabs k-atabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" role="tab" data-katab="${k}" class="${AD.tab === k ? "on" : ""}">${esc(_t(l))}</button>`).join("")}<button type="button" class="k-ref" data-ka="refresh" aria-label="${esc(_t("kaRefresh"))}">↻</button></div><div class="k-abody">`;
             if (AD.tab === "dash") { const d = AD.dash;
               h += d ? `<div class="k-dash">${[["kaDau", d.dau], ["kaWau", d.wau], ["kaPlayersN", d.players], ["kaMatches", d.matches_today], ["kaMatches7", d.matches_7d], ["kaSignups", d.signups_today], ["kaSignups7", d.signups_7d], ["kaRevTest", money(d.revenue_test_cents)], ["kaRevLive", money(d.revenue_live_cents)], ["kaActBans", d.active_bans], ["kaActMutes", d.active_mutes], ["kaOpenRep", d.open_reports]].map(([l, v]) => `<span class="k-st"><b dir="ltr">${typeof v === "number" ? nf(v) : esc(v)}</b><small>${esc(_t(l))}</small></span>`).join("")}</div><p class="k-note">${esc(fmtD(d.as_of, 1))}</p>` : "…";
@@ -12960,7 +13237,7 @@
                   `${u.banned_until && Date.parse(u.banned_until) > Date.now() ? `<p class="k-pill rd">⛔ ${esc(u.ban_reason || "")} · ${u.banned_until.startsWith("infinity") ? esc(_t("kaPerm")) : esc(fmtD(u.banned_until, 1))}</p>` : ""}${u.muted_until && Date.parse(u.muted_until) > Date.now() ? `<p class="k-pill">🔇 ${esc(u.mute_reason || "")}</p>` : ""}</div></div>` +
                   (u.protected ? `<p class="k-note">🛡️ ${esc(_t("kaProtected"))}</p>` :
                   `<div class="k-acts"><button type="button" class="x-btn k-redb" data-ka="ban">⛔ ${esc(_t("kaBan"))}</button><button type="button" class="x-btn x-sub" data-ka="mute">🔇 ${esc(_t("kaMute"))}</button><button type="button" class="x-btn x-sub" data-ka="rename">✏️ ${esc(_t("kaRename"))}</button>` +
-                  `<button type="button" class="x-btn x-sub" data-ka="photo">🖼️ ${esc(_t("kaResetPh"))}</button><button type="button" class="x-btn x-sub" data-ka="grant">💰 ${esc(_t("kaGrant"))}</button><button type="button" class="x-btn x-sub" data-ka="vip">🆔 ${esc(_t("kaVip"))}${u.vip_id ? " #" + u.vip_id : ""}</button></div>`) +
+                  `<button type="button" class="x-btn x-sub" data-ka="photo">🖼️ ${esc(_t("kaResetPh"))}</button><button type="button" class="x-btn x-sub" data-ka="grant">💰 ${esc(_t("kaGrant"))}</button><button type="button" class="x-btn x-sub" data-ka="vip">🆔 ${esc(_t("kaVip"))}${u.vip_id ? " #" + u.vip_id : ""}</button></div>` + tv(() => __srwA.userActs(u), "")) +
                   `<div class="k-cols"><section class="k-sec"><h4>${esc(_t("kaWallet"))}</h4><p dir="auto">🪙 <bdi dir="ltr">${nf(w.coins)}</bdi> · 💎 <bdi dir="ltr">${nf(w.gems)}</bdi> · ${esc(_t("kaLv", { n: s.level | 0 }))} · <bdi dir="ltr">${nf(s.games)}</bdi> ${esc(_t("games"))} · <bdi dir="ltr">${nf(s.kills)}</bdi> ${esc(_t("kills"))}</p>` +
                   `<h4>${esc(_t("kaLedger"))}</h4><div class="k-list k-sm">${(u.ledger || []).map((x) => `<div class="k-li"><span>${esc(x.reason)}<small>${esc(fmtD(x.at, 1))}</small></span><span dir="ltr" class="${x.delta < 0 ? "neg" : "pos"}">${x.delta > 0 ? "+" : ""}${nf(x.delta)} ${x.currency === "gems" ? "💎" : "🪙"}</span></div>`).join("") || "—"}</div>` +
                   `<h4>${esc(_t("kaPurch"))}</h4><div class="k-list k-sm">${(u.purchases || []).map((x) => `<div class="k-li"><span>${esc(x.product)}<small>${esc(fmtD(x.at, 1))} · ${esc(x.env || "")}</small></span><span dir="ltr">${money(x.amount_cents)} · ${esc(x.status)}</span></div>`).join("") || "—"}</div></section>` +
@@ -12984,6 +13261,7 @@
                   `<div class="k-inl"><input id="ksr${r.id}" maxlength="1000" dir="auto" placeholder="${esc(_t("kaSupPh"))}"><button type="button" class="x-btn x-main" data-ka="supreply" data-id="${r.id}">${esc(_t("kaSupSend"))}</button></div>` +
                   `<div class="k-inl">${r.status === "open" ? `<button type="button" class="x-btn x-sub" data-ka="supdone" data-id="${r.id}">✓ ${esc(_t("kaSupDone"))}</button>` : `<button type="button" class="x-btn x-sub" data-ka="supopen" data-id="${r.id}">${esc(_t("kaSupReopen"))}</button>`}` +
                   `${r.user_id ? `<button type="button" class="x-btn x-sub" data-ka="user" data-id="${esc(r.user_id)}">${esc(_t("kaOpen"))}</button>` : ""}</div></div>`).join("") : `<p class="k-note">${esc(_t("kaSupNone"))}</p>`);
+            } else if (window.__srwA && __srwA.has(AD.tab)) { h += tv(() => __srwA.html(AD, fmtD), "…");
             } else if (AD.tab === "p13mod" || AD.tab === "p13off") {
               h += tv(() => __P13.admHTML(AD, fmtD), "…");
             } else if (AD.tab === "log") {
@@ -12998,7 +13276,8 @@
           const admLoadK = async () => {
             if (!isOwner()) return;
             try {
-              if ((AD.tab === "p13mod" || AD.tab === "p13off") && window.__P13) await __P13.admLoad(AD);
+              if (window.__srwA && __srwA.has(AD.tab)) await __srwA.load(AD);
+              else if ((AD.tab === "p13mod" || AD.tab === "p13off") && window.__P13) await __P13.admLoad(AD);
               else if (AD.tab === "dash") AD.dash = await ON.rpc("adm2_dashboard");
               else if (AD.tab === "players") { if (AD.user) AD.user = await ON.rpc("adm2_user", { p_user: AD.user.id }); else AD.users = await ON.rpc("adm2_users", { p_query: AD.q, p_limit: 100 }); }
               else if (AD.tab === "bans") AD.bans = await ON.rpc("adm2_bans", { p_user: null, p_active: !AD.bansAll });
@@ -13009,6 +13288,7 @@
             } catch (e) { toast(aErr(e)); }
             admPaintK();
           };
+          K.admCtx = { AD, paint: () => admPaintK(), load: () => admLoadK() };
           K.openAdmin = () => { if (state === "play" || !isOwner()) return; setTitle("kadm", "🛡️ " + _t("kAdmin")); admPaintK(); show("kadm"); admLoadK(); };
           // the old owner panel entry now opens v2
           NFG.nfb13cadm = () => K.openAdmin();
@@ -13056,6 +13336,7 @@
             const sg = e.target.closest('[data-kseg="kabf"] button'); if (sg) { AD.bansAll = sg.dataset.v === "1"; AD.bans = null; admPaintK(); admLoadK(); return; }
             const b = e.target.closest("[data-ka]"); if (!b) return; const a = b.dataset.ka, u = AD.user;
             if (a === "refresh") admLoadK();
+            else if (/^srw/.test(a) && window.__srwA) await __srwA.click(a, b, (paintOnly) => { if (paintOnly) admPaintK(); else admLoadK(); }, aErr, u, askDialog);
             else if (/^p13/.test(a) && window.__P13) await __P13.admClick(a, b, (paintOnly) => { if (paintOnly) admPaintK(); else admLoadK(); }, aErr);
             else if (a === "search") { AD.q = $("kaq").value.trim(); AD.users = null; admPaintK(); admLoadK(); }
             else if (a === "user") { AD.tab = "players"; AD.user = { id: b.dataset.id }; admPaintK(); admLoadK(); }
@@ -13281,6 +13562,7 @@
           let nm0 = "", lang0 = "", greetAt = 0, lowQ = null, statusP = null;
           // ---------- prefs <-> game settings (sound/music on-off, vibration) ----------
           const syncPrefs = (pp) => {
+            try { window.__ssAudUpd && __ssAudUpd(pp); } catch (_) {}
             window.__ssCap = +pp.fps === 30 ? 30 : 0;
             lss("ss-vib", pp.haptics ? "1" : "0");
             const snd = pp.sfx > 0 && pp.master > 0 ? 1 : 0, mus = pp.music > 0 && pp.master > 0 ? 1 : 0;
@@ -13361,10 +13643,10 @@
             B13.pop(`<div class="j-pcw ss-new"><h3>✨ ${esc2(_t("smNewT"))} · 13m</h3><ul>${[1, 2, 3, 4].map((k) => `<li>${esc2(_t("smNew" + k))}</li>`).join("")}</ul><div class="b13-row2"><button type="button" class="x-btn x-main" data-b13x="1">OK</button></div></div>`);
           });
           // ---------- Settings: App (audio/display) + More (credits, support, my data) ----------
-          SM.appHTML = () => `<section class="k-sec h-own"><h4>${esc2(SO().t("set_audio"))}</h4><div id="kssoul" class="h-own"></div></section>`;
+          SM.appHTML = () => `<section class="k-sec h-own"><h4>${esc2(SO().t("set_audio"))}</h4>${window.__ssAud ? __ssAud.html() : ""}<div id="kssoul" class="h-own"></div></section>`;
           SM.moreHTML = () => `<section class="k-sec"><div class="k-inl ss-more"><button type="button" class="x-btn x-sub" data-ssm="support">💬 ${esc2(_t("smSupport"))}</button>` +
             `<button type="button" class="x-btn x-sub" data-ssm="data">📄 ${esc2(_t("smData"))}</button><button type="button" class="x-btn x-sub" data-ssm="credits">⭐ ${esc2(_t("smCredits"))}</button></div><p class="x-err" id="kssmm" role="status"></p></section>`;
-          SM.setPainted = (sec) => { const h = $("kssoul"); if (sec === "app" && h && SO()) SO().renderSettings(h); };
+          SM.setPainted = (sec) => { const h = $("kssoul"); if (sec === "app" && h && SO()) { SO().renderSettings(h); try { window.__ssAud && __ssAud.post(h); } catch (_) {} } };
           $("kset").addEventListener("click", async (e) => {
             const b = e.target.closest && e.target.closest("[data-ssm]"); if (!b) return; const a = b.dataset.ssm, m = $("kssmm");
             if (a === "credits") {
@@ -15283,6 +15565,972 @@
           if (typeof NFH === "object" && NFH && NFH.relang) NFH.relang.push(() => { try { document.querySelectorAll(".spx-w, .spx-sec").forEach((x) => x.remove()); decorate(); if (VW.on) paintBar(); } catch (_) {} });
           SPX.bench = (n) => { const t0 = performance.now(); let b = 0; const sv = [SP.full, SP.n, SP.sent]; SP.sent = new Set(); for (let i = 0; i < (n | 0); i++) { const F = frame(); if (F) b += JSON.stringify(F).length; } SP.full = sv[0]; SP.n = sv[1]; SP.sent = sv[2]; return { ms: (performance.now() - t0) / Math.max(1, n | 0), bytes: Math.round(b / Math.max(1, n | 0)) }; };
           SPX.stats = () => ({ streaming: !!SP.sid, viewers: SP.v, frames: SP.frames, avgBytes: SP.frames ? Math.round(SP.bytes / Math.min(SP.frames, 400)) : 0, watching: VW.on, vst: VW.st, live: [...LIVE.keys()] });
+        }
+        // ===================== 13s2 Arena unlocks (server-side) /*s13s2-maps-v1*/ =====================
+        // Owner rule: 8 arenas free (0..7); arenas 8..27 open at a player level OR with a one-time coin unlock that the server
+        // debits (buy_map); Throne Arena (28) is Royal Pass-only. The server (sql/81_map_unlocks.sql: map_catalog, map_unlocks,
+        // map_state, map_access, buy_map, set_profile + a match_results guard) is the authority; this block only displays its
+        // answer, mirrors the catalog for signed-out / not-yet-loaded moments, and asks the server before spending coins.
+        // Rules: only const arrows (no block-level function declarations), every hook guarded, nothing blocks taps.
+        {
+          const MU = (window.__MU = window.__MU || {});
+          const CAT = [[0, "free", 0, 0, null], [1, "free", 0, 0, null], [2, "free", 0, 0, null], [3, "free", 0, 0, null], [4, "free", 0, 0, null], [5, "free", 0, 0, null], [6, "free", 0, 0, null], [7, "free", 0, 0, null], [8, "level", 3, 1000, null], [9, "level", 4, 1000, null], [10, "level", 5, 1000, null], [11, "level", 6, 1000, null], [12, "level", 7, 1000, null], [13, "level", 8, 1000, null], [14, "level", 9, 2000, null], [15, "level", 10, 2000, null], [16, "level", 12, 2000, null], [17, "level", 14, 2000, null], [18, "level", 16, 3500, null], [19, "level", 18, 3500, null], [20, "level", 20, 3500, null], [21, "level", 22, 3500, null], [22, "level", 24, 5000, null], [23, "level", 26, 5000, null], [24, "level", 28, 5000, null], [25, "level", 30, 5000, null], [26, "level", 33, 7500, null], [27, "level", 36, 7500, null], [28, "pass", 0, 0, "ar_s1throne"]]; // mirror of public.map_catalog: [id, unlock, level, coins, pass_item]
+          const g$ = (id) => document.getElementById(id);
+          const tv6 = (f, d) => { try { const v = f(); return v === undefined || v === null ? d : v; } catch (_) { return d; } };
+          const esc6 = (x) => String(x == null ? "" : x).replace(/[&<>"'`]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "`": "&#96;" })[c]);
+          try { Object.assign(I18N, {"muLvS": ["مستوى {n}", "Lv {n}", "Sv {n}", "Niv. {n}", "Nv. {n}", "लेवल {n}"], "muLocked": ["مقفلة", "Locked", "Kilitli", "Verrouillée", "Bloqueada", "लॉक"], "muPass": ["رويال باس", "Royal Pass", "Royal Pass", "Royal Pass", "Royal Pass", "रॉयल पास"], "muPassB": ["باس", "PASS", "PASS", "PASS", "PASS", "पास"], "muPassOnly": ["حصرية لرويال باس", "Royal Pass exclusive", "Royal Pass'e özel", "Exclusivité Royal Pass", "Exclusiva del Royal Pass", "रॉयल पास एक्सक्लूसिव"], "muPassHow": ["تنفتح في الدرجة 40 من رويال باس المميز، وما تنشرى بالعملات", "Unlocks at Premium tier 40 of the Royal Pass. It can't be bought with coins.", "Royal Pass Premium 40. kademede açılır. Altınla satın alınamaz.", "Se débloque au palier Premium 40 du Royal Pass. Impossible de l'acheter avec des pièces.", "Se desbloquea en el nivel Premium 40 del Royal Pass. No se puede comprar con monedas.", "रॉयल पास के प्रीमियम टियर 40 पर खुलता है। सिक्कों से नहीं खरीदा जा सकता।"], "muOpenPass": ["افتح رويال باس", "Open Royal Pass", "Royal Pass'i aç", "Ouvrir le Royal Pass", "Abrir Royal Pass", "रॉयल पास खोलें"], "muAt": ["تنفتح عند المستوى {n}", "Unlocks at level {n}", "{n}. seviyede açılır", "Se débloque au niveau {n}", "Se desbloquea en el nivel {n}", "लेवल {n} पर खुलता है"], "muYou": ["مستواك الحين {n}", "You're level {n}", "Şu an seviye {n}", "Tu es niveau {n}", "Eres nivel {n}", "आप अभी लेवल {n} पर हैं"], "muOr": ["أو افتحها الحين", "or unlock it now", "ya da şimdi aç", "ou débloque-la maintenant", "o desbloquéala ahora", "या अभी अनलॉक करें"], "muBuy": ["افتحها", "Unlock", "Kilidi aç", "Débloquer", "Desbloquear", "अनलॉक करें"], "muConfirm": ["اضغط مرة ثانية للتأكيد", "Tap again to confirm", "Onaylamak için tekrar dokun", "Touche encore pour confirmer", "Toca otra vez para confirmar", "पक्का करने के लिए फिर टैप करें"], "muBusy": ["جاري الفتح…", "Unlocking…", "Açılıyor…", "Déblocage…", "Desbloqueando…", "अनलॉक हो रहा है…"], "muHave": ["عندك", "You have", "Bakiyen", "Tu as", "Tienes", "आपके पास"], "muShort": ["العملات ما تكفي", "Not enough coins", "Yetersiz altın", "Pas assez de pièces", "Monedas insuficientes", "सिक्के कम हैं"], "muNeed": ["ينقصك {n} عملة", "You need {n} more coins", "{n} altın daha gerekli", "Il te manque {n} pièces", "Te faltan {n} monedas", "आपको {n} सिक्के और चाहिए"], "muEarn": ["اجمع العملات من المباريات والمكافآت اليومية والمهام", "Earn coins from matches, daily rewards and missions", "Maçlardan, günlük ödüllerden ve görevlerden altın kazan", "Gagne des pièces avec les matchs, les récompenses quotidiennes et les missions", "Gana monedas con partidas, premios diarios y misiones", "मैच, रोज़ाना इनाम और मिशन से सिक्के कमाएँ"], "muDone": ["انفتحت {x}!", "{x} unlocked!", "{x} açıldı!", "{x} débloquée !", "¡{x} desbloqueada!", "{x} अनलॉक हो गया!"], "muSignIn": ["سجّل دخولك عشان تفتح الساحات", "Sign in to unlock arenas", "Arenaları açmak için giriş yap", "Connecte-toi pour débloquer les arènes", "Inicia sesión para desbloquear arenas", "एरीना अनलॉक करने के लिए साइन इन करें"], "muOpenNow": ["هذي الساحة مفتوحة لك", "This arena is open for you", "Bu arena sana açık", "Cette arène t'est ouverte", "Esta arena está abierta para ti", "यह एरीना आपके लिए खुला है"], "muPlayHere": ["اختر الساحة", "Choose arena", "Arenayı seç", "Choisir l'arène", "Elegir arena", "एरीना चुनें"], "muClose": ["إغلاق", "Close", "Kapat", "Fermer", "Cerrar", "बंद करें"], "muE_level": ["توصل للمستوى {n} أو افتحها بالعملات", "Reach level {n} or unlock it with coins", "{n}. seviyeye ulaş ya da altınla aç", "Atteins le niveau {n} ou débloque-la avec des pièces", "Llega al nivel {n} o desbloquéala con monedas", "लेवल {n} तक पहुँचें या सिक्कों से अनलॉक करें"], "muE_pass": ["هذي الساحة حصرية لرويال باس", "This arena is a Royal Pass exclusive", "Bu arena Royal Pass'e özel", "Cette arène est une exclusivité Royal Pass", "Esta arena es exclusiva del Royal Pass", "यह एरीना रॉयल पास एक्सक्लूसिव है"], "muE_funds": ["العملات ما تكفي: ينقصك {n}", "Not enough coins: you need {n} more", "Yetersiz altın: {n} daha gerekli", "Pas assez de pièces : il t'en manque {n}", "Monedas insuficientes: te faltan {n}", "सिक्के कम हैं: {n} और चाहिए"], "muE_already": ["هذي الساحة مفتوحة لك من قبل، وما انخصمت أي عملات", "This arena is already open for you. No coins were taken", "Bu arena zaten açık. Altın düşülmedi", "Cette arène est déjà ouverte. Aucune pièce n'a été prise", "Esta arena ya está abierta. No se cobraron monedas", "यह एरीना पहले से खुला है। कोई सिक्का नहीं कटा"], "muE_sale": ["هذي الساحة ما تنباع بالعملات", "This arena can't be bought with coins", "Bu arena altınla satın alınamaz", "Cette arène ne s'achète pas avec des pièces", "Esta arena no se compra con monedas", "यह एरीना सिक्कों से नहीं खरीदा जा सकता"], "muE_invalid": ["ساحة غير معروفة", "Unknown arena", "Bilinmeyen arena", "Arène inconnue", "Arena desconocida", "अज्ञात एरीना"], "muE_ticket": ["هذي المباراة ما تنحسب: {r}", "This match won't count: {r}", "Bu maç sayılmayacak: {r}", "Ce match ne comptera pas : {r}", "Esta partida no contará: {r}", "यह मैच नहीं गिना जाएगा: {r}"]}); } catch (_) {}
+          const T = (k, v) => tv6(() => _t(k, v), k);
+          const nf6 = (n) => tv6(() => Math.round(Number(n || 0)).toLocaleString("en-US"), String(Math.round(n || 0)));
+          const COIN = '<i class="mu-coin" aria-hidden="true"></i>';
+          const isOn = () => tv6(() => cur === "@on" && !!ON.on && !!ON.rpc, false);
+          const staff = () => tv6(() => !!(ON.st && ON.st.is_admin), false) || tv6(() => isStaff(), false);
+          const lvNow = () => tv6(() => level() | 0, 1) || 1;
+          const coinsNow = () => tv6(() => P.coins | 0, 0);
+          const cat = (i) => { const c = CAT.find((x) => x[0] === i); return c ? { id: c[0], unlock: c[1], level: c[2], coins: c[3], item: c[4] } : null; };
+          MU.st = MU.st || null; MU.t = MU.t || 0; MU.busy = false;
+
+          // ---------- lock state: server answer first, catalog mirror as fallback ----------
+          const row = (i) => tv6(() => (MU.st && MU.st.uid === tv6(() => ON.uid, "") ? MU.st.maps.find((m) => m.id === i) : null), null);
+          // returns { ok, reason: '' | 'map_level' | 'map_pass_only' | 'invalid_map', level, coins, buyable, owned, unlock }
+          MU.info = (i) => {
+            const c = cat(i), r = row(i);
+            if (!c && !r) return { ok: true, reason: "", unlock: "free", level: 0, coins: 0, buyable: false, owned: false }; // unknown id: leave it to older rules
+            const base = { unlock: (r && r.unlock) || c.unlock, level: r ? r.level | 0 : c.level, coins: r ? r.coins | 0 : c.coins, owned: !!(r && r.owned) };
+            if (base.unlock === "free") return Object.assign(base, { ok: true, reason: "", buyable: false });
+            if (r) {
+              // a level-up that happened after the last map_state: the server opens it from the same level number
+              if (!r.ok && r.reason === "map_level" && lvNow() >= base.level) return Object.assign(base, { ok: true, reason: "", buyable: false });
+              if (!r.ok && r.reason === "map_pass_only" && tv6(() => ENT.has(c ? c.item : "ar_s1throne"), false)) return Object.assign(base, { ok: true, reason: "", buyable: false });
+              return Object.assign(base, { ok: !!r.ok, reason: r.ok ? "" : r.reason || "map_level", buyable: !r.ok && !!r.buyable });
+            }
+            if (staff()) return Object.assign(base, { ok: true, reason: "", buyable: false });
+            if (base.unlock === "pass") { const ok = tv6(() => ENT.has(c.item), false); return Object.assign(base, { ok, reason: ok ? "" : "map_pass_only", buyable: false }); }
+            const ok = lvNow() >= base.level;
+            return Object.assign(base, { ok, reason: ok ? "" : "map_level", buyable: !ok && base.coins > 0 });
+          };
+          const lockText = (inf) => (!inf || inf.ok ? "" : inf.reason === "map_pass_only" ? T("muPass") : inf.reason === "map_level" ? T("muLvS", { n: inf.level }) : T("muLocked"));
+          const ml0 = mapLock;
+          mapLock = (i) => { // "" when open, else the short requirement (used by every picker, the Random button and league/room picks)
+            const inf = tv6(() => MU.info(i), null);
+            if (!inf || (!cat(i) && !row(i))) return tv6(() => ml0(i), "");
+            return lockText(inf);
+          };
+
+          // ---------- server state ----------
+          MU.load = (force) => {
+            if (!isOn()) return Promise.resolve(null);
+            if (!force && MU.p) return MU.p;
+            if (!force && MU.st && Date.now() - MU.t < 15000) return Promise.resolve(MU.st);
+            const uid = tv6(() => ON.uid, "");
+            MU.p = ON.rpc("map_state", {}).then((r) => {
+              if (r && Array.isArray(r.maps)) { MU.st = { uid, maps: r.maps, level: r.level | 0, enforce: !!r.enforce }; MU.t = Date.now(); MU.paint(); }
+              return MU.st;
+            }).catch(() => null).finally(() => { MU.p = null; });
+            return MU.p;
+          };
+          try { const s0 = ON.sync; if (typeof s0 === "function") ON.sync = async (...a) => { const r = await s0.apply(ON, a); try { MU.load(false); } catch (_) {} return r; }; } catch (_) {}
+          try { if (NFH && NFH.home) NFH.home.push(() => { try { MU.t = 0; setTimeout(() => MU.load(false), 1200); } catch (_) {} }); } catch (_) {}
+
+          // ---------- picker: cards get coin price / Pass badge, locked taps open the unlock sheet ----------
+          const AR = g$("b13dmp"), GR = g$("b13dgr");
+          MU.paint = () => {
+            if (!GR || !AR || AR.classList.contains("x-hide")) return;
+            let stale = false;
+            GR.querySelectorAll(".b13d-c").forEach((c) => {
+              const i = +c.dataset.m, inf = MU.info(i), lk = !inf.ok, im = c.querySelector(".b13d-im");
+              if (c.classList.contains("lk") !== lk) stale = true;
+              c.querySelectorAll(".mu-pr,.mu-ps").forEach((x) => x.remove());
+              const em = c.querySelector(".b13d-lk");
+              if (em) { em.classList.toggle("mu-gold", inf.reason === "map_pass_only"); const t = lockText(inf); if (lk && em.textContent.replace("🔒", "").trim() !== t) em.textContent = "🔒 " + t; }
+              if (!lk || !im) return;
+              if (inf.reason === "map_pass_only") im.insertAdjacentHTML("beforeend", `<i class="mu-ps">👑 ${esc6(T("muPassB"))}</i>`);
+              else if (inf.buyable) im.insertAdjacentHTML("beforeend", `<i class="mu-pr">${COIN}<bdi dir="ltr">${nf6(inf.coins)}</bdi></i>`);
+            });
+            // the grid was drawn before map_state arrived and a card changed lock state: redraw it through the picker itself
+            if (stale && !MU.rp) { MU.rp = 1; try { B13D.mapOpen(); } catch (_) {} MU.rp = 0; }
+          };
+          if (GR) new MutationObserver(() => { try { MU.paint(); } catch (_) {} }).observe(GR, { childList: true });
+          if (GR) GR.addEventListener("click", (e) => {
+            const b = e.target.closest && e.target.closest(".b13d-c"); if (!b) return;
+            const i = +b.dataset.m; if (!mapLock(i)) return;
+            e.preventDefault(); e.stopImmediatePropagation(); MU.open(i);
+          }, true);
+          try { const mo0 = B13D.mapOpen; if (typeof mo0 === "function") B13D.mapOpen = (...a) => { const r = mo0.apply(B13D, a); try { if (!MU.rp) MU.load(Date.now() - MU.t > 5000); MU.paint(); } catch (_) {} return r; }; } catch (_) {}
+
+          // ---------- unlock sheet ----------
+          const SH = document.createElement("div"); SH.id = "mush"; SH.className = "mu-sh x-hide"; SH.setAttribute("role", "dialog"); SH.setAttribute("aria-modal", "true");
+          document.body.appendChild(SH);
+          MU.cf = -1; MU.cur = -1; MU.err = "";
+          MU.close = () => { SH.classList.add("x-hide"); SH.innerHTML = ""; MU.cur = -1; MU.cf = -1; MU.err = ""; };
+          MU.open = (i) => { if (MU.cur !== i) { MU.cf = -1; MU.err = ""; } MU.cur = i; MU.draw(); SH.classList.remove("x-hide"); if (isOn()) MU.load(Date.now() - MU.t > 5000).then(() => { if (MU.cur === i) MU.draw(); }); };
+          MU.draw = () => {
+            const i = MU.cur; if (i < 0) return; const inf = MU.info(i), nm = T("map" + i), ds = T("mapd" + i), lv = lvNow(), have = coinsNow();
+            let body = "";
+            if (inf.ok) body = `<p class="mu-ok">✓ ${esc6(T("muOpenNow"))}</p><button type="button" class="h-btn mu-go" data-mu="pick">${esc6(T("muPlayHere"))}</button>`;
+            else if (inf.reason === "map_pass_only") {
+              body = `<p class="mu-st mu-gold">👑 ${esc6(T("muPassOnly"))}</p><p class="mu-mu">${esc6(T("muPassHow"))}</p>` +
+                `<button type="button" class="h-btn mu-go mu-goldb" data-mu="pass">${esc6(T("muOpenPass"))}</button>`;
+            } else {
+              const pct = Math.max(0, Math.min(100, Math.round((100 * lv) / Math.max(1, inf.level))));
+              body = `<p class="mu-st">🔒 ${esc6(T("muAt", { n: inf.level }))}</p>` +
+                `<div class="mu-bar" aria-hidden="true"><i style="width:${pct}%"></i></div><p class="mu-mu">${esc6(T("muYou", { n: lv }))}</p>`;
+              if (inf.buyable) {
+                const short = Math.max(0, inf.coins - have), conf = MU.cf === i;
+                body += `<p class="mu-or"><span>${esc6(T("muOr"))}</span></p>`;
+                if (!isOn()) body += `<p class="mu-mu">${esc6(T("muSignIn"))}</p>`;
+                else if (short > 0) body += `<button type="button" class="h-btn mu-go" disabled>${esc6(T("muShort"))} · <bdi dir="ltr">${COIN}${nf6(inf.coins)}</bdi></button>` +
+                  `<p class="mu-mu">${esc6(T("muNeed", { n: nf6(short) }))}</p><p class="mu-mu mu-sm">${esc6(T("muEarn"))}</p>`;
+                else body += `<button type="button" class="h-btn mu-go mu-goldb${conf ? " mu-cf" : ""}" data-mu="buy"${MU.busy ? " disabled" : ""}>` +
+                  `${esc6(MU.busy ? T("muBusy") : conf ? T("muConfirm") : T("muBuy"))} · <bdi dir="ltr">${COIN}${nf6(inf.coins)}</bdi></button>` +
+                  `<p class="mu-mu mu-sm">${esc6(T("muHave"))} <bdi dir="ltr">${COIN}${nf6(have)}</bdi></p>`;
+              }
+            }
+            SH.innerHTML = `<div class="mu-bd" data-mu="x"></div><div class="mu-cd" dir="auto">` +
+              `<button type="button" class="mu-x" data-mu="x" aria-label="${esc6(T("muClose"))}">✕</button>` +
+              `<span class="mu-im" style="background-image:url(ui/ar/a${i}.webp?v=13s1)"></span>` +
+              `<div class="mu-tx"><b class="mu-nm">${esc6(nm)}</b><small class="mu-ds">${esc6(ds)}</small>${body}` +
+              (MU.err ? `<p class="mu-er" role="alert">${esc6(MU.err)}</p>` : "") + `</div></div>`;
+          };
+          // server error -> the real reason, in words
+          MU.why = (e, i) => {
+            const c = String((e && (e.code || e.message)) || ""), inf = tv6(() => MU.info(i), {}) || {};
+            if (c === "map_level") return T("muE_level", { n: inf.level || "?" });
+            if (c === "map_pass_only" || c === "map_locked") return T("muE_pass");
+            if (c === "insufficient_funds") return T("muE_funds", { n: nf6(Math.max(0, (inf.coins | 0) - coinsNow())) });
+            if (c === "already_owned" || c === "already_unlocked") return T("muE_already");
+            if (c === "map_not_for_sale") return T("muE_sale");
+            if (c === "invalid_map") return T("muE_invalid");
+            return tv6(() => ON.err(e), T("onErr"));
+          };
+          MU.buy = async (i) => {
+            if (MU.busy) return; if (!isOn()) { MU.err = T("muSignIn"); MU.draw(); return; }
+            MU.busy = true; MU.err = ""; MU.draw();
+            try {
+              const r = await ON.rpc("buy_map", { p_map: i });
+              if (r && r.wallet && Number.isInteger(r.wallet.coins)) { P.coins = r.wallet.coins; P.gems = r.wallet.gems | 0; }
+              const uid = tv6(() => ON.uid, "");
+              if (MU.st && MU.st.uid === uid) { const m = MU.st.maps.find((x) => x.id === i); if (m) Object.assign(m, { ok: true, owned: true, reason: null, buyable: false }); }
+              MU.busy = false; MU.cf = -1;
+              tv6(() => profile()); tv6(() => beep(880, 0.12, "triangle", 0.06, 1320));
+              toast("🔓 " + T("muDone", { x: T("map" + i) }));
+              MU.close(); MU.select(i);
+              MU.load(true); if (ON.syncSoon) ON.syncSoon(1500);
+            } catch (e) {
+              MU.busy = false; MU.cf = -1; MU.err = MU.why(e, i); MU.draw(); toast("🔒 " + MU.err);
+              const c = String((e && (e.code || e.message)) || ""); if (c === "already_owned" || c === "already_unlocked" || c === "insufficient_funds") { MU.load(true).then(() => MU.draw()); if (ON.syncSoon) ON.syncSoon(300); }
+            }
+          };
+          MU.select = (i) => { // open the picker with the arena chosen (normal selection path)
+            try { B13D.mapOpen(); } catch (_) {}
+            setTimeout(() => { const c = GR && GR.querySelector(`.b13d-c[data-m="${i}"]`); if (c && !mapLock(i)) { c.click(); try { c.scrollIntoView({ block: "nearest" }); } catch (_) {} } }, 60);
+          };
+          SH.addEventListener("click", (e) => {
+            const b = e.target.closest("[data-mu]"); if (!b || b.disabled) return; const k = b.dataset.mu, i = MU.cur;
+            if (k === "x") { MU.close(); return; }
+            if (k === "pass") { MU.close(); tv6(() => p11Go("nfpass")); return; }
+            if (k === "pick") { MU.close(); MU.select(i); return; }
+            if (k === "buy") { if (MU.cf !== i) { MU.cf = i; MU.draw(); return; } MU.buy(i); } // second tap confirms the coin spend
+          });
+          document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !SH.classList.contains("x-hide")) MU.close(); });
+
+          // ---------- a match on a locked arena gets no ticket: say why (the server's answer) ----------
+          try {
+            const ms0 = ON.mStart;
+            if (typeof ms0 === "function") ON.mStart = (...a) => {
+              const r = ms0.apply(ON, a), mp = ON.mp, mi = tv6(() => mapI | 0, 0);
+              if (mp && mp.then) mp.then((id) => { if (id || !isOn()) return;
+                ON.rpc("map_access", { p_map: mi }).then((x) => { if (x && x.ok === false) toast("🔒 " + T("muE_ticket", { r: MU.why({ code: x.reason }, mi) })); MU.load(true); }).catch(() => {}); });
+              return r;
+            };
+          } catch (_) {}
+          try { if (NFH && NFH.relang) NFH.relang.push(() => { try { MU.paint(); if (MU.cur >= 0) MU.draw(); } catch (_) {} }); } catch (_) {}
+          if (isOn()) setTimeout(() => MU.load(true), 800);
+        }
+
+        /*ss13t-bots-v1*/ // owner 2026-10-29: calm, smart bots (no spinning in place). Replaces think(); think0 stays for reference.
+        {
+          const BT = { N: 0 };
+          const pers = (b) => b.pp || (b.pp = { ag: R(), gr: 0.6 + R() * 0.8, ca: R(), wob: rnd(-1, 1), side: R() < 0.5 ? 1 : -1 });
+          const trR = (b) => (BASE * (b.spd > 0 ? 1.6 : 1)) / Math.max(0.6, 4.2 * (14 / ((b.boss ? b.r / 3 : b.r) + 3))); // turning radius (units)
+          // best food CLUSTER ahead (sum of value / distance in 140-unit cells); food inside the turning circle is ignored (that is what made bots orbit)
+          const foodGoal = (b, h, R0, tr) => {
+            const cells = new Map(), ca = Math.cos(b.a), sa = Math.sin(b.a);
+            gCells(FG, h.x, h.y, R0, (c) => { for (const f of c) {
+              if (f.dead) continue; const dx = f.x - h.x, dy = f.y - h.y, d = Math.hypot(dx, dy); if (d > R0) continue;
+              const ah = (dx * ca + dy * sa) / (d || 1); if (d < tr * 2.4 && ah < 0.55) continue; // behind / beside and too close: would need a loop
+              const k = ((f.x / 140) | 0) * 1e4 + ((f.y / 140) | 0); let e = cells.get(k); if (!e) cells.set(k, (e = { v: 0, x: 0, y: 0, n: 0, d: 0, ah: 0 }));
+              e.v += (f.v || 0.5) + (f.k ? 1.5 : 0); e.x += f.x; e.y += f.y; e.n++; e.d += d; e.ah += ah; } });
+            let best = null, bs = 0;
+            for (const e of cells.values()) { const d = e.d / e.n, ah = e.ah / e.n, sc = e.v / (d + 160) * (1.2 + ah); if (sc > bs) { bs = sc; best = { x: e.x / e.n, y: e.y / e.n, sc }; } }
+            return best;
+          };
+          const newThink = (b, dt) => {
+            b.think -= dt; if (b.think > 0) return;
+            const sm = clamp((AD.smart || 1) * DF().s, 0.5, 2.6), P = pers(b), h = b.seg[0], pl = player && player.alive && state === "play" ? player : null;
+            // reaction delay scales with difficulty; personalities vary it a little
+            b.think = clamp(rnd(0.24, 0.36) / sm * (0.85 + P.ca * 0.3), 0.11, 0.55);
+            if (b.boss) { think0(b, 0); return; }
+            const tr = trR(b), now = time, mate = (o) => b.tm !== undefined && b.tm === o.tm;
+            let g = b.g13t && b.g13t.t > now ? b.g13t : null;
+            // ---- candidate goals ----
+            let cand = null;
+            const take = (c) => { if (c && (!cand || c.sc > cand.sc)) cand = c; };
+            // flee: a clearly bigger head close and coming at us
+            for (const o of snakes) {
+              if (o === b || !o.alive || mate(o) || o.len < b.len * 1.35) continue;
+              const oh = o.seg[0], dx = oh.x - h.x, dy = oh.y - h.y, d = Math.hypot(dx, dy); if (d > 330 + o.r * 2) continue;
+              const toward = (-dx * Math.cos(o.a) - dy * Math.sin(o.a)) / (d || 1); if (toward < 0.3) continue;
+              take({ k: "flee", x: h.x - dx / d * 600, y: h.y - dy / d * 600, sc: 9 * (1 - d / 600) * (0.6 + P.ca), t: now + 1.2 });
+            }
+            // hunt / cut off a clearly smaller snake (the player too: the AI director's aggression)
+            if (b.len > 40 && !b.gd) for (const o of snakes) {
+              if (o === b || !o.alive || mate(o) || o.len * 1.4 > b.len || o.ghost > 0) continue;
+              const oh = o.seg[0], d = Math.hypot(oh.x - h.x, oh.y - h.y); if (d > 420) continue;
+              const want = o === pl ? Math.min(0.95, AD.agg * DF().a) : P.ag * 0.6 * Math.min(1.4, sm);
+              if (R() > want) continue;
+              const lead = 80 + o.r * 4;
+              take({ k: "hunt", o, x: oh.x + Math.cos(o.a) * lead, y: oh.y + Math.sin(o.a) * lead, sc: 4 + P.ag * 3, t: now + rnd(1.6, 2.6) });
+            }
+            if (b.gd && pl) { const p = pl.seg[0], d = Math.hypot(p.x - h.x, p.y - h.y); if (d < 520) take({ k: "flee", x: h.x - (p.x - h.x), y: h.y - (p.y - h.y), sc: 9, t: now + 1 }); }
+            // power-ups, DNA, decoys (as before), then food clusters
+            { const pu = pups.find((q) => Math.abs(q.x - h.x) < 420 && Math.abs(q.y - h.y) < 420 && !(q.t.k === "fire" && b.fire > 0)); if (pu) take({ k: "pu", x: pu.x, y: pu.y, sc: 3.2, t: now + 3 }); }
+            { const dn = dna.find((d) => Math.abs(d.x - h.x) < 320 && Math.abs(d.y - h.y) < 320); if (dn) take({ k: "dna", x: dn.x, y: dn.y, sc: 2.8, t: now + 3 }); }
+            for (const dc of decoys) { const p = dc.seg[(dc.seg.length / 3) | 0]; if (dc.o !== b && p && Math.hypot(p.x - h.x, p.y - h.y) < 520) { take({ k: "decoy", x: p.x, y: p.y, sc: 3, t: now + 1.5 }); break; } }
+            const fg = foodGoal(b, h, 560, tr); if (fg) take({ k: "food", x: fg.x, y: fg.y, sc: Math.min(2.6, fg.sc * 40 * P.gr), t: now + rnd(2.5, 4.5) });
+            // ---- hysteresis: keep the current goal unless clearly better, reached or expired ----
+            if (g && (Math.hypot(g.x - h.x, g.y - h.y) < b.r + 30 || (g.o && !g.o.alive))) g = null;
+            if (g && g.k === "hunt" && g.o) { const oh = g.o.seg[0], lead = 80 + g.o.r * 4; g.x = oh.x + Math.cos(g.o.a) * lead; g.y = oh.y + Math.sin(g.o.a) * lead; }
+            if (!g || (cand && cand.sc > g.sc * 1.35 && cand.k !== g.k)) g = cand;
+            if (!g) { // calm wander: a far point ahead, drifting a little with the personality
+              const a = b.a + P.wob * 0.35 + rnd(-0.3, 0.3); g = { k: "wander", x: h.x + Math.cos(a) * 700, y: h.y + Math.sin(a) * 700, sc: 0.5, t: now + rnd(2.5, 4) };
+            }
+            b.g13t = g;
+            let wa = Math.atan2(g.y - h.y, g.x - h.x);
+            // walls: start turning in early and smoothly (from 650 units)
+            { const m = 650, cx = A / 2 - h.x, cy = A / 2 - h.y, e = Math.max(0, m - Math.min(h.x, h.y, A - h.x, A - h.y)) / m;
+              if (e > 0) { const ca = Math.atan2(cy, cx); wa = wa + angDiff(ca, wa) * Math.min(1, e * 1.3); } }
+            // obstacles (City): steer around early
+            for (const o of obsNear(h.x, h.y)) {
+              const dx = (o.w ? clamp(h.x, o.x - o.w, o.x + o.w) : o.x) - h.x, dy = (o.w ? clamp(h.y, o.y - o.h, o.y + o.h) : o.y) - h.y;
+              if (oD(o, h.x, h.y) > o.r + b.r + 190) continue; const da = angDiff(Math.atan2(dy, dx), b.a);
+              if (Math.abs(da) < 1.4) { wa = b.a - Math.sign(da || 1) * 1.2; break; }
+            }
+            // ---- limited heading change (no snap turns), then the danger probe fan ----
+            const maxDev = g.k === "flee" ? 1.5 : g.k === "hunt" ? 1.2 : 0.9;
+            let want = b.a + clamp(angDiff(wa, b.a), -maxDev, maxDev);
+            const L = 160 + 100 * sm + (b.spd > 0 ? 120 : 0) + b.r * 2, RS = sm < 0.8 ? P12R_E : P12R_S;
+            let best = want, bs = -1, f0 = 0;
+            for (const o of RS) {
+              const a = want + o, f = p12Free(b, a, L); if (o === 0) f0 = f;
+              const sc = f / L - Math.abs(o) * (0.12 + 0.05 / sm); if (sc > bs) { bs = sc; best = a; }
+              if (o === 0 && f >= L) break;
+            }
+            if (f0 < L) want = best;
+            b.ta = want; b.boost = false;
+            const fb = p12Free(b, b.ta, L);
+            // trapped: look all around and boost out through the widest gap
+            if (fb < L * 0.5 && (sm >= 0.8 || R() < 0.45)) {
+              let blk = 0, ga = b.ta, gf = -1; const N = 16, L2 = L * 1.9;
+              for (let i = 0; i < N; i++) { const a = b.a + (i / N) * 6.2832, f = p12Free(b, a, L2); if (f < L * 0.6) blk++; const sc = f - Math.abs(angDiff(a, b.a)) * 18; if (sc > gf) { gf = sc; ga = a; } }
+              if (blk >= N * 0.55) { b.ta = ga; b.esc = 1.2; b.boost = b.len > 26 && sm >= 0.8; }
+            } else if (b.esc > 0) { b.esc -= 0.15; b.boost = b.len > 26 && fb > L * 0.6; }
+            else if (g.k === "hunt" && g.o && fb >= L && b.len > 50) { const oh = g.o.seg[0], d = Math.hypot(oh.x - h.x, oh.y - h.y); b.boost = d < 260 && R() < 0.35 + P.ag * 0.4; } // tactical cut-off sprint
+            else if (g.k === "flee" && fb >= L * 0.8 && b.len > 35) b.boost = R() < 0.5;
+            else if (g.k === "pu" && sm >= 1.1 && b.len > 40 && fb >= L && Math.abs(angDiff(wa, b.a)) < 0.4 && Math.hypot(g.x - h.x, g.y - h.y) < 260) b.boost = true;
+            // anti-spin: a bot that keeps turning the same way without a reason straightens out for a moment
+            const turn = angDiff(b.ta, b.a); b.spin = (b.spin || 0) * 0.82 + turn;
+            if (Math.abs(b.spin) > 3.2 && g.k !== "hunt" && g.k !== "flee" && fb >= L * 0.7) {
+              b.spin = 0; const a = b.a + Math.sign(-turn || 1) * 0.15; b.g13t = { k: "wander", x: h.x + Math.cos(a) * 800, y: h.y + Math.sin(a) * 800, sc: 1.5, t: now + 1.6 }; b.ta = a;
+            }
+            if (sm < 0.8) b.ta += rnd(-0.12, 0.12); // easy bots are a little sloppy, not twitchy
+          };
+          think = newThink;
+          window.__ss13tBots = { trR, foodGoal };
+        }
+
+        /*ss13t-rt-v1*/ // REAL MULTIPLAYER (13t): Classic / Ranked / Teams / Private rooms run on the authoritative realtime server
+        // (Cloudflare worker super-snake-realtime, protocol 2). The client only steers, predicts its own head and renders interpolated
+        // snapshots; deaths, kills, length and results come from the server, which reports them to Supabase signed (anti-cheat).
+        // Story / Word / Mystery / Survival / Daily / Tournament and any failure to reach the server stay on-device (offline practice).
+        {
+          const X = RTX, RTU = "https://super-snake-realtime.molierk.workers.dev";
+          Object.assign(I18N, {
+            rtConn: ["جارِ الاتصال بالسيرفر…", "Connecting to the server…", "Sunucuya bağlanılıyor…", "Connexion au serveur…", "Conectando al servidor…", "सर्वर से जुड़ रहे हैं…"],
+            rtOff: ["السيرفر غير متاح: تدريب بدون اتصال (بدون مكافآت)", "Server unavailable: offline practice (no rewards)", "Sunucuya ulaşılamadı: çevrimdışı antrenman (ödül yok)", "Serveur indisponible : entraînement hors ligne (sans récompenses)", "Servidor no disponible: práctica sin conexión (sin recompensas)", "सर्वर उपलब्ध नहीं: ऑफ़लाइन अभ्यास (कोई इनाम नहीं)"],
+            rtWeak: ["اتصال ضعيف…", "Weak connection…", "Zayıf bağlantı…", "Connexion faible…", "Conexión débil…", "कमज़ोर कनेक्शन…"],
+            rtLost: ["انقطع الاتصال. السيرفر حفظ نتيجتك.", "Connection lost. The server saved your result.", "Bağlantı koptu. Sonucun sunucuya kaydedildi.", "Connexion perdue. Le serveur a enregistré ton résultat.", "Conexión perdida. El servidor guardó tu resultado.", "कनेक्शन टूट गया। सर्वर ने आपका नतीजा सेव कर लिया।"],
+            rtCode: ["رمز غرفتك: {x} · شاركه مع أصدقائك", "Your room code: {x} · share it with friends", "Oda kodun: {x} · arkadaşlarınla paylaş", "Code de ton salon : {x} · partage-le", "Código de tu sala: {x} · compártelo", "आपका रूम कोड: {x} · दोस्तों से शेयर करें"],
+            rtNoCode: ["الرمز غير موجود، سوّينا لك غرفة جديدة", "Code not found, we made you a new room", "Kod bulunamadı, sana yeni oda açtık", "Code introuvable : nouveau salon créé", "Código no encontrado: creamos una sala nueva", "कोड नहीं मिला, नया रूम बना दिया"],
+            rtNoRw: ["هذه الجولة بدون مكافآت (وصلت الحد)", "This run pays no rewards (limit reached)", "Bu tur ödül vermiyor (sınıra ulaşıldı)", "Cette partie ne rapporte rien (limite atteinte)", "Esta partida no da recompensas (límite alcanzado)", "इस राउंड में इनाम नहीं (सीमा पूरी)"],
+            rtLive: ["أونلاين · لاعبين حقيقيين", "Online · real players", "Çevrimiçi · gerçek oyuncular", "En ligne · vrais joueurs", "En línea · jugadores reales", "ऑनलाइन · असली खिलाड़ी"],
+          });
+          Object.assign(X, { on: false, ws: null, phase: "", meta: new Map(), byId: new Map(), food: new Map(), pu: new Map(), lastK: 0, recvAt: 0, rtt: 160, seq: 0, sent: { a: 9, b: 0, t: 0 },
+            me: 0, myTm: -1, tn: 0, ts: 0, srvMe: null, meLen: 20, resP: null, res: null, skip: false, room: null, key: "", vT: 0, pT: 0, aT: 0, tok: "", weak: false, foodDirty: false });
+          const FOODC = Array.from({ length: 12 }, (_, i) => `hsl(${i * 30},100%,65%)`);
+          const mapSkin = (k) => { k = +k || 0; if (k >= 1000) return FLAG0 + ((k - 1000) % Math.max(1, FLAGN)); return SKINS[k] ? k : 0; };
+          const remap = (stm) => (X.tn && stm >= 0 && X.myTm >= 0 ? (((stm - X.myTm) % X.tn) + X.tn) % X.tn : undefined);
+          const radius = (l) => 8 + Math.sqrt(Math.max(0, l)) * 0.4;
+          const pill = (() => { let el = null; return (txt) => {
+            if (!el) { el = document.createElement("div"); el.id = "rtp"; el.className = "rtp x-hide"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite"); document.body.appendChild(el); }
+            el.classList.toggle("x-hide", !txt); if (txt && el.textContent !== txt) el.textContent = txt; el.dir = LANG === "ar" ? "rtl" : "ltr"; }; })();
+          X.pill = pill;
+          const want = () => !X.skip && cur === "@on" && ON.on && !!ON.sess && !L.on && !NFM.m && !CH && ["n", "r", "t", "p"].includes(MD) && typeof WebSocket === "function" && !/[?&]offline\b/.test(location.search);
+          const send = (o) => { try { if (X.ws && X.ws.readyState === 1) X.ws.send(JSON.stringify(o)); } catch (_) {} };
+          const newRun = () => { X.resP = new Promise((r) => { X.res = r; }); };
+          X.owns = () => X.on;
+
+          // ---------- start of a match (called from start(); true = this match is online) ----------
+          X.begin = () => {
+            X.over = null;
+            if (!want()) { X.skip = false; X.on = false; return false; }
+            X.on = true; X.phase = "conn"; X.over = null; X.leaving = false; X.weak = false; newRun();
+            ON.mid = null; ON.mp = null;
+            snakes = [player]; food = []; pups = []; dna = []; decoys = []; fxs = []; obs = []; parts = [];
+            AD.mod = ""; adMod(); AD.fog = null; AD.bAdd = 0;
+            player.alive = true; player.rtWait = true; player.inv = 0; player.kills = 0; X.byId.clear(); X.food.clear(); X.pu.clear(); X.srvMe = null;
+            pill(_t("rtConn"));
+            const code = MD === "p" ? String(($("room") && $("room").value) || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "") : "";
+            const key = MD + "|" + mapI + "|" + (MD === "t" ? tSz() : 0) + "|" + code;
+            if (X.ws && X.ws.readyState === 1 && X.key === key && MD !== "t") { X.phase = "respawn"; send({ t: "respawn" }); X.spawnT = setTimeout(() => X.fail("respawn_timeout"), 7000); return true; }
+            X.key = key; X.connect(code);
+            return true;
+          };
+          X.connect = async (code) => {
+            X.close(true);
+            const myGen = (X.gen = (X.gen || 0) + 1);
+            const to = setTimeout(() => { if (X.gen === myGen && X.phase === "conn") X.fail("timeout"); }, 9000);
+            try {
+              if (ON.sess && ON.sess.expires_at * 1000 < Date.now() + 120000) { try { await ON.call("/auth/v1/user", undefined, { method: "GET" }); } catch (_) {} }
+              const tok = ON.sess && ON.sess.access_token; if (!tok) throw new Error("no_session");
+              X.tok = tok;
+              const post = async (path, body) => {
+                const ac = new AbortController(), t = setTimeout(() => ac.abort(), 7000);
+                try { const r = await fetch(RTU + path, { method: "POST", headers: { Authorization: "Bearer " + tok, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ac.signal }); return { s: r.status, j: await r.json().catch(() => ({})) }; }
+                finally { clearTimeout(t); }
+              };
+              let m;
+              if (MD === "p") {
+                if (code) { m = await post("/v1/match", { code }); if (m.s === 404) { toast(_t("rtNoCode")); m = null; } }
+                if (!m) m = await post("/v1/private", { map: mapI | 0, bots: true });
+              } else m = await post("/v1/match", { mode: MD, map: mapI | 0, ts: MD === "t" ? tSz() : 0 });
+              if (X.gen !== myGen || !X.on) return;
+              if (m.s === 403 && m.j && m.j.error) { clearTimeout(to); X.on = false; pill(""); toast(ON.err({ code: m.j.error, message: m.j.error })); if (state === "play") home(); return; }
+              if (m.s !== 200 || !m.j.ws_url) throw new Error(m.j.error || "match_" + m.s);
+              const ws = new WebSocket(m.j.ws_url, ["ss.v1", "auth." + tok]);
+              X.ws = ws; X.wsGen = myGen;
+              ws.onmessage = (ev) => { if (X.ws !== ws) return; let d; try { d = JSON.parse(ev.data); } catch (_) { return; } X.msg(d); };
+              ws.onclose = (ev) => { if (X.ws !== ws) return; X.ws = null; X.closed(ev.code); };
+              ws.onerror = () => {};
+            } catch (e) { clearTimeout(to); if (X.gen === myGen) X.fail(String((e && e.message) || e)); return; }
+            setTimeout(() => clearTimeout(to), 9500);
+          };
+          X.close = (quiet) => { const ws = X.ws; X.ws = null; if (ws) { try { if (ws.readyState === 1) ws.send(JSON.stringify({ t: "leave" })); ws.close(1000, "bye"); } catch (_) {} } };
+          X.fail = (why) => { // could not get into an online match: this match continues on the device as offline practice
+            try { console.warn("[13t rt] offline fallback:", why); } catch (_) {}
+            clearTimeout(X.spawnT); X.close(true); X.on = false; X.phase = ""; pill("");
+            if (state === "play" && player && player.rtWait) { X.skip = true; toast(_t("rtOff")); start(); }
+          };
+          X.end = () => { clearTimeout(X.spawnT); X.close(true); X.on = false; X.phase = ""; pill(""); if (X.res) { X.res(null); X.res = null; } };
+          X.closed = (code) => {
+            pill("");
+            if (!X.on) return;
+            if (code === 4002) return; // round over / team out: results already in
+            if (code === 4003) { X.on = false; return; } // refused (map locked, banned, ...): handled by the error message
+            if (X.phase === "conn" || X.phase === "respawn") { X.fail("closed_" + code); return; }
+            if (state === "play" && player && (player.alive || TMS.spec) && !X.leaving) X.lost();
+          };
+          X.lost = () => { // the socket dropped mid-run: the server already ended the run (AI takes the snake) and saved the result
+            if (state !== "play" || !player) return;
+            X.phase = "dead"; if (X.res) { X.res(null); X.res = null; }
+            player.alive = false; TMS.spec = null; try { TMS.ui(); } catch (_) {}
+            try { J.dc = { k: "quit" }; } catch (_) {}
+            ON.rtp = X.resP; gameOver(); X.on = false;
+          };
+          X.forfeit = () => { // Exit: the server ends the run, sends the result, then closes the socket
+            X.leaving = true; send({ t: "leave" });
+            if (MD === "t" && !X.over) { let rank = 0; try { const sc = tScores(), rk = TMS.order(sc); rank = rk.indexOf(0) + 1; } catch (_) {} X.over = { win: false, rank, count: X.tn, board: null, left: 1 }; }
+            if (player) player.alive = false; TMS.spec = null; try { TMS.ui(); } catch (_) {}
+            try { J.dc = { k: "quit" }; } catch (_) {}
+            ON.rtp = X.resP; X.phase = "dead"; gameOver();
+          };
+
+          // ---------- snakes ----------
+          const ensure = (id) => {
+            if (id === X.me) return null;
+            let o = X.byId.get(id); if (o) return o;
+            const mt = X.meta.get(id) || [id, "…", 0, "", 1, null, -1, ""];
+            o = { id, name: String(mt[1] || ""), skin: mapSkin(mt[2]), hat: mt[3] || "", lv13: Math.max(1, mt[4] | 0), pid: mt[5] || 0, stm: mt[6], trail: mt[7] || "", bot: !mt[5],
+              seg: [{ x: 0, y: 0 }, { x: 0, y: 0 }], len: 20, a: 0, ta: 0, r: 10, boost: false, alive: true, think: 0, respawn: 0, drop: 0, kills: 0, evo: 0, dna: 0, cd: 0, slow: 0, ghost: 0,
+              buf: [], far: true, rt: 1 };
+            setTm(o); snakes.push(o); X.byId.set(id, o); return o;
+          };
+          const setTm = (o) => { if (MD !== "t") return; const t = remap(o.stm); if (t === undefined) return; o.tm = t; if (o.bot) o.skin = TC[t % TC.length][1]; };
+          const drop = (o) => { X.byId.delete(o.id); const i = snakes.indexOf(o); if (i >= 0) snakes.splice(i, 1); };
+          const setBody = (o, pts, len, a) => { // pts: head-first polyline from the server -> client segments (gap r * 0.55) + follow trail
+            const r = radius(len), gap = r * 0.55, n = Math.max(2, Math.ceil(len)), np = pts.length >> 1, cum = [0];
+            for (let k = 1; k < np; k++) cum.push(cum[k - 1] + Math.hypot(pts[2 * k] - pts[2 * k - 2], pts[2 * k + 1] - pts[2 * k - 1]));
+            const seg = []; let si = 0;
+            for (let i = 0; i < n; i++) {
+              const tgt = Math.min(i, Math.max(1, len - 1)) * gap;
+              while (si + 1 < np - 1 && cum[si + 1] < tgt) si++;
+              if (np < 2) { seg.push({ x: pts[0], y: pts[1] }); continue; }
+              const d = cum[si + 1] - cum[si], t = d > 0 ? Math.max(0, Math.min(1, (tgt - cum[si]) / d)) : 0;
+              seg.push({ x: pts[2 * si] + (pts[2 * si + 2] - pts[2 * si]) * t, y: pts[2 * si + 1] + (pts[2 * si + 3] - pts[2 * si + 1]) * t });
+            }
+            o.seg = seg; o.len = len; o.r = r; o.a = o.ta = a;
+            const X0 = [], Y0 = []; for (let k = np - 1; k >= 0; k--) { X0.push(pts[2 * k]); Y0.push(pts[2 * k + 1]); }
+            o.pX = X0; o.pY = Y0; o.p0 = 0; o.pR = seg[0];
+          };
+          const flagsTo = (o, f) => { o.boost = !!(f & 1); o.spd = f & 2 ? 1 : 0; o.pm = f & 4 ? 1 : 0; o.fire = f & 8 ? 1 : 0; o.psh = f & 16 ? 1 : 0; o.inv = f & 32 ? 0.3 : 0; };
+          const bodyFollow = (o) => {
+            o.r = radius(o.len);
+            const n = Math.max(2, Math.ceil(o.len));
+            while (o.seg.length < n) { const t = o.seg[o.seg.length - 1]; o.seg.push({ x: t.x, y: t.y }); }
+            while (o.seg.length > n) o.seg.pop();
+            B13C.follow(o, o.r * 0.55);
+          };
+
+          // ---------- messages ----------
+          X.msg = (d) => {
+            switch (d.t) {
+              case "welcome": {
+                X.room = d.room; X.tn = d.room.ts ? d.room.tn : 0; X.ts = d.room.ts | 0; X.meta.clear(); X.myTm = -1;
+                for (const mt of d.sm || []) X.meta.set(mt[0], mt);
+                if (d.room.map !== mapI) setMap(d.room.map);
+                obs = []; A = d.room.w;
+                if (MD === "t" && X.tn) { TMS.n = Math.min(TC.length, X.tn); TMS.sz = X.ts; TMS.t0 = time - (d.room.t | 0); TMS.lim = d.room.lim || 300; TMS.el = {}; TMS.res = ""; TMS.fin = 0; }
+                if (d.room.code) { try { $("room").value = d.room.code; } catch (_) {} toast(_t("rtCode", { x: d.room.code })); }
+                X.vT = 0; return;
+              }
+              case "spawn": {
+                clearTimeout(X.spawnT);
+                X.me = d.id; X.meLen = d.l; X.srvMe = { k: X.lastK, x: d.x, y: d.y, a: d.a, l: d.l, f: 32 };
+                if (MD === "t" && d.tm >= 0) { X.myTm = d.tm; for (const o of X.byId.values()) setTm(o); }
+                const was = X.phase;
+                player.len = d.l; player.kills = was === "teamwait" ? player.kills : 0; player.alive = true; player.rtWait = false;
+                const pts = []; for (let i = 0; i <= 20; i++) pts.push(d.x - Math.cos(d.a) * i * 8, d.y - Math.sin(d.a) * i * 8);
+                setBody(player, pts, d.l, d.a); player.inv = 1.5; player.tm = MD === "t" ? 0 : undefined;
+                if (TMS.spec) { TMS.spec = null; TMS.ui(); }
+                cam.x = d.x; cam.y = d.y; cam.vx = cam.vy = 0;
+                X.phase = "play"; pill(""); if (was === "conn") { toast("🌐 " + _t("rtLive")); }
+                return;
+              }
+              case "s": return X.snap(d);
+              case "dead": return X.dead(d);
+              case "over": return X.overMsg(d);
+              case "result": { const r = X.res; X.res = null; if (r) r(d); else X.late = d; if (d && d.wallet) { try { P.coins = d.wallet.coins | 0; P.gems = d.wallet.gems | 0; } catch (_) {} } return; }
+              case "notice": if (d.code === "no_rewards") toast(_t("rtNoRw")); return;
+              case "error": {
+                if (d.code === "auth_failed") return;
+                clearTimeout(X.spawnT); X.on = false; pill("");
+                toast(ON.err({ code: d.code, message: d.code }));
+                if (state === "play") home(); return;
+              }
+              case "pong": { const r = Date.now() - d.c; if (r > 0 && r < 5000) X.rtt = X.rtt * 0.7 + r * 0.3; return; }
+            }
+          };
+          X.snap = (d) => {
+            const now = performance.now();
+            if (d.k > X.lastK || X.lastK - d.k > 100) { X.lastK = d.k; X.recvAt = now; }
+            if (d.nm) for (const mt of d.nm) { X.meta.set(mt[0], mt); const o = X.byId.get(mt[0]); if (o) { o.name = String(mt[1] || ""); o.pid = mt[5] || 0; o.bot = !mt[5]; o.stm = mt[6]; setTm(o); } }
+            if (d.gn) for (const id of d.gn) { const o = X.byId.get(id); if (o) drop(o); X.meta.delete(id); }
+            if (d.se) for (const e of d.se) {
+              const [id, len, f, a, pts] = e;
+              if (id === X.me) { X.srvMe = { k: d.k, x: pts[0], y: pts[1], a, l: len, f }; continue; }
+              const o = ensure(id); setBody(o, pts, len, a); flagsTo(o, f); o.alive = true; o.far = false; o.buf = [[d.k, pts[0], pts[1], a, len, f]];
+            }
+            if (d.sn) for (const e of d.sn) {
+              if (e[0] === X.me) { X.srvMe = { k: d.k, x: e[1], y: e[2], a: e[3], l: e[4], f: e[5] }; continue; }
+              const o = X.byId.get(e[0]); if (!o || o.far) continue;
+              o.buf.push([d.k, e[1], e[2], e[3], e[4], e[5]]); if (o.buf.length > 10) o.buf.shift();
+            }
+            if (d.sf) for (const e of d.sf) { const o = X.byId.get(e[0]); if (o && !o.far && e[1].length >= 4) { const l = o.len; setBody(o, e[1], l, o.a); } }
+            if (d.sl) for (const id of d.sl) { const o = X.byId.get(id); if (o) { o.far = true; o.buf = []; } }
+            if (d.fa) for (const e of d.fa) {
+              const [id, x, y, v, k, c, dc] = e;
+              if (k) { const p = { x, y, t: PW[(k - 1) & 3], ph: R() * 6.28, rid: id }; pups.push(p); X.pu.set(id, p); }
+              else { const f = { x, y, v, a: R() * 6.28, c: FOODC[c % 12], ph: R() * 6.28, d13: dc ? time : undefined, rid: id }; food.push(f); X.food.set(id, f); }
+            }
+            if (d.fr) {
+              const h = player && player.alive && !player.rtWait ? player.seg[0] : null, er = h ? player.r + (player.pm > 0 ? 320 : 60) : 0;
+              for (const id of d.fr) {
+                const f = X.food.get(id);
+                if (f) { X.food.delete(id); f.dead = 1; X.foodDirty = true; if (h && Math.abs(f.x - h.x) < er && Math.abs(f.y - h.y) < er) { if (time - (X.eatT || 0) > 0.08) { X.eatT = time; try { sEat(); eatFx(f); } catch (_) {} } try { M.eat++; } catch (_) {} } continue; }
+                const p = X.pu.get(id); if (p) { X.pu.delete(id); const i = pups.indexOf(p); if (i >= 0) pups.splice(i, 1); }
+              }
+            }
+            if (d.ev) for (const e of d.ev) {
+              const [kid, vid, , , why] = e;
+              if (String(why).startsWith("pickup:")) { if (kid === X.me) { const T = PW[((+String(why).slice(7)) - 1) & 3]; try { beep(880, 0.15, "triangle", 0.06, 1320); vib(15); xBan(T.e + " " + _t(T.n) + "!"); } catch (_) {} } continue; }
+              if (vid === X.me) continue;
+              const o = X.byId.get(vid); if (!o) continue;
+              const h = o.seg[0]; try { if (player && Math.abs(h.x - cam.x) < 1600 && Math.abs(h.y - cam.y) < 1200) burst(h.x, h.y, 22, 20); } catch (_) {}
+              o.alive = false; drop(o);
+            }
+            if (d.me) {
+              const m = d.me; X.meLen = m[1];
+              if (m[2] > (player.kills | 0)) { try { sKill(); } catch (_) {} }
+              player.kills = m[2]; player.spd = m[4] / 10; player.pm = m[5] / 10; player.fire = m[6] / 10; player.psh = m[7] / 10;
+            }
+            if (d.mm) {
+              const seen = new Set(), mm = d.mm;
+              for (let i = 0; i < mm.length; i += 4) {
+                const id = mm[i]; seen.add(id); if (id === X.me) continue;
+                const o = ensure(id); o.alive = true;
+                if (o.far) { o.len = mm[i + 3]; o.r = radius(o.len); o.seg = [{ x: mm[i + 1], y: mm[i + 2] }, { x: mm[i + 1], y: mm[i + 2] }]; o.pX = null; }
+              }
+              for (const o of [...X.byId.values()]) if (!seen.has(o.id)) drop(o);
+              if (MD === "t" && d.el && X.tn) d.el.forEach((v, i) => { const t = remap(i); if (t !== undefined && v && TMS.el[t] === undefined) TMS.el[t] = time; });
+              if (MD === "t" && d.tt !== undefined) TMS.t0 = time - d.tt;
+            }
+          };
+          X.dead = (d) => {
+            if (!player) return;
+            const h = player.seg[0]; try { burst(h.x, h.y, 70, 20); } catch (_) {}
+            const by = d.by ? (X.byId.get(d.by.id) || { name: d.by.name, pid: d.by.pid || 0, skin: mapSkin(d.by.skin), len: 0, seg: [{ x: h.x, y: h.y }], r: 10, bot: !d.by.pid, lv13: d.by.lvl | 0 }) : null;
+            if (by && d.by.pid) by.pid = d.by.pid;
+            const kind = d.reason === "border" ? "wall" : d.reason === "fire" ? "fire" : d.reason === "head" ? "head" : "body";
+            player.alive = false; player.len = Math.max(player.len, (d.stats && d.stats.len) || 0);
+            try { DCP = null; DCX(player, by, kind); } catch (_) {}
+            try { sDeath(); shake(11); nfDeath(player); } catch (_) {}
+            if (MD === "t" && d.respawn > 0) { X.phase = "teamwait"; TMS.spec = { at: time + d.respawn, i: 0 }; TMS.ui(); TMS.paint(); return; }
+            if (MD === "t") { X.phase = "teamwait"; return; } // team wiped out: the server's "over" follows right away
+            X.phase = "dead"; ON.rtp = X.resP; gameOver();
+          };
+          X.overMsg = (d) => {
+            X.over = d; X.phase = "dead";
+            if (d.board) for (const [stm, sc, alive, ms] of d.board) for (const [id, nm, len, al] of ms) {
+              if (id === X.me) continue; let o = X.byId.get(id);
+              if (!o) { o = ensure(id); o.name = String(nm || o.name); }
+              o.len = len; o.alive = !!al; o.stm = stm; setTm(o);
+            }
+            TMS.fin = 1; TMS.spec = null; TMS.ui();
+            if (player && player.alive) player.inv = 1e9;
+            if (state === "play") { ON.rtp = X.resP; gameOver(); }
+          };
+
+          // ---------- per frame (replaces the local simulation while online) ----------
+          X.update = (dt) => {
+            const now = performance.now();
+            if (X.foodDirty) { X.foodDirty = false; food = food.filter((f) => !f.dead); }
+            for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.l -= dt; p.z += p.vz * dt; if (p.vx) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.96; p.vy *= 0.96; } if (p.l <= 0) parts.splice(i, 1); }
+            if (parts.length > QC.parts) parts.splice(0, parts.length - QC.parts);
+            for (const s of snakes) if (s.inv > 0 && s !== player) s.inv -= dt;
+            if (player && player.inv > 0 && player.inv < 1e8) player.inv -= dt;
+            const est = X.lastK + Math.min(4, (now - X.recvAt) / 50), rk = est - 2; // render 2 ticks (100 ms) behind the server
+            for (const o of X.byId.values()) {
+              if (o.far || !o.alive || !o.buf.length) continue;
+              const b = o.buf; let x, y, a, l, f;
+              let i = b.length - 1; while (i > 0 && b[i][0] > rk) i--;
+              const p0 = b[i], p1 = b[i + 1];
+              if (p1 && p1[0] > p0[0]) { const t = Math.max(0, Math.min(1, (rk - p0[0]) / (p1[0] - p0[0]))); x = p0[1] + (p1[1] - p0[1]) * t; y = p0[2] + (p1[2] - p0[2]) * t; a = p0[3] + angDiff(p1[3], p0[3]) * t; l = p0[4] + (p1[4] - p0[4]) * t; f = p1[5]; }
+              else { const ex = Math.min(0.15, Math.max(0, (rk - p0[0]) * 0.05)), sp = 170 * (p0[5] & 1 ? 2 : 1) * (p0[5] & 2 ? 1.6 : 1); x = p0[1] + Math.cos(p0[3]) * sp * ex; y = p0[2] + Math.sin(p0[3]) * sp * ex; a = p0[3]; l = p0[4]; f = p0[5]; }
+              const h = o.seg[0]; h.x = x; h.y = y; o.a = o.ta = a; o.len = l; flagsTo(o, f); bodyFollow(o);
+            }
+            // own snake: predicted locally from the joystick, pulled toward the server's position
+            if (player && player.alive && !player.rtWait) {
+              const boosting = player.boost && X.meLen > 12, h = player.seg[0];
+              const tr = ctlTr(boosting, player.r) * dt * (MAPS[mapI].turn || 1);
+              player.a += clamp(angDiff(player.ta, player.a), -tr, tr);
+              const sp = 170 * (boosting ? 2 : 1) * (player.spd > 0 ? 1.6 : 1);
+              h.x += Math.cos(player.a) * sp * dt; h.y += Math.sin(player.a) * sp * dt;
+              const sv = X.srvMe;
+              if (sv) {
+                const lead = Math.min(0.45, (X.rtt / 1000) + Math.max(0, (now - X.recvAt) / 1000)), ssp = 170 * (sv.f & 1 ? 2 : 1) * (sv.f & 2 ? 1.6 : 1);
+                const tx = sv.x + Math.cos(sv.a) * ssp * lead, ty = sv.y + Math.sin(sv.a) * ssp * lead, ex = tx - h.x, ey = ty - h.y, e = Math.hypot(ex, ey);
+                if (e > 170) { h.x = tx; h.y = ty; player.a = sv.a; player.pX = null; } else { const k = Math.min(1, dt * 4); h.x += ex * k; h.y += ey * k; }
+                if (Math.abs(angDiff(sv.a, player.a)) > 1.3) player.a = sv.a;
+              }
+              player.len += (X.meLen - player.len) * Math.min(1, dt * 8);
+              bodyFollow(player);
+              // input to the server: on change, at most ~15/s, and a heartbeat
+              const ch = Math.abs(angDiff(player.ta, X.sent.a)) > 0.03 || (!!player.boost) !== !!X.sent.b;
+              if ((ch && now - X.sent.t > 66) || now - X.sent.t > 250) { X.sent = { a: player.ta, b: player.boost ? 1 : 0, t: now }; send({ t: "in", a: Math.round(player.ta * 1000) / 1000, b: X.sent.b, s: ++X.seq }); }
+            }
+            // camera extents (interest area) + Control sensitivity, once a second; ping every 3 s; fresh token every 30 s
+            if ((X.vT -= dt) <= 0) { X.vT = 1; try { const c0 = unpr(0, 0), c3 = unpr(W, H); send({ t: "view", w: Math.round(Math.max(Math.abs(c0.x - cam.x), Math.abs(c3.x - cam.x))), h: Math.round(Math.max(Math.abs(c0.y - cam.y), Math.abs(c3.y - cam.y))), sens: SENS | 0 }); } catch (_) {} }
+            if ((X.pT -= dt) <= 0) { X.pT = 3; send({ t: "ping", c: Date.now() }); }
+            if ((X.aT -= dt) <= 0) { X.aT = 30; const tk = ON.sess && ON.sess.access_token; if (tk && tk !== X.tok) { X.tok = tk; send({ t: "auth", token: tk }); } }
+            // weak connection pill / lost
+            if (X.phase === "play" || X.phase === "teamwait") {
+              const gap = now - X.recvAt;
+              if (gap > 1200 !== X.weak) { X.weak = gap > 1200; pill(X.weak ? "📶 " + _t("rtWeak") : ""); }
+              if (gap > 9000 && X.phase === "play") { X.close(true); X.lost(); return; }
+            }
+            if (TMS.spec && (X.tp = (X.tp || 0) - dt) <= 0) { X.tp = 0.25; TMS.paint(); }
+            xUpdate(dt);
+          };
+          // Teams results on the Game Over screen come from the server's round result
+          { const _me = modeEnd; modeEnd = function (l) {
+              if (!(X.on || X.over) || MD !== "t" || !X.over) return _me.apply(this, arguments);
+              const d = X.over, w = !!d.win, r = d.rank | 0, n = d.count | 0;
+              if (d.board) {
+                const sc = Array(Math.min(TC.length, X.tn)).fill(0), rk = [];
+                for (const [stm, s0] of d.board) { const t = remap(stm); if (t === undefined || t >= sc.length) continue; sc[t] = s0; rk.push(t); }
+                for (let t = 0; t < sc.length; t++) if (!rk.includes(t)) rk.push(t);
+                TMS.el = {}; d.board.forEach(([stm, , al]) => { const t = remap(stm); if (t !== undefined && !al) TMS.el[t] = 0; });
+                try { const $r = $("tmr"); $r.classList.remove("x-hide"); $r.innerHTML = TMS.board(sc, rk); } catch (_) {}
+              }
+              TMS.res = _t(w ? "tmGoW" : "tmGoL", { r, n });
+              return _t(w ? "teamWin" : "teamLose") + " · #" + r + "/" + n;
+            }; }
+          if (NFH.home) NFH.home.push(() => { if (X.on || X.ws) X.end(); X.over = null; X.skip = false; });
+          { const _sb = syncBots; syncBots = function () { if (X.on) return; return _sb.apply(this, arguments); }; } // online: no local bots, whatever calls it
+          window.__RTX = X;
+        }
+
+        /*ss13t-ui-v1*/ // owner 2026-10-29: (1) Teams respawn wait = slim top pill + edge "next teammate" button + Leave match, nothing
+        // over the HUD; (2) premium minimap (glass, gold rim, arena tint, heading arrow, teammates, crowns/skull, camera view, no food)
+        {
+          Object.assign(I18N, {
+            tmWatch: ["تتفرج على {x}", "Watching {x}", "İzlenen: {x}", "Tu regardes {x}", "Viendo a {x}", "{x} को देख रहे"],
+            tmBack: ["ترجع بعد", "Back in", "Dönüş", "Retour dans", "Vuelves en", "वापसी"],
+            tmLeave: ["اطلع من المباراة", "Leave match", "Maçtan çık", "Quitter le match", "Salir de la partida", "मैच छोड़ें"],
+          });
+          // ---------- (1) respawn wait UI ----------
+          let ui = null;
+          const mk = () => {
+            if (ui) return ui;
+            const pillEl = document.createElement("div"); pillEl.id = "tmw"; pillEl.className = "tmw x-hide"; pillEl.setAttribute("role", "status"); pillEl.setAttribute("aria-live", "polite");
+            pillEl.innerHTML = `<span class="tmw-r" aria-hidden="true"><svg viewBox="0 0 36 36"><circle class="bg" cx="18" cy="18" r="15"/><circle class="fg" cx="18" cy="18" r="15"/></svg><b dir="ltr">30</b></span><span class="tmw-t"><small></small><bdi></bdi></span>`;
+            const nx = document.createElement("button"); nx.type = "button"; nx.id = "tmnx"; nx.className = "tmnx x-hide";
+            nx.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><i aria-hidden="true">›</i>`;
+            const lv = document.createElement("button"); lv.type = "button"; lv.id = "tmlv"; lv.className = "tmlv x-hide";
+            lv.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg><span></span>`;
+            document.body.append(pillEl, nx, lv);
+            const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
+            nx.addEventListener("click", (e) => { stop(e); if (!TMS.spec) return; TMS.spec.i = (TMS.spec.i | 0) + 1; beep(620, 0.06, "triangle", 0.04, 900); TMS.paint(); });
+            lv.addEventListener("click", (e) => { stop(e); if (state !== "play") return; askExit(); });
+            ui = { pillEl, nx, lv }; return ui;
+          };
+          const liveMates = () => snakes.filter((s) => s.tm === 0 && !s.ad && s.alive && s !== player);
+          const ovl = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+          const fixTm = () => { // small phones: the centred team status pill collided with the top-left HUD -> tuck it under the TOP list
+            const tm = $("tm"), tl = document.querySelector("#game .x-tl"), lb = $("lbx"); if (!tm || !tl || tm.classList.contains("x-hide")) return;
+            tm.style.cssText = ""; const r = tm.getBoundingClientRect(), t = tl.getBoundingClientRect();
+            if (!ovl(r, t)) return;
+            const l = lb && !lb.classList.contains("x-hide") ? lb.getBoundingClientRect() : null, rgt = Math.max(8, innerWidth - (l ? l.right : innerWidth - 10));
+            tm.style.cssText = `left:auto!important;right:${Math.round(rgt)}px!important;transform:none!important;top:${Math.round((l ? l.bottom : t.bottom) + 6)}px!important;max-width:${Math.round(innerWidth * 0.46)}px!important;`;
+          };
+          setInterval(() => { if (state === "play") fixTm(); }, 1000);
+          window.addEventListener("resize", () => setTimeout(fixTm, 60));
+          const place = () => { // just under the team status pill (top centre), never over the top-left HUD
+            const u = ui; if (!u) return; const tm = $("tm"); let top = 0;
+            if (tm && !tm.classList.contains("x-hide")) { const r = tm.getBoundingClientRect(); if (r.height && r.left < innerWidth / 2 && r.right > innerWidth / 2) top = r.bottom + 6; }
+            if (!top) top = ((window.P10SA && P10SA.t) || 0) + 10;
+            const tl = document.querySelector("#game .x-tl"); if (tl) { const t = tl.getBoundingClientRect(), w = u.pillEl.offsetWidth || 160, pl = innerWidth / 2 - w / 2 - 70; if (t.right > pl && t.bottom + 6 > top) top = t.bottom + 6; }
+            u.pillEl.style.top = Math.round(top) + "px"; u.lv.style.top = Math.round(top + u.pillEl.offsetHeight + 6) + "px";
+          };
+          TMS.ui = () => {
+            const u = mk(), on = !!(TMS.spec && state === "play" && MD === "t");
+            u.pillEl.classList.toggle("x-hide", !on); u.lv.classList.toggle("x-hide", !on); if (!on) u.nx.classList.add("x-hide");
+            const d = LANG === "ar" ? "rtl" : "ltr"; u.pillEl.dir = d; u.lv.dir = d;
+            u.lv.querySelector("span").textContent = _t("tmLeave"); u.lv.setAttribute("aria-label", _t("tmLeave"));
+            u.nx.setAttribute("aria-label", _t("tmNext")); u.nx.title = _t("tmNext");
+            const old = document.getElementById("tmsp"); if (old) old.classList.add("x-hide");
+            if (on) { TMS.paint(); place(); }
+          };
+          TMS.paint = () => {
+            const u = mk(); if (!TMS.spec) return;
+            const w = TMS.watch(), left = Math.max(0, TMS.spec.at - time), s = Math.ceil(left), tot = TMS.spec.tot || (TMS.spec.tot = Math.max(1, Math.ceil(left)));
+            const b = u.pillEl.querySelector(".tmw-r b"); if (b.textContent !== String(s)) b.textContent = String(s);
+            u.pillEl.querySelector(".fg").style.strokeDashoffset = String(94.25 * (1 - Math.min(1, left / tot)));
+            u.pillEl.querySelector(".tmw-t small").textContent = _t("tmBack");
+            const nm = _t("tmWatch", { x: w ? String(w.name || "") : "—" }), bd = u.pillEl.querySelector(".tmw-t bdi"); if (bd.textContent !== nm) bd.textContent = nm;
+            u.nx.classList.toggle("x-hide", liveMates().length < 2);
+            place();
+          };
+          window.addEventListener("resize", () => { if (TMS.spec) place(); });
+
+          // ---------- (2) premium minimap ----------
+          const MC = document.createElement("canvas"), mg = MC.getContext("2d");
+          let mT = 0, mKey = "";
+          const rr = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+          const crown = (g, x, y, s, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(x - s, y + s * 0.6); g.lineTo(x - s, y - s * 0.3); g.lineTo(x - s * 0.5, y + s * 0.15); g.lineTo(x, y - s * 0.75); g.lineTo(x + s * 0.5, y + s * 0.15); g.lineTo(x + s, y - s * 0.3); g.lineTo(x + s, y + s * 0.6); g.closePath(); g.fill(); g.strokeStyle = "rgba(60,36,0,.7)"; g.lineWidth = 0.8; g.stroke(); };
+          const rgbOf = (c) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(c || "")); if (!m) return null; const n = parseInt(m[1], 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
+          MM13 = (c0, c1, c2, c3) => {
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const m = Math.round(clamp(Math.min(W * 0.12, H * 0.24), 70, 92)), pad = 5, inner = m - pad * 2, k = inner / A;
+            const x = ((window.P10SA && P10SA.l) || 0) + 10, y = ((window.P10SA && P10SA.t) || 0) + 8;
+            if (m !== MM13.m) { MM13.m = m; document.documentElement.style.setProperty("--mm13", m + "px"); } // only on change (a style write per frame forces a full style recalc)
+            const key = m + "|" + dpr + "|" + mapI;
+            if ((mT -= fdt) <= 0 || key !== mKey) {
+              mT = 0.1; mKey = key; // ~10 Hz into an offscreen canvas
+              const pm = Math.round((m + 6) * dpr); if (MC.width !== pm) MC.width = MC.height = pm;
+              const g = mg; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, pm, pm); g.setTransform(dpr, 0, 0, dpr, 3 * dpr, 3 * dpr);
+              const M = MAPS[mapI] || MAPS[0];
+              // glass body
+              const bg = g.createLinearGradient(0, 0, 0, m); bg.addColorStop(0, "rgba(14,26,62,.86)"); bg.addColorStop(1, "rgba(4,10,28,.9)");
+              rr(g, 0, 0, m, m, 14); g.fillStyle = bg; g.fill();
+              g.save(); rr(g, 0, 0, m, m, 14); g.clip();
+              // arena floor in the theme tint, border in the map's wall colour
+              g.globalAlpha = 0.34; g.fillStyle = M.floor || "#0a1430"; g.fillRect(pad, pad, inner, inner); g.globalAlpha = 1;
+              g.strokeStyle = "rgba(255,255,255,.05)"; g.lineWidth = 1; g.beginPath();
+              for (let i = 1; i < 4; i++) { const q = pad + (inner * i) / 4; g.moveTo(q, pad); g.lineTo(q, pad + inner); g.moveTo(pad, q); g.lineTo(pad + inner, q); } g.stroke();
+              g.strokeStyle = `rgba(${M.wc || "255,214,120"},.75)`; g.lineWidth = 1.2; g.strokeRect(pad, pad, inner, inner);
+              // camera view (the floor trapezoid on screen)
+              g.beginPath(); [c0, c1, c3, c2].forEach((c, i) => g[i ? "lineTo" : "moveTo"](pad + clamp(c.x, -A * 0.1, A * 1.1) * k, pad + clamp(c.y, -A * 0.1, A * 1.1) * k)); g.closePath();
+              g.fillStyle = "rgba(255,255,255,.06)"; g.fill(); g.strokeStyle = "rgba(255,255,255,.28)"; g.lineWidth = 0.8; g.stroke();
+              // snakes: others small and soft, teammates in team colour with a ring, top 3 with crowns, bosses with a skull
+              const live = snakes.filter((s) => s.alive && !s.ad && s.seg && s.seg[0]);
+              const top = live.slice().sort((a, b) => b.len - a.len).slice(0, 3);
+              const focus = player && player.alive ? player : TMS.spec && state === "play" ? TMS.watch() : null;
+              for (const s of live) {
+                if (s === player || s === focus || top.includes(s) || s.boss) continue;
+                const h = s.seg[0], px = pad + h.x * k, py = pad + h.y * k;
+                if (s.tm === 0 && MD === "t") { const c = rgbOf(TC[0][2]) || [0, 229, 255]; g.fillStyle = `rgb(${c})`; g.beginPath(); g.arc(px, py, 2.2, 0, 6.283); g.fill(); g.strokeStyle = `rgba(${c},.65)`; g.lineWidth = 1; g.beginPath(); g.arc(px, py, 4.2, 0, 6.283); g.stroke(); continue; }
+                const tc = MD === "t" && s.tm !== undefined && TC[s.tm] ? TC[s.tm][2] : null;
+                g.globalAlpha = 0.7; g.fillStyle = tc || segColor(s.skin, 0); g.beginPath(); g.arc(px, py, 1.3 + Math.min(1.4, s.len / 220), 0, 6.283); g.fill(); g.globalAlpha = 1;
+              }
+              for (const s of live) if (s.boss) { const h = s.seg[0]; g.font = "9px " + EMOJI_F; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("☠️", pad + h.x * k, pad + h.y * k); }
+              top.forEach((s, i) => { if (s === player || s === focus) return; const h = s.seg[0]; crown(g, pad + h.x * k, pad + h.y * k, i ? 2.6 : 3.4, i === 0 ? "#ffd34d" : i === 1 ? "#d9e2ec" : "#e0a060"); });
+              // you: glowing heading arrow (or the teammate you are watching, in cyan)
+              if (focus) {
+                const h = focus.seg[0], px = pad + h.x * k, py = pad + h.y * k, a = focus.a || 0, me = focus === player, col = me ? "255,236,170" : "79,227,255";
+                const gl = g.createRadialGradient(px, py, 0, px, py, 9); gl.addColorStop(0, `rgba(${col},.55)`); gl.addColorStop(1, `rgba(${col},0)`);
+                g.fillStyle = gl; g.beginPath(); g.arc(px, py, 9, 0, 6.283); g.fill();
+                g.save(); g.translate(px, py); g.rotate(a); g.beginPath(); g.moveTo(5.6, 0); g.lineTo(-3.6, 3.6); g.lineTo(-1.8, 0); g.lineTo(-3.6, -3.6); g.closePath();
+                g.fillStyle = me ? "#fff6d6" : "#bff6ff"; g.fill(); g.strokeStyle = me ? "rgba(140,96,10,.9)" : "rgba(0,80,110,.9)"; g.lineWidth = 0.9; g.stroke(); g.restore();
+              }
+              g.restore();
+              // thin gold rim + inner highlight
+              rr(g, 0.5, 0.5, m - 1, m - 1, 13.5); g.strokeStyle = "rgba(212,175,55,.9)"; g.lineWidth = 1.2; g.stroke();
+              rr(g, 2, 2, m - 4, m - 4, 12); g.strokeStyle = "rgba(255,255,255,.08)"; g.lineWidth = 1; g.stroke();
+            }
+            ctx.globalAlpha = 0.94; ctx.drawImage(MC, x - 3, y - 3, m + 6, m + 6); ctx.globalAlpha = 1;
+          };
+        }
+        /*ss-srw-v1*/ // ===================== server-paid Story / Word / Daily Mystery / landmark bonuses + owner admin tabs (ss_server_rewards) =====================
+        // The server (sr_tag / sr_settle / sr_state, sql 80) decides and pays; this block only tags the match, sends what happened (p_stats.nf),
+        // shows the server's answer and copies the server's progress into NX for display. Owner tabs call owner-only RPCs (sql 81 + existing admin RPCs).
+        {
+          const sv = (f, d) => { try { const v = f(); return v === undefined || v === null || Number.isNaN(v) ? d : v; } catch (_) { return d; } };
+          const SRW = (window.__srw = { st: null, at: 0, uid: "", first: true, tagP: null, rules: {} });
+          const isOn = () => sv(() => cur === "@on" && ON.on && !!ON.rpc, false);
+          const T = (k, p) => { try { return _t(k, p); } catch (_) { return k; } };
+          const E = (s) => { try { return esc(s); } catch (_) { return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";"); } };
+          const nf0 = (v) => Number(v || 0).toLocaleString("en-US");
+          try {
+            Object.assign(I18N, {
+              srwChk: ["جارٍ التحقق من الخادم…", "checking with the server…", "sunucuyla doğrulanıyor…", "vérification serveur…", "verificando con el servidor…", "सर्वर से जाँच…"],
+              srwStage: ["المرحلة {n}", "Stage {n}", "Bölüm {n}", "Étape {n}", "Etapa {n}", "चरण {n}"],
+              srwSxp: ["XP الموسم", "season XP", "sezon XP", "XP saison", "XP temporada", "सीज़न XP"],
+              srwWords: ["{n} كلمات", "{n} words", "{n} kelime", "{n} mots", "{n} palabras", "{n} शब्द"],
+              srwLm: ["معالم", "Landmarks", "Simgeler", "Repères", "Monumentos", "स्थल"],
+              srwCap: ["تم بلوغ حد اليوم", "daily limit reached", "günlük sınır doldu", "limite du jour atteinte", "límite diario alcanzado", "आज की सीमा पूरी"],
+              srwNo_not_won: ["لم تُحسب المرحلة", "stage not cleared", "bölüm geçilmedi", "étape non réussie", "etapa no superada", "चरण पूरा नहीं"],
+              srwNo_goal_not_met: ["لم يتحقق الهدف على الخادم", "goal not confirmed by the server", "hedef sunucuda doğrulanmadı", "objectif non confirmé", "objetivo no confirmado", "लक्ष्य की पुष्टि नहीं"],
+              srwNo_already_claimed: ["مكافأة لغز اليوم أُخذت", "today's mystery reward already claimed", "bugünün gizem ödülü alındı", "récompense du jour déjà prise", "premio de hoy ya cobrado", "आज का इनाम ले लिया"],
+              srwNo_too_short: ["المباراة قصيرة جداً", "match too short", "maç çok kısa", "partie trop courte", "partida demasiado corta", "मैच बहुत छोटा"],
+              srwNo_already_found: ["وُجدت من قبل", "already found", "zaten bulundu", "déjà trouvé", "ya encontrado", "पहले ही मिला"],
+              srwNo_flagged: ["لم تُحسب (نتيجة غير معقولة)", "not counted (implausible result)", "sayılmadı (olağandışı sonuç)", "non compté (résultat improbable)", "no contado (resultado improbable)", "गिना नहीं गया"],
+              srwNo_stage_locked: ["المرحلة مقفلة على الخادم", "stage is locked on the server", "bölüm sunucuda kilitli", "étape verrouillée", "etapa bloqueada", "चरण लॉक है"],
+              srwNo_other: ["لم تُحسب المكافأة", "bonus not counted", "bonus sayılmadı", "bonus non compté", "bono no contado", "बोनस नहीं गिना"],
+              srwPend: ["مكافآت سابقة: +{c} 🪙", "Earlier bonuses: +{c} 🪙", "Önceki bonuslar: +{c} 🪙", "Bonus précédents : +{c} 🪙", "Bonos anteriores: +{c} 🪙", "पिछले बोनस: +{c} 🪙"],
+              // owner admin (EN + AR; other languages show English)
+              srwTGame: ["إعدادات اللعبة", "Game", "Game", "Game", "Game", "Game"],
+              srwTRew: ["مكافآت الأوضاع", "Mode rewards", "Mode rewards", "Mode rewards", "Mode rewards", "Mode rewards"],
+              srwTMx: ["مباريات ومشتريات", "Matches & buys", "Matches & buys", "Matches & buys", "Matches & buys", "Matches & buys"],
+              srwMaint: ["وضع الصيانة", "Maintenance", "Maintenance", "Maintenance", "Maintenance", "Maintenance"],
+              srwMaintPh: ["رسالة الصيانة (120 حرفاً)", "Maintenance message (120 chars)", "Maintenance message (120 chars)", "Maintenance message (120 chars)", "Maintenance message (120 chars)", "Maintenance message (120 chars)"],
+              srwOn: ["تشغيل", "On", "On", "On", "On", "On"], srwOff: ["إيقاف", "Off", "Off", "Off", "Off", "Off"],
+              srwXpM: ["مضاعف الخبرة", "XP multiplier", "XP multiplier", "XP multiplier", "XP multiplier", "XP multiplier"],
+              srwCoM: ["مضاعف العملات", "Coin multiplier", "Coin multiplier", "Coin multiplier", "Coin multiplier", "Coin multiplier"],
+              srwRwCfg: ["مكافآت القصة والكلمات واللغز والمعالم", "Story / Word / Mystery / Landmark rewards", "Story / Word / Mystery / Landmark rewards", "Story / Word / Mystery / Landmark rewards", "Story / Word / Mystery / Landmark rewards", "Story / Word / Mystery / Landmark rewards"],
+              srwSave: ["حفظ", "Save", "Save", "Save", "Save", "Save"],
+              srwEnabled: ["المكافآت مفعّلة", "Rewards enabled", "Rewards enabled", "Rewards enabled", "Rewards enabled", "Rewards enabled"],
+              srwK_story_first_base: ["القصة: أول فوز (أساس)", "Story first clear (base)", "Story first clear (base)", "Story first clear (base)", "Story first clear (base)", "Story first clear (base)"],
+              srwK_story_first_step: ["القصة: زيادة لكل مرحلة", "Story: + per stage", "Story: + per stage", "Story: + per stage", "Story: + per stage", "Story: + per stage"],
+              srwK_word_coins: ["عملات لكل كلمة", "Coins per word", "Coins per word", "Coins per word", "Coins per word", "Coins per word"],
+              srwK_word_daily_coins: ["حد عملات الكلمات يومياً", "Word coins per day (cap)", "Word coins per day (cap)", "Word coins per day (cap)", "Word coins per day (cap)", "Word coins per day (cap)"],
+              srwK_myst_coins: ["عملات لغز اليوم", "Daily mystery coins", "Daily mystery coins", "Daily mystery coins", "Daily mystery coins", "Daily mystery coins"],
+              srwK_myst_min_seconds: ["أقل مدة للغز (ث)", "Mystery min. seconds", "Mystery min. seconds", "Mystery min. seconds", "Mystery min. seconds", "Mystery min. seconds"],
+              srwK_lm_coins: ["عملات لكل معلم", "Coins per landmark", "Coins per landmark", "Coins per landmark", "Coins per landmark", "Coins per landmark"],
+              srwK_lm_map_gems: ["جواهر لإكمال معالم خريطة", "Gems per completed map", "Gems per completed map", "Gems per completed map", "Gems per completed map", "Gems per completed map"],
+              srwToday: ["اليوم: {s} تسوية · +{c} 🪙 · +{g} 💎 · {p} لاعب · {r} مرفوضة", "Today: {s} settled · +{c} 🪙 · +{g} 💎 · {p} players · {r} refused", "Today: {s} settled · +{c} 🪙 · +{g} 💎 · {p} players · {r} refused", "Today: {s} settled · +{c} 🪙 · +{g} 💎 · {p} players · {r} refused", "Today: {s} settled · +{c} 🪙 · +{g} 💎 · {p} players · {r} refused", "Today: {s} settled · +{c} 🪙 · +{g} 💎 · {p} players · {r} refused"],
+              srwFlagged: ["مباريات مُعلَّمة", "Flagged matches", "Flagged matches", "Flagged matches", "Flagged matches", "Flagged matches"],
+              srwPurch: ["المشتريات", "Purchases", "Purchases", "Purchases", "Purchases", "Purchases"],
+              srwFlagOnly: ["المُعلَّمة فقط", "Flagged only", "Flagged only", "Flagged only", "Flagged only", "Flagged only"],
+              srwNone: ["لا شيء", "Nothing here", "Nothing here", "Nothing here", "Nothing here", "Nothing here"],
+              srwDel: ["حذف الحساب", "Delete account", "Delete account", "Delete account", "Delete account", "Delete account"],
+              srwDelQ: ["حذف هذا الحساب نهائياً؟ لا يمكن التراجع.", "Delete this account for good? This cannot be undone.", "Delete this account for good? This cannot be undone.", "Delete this account for good? This cannot be undone.", "Delete this account for good? This cannot be undone.", "Delete this account for good? This cannot be undone."],
+              srwLgx: ["الدوري: استبعاد/إرجاع", "League: exclude / include", "League: exclude / include", "League: exclude / include", "League: exclude / include", "League: exclude / include"],
+              srwLgxEx: ["استبعاد من الدوري", "Exclude from league", "Exclude from league", "Exclude from league", "Exclude from league", "Exclude from league"],
+              srwLgxIn: ["إرجاع إلى الدوري", "Include in league", "Include in league", "Include in league", "Include in league", "Include in league"],
+              srwModeP: ["القصة {c}/12 · ★{s}/36 · {w} كلمة · {l}/9 معالم · 7 أيام: +{b} 🪙 · {r} مرفوضة", "Story {c}/12 · ★{s}/36 · {w} words · {l}/9 landmarks · 7 d: +{b} 🪙 · {r} refused", "Story {c}/12 · ★{s}/36 · {w} words · {l}/9 landmarks · 7 d: +{b} 🪙 · {r} refused", "Story {c}/12 · ★{s}/36 · {w} words · {l}/9 landmarks · 7 d: +{b} 🪙 · {r} refused", "Story {c}/12 · ★{s}/36 · {w} words · {l}/9 landmarks · 7 d: +{b} 🪙 · {r} refused", "Story {c}/12 · ★{s}/36 · {w} words · {l}/9 landmarks · 7 d: +{b} 🪙 · {r} refused"],
+            });
+          } catch (_) {}
+
+          // ---------- server progress -> NX (display copy only) ----------
+          SRW.rule = (k, d) => { const v = SRW.rules && SRW.rules[k]; return Number.isFinite(+v) && v !== null ? +v : d; };
+          SRW.apply = (s) => {
+            if (!s || typeof NX !== "object" || !NX) return; SRW.st = s; SRW.rules = s.rules || {};
+            const cs = {}, so = (s.story && s.story.stars) || {}; for (const k in so) if (/^\d+$/.test(k)) cs[+k] = clamp(so[k] | 0, 0, 3);
+            NX.cp = clamp((s.story && s.story.cp) | 0, 0, STG.length); NX.cs = cs;
+            const lm = {}; for (const k of s.landmarks || []) lm[String(k)] = 1; NX.lm = lm;
+            NX.my = s.myst_done_today ? utcDay() : NX.my === utcDay() ? 0 : NX.my;
+            NX.wd = Math.max(0, +s.words || 0);
+            try { if (!$("nfstory").classList.contains("x-hide")) paintStory(); } catch (_) {}
+          };
+          const sum = (rs) => { let c = 0, g = 0; for (const r of rs || []) { c += r.coins | 0; g += r.gems | 0; } return { c, g }; };
+          SRW.pull = async (force) => {
+            if (!isOn()) return; const uid = sv(() => ON.uid, "");
+            if (uid !== SRW.uid) { SRW.uid = uid; SRW.first = true; SRW.st = null; SRW.at = 0; }
+            const now = Date.now(); if (!force && now - SRW.at < 20000) return; SRW.at = now;
+            try {
+              if (SRW.first) { // once per sign-in: settle anything left from a match that ended while the app was closing
+                SRW.first = false; const r = await ON.rpc("sr_settle", { p_match_id: null }); if (r && r.state) SRW.apply(r.state);
+                const t = sum(r && r.results); if (t.c || t.g) { toast(T("srwPend", { c: t.c }) + (t.g ? ` · +${t.g} 💎` : "")); ON.syncSoon(600); }
+                return;
+              }
+              SRW.apply(await ON.rpc("sr_state"));
+            } catch (e) { SRW.at = now - 15000; }
+          };
+          { const s0 = ON.sync; if (typeof s0 === "function" && !s0.srw) { const f = async (...a) => { const r = await s0.apply(ON, a); try { SRW.pull(false); } catch (_) {} return r; }; f.srw = 1; ON.sync = f; } }
+          setInterval(() => { try { if (isOn() && sv(() => ON.uid, "") !== SRW.uid && state !== "play") SRW.pull(true); } catch (_) {} }, 4000);
+
+          // ---------- tag story / word / mystery matches right after start_match ----------
+          { const m0 = ON.mStart; if (typeof m0 === "function") ON.mStart = (...a) => {
+            const r = m0.apply(ON, a);
+            try {
+              SRW.tagP = null; SRW.tagErr = ""; const k = NFM.m, stg = NFM.st | 0;
+              if (isOn() && ON.mp && (k === "story" || k === "word" || k === "myst"))
+                SRW.tagP = ON.mp.then((id) => (id ? ON.rpc("sr_tag", { p_match_id: id, p_kind: k, p_stage: k === "story" ? stg : null }).then(() => id).catch((e) => { SRW.tagErr = (e && (e.code || e.message)) || "error"; return null; }) : null));
+            } catch (_) {}
+            return r;
+          }; }
+
+          // ---------- what happened in the match (stored with submit_match; the server re-checks all of it) ----------
+          { const s0 = ON.stats; if (typeof s0 === "function") ON.stats = (l, extra) => {
+            const s = s0(l, extra) || {};
+            try {
+              const nf = { m: NFM.m || "" };
+              if (NFM.m === "story") { nf.st = NFM.st | 0; nf.win = !!NFS.win; if (NFS.win) nf.wt = Math.round((+NFS.wt || 0) * 10) / 10; }
+              if (NFM.m === "word") nf.words = NFS.wc | 0;
+              if (Array.isArray(NFS.lmf) && NFS.lmf.length) nf.lm = NFS.lmf.slice(0, 9);
+              s.nf = nf;
+            } catch (_) {}
+            return s;
+          }; }
+
+          // ---------- after submit_match: settle and show the server's answer on the Game Over screen ----------
+          const why = (c) => (I18N["srwNo_" + c] ? T("srwNo_" + c) : T("srwNo_other"));
+          const lineOf = (r) => {
+            const out = [];
+            if (r.refused) return ["⚠️ " + why(r.refused)];
+            if (r.story) { const s = r.story; out.push(s.refused ? "📖 " + why(s.refused) : `✅ 📖 ${T("srwStage", { n: (s.stage | 0) + 1 })} ${"★".repeat(s.stars | 0)}${"☆".repeat(3 - (s.stars | 0))}` + (s.coins ? ` +${s.coins} 🪙` : "") + (s.sxp ? ` · +${s.sxp} ${T("srwSxp")}` : "")); }
+            if (r.word) { const w = r.word; out.push(`✅ 🔤 ${T("srwWords", { n: w.words | 0 })}` + (w.coins ? ` +${w.coins} 🪙` : "") + (r.capped ? ` (${T("srwCap")})` : "")); }
+            if (r.myst) { const m = r.myst; out.push(m.refused ? "❓ " + why(m.refused) + (m.need_s ? ` (${m.need_s} s)` : "") : `✅ ❓ ${T("nfMyst")} +${m.coins | 0} 🪙`); }
+            if (r.lm && !(r.lm.refused && r.lm.refused !== "too_short")) { const x = r.lm; out.push(x.refused ? "🗺️ " + why(x.refused) : `✅ 🗺️ ${T("srwLm")} ${(x.found || []).length} +${x.coins | 0} 🪙` + (x.gems ? ` +${x.gems} 💎` : "")); }
+            return out;
+          };
+          SRW.show = (results) => {
+            const lines = []; for (const r of results || []) lines.push(...lineOf(r || {}));
+            if (!lines.length) return;
+            const el = $("nfo");
+            if (el) { const base = (el.textContent || "").split(" · ").filter((p) => p && !p.includes(T("srwChk"))).join(" · "); el.textContent = [base, ...lines].filter(Boolean).join(" · "); }
+            // the redesigned Game Over hides #nfo: the server's answer goes into the rewards row as extra pills
+            const pr = $("pxrews"); if (pr) { pr.querySelectorAll("[data-srw]").forEach((x) => x.remove()); pr.insertAdjacentHTML("beforeend", lines.map((t, i) => `<span dir="auto" data-srw="1" class="srw-pill" style="animation-delay:${(0.1 + i * 0.12).toFixed(2)}s">${E(t)}</span>`).join("")); }
+          };
+          SRW.after = (mid, r, st) => {
+            const nfx = st && st.nf; if (!mid || !nfx || !isOn()) return;
+            const tagged = nfx.m === "story" || nfx.m === "word" || nfx.m === "myst";
+            if (!tagged && !(nfx.lm && nfx.lm.length)) return;
+            (async () => {
+              try { if (SRW.tagP) await SRW.tagP; } catch (_) {}
+              let res = null;
+              for (let i = 0; i < 3 && !res; i++) {
+                try { res = await ON.rpc("sr_settle", { p_match_id: mid }); }
+                catch (e) { const c = (e && (e.code || e.message)) || ""; if (c !== "net" && !/fetch|network|timeout/i.test(c)) { SRW.show([{ refused: SRW.tagErr || c }]); return; } await new Promise((ok) => setTimeout(ok, 1500 * (i + 1))); }
+              }
+              if (!res) return;
+              if (res.state) SRW.apply(res.state);
+              SRW.show((res.results || []).map((x) => (SRW.tagErr && tagged && x && !x.refused && !x.story && !x.word && !x.myst ? Object.assign({}, x, { refused: SRW.tagErr }) : x)));
+              try { ON.syncSoon(300); } catch (_) {}
+            })();
+          };
+
+          // ======================= owner admin tabs (server: owner_me / admin_me on every call) =======================
+          const A4 = (window.__srwA = { d: { mxs: "mx", puf: false, mu: {} } });
+          const KEYS = ["story_first_base", "story_first_step", "word_coins", "word_daily_coins", "myst_coins", "myst_min_seconds", "lm_coins", "lm_map_gems"];
+          // 12 admin tabs: the row scrolls sideways at natural widths (no "Dashb…" ellipses); the active tab is kept in view
+          try {
+            const st = document.createElement("style"); st.id = "srw-css";
+            st.textContent = "#kadm .k-atabs{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}#kadm .k-atabs::-webkit-scrollbar{display:none}" +
+              "#kadm .k-atabs button{flex:0 0 auto;padding:0 12px;text-overflow:clip}#kadm .k-atabs .k-ref{flex:0 0 40px}" +
+              "#over #pxrews>.srw-pill{white-space:normal;text-align:center}";
+            document.head.appendChild(st);
+            const kb = $("kadmb"); if (kb) new MutationObserver(() => { const row = kb.querySelector(".k-atabs"), on = row && row.querySelector("button.on"); if (!on) return;
+              const r = row.getBoundingClientRect(), q = on.getBoundingClientRect(); if (q.left < r.left + 4 || q.right > r.right - 44) row.scrollLeft += (q.left + q.width / 2) - (r.left + r.width / 2); }).observe(kb, { childList: true });
+          } catch (_) {}
+          A4.has = (k) => k === "srwgame" || k === "srwrew" || k === "srwmx";
+          A4.tabs = (tabs) => { if (!tabs.some((t) => t[0] === "srwgame")) { const i = tabs.findIndex((t) => t[0] === "log"); tabs.splice(i < 0 ? tabs.length : i, 0, ["srwgame", "srwTGame"], ["srwrew", "srwTRew"], ["srwmx", "srwTMx"]); } return tabs; };
+          A4.load = async (AD) => {
+            const d = A4.d;
+            if (AD.tab === "srwgame") { const [c, r] = await Promise.all([ON.rpc("get_public_config"), ON.rpc("adm4_rewards", { p_limit: 1 })]); d.cfg = c; d.rw = r; }
+            else if (AD.tab === "srwrew") d.rew = await ON.rpc("adm4_rewards", { p_limit: 150 });
+            else if (AD.tab === "srwmx") { if (d.mxs === "pu") d.pu = await ON.rpc("admin_list_purchases", { p_flagged_only: !!d.puf, p_limit: 120 }); else d.mx = await ON.rpc("admin_flagged_matches", { p_limit: 120 }); }
+          };
+          const btns = (act, cur0, opts, ltr) => opts.map(([v, l]) => `<button type="button" class="x-btn ${String(cur0) === String(v) ? "x-main" : "x-sub"}" data-ka="${act}" data-v="${E(v)}"${ltr ? ' dir="ltr"' : ""}>${E(l)}</button>`).join("");
+          A4.html = (AD, fmtD) => {
+            const d = A4.d;
+            if (AD.tab === "srwgame") {
+              const c = d.cfg; if (!c) return "…";
+              const mt = c.maintenance || {}, rc = (d.rw && d.rw.config) || {};
+              return `<section class="k-sec"><h4>🛠️ ${E(T("srwMaint"))}</h4><input id="srwmm" maxlength="120" dir="auto" placeholder="${E(T("srwMaintPh"))}" value="${E(mt.message || "")}">` +
+                `<div class="k-inl">${btns("srwmt", mt.on ? 1 : 0, [[1, T("srwOn")], [0, T("srwOff")]])}</div></section>` +
+                `<section class="k-sec"><h4>⭐ ${E(T("srwXpM"))}</h4><div class="k-inl">${btns("srwxm", +c.xp_multiplier || 1, [[1, "×1"], [1.5, "×1.5"], [2, "×2"], [3, "×3"]], 1)}</div>` +
+                `<h4>🪙 ${E(T("srwCoM"))}</h4><div class="k-inl">${btns("srwcm", +c.coin_multiplier || 1, [[1, "×1"], [1.5, "×1.5"], [2, "×2"], [3, "×3"]], 1)}</div></section>` +
+                `<section class="k-sec"><h4>🎁 ${E(T("srwRwCfg"))}</h4><div class="k-inl">${btns("srwen", rc.enabled === false ? 0 : 1, [[1, T("srwOn")], [0, T("srwOff")]])}<small class="k-note">${E(T("srwEnabled"))}</small></div>` +
+                `<div class="k-cols">${KEYS.map((k) => `<label class="k-lab">${E(T("srwK_" + k))} <input id="srwk_${k}" type="number" min="0" dir="ltr" value="${E(rc[k] == null ? "" : rc[k])}"></label>`).join("")}</div>` +
+                `<div class="k-inl"><button type="button" class="x-btn x-main" data-ka="srwsave">${E(T("srwSave"))}</button></div></section>`;
+            }
+            if (AD.tab === "srwrew") {
+              const r = d.rew; if (!r) return "…"; const t = r.today || {};
+              return `<p class="k-note">${E(T("srwToday", { s: nf0(t.settled), c: nf0(t.coins), g: nf0(t.gems), p: nf0(t.players), r: nf0(t.refused) }))}</p>` +
+                ((r.recent || []).length ? `<div class="k-list">${r.recent.map((x) => { const res = x.result || {}, parts = [];
+                  if (res.refused) parts.push("⚠️ " + res.refused);
+                  for (const k of ["story", "word", "myst", "lm"]) if (res[k]) parts.push(k + (res[k].refused ? " ✗ " + res[k].refused : (k === "story" ? " " + ((res[k].stage | 0) + 1) + " " + "★".repeat(res[k].stars | 0) : k === "word" ? " " + (res[k].words | 0) + "/" + (res[k].reported | 0) : "")));
+                  return `<button type="button" class="k-li" data-ka="user" data-id="${E(x.user_id)}"><span><b><bdi>${E(x.username || "?")}</bdi></b> <small>#${E(x.player_id)}</small><small dir="ltr" class="k-det">${E(parts.join(" · "))}</small></span><span dir="ltr">${x.coins ? "+" + nf0(x.coins) + " 🪙" : ""}${x.gems ? " +" + nf0(x.gems) + " 💎" : ""}<small>${E(fmtD(x.at, 1))}</small></span></button>`; }).join("")}</div>` : `<p class="k-note">${E(T("srwNone"))}</p>`);
+            }
+            if (AD.tab === "srwmx") {
+              let h = `<div class="k-inl k-supf">${btns("srwmxs", d.mxs, [["mx", T("srwFlagged")], ["pu", T("srwPurch")]])}${d.mxs === "pu" ? `<button type="button" class="x-btn ${d.puf ? "x-main" : "x-sub"}" data-ka="srwpuf">${E(T("srwFlagOnly"))}</button>` : ""}</div>`;
+              if (d.mxs === "pu") { const L = d.pu; h += !L ? "…" : L.length ? `<div class="k-list">${L.map((p) => `<div class="k-li"><span><b dir="ltr">${E(p.product_id)}</b> <small><bdi>${E(p.username || "?")}</bdi> #${E(p.player_id)}</small><small dir="ltr" class="k-det">${E(p.provider)} · ${E(p.environment || "")} · ${E(p.status)}${p.flagged ? " · ⚑ " + E(p.flag_reason || "") : ""}${p.refunded_cents ? " · refunded $" + (p.refunded_cents / 100).toFixed(2) : ""}</small></span><span dir="ltr">$${((p.amount_cents | 0) / 100).toFixed(2)}<small>${E(fmtD(p.created_at, 1))}</small></span></div>`).join("")}</div>` : `<p class="k-note">${E(T("srwNone"))}</p>`; }
+              else { const L = d.mx; h += !L ? "…" : L.length ? `<div class="k-list">${L.map((m) => { const a = m.accepted || {}; return `<button type="button" class="k-li" data-ka="user" data-id="${E(m.user_id)}"><span><b><bdi>${E(m.username || "?")}</bdi></b> <small>${E(m.mode)}</small><small dir="ltr" class="k-det">⚑ ${E((m.flags || []).join(", "))} · len ${nf0(a.length)} · kills ${nf0(a.kills)} · ${nf0(a.duration_s)} s</small></span><small>${E(fmtD(m.submitted_at, 1))}</small></button>`; }).join("")}</div>` : `<p class="k-note">${E(T("srwNone"))}</p>`; }
+              return h;
+            }
+            return "";
+          };
+          A4.userActs = (u) => {
+            if (!u || !u.id || u.protected || u.role === "owner") return "";
+            const m = A4.d.mu[u.id];
+            if (m === undefined) { A4.d.mu[u.id] = null; ON.rpc("adm4_mode_user", { p_user: u.id }).then((x) => { A4.d.mu[u.id] = x || {}; const c = sv(() => window.__K.admCtx, null); if (c && c.AD.user && c.AD.user.id === u.id) c.paint(); }).catch(() => { A4.d.mu[u.id] = {}; }); }
+            return `<div class="k-acts"><button type="button" class="x-btn x-sub" data-ka="srwlgx">🏆 ${E(T("srwLgx"))}</button><button type="button" class="x-btn k-redb" data-ka="srwdel">🗑️ ${E(T("srwDel"))}</button></div>` +
+              (m && m.story_cp !== undefined ? `<p class="k-note" dir="auto">📖 ${E(T("srwModeP", { c: m.story_cp | 0, s: m.story_stars | 0, w: nf0(m.words), l: m.landmarks | 0, b: nf0(m.bonus_coins_7d), r: nf0(m.refused_7d) }))}</p>` : "");
+          };
+          A4.click = async (a, b, reload, aErr, u, ask) => {
+            const d = A4.d, run = async (p) => { b.disabled = true; try { await p; toast(T("kaDone")); } catch (er) { toast(aErr(er)); } b.disabled = false; reload(); };
+            if (a === "srwmxs") { d.mxs = b.dataset.v; reload(); return; }
+            if (a === "srwpuf") { d.puf = !d.puf; d.pu = null; reload(); return; }
+            if (a === "srwmt") return run(ON.rpc("admin_set_config", { p_key: "maintenance", p_value: { on: b.dataset.v === "1", message: (($("srwmm") || {}).value || "").slice(0, 120) } }));
+            if (a === "srwxm") return run(ON.rpc("admin_set_config", { p_key: "xp_multiplier", p_value: +b.dataset.v }));
+            if (a === "srwcm") return run(ON.rpc("admin_set_config", { p_key: "coin_multiplier", p_value: +b.dataset.v }));
+            if (a === "srwen") return run(ON.rpc("adm4_rewards_cfg", { p_patch: { enabled: b.dataset.v === "1" } }));
+            if (a === "srwsave") {
+              const rc = (d.rw && d.rw.config) || {}, patch = {};
+              for (const k of KEYS) { const el = $("srwk_" + k); if (!el || el.value === "") continue; const v = +el.value; if (Number.isFinite(v) && v !== +rc[k]) patch[k] = v; }
+              if (!Object.keys(patch).length) { toast(T("kaDone")); return; }
+              return run(ON.rpc("adm4_rewards_cfg", { p_patch: patch }));
+            }
+            if (a === "srwdel" && u && typeof ask === "function") {
+              ask(T("srwDel"), `<p class="k-note" dir="auto">⚠️ ${E(T("srwDelQ"))} <bdi>${E(u.username || "")}</bdi> #${E(u.player_id || "")}</p>`, async (r) => { await ON.rpc("admin_delete_user", { p_user: u.id, p_reason: r }); const c = sv(() => window.__K.admCtx, null); if (c) { c.AD.user = null; c.AD.users = null; } });
+              return;
+            }
+            if (a === "srwlgx" && u && typeof ask === "function") {
+              ask(T("srwLgx"), `<div class="k-inl"><select id="srwlx"><option value="1">${E(T("srwLgxEx"))}</option><option value="0">${E(T("srwLgxIn"))}</option></select></div>`, (r) => ON.rpc("lgx_exclude", { p_player: +u.player_id, p_on: ($("srwlx") || {}).value !== "0", p_reason: r }));
+              return;
+            }
+          };
         }
         requestAnimationFrame(loop);
       })();
@@ -18443,7 +19691,7 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
     if (!prefs.haptics) return;
     const p = HAP[kind] || HAP.tap;
     if (now() - lastGesture > 5000 && !lastGesture) return; // browsers refuse vibrate before the first user gesture
-    try { if (navigator.vibrate) { navigator.vibrate(p); return; } } catch (e) { /* ignore */ }
+    try { if (navigator.vibrate) { navigator.vibrate(p); return; } if (W.__ssHapN) { W.__ssHapN(p); return; } } catch (e) { /* ignore */ }
     // Optional iOS 18+ trick: toggling a native <input switch> inside a user gesture plays the system haptic. Off by default.
     if (cfg.iosSwitchHaptic && now() - lastGesture < 600) {
       try {
@@ -19708,6 +20956,73 @@ body #over .x-box > .p10-oc { justify-content: flex-start !important; }
 @media (prefers-reduced-motion: reduce) { .spx-wbar .spx-live i, #spx .spx-live i, #spx .spx-spin { animation: none; } }
 .j-pba .spx-wc { background: linear-gradient(180deg, #ffe08a, #e8a92a) !important; color: #1a1206 !important; border-color: rgba(255, 230, 150, .95) !important; font-weight: 800; }
 #spx[dir="rtl"] .spx-ok, #spx[dir="rtl"] .spx-live { letter-spacing: 0; }
+</style>
+<style id="s13s2-maps">
+/* 13s2 arena unlocks: picker price / Pass chips + unlock sheet (navy glass, gold) */
+#b13dmp .b13d-im .mu-pr, #b13dmp .b13d-im .mu-ps { position: absolute; top: 4px; inset-inline-end: 4px; display: inline-flex; align-items: center; gap: 3px; font: 800 10px/1 system-ui, sans-serif; font-style: normal; color: #ffe39a; background: rgba(8, 12, 28, .82); border: 1px solid rgba(245, 199, 107, .55); padding: 3px 6px 3px 4px; border-radius: 999px; white-space: nowrap; pointer-events: none; }
+#b13dmp .b13d-im .mu-ps { color: #1b1204; background: linear-gradient(180deg, #ffe08a, #e0a93a); border-color: #fff1c4; }
+#b13dmp .b13d-lk.mu-gold { color: #ffe39a; background: rgba(40, 24, 4, .82); }
+.mu-coin { display: inline-block; width: 1.15em; height: 1.15em; flex: none; vertical-align: -0.22em; background: url(ui/ic/coin.webp?v=13s1) center / contain no-repeat; font-style: normal; }
+.mu-sh { position: fixed; inset: 0; z-index: 190; display: flex; align-items: center; justify-content: center; padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); box-sizing: border-box; }
+.mu-sh.x-hide { display: none !important; }
+.mu-sh .mu-bd { position: absolute; inset: 0; background: rgba(2, 5, 16, .72); }
+.mu-sh .mu-cd { position: relative; display: flex; gap: 14px; width: min(560px, 100%); max-height: 100%; overflow-y: auto; box-sizing: border-box; padding: 14px; border-radius: 16px; color: #eef2ff;
+  background: linear-gradient(180deg, rgba(17, 27, 58, .97), rgba(8, 13, 32, .98)); border: 1px solid rgba(245, 199, 107, .55); box-shadow: 0 10px 40px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .08); }
+.mu-sh .mu-im { flex: 0 0 44%; align-self: stretch; min-height: 150px; border-radius: 11px; background: #0a1124 center / cover no-repeat; border: 1px solid rgba(255, 255, 255, .12); }
+.mu-sh .mu-tx { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.mu-sh .mu-nm { font: 900 19px/1.15 system-ui, sans-serif; color: #ffe39a; padding-inline-end: 30px; overflow-wrap: anywhere; }
+.mu-sh .mu-ds { font: 500 12px/1.3 system-ui, sans-serif; color: #b8c2e0; }
+.mu-sh p { margin: 0; }
+.mu-sh .mu-st { font: 800 14px/1.25 system-ui, sans-serif; color: #fff; }
+.mu-sh .mu-st.mu-gold { color: #ffd76e; }
+.mu-sh .mu-mu { font: 600 12px/1.3 system-ui, sans-serif; color: #c9d2ee; }
+.mu-sh .mu-sm { font-size: 11px; color: #98a3c6; }
+.mu-sh .mu-ok { font: 800 14px/1.2 system-ui, sans-serif; color: #9fe7b5; }
+.mu-sh .mu-er { font: 700 12px/1.3 system-ui, sans-serif; color: #ffb38a; background: rgba(255, 120, 60, .12); border: 1px solid rgba(255, 140, 80, .4); padding: 6px 8px; border-radius: 8px; }
+.mu-sh .mu-bar { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, .1); overflow: hidden; }
+.mu-sh .mu-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #4fa3ff, #9b7bff); }
+.mu-sh .mu-or { display: flex; align-items: center; gap: 8px; font: 700 11px/1 system-ui, sans-serif; color: #98a3c6; text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+.mu-sh .mu-or::before, .mu-sh .mu-or::after { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, .14); }
+.mu-sh .mu-go { width: 100%; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; font: 800 14px/1.1 system-ui, sans-serif; border-radius: 11px; cursor: pointer; touch-action: manipulation; }
+.mu-sh .mu-go bdi { display: inline-flex; align-items: center; gap: 3px; }
+.mu-sh .mu-go[disabled] { opacity: .6; cursor: default; }
+.mu-sh .mu-goldb { color: #1b1204 !important; background: linear-gradient(180deg, #ffe08a, #e0a93a) !important; border: 1px solid #fff1c4 !important; }
+.mu-sh .mu-goldb.mu-cf { background: linear-gradient(180deg, #9ff0b6, #39b866) !important; border-color: #d6ffe2 !important; color: #052310 !important; }
+.mu-sh .mu-x { position: absolute; top: 8px; inset-inline-end: 8px; z-index: 1; width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .08); color: #fff; font: 700 15px/1 system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
+@media (max-height: 400px) { .mu-sh .mu-cd { padding: 10px; gap: 10px; } .mu-sh .mu-im { min-height: 110px; flex-basis: 38%; } .mu-sh .mu-nm { font-size: 16px; } .mu-sh .mu-go { min-height: 36px; } .mu-sh .mu-tx { gap: 4px; } }
+@media (max-width: 480px) and (orientation: portrait) { .mu-sh .mu-cd { flex-direction: column; } .mu-sh .mu-im { flex-basis: auto; min-height: 120px; } }
+</style>
+<style id="ss13t-ui">
+/* 13t: Teams respawn wait (slim top pill, edge next-teammate button, Leave match), realtime status pill, minimap spacing */
+.tmw { position: fixed; left: 50%; top: 60px; transform: translateX(-50%); z-index: 55; display: flex; align-items: center; gap: 8px; padding: 3px 14px 3px 3px; border-radius: 999px;
+  background: linear-gradient(180deg, rgba(14, 26, 62, .88), rgba(5, 12, 32, .86)); border: 1px solid rgba(212, 175, 55, .75); box-shadow: 0 4px 14px rgba(0, 0, 0, .4);
+  color: #fff; font: 700 12px/1.15 var(--sans, system-ui); pointer-events: none; max-width: min(70vw, 360px); white-space: nowrap; }
+.tmw-r { position: relative; width: 30px; height: 30px; flex: 0 0 30px; }
+.tmw-r svg { width: 30px; height: 30px; transform: rotate(-90deg); display: block; }
+.tmw-r circle { fill: none; stroke-width: 3.2; }
+.tmw-r .bg { stroke: rgba(255, 255, 255, .14); }
+.tmw-r .fg { stroke: #ffd34d; stroke-linecap: round; stroke-dasharray: 94.25; transition: stroke-dashoffset .25s linear; }
+.tmw-r b { position: absolute; inset: 0; display: grid; place-items: center; font: 800 12px/1 var(--sans, system-ui); color: #ffe9a8; }
+.tmw-t { display: flex; flex-direction: column; min-width: 0; }
+.tmw-t small { font: 700 9px/1.1 var(--sans, system-ui); color: rgba(255, 233, 168, .8); text-transform: uppercase; letter-spacing: .04em; }
+.tmw-t bdi { overflow: hidden; text-overflow: ellipsis; }
+.tmnx { position: fixed; top: 50%; right: calc(max(10px, env(safe-area-inset-right)) + 4px); transform: translateY(-50%); z-index: 56; width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center; background: rgba(10, 22, 54, .86); border: 1px solid rgba(79, 227, 255, .6); color: #bff6ff; pointer-events: auto; cursor: pointer; padding: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .35); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.tmnx svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
+.tmnx i { position: absolute; right: 6px; bottom: 4px; font: 900 13px/1 var(--sans, system-ui); color: #ffd34d; font-style: normal; }
+.tmlv { position: fixed; left: 50%; top: 100px; transform: translateX(-50%); z-index: 56; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 14px;
+  border-radius: 999px; background: rgba(70, 12, 22, .85); border: 1px solid rgba(255, 120, 120, .7); color: #ffe4e4; font: 800 12px/1 var(--sans, system-ui);
+  pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.tmlv svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+[dir="rtl"].tmlv svg { transform: scaleX(-1); }
+.tmw.x-hide, .tmnx.x-hide, .tmlv.x-hide { display: none !important; }
+#tmsp { display: none !important; }
+.x-tl { left: calc(var(--x-sl) + var(--mm13, 72px) + 16px) !important; }
+.rtp { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 54px); transform: translateX(-50%); z-index: 57; padding: 6px 14px; border-radius: 999px;
+  background: rgba(8, 18, 46, .88); border: 1px solid rgba(79, 227, 255, .55); color: #e8f6ff; font: 700 12px/1.2 var(--sans, system-ui); pointer-events: none; white-space: nowrap; }
+.rtp.x-hide { display: none !important; }
+
 </style>
 </body>
 </html>
