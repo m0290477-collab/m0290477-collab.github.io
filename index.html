@@ -1395,7 +1395,7 @@
         <p class="x-chal x-hide" id="nfmapb" role="status" dir="auto"></p>
         <input class="x-name x-hide" id="room" maxlength="8" placeholder="كود الغرفة (اختياري)" data-i18n-ph="roomPh" autocomplete="off" aria-label="كود الغرفة" data-i18n-al="roomPh" />
         <div class="x-col x-hide" id="tml" style="width:100%;gap:8px;align-items:stretch">
-          <div class="x-seg" data-k="tf" style="width:100%"><button data-v="1" data-i18n="tf1">فردي</button><button data-v="2" data-i18n="tf2">ثنائي</button><button data-v="3" data-i18n="tf3">ثلاثي</button><button data-v="4" data-i18n="tf4">فرقة رباعية</button></div>
+          <div class="x-seg" id="tpv" role="group" style="width:100%"><button type="button" data-v="0" data-i18n="tvPub">عام</button><button type="button" data-v="1" data-i18n="tvPriv">خاص</button></div>
           <div class="x-seg" id="tmt" style="width:100%"><button data-tt="l" data-i18n="tLobby">الفريق</button><button data-tt="b" data-i18n="tBoard">ترتيب الفرق</button></div>
           <div id="tmc" aria-live="polite"></div>
         </div>
@@ -2465,10 +2465,11 @@
         room: ["الغرفة", "Room", "Oda", "Salon", "Sala", "रूम"],
         teamWin: ["فاز فريقك! +15 🪙", "Your team won! +15 🪙", "Takımın kazandı! +15 🪙", "Ton équipe gagne ! +15 🪙", "¡Tu equipo ganó! +15 🪙", "आपकी टीम जीती! +15 🪙"],
         teamLose: ["خسر فريقك", "Your team lost", "Takımın kaybetti", "Ton équipe a perdu", "Tu equipo perdió", "आपकी टीम हारी"],
-        tf1: ["فردي", "Solo", "Tekli", "Solo", "Individual", "सोलो"],
-        tf2: ["ثنائي", "Duo", "İkili", "Duo", "Dúo", "डुओ"],
-        tf3: ["ثلاثي", "Trio", "Üçlü", "Trio", "Trío", "ट्रायो"],
-        tf4: ["فرقة رباعية", "Squad", "Dörtlü", "Escouade", "Escuadra", "स्क्वाड"],
+        tvPub: ["عام", "Public", "Herkese açık", "Public", "Público", "पब्लिक"],
+        tvPriv: ["خاص", "Private", "Özel", "Privé", "Privado", "प्राइवेट"],
+        tvPubN: ["عام: تلعب مع لاعبين من كل العالم وبوتات", "Public: play with players worldwide and bots", "Herkese açık: dünyadan oyuncular ve botlarla oyna", "Public : joue avec des joueurs du monde entier et des bots", "Público: juega con jugadores de todo el mundo y bots", "पब्लिक: दुनिया भर के खिलाड़ियों और बॉट्स के साथ खेलें"],
+        tvPrivN: ["خاص: أصدقاؤك بالبارتي أو بكود الغرفة يصيرون بفريقك. بدون جوائز.", "Private: friends in your party or with your room code join your team. No rewards.", "Özel: partindeki ya da oda kodunla gelen arkadaşların takımına katılır. Ödül yok.", "Privé : tes amis du groupe ou avec ton code rejoignent ton équipe. Sans récompense.", "Privado: tus amigos del grupo o con tu código se unen a tu equipo. Sin premios.", "प्राइवेट: पार्टी या रूम कोड वाले दोस्त आपकी टीम में आते हैं। कोई इनाम नहीं।"],
+        tvWinP: ["فاز فريقك!", "Your team won!", "Takımın kazandı!", "Ton équipe gagne !", "¡Tu equipo ganó!", "आपकी टीम जीती!"],
         tmSpec: ["ترجع بعد {s} ث · تتفرج على {x}", "Respawn in {s}s · watching {x}", "{s} sn sonra dönüş · izlenen {x}", "Retour dans {s} s · tu regardes {x}", "Reapareces en {s} s · viendo a {x}", "{s} से. में वापसी · देख रहे {x}"],
         tmNext: ["الزميل التالي", "Next teammate", "Sonraki takım arkadaşı", "Coéquipier suivant", "Siguiente compañero", "अगला साथी"],
         tmGoW: ["فاز فريقك! المركز الأول من {n} فرق", "Your team won! #1 of {n} teams", "Takımın kazandı! {n} takım içinde 1.", "Ton équipe gagne ! 1re sur {n}", "¡Tu equipo ganó! #1 de {n}", "आपकी टीम जीती! {n} में #1"],
@@ -6396,7 +6397,7 @@
           if (CFG.mt && !isStaff() && !(ON.st && ON.st.is_admin)) { L.on = false; if (state !== "menu") home(); else show("mnt"); return; } // maintenance: admin only
           if (TU2.need()) { tuOpen(0); return; } // first match on this account: the 6-card tutorial runs first (ss-onb-v1)
           beep(660, 0.12, "triangle", 0.05, 990);
-          MD = L.on ? "l" : nfMode() ? "n" : S.mode; tmRes = ""; if (MD === "t" && (S.tf | 0) <= 1) MD = "n"; // 13s1: Solo = Classic free-for-all
+          MD = L.on ? "l" : nfMode() ? "n" : S.mode; tmRes = "";
           if (MD === "p") { // the room code seeds the map and bot count, so the same code gives the same match
             ROOM = ($("room").value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "") || Math.random().toString(36).slice(2, 8)).toUpperCase().slice(0, 8);
             let h = 7; for (const c of ROOM) h = (h * 31 + c.charCodeAt(0)) >>> 0;
@@ -6580,15 +6581,15 @@
             if (L.on) lgShow(snakes.filter((s) => s.alive).sort((a, b) => b.len - a.len), -1, false); else show("over"); } }, 700);
         }
 
-        // TEAMS: S.tf players a team (1 solo, 2 duo, 3 squad); your team vs 3 bot teams (2 in squad). Your slots take invited friends
+        // TEAMS (13u-tm): tSz() players a team (one size); your team vs bot teams. Your slots take invited friends
         // (accounts on this device, steered by the computer) first, then bots; every bot is named with 🤖
-        const tSz = () => Math.max(2, Math.min(4, S.tf | 0)); // 13s1: Duo 2 · Trio 3 · Squad 4 per team (Solo plays Classic)
+        const tSz = () => 4; // 13u-tm: one team size (the Solo/Duo/Trio/Squad picker is gone); a party holds up to 4 friends
         const tOpp = () => { try { return window.__s13sOpp ? window.__s13sOpp(S.bots, S.q, A / A0, 0) : S.bots; } catch (_) { return S.bots || 30; } };
         const tCntFor = () => Math.max(2, Math.min(TC.length, Math.round((tOpp() + 1) / tSz())));
         const tCnt = () => (state === "play" || state === "over" ? TMS.n : tCntFor());
         function tSetup() {
           $("tmr").classList.add("x-hide");
-          const f = S.tf, bots = snakes.filter((s) => s.bot && !s.ad);
+          const f = tSz(), bots = snakes.filter((s) => s.bot && !s.ad);
           TI = TI.filter((k) => P.fr.includes(k) && ACC[k]).slice(0, f - 1);
           bots.forEach((s, i) => {
             if (MD !== "t") { if (s.tm !== undefined) { s.tm = undefined; s.ni = i; s.name = bn(i); } return; }
@@ -6602,7 +6603,7 @@
           sc[0] += l !== undefined ? l : player && player.alive ? player.len : 0; return sc;
         }
         function paintTeam() {
-          const c = $("tmc"), f = S.tf; c.dir = LANG === "ar" ? "rtl" : "ltr";
+          const c = $("tmc"), f = tSz(); c.dir = LANG === "ar" ? "rtl" : "ltr";
           [...$("tmt").children].forEach((b) => { const on = b.dataset.tt === tTab; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
           if (!cur) { c.innerHTML = ""; return; }
           TI = TI.filter((k) => P.fr.includes(k) && ACC[k]).slice(0, f - 1);
@@ -15958,10 +15959,12 @@
               } else {
                 const pty = MD === "t" && !!(window.__PT && __PT.inParty());
                 if (pty && __PT.isLeader()) await __PT.sync();
-                m = await post("/v1/match", { mode: MD, map: mapI | 0, ts: MD === "t" ? tSz() : 0, party: pty });
+                const prv = MD === "t" && !!(window.__TPV && __TPV.on()) && !(pty && !__PT.isLeader()); // 13u-tm: members always follow their leader
+                m = prv ? await post("/v1/private", { map: mapI | 0, team: true, ts: tSz(), party: pty }) : await post("/v1/match", { mode: MD, map: mapI | 0, ts: MD === "t" ? tSz() : 0, party: pty });
                 if (m.s === 409 && m.j && m.j.error === "party_wait") { clearTimeout(to); X.on = false; pill(""); toast("👥 " + _t("ptWait")); if (state === "play") home(); return; }
               }
               if (X.gen !== myGen || !X.on) return;
+              if (MD === "p" && m && m.s === 200 && m.j && m.j.mode === "t") MD = "t"; // 13u-tm: a room code/link of a private Teams room
               if (m.s === 403 && m.j && m.j.error) { clearTimeout(to); X.on = false; pill(""); toast(ON.err({ code: m.j.error, message: m.j.error })); if (state === "play") home(); return; }
               if (m.s !== 200 || !m.j.ws_url) throw new Error(m.j.error || "match_" + m.s);
               const ws = new WebSocket(m.j.ws_url, ["ss.v1", "auth." + tok]);
@@ -16047,7 +16050,7 @@
                 if (d.room.map !== mapI) setMap(d.room.map);
                 obs = []; A = d.room.w;
                 if (MD === "t" && X.tn) { TMS.n = Math.min(TC.length, X.tn); TMS.sz = X.ts; TMS.t0 = time - (d.room.t | 0); TMS.lim = d.room.lim || 300; TMS.el = {}; TMS.res = ""; TMS.fin = 0; }
-                if (d.room.code) { try { $("room").value = d.room.code; } catch (_) {} toast(_t("rtCode", { x: d.room.code })); }
+                X.priv13 = !!d.room.private; if (d.room.code) { try { $("room").value = d.room.code; } catch (_) {} toast(_t("rtCode", { x: d.room.code })); }
                 X.vT = 0; return;
               }
               case "spawn": {
@@ -16212,7 +16215,7 @@
                 try { const $r = $("tmr"); $r.classList.remove("x-hide"); $r.innerHTML = TMS.board(sc, rk); } catch (_) {}
               }
               TMS.res = _t(w ? "tmGoW" : "tmGoL", { r, n });
-              return _t(w ? "teamWin" : "teamLose") + " · #" + r + "/" + n;
+              return (w && X.priv13 ? _t("tvWinP") : _t(w ? "teamWin" : "teamLose")) + " · #" + r + "/" + n;
             }; }
           if (NFH.home) NFH.home.push(() => { if (X.on || X.ws) X.end(); X.over = null; X.skip = false; });
           { const _sb = syncBots; syncBots = function () { if (X.on) return; return _sb.apply(this, arguments); }; } // online: no local bots, whatever calls it
@@ -16771,7 +16774,7 @@
           PT.follow = (pa) => { // the leader was seated: members start the same Teams match (the server puts them on the leader's team)
             toast("👥 " + _t("ptGo"));
             try { B13.popX(); } catch (_) { try { $("b13pop").classList.add("x-hide"); } catch (_) {} }
-            S.mode = "t"; S.tf = Math.max(2, Math.min(4, pa.ts | 0 || 2)); try { NFM.m = ""; } catch (_) {}
+            S.mode = "t"; try { NFM.m = ""; } catch (_) {}
             try { paintMode(); } catch (_) {}
             show("menu"); setTimeout(() => { if (state !== "play") start(); }, 60);
           };
@@ -18946,6 +18949,23 @@
         }
         // vs13u: VIP ID sold-out strings
         { const VS_I18N = {"vsSold": ["تم البيع", "SOLD OUT", "SATILDI", "VENDU", "VENDIDO", "बिक गया"], "vsSoldA": ["#{n} · تم البيع", "#{n} · sold out", "#{n} · satıldı", "#{n} · vendu", "#{n} · vendido", "#{n} · बिक गया"], "vsHeld": ["محجوز مؤقتاً", "Reserved", "Ayrıldı", "Réservé", "Reservado", "आरक्षित"], "vsGone": ["هذا الأيدي انباع للتو — اختر رقماً آخر", "This ID was just sold — pick another one", "Bu ID az önce satıldı — başka birini seç", "Cet ID vient d'être vendu — choisis-en un autre", "Este ID se acaba de vender: elige otro", "यह ID अभी-अभी बिक गई — कोई दूसरी चुनें"], "vsCongT": ["ألف مبروك! 🎉", "Congratulations! 🎉", "Tebrikler! 🎉", "Félicitations ! 🎉", "¡Enhorabuena! 🎉", "बहुत-बहुत बधाई! 🎉"], "vsCongB": ["مبروك على الأيدي المميز {n}! صار لك للأبد.", "Congratulations on your VIP ID {n}! It's yours forever.", "VIP ID'n {n} için tebrikler! Artık sonsuza dek senin.", "Félicitations pour ton ID VIP {n} ! Il est à toi pour toujours.", "¡Enhorabuena por tu ID VIP {n}! Es tuyo para siempre.", "आपकी VIP ID {n} के लिए बधाई! यह हमेशा के लिए आपकी है।"], "vsOk": ["يا سلام!", "Awesome!", "Harika!", "Génial !", "¡Genial!", "शानदार!"], "vsLeft": ["متبقي {n} من 49", "{n} of 49 left", "49'dan {n} kaldı", "{n} sur 49 restants", "Quedan {n} de 49", "49 में से {n} बचे"]}; for (const k in VS_I18N) if (!I18N[k]) I18N[k] = VS_I18N[k]; }
+
+          // ---------- 13u-tm: Teams = Public / Private toggle (replaces the Solo/Duo/Trio/Squad chips) ----------
+          window.__TPV = (() => {
+            const K = "ss-tpv13", g = document.getElementById("tpv");
+            const on = () => { try { return localStorage.getItem(K) === "1"; } catch (_) { return false; } };
+            const paint = () => {
+              if (!g) return; g.dir = LANG === "ar" ? "rtl" : "ltr";
+              [...g.children].forEach((b) => { const x = (b.dataset.v === "1") === on(); b.classList.toggle("on", x); b.setAttribute("aria-pressed", String(x)); b.title = _t(b.dataset.v === "1" ? "tvPrivN" : "tvPubN"); });
+            };
+            if (g) g.addEventListener("click", (e) => {
+              const b = e.target.closest("button[data-v]"); if (!b) return; e.stopPropagation();
+              const v = b.dataset.v === "1"; try { localStorage.setItem(K, v ? "1" : "0"); } catch (_) {}
+              paint(); toast((v ? "🔒 " : "🌐 ") + _t(v ? "tvPrivN" : "tvPubN")); try { beep(620, 0.08, "triangle", 0.05, 900); } catch (_) {}
+            });
+            paint(); try { NFH.relang.push(paint); } catch (_) {}
+            return { on, paint };
+          })();
         // ---------- 13u lvl: one unlock ladder, levels 1 to 400 (server sql/100_lvl400.sql decides; this mirrors it) ----------
         // LAD key -> [ladder level, old level]; accounts that existed at the switch keep their old gates (floor from lv13u_state).
         // RET: duplicate skins taken out of the shop; owners keep them (Locker shows them as Legacy). Only const arrows, every hook guarded.
@@ -21153,8 +21173,8 @@ body.b13h-on #b13dmp .b13d-hd h2 span { white-space: nowrap; overflow: hidden; t
 #b13h .h-xtra { max-height: none; overflow: visible; }
 #b13h .h-cl.j-x .h-play { height: 54px; font-size: 30px; }
 #b13h #tml { flex-direction: row !important; align-items: center !important; gap: 6px !important; }
-#b13h #tml > .x-seg[data-k="tf"] { flex: 1; width: auto !important; margin: 0 !important; min-height: 0; height: 32px; padding: 2px !important; }
-#b13h #tml > .x-seg[data-k="tf"] button { min-height: 0 !important; height: 26px; padding: 0 4px !important; font-size: 12.5px !important; white-space: nowrap; }
+#b13h #tml > #tpv { flex: 1; width: auto !important; margin: 0 !important; min-height: 0; height: 32px; padding: 2px !important; }
+#b13h #tml > #tpv button { min-height: 0 !important; height: 26px; padding: 0 4px !important; font-size: 12.5px !important; white-space: nowrap; }
 #b13h #tml > #tmt, #b13h #tml > #tmc { display: none !important; }
 #b13h .j-tmb { flex: none; width: 36px; height: 32px; border-radius: 10px; padding: 0; display: grid; place-items: center; border: 1.5px solid rgba(255, 220, 120, .55); background: linear-gradient(#2b3a8a, #141c4a); color: #ffe08a; font-size: 16px; }
 #b13h .j-tmb .h-ic { width: 24px; height: 24px; }
