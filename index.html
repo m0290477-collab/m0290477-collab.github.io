@@ -5830,6 +5830,16 @@
         function hasK(arr, k) { return arr.some((x) => x.k === k); }
         function rmK(arr, k) { const i = arr.findIndex((x) => (typeof x === "string" ? x : x.k) === k); if (i >= 0) arr.splice(i, 1); return i >= 0; }
         function nameOf(k) { return ACC[k] ? ACC[k].u : k; }
+        // 13r: one place that applies a server-confirmed username. Throws (=> no success toast) unless the server returned a name.
+        window.__ssApplyName = function (r) {
+          const n = r && typeof r.username === "string" ? r.username.trim() : "";
+          if (!n) throw Object.assign(new Error("onErr"), { code: "onErr" });
+          P.name = n; try { $("nick").value = n; } catch (_) {}
+          if (cur && ACC[cur]) ACC[cur].u = n; if (ACC["@on"]) ACC["@on"].u = n;
+          try { if (ON.st && ON.st.profile) ON.st.profile.username = n; } catch (_) {}
+          try { if (player) player.name = n; } catch (_) {}
+          return n;
+        };
         function chUn(k) { return ((P.ch || {})[k] || []).filter((m) => !m.o && !m.r).length; }
         function chUnAll() { return (P.fr || []).reduce((n, k) => n + chUn(k), 0); }
         function whenF(ts) {
@@ -6103,7 +6113,7 @@
           if (MD === "d") { AD.mod = Object.keys(AD_MODS)[today() % 4]; adMod(); }
           TN = MD === "t" ? tCnt() * tSz() - 1 : 0; syncBots(); tSetup();
           for (const s of snakes) { if (MD === "s") Object.assign(s, makeSnake(s.name, s.skin, true), { len: rnd(20, 70) }); }
-          player = makeSnake($("nick").value.replace(CTRL0g, "").trim().slice(0, 20) || P.name || _t("you"), skin, false);
+          player = makeSnake(((ON.on && P.name) ? P.name : $("nick").value.replace(CTRL0g, "").trim().slice(0, 20)) || P.name || _t("you"), skin, false);
           snakes.push(player); if (MD === "t") player.tm = 0;
           player.hat = P.hat; player.trail = P.trail; parts = [];
           for (const s of snakes) if (s.bot) Object.assign(s, { evo: (R() * 2) | 0, dna: 0, cd: 0, slow: 0, ghost: 0 });
@@ -7658,6 +7668,12 @@
           S.q = QS[QL - 1]; applySettings(); aqReset(6);
           if (!AQ.told) { AQ.told = true; toast(_t("aqDown", { x: _t(QN[S.q]) })); }
         }
+        // 13r perf: the home (#menu) has an opaque full-screen background, so the attract-mode world behind it is never seen:
+        // skip its simulation + full-screen canvas render (was ~70 % of every home frame). The hidden ex-home skin preview (#hmsk) is skipped too.
+        let mOpT = 0, mOpV = false, pvVT = 0, pvVV = false;
+        let mFz = 0;
+        function menuOpq(now) { if (now - mOpT < 200) return mOpV; mOpT = now; const m = $("menu"); mOpV = !!m && !m.classList.contains("x-hide"); if (mOpV) mFz = 0; return mOpV; }
+        function prevVis(now) { if (now - pvVT < 250) return pvVV; pvVT = now; try { const s = $("hmsk"); if (!s) { pvVV = false; return false; } const cs = getComputedStyle(s); pvVV = !$("menu").classList.contains("x-hide") && cs.visibility !== "hidden" && +cs.opacity > 0.01 && cs.display !== "none"; } catch (_) { pvVV = false; } return pvVV; }
         let bgCovT = 0, bgCovV = false;
         function bgCov(now) { // cached 4x a second: is the menu hidden behind an opaque panel that fills the screen?
           if (now - bgCovT < 250) return bgCovV; bgCovT = now; bgCovV = false;
@@ -7688,11 +7704,13 @@
           { const fv = !!(S.fps && state === "play" && player && player.alive); if (fv !== loop.fv) { loop.fv = fv; $("fps").classList.toggle("x-hide", !fv); } } // FPS only during active play
           if (S.fps && ++fpsN && (fpsT += raw) >= 0.5) { $("fps").textContent = Math.round(fpsN / fpsT) + " FPS"; fpsN = fpsT = 0; }
           autoQ(raw);
-          if (!(state === "menu" && bgCov(now))) {
+          if (state !== "menu") mFz = 0;
+          if (!(state === "menu" && (menuOpq(now) || bgCov(now) || mFz > 0))) {
+            if (state === "menu") mFz++; // behind a menu panel the world is only a backdrop: draw it once, then keep that still frame
             update(dt);
             draw(); hud(dt);
-            if (state === "menu") drawPrev();
           }
+          if (state === "menu" && prevVis(now)) drawPrev();
           drawSkPv();
           if (hi) { FP.we = FP.we * 0.9 + (performance.now() - w0) * 0.1;
             if (FP.cnt >= 60) { const missR = FP.miss / FP.cnt; FP.cnt = FP.miss = 0;
@@ -9230,12 +9248,22 @@
             g.fillStyle = "rgba(255,255,255,.9)"; g.beginPath(); g.arc(ex + er * 0.1, ey - er * 0.3, er * 0.22, 0, 6.283); g.fill(); }
         }
         let pxPvRaf = 0, pxPvT0 = 0;
+        // 13r perf: track which preview canvases are on screen; only those animate (first paint of each still happens once)
+        const pxPvIn = new Set(); let pxPvIO = null, pxPvSeen = new WeakSet();
+        function pxPvOn() {
+          const all = document.querySelectorAll("#nfsb canvas[data-pv]");
+          if (!("IntersectionObserver" in window)) return all;
+          if (!pxPvIO) pxPvIO = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) pxPvIn.add(e.target); else pxPvIn.delete(e.target); }), { rootMargin: "40px" });
+          const out = []; all.forEach((c) => { if (!pxPvSeen.has(c)) { pxPvSeen.add(c); pxPvIO.observe(c); out.push(c); } else if (pxPvIn.has(c)) out.push(c); });
+          for (const c of pxPvIn) if (!c.isConnected) { pxPvIn.delete(c); pxPvIO.unobserve(c); }
+          return out;
+        }
         function pxPvAll() { // runs while the shop is open (waits up to ~0.5 s for it to appear), ~30 fps, one frame only with reduced motion
           if (pxPvRaf) return; let last = 0, hid = 0;
           const step = (ts) => {
             const vis = pxVis("nfshop");
             if (!vis) { if (++hid > 30) { pxPvRaf = 0; return; } }
-            else { hid = 0; if (ts - last > 33) { last = ts; if (!pxPvT0) pxPvT0 = ts; const tt = (ts - pxPvT0) / 1000; document.querySelectorAll("#nfsb canvas[data-pv]").forEach((c) => pxPv(c, tt)); if (pxRM) { pxPvRaf = 0; return; } } }
+            else { hid = 0; if (ts - last > 33) { last = ts; if (!pxPvT0) pxPvT0 = ts; const tt = (ts - pxPvT0) / 1000; pxPvOn().forEach((c) => pxPv(c, tt)); if (pxRM) { pxPvRaf = 0; return; } } }
             pxPvRaf = requestAnimationFrame(step);
           };
           pxPvRaf = requestAnimationFrame(step);
@@ -9985,7 +10013,7 @@
         // ---------- build10: textured arena floors, drawn in perspective strips (one pattern fill per strip) ----------
         var TXA = [0.34, 0.26, 0.24, 0.34, 0.3, 0.3, 0.3, 0.3], TXG = [0.3, 0.25, 0.25, 0.3, 0.25, 0.22, 0.6, 0.3]; // tint over the texture, grid strength
         var TXW = [430, 640, 760, 520, 560, 470, 520, 600]; // world units covered by one texture tile
-        var TXI = [], TXP = [], TXN = 0;
+        var TXI = [], TXP = [], TXN = 0, TXB = []; window.__ssTXB = () => TXB;
         function txPat(i) {
           if (TXP[i]) return TXP[i];
           let im = TXI[i];
@@ -9995,11 +10023,22 @@
             im = TXI[i] = new Image(); im.decoding = "async"; im.src = m[1];
           }
           if (!im.complete || !im.naturalWidth) return null;
-          return (TXP[i] = ctx.createPattern(im, "repeat"));
+          let src = im;
+          try { // 13r: brighten dark arena floors (mean luminance -> ~0.32), contrast softened so snakes/food stay readable; done once per texture
+            const w = Math.min(1024, im.naturalWidth), h = Math.round(im.naturalHeight * w / im.naturalWidth), c = document.createElement("canvas"); c.width = w; c.height = h;
+            const g = c.getContext("2d", { willReadFrequently: true }); g.drawImage(im, 0, 0, w, h); const d = g.getImageData(0, 0, w, h), a = d.data;
+            let s = 0, n = 0; for (let k = 0; k < a.length; k += 64) { s += 0.2126 * a[k] + 0.7152 * a[k + 1] + 0.0722 * a[k + 2]; n++; }
+            const mean = s / Math.max(1, n) / 255, gain = Math.max(1, Math.min(mean < 0.1 ? 2.6 : 1.9, 0.32 / Math.max(0.04, mean))), lift = mean < 0.2 ? 12 : 0, tm = Math.min(0.5, mean * gain + lift / 255);
+            if (gain > 1.04) { const lut = new Uint8ClampedArray(256); for (let v = 0; v < 256; v++) { const x = (v * gain + lift) / 255; lut[v] = 255 * Math.min(1, tm + (x - tm) * 0.82); }
+              for (let k = 0; k < a.length; k += 4) { a[k] = lut[a[k]]; a[k + 1] = lut[a[k + 1]]; a[k + 2] = lut[a[k + 2]]; }
+              g.putImageData(d, 0, 0); src = c; }
+            TXB[i] = { mean: +mean.toFixed(3), gain: +gain.toFixed(2) };
+          } catch (_) { src = im; }
+          return (TXP[i] = ctx.createPattern(src, "repeat"));
         }
         function txFloor(fx0, fx1, fy0, fy1) {
           if (window.P10NOTX || (QL <= 0 && mapI === 7)) return false; const p = txPat(mapI); if (!p) return false;
-          const im = TXI[mapI], sc = TXW[mapI] / im.naturalWidth;
+          const im = TXI[mapI], sc = TXW[mapI] / (TXB[mapI] && TXB[mapI].gain > 1.04 ? Math.min(1024, im.naturalWidth) : im.naturalWidth);
           if (p.setTransform) p.setTransform(new DOMMatrix([sc, 0, 0, sc, 0, 0]));
           pr(cam.x, fy0, 0); const ya = Math.max(0, PY); pr(cam.x, fy1, 0); const yb = Math.min(H, PY);
           if (!(yb > ya + 1)) return false;
@@ -10713,10 +10752,13 @@
           B13C.hideCamRows = () => { for (const sel of ['.x-seg[data-k="cam"]', "#zoom"]) { const e = $("set").querySelector(sel), row = e && e.closest(".x-set"); if (row) { row.hidden = true; row.style.setProperty("display", "none", "important"); } } };
           B13C.hideCamRows(); setTimeout(B13C.hideCamRows, 0);
           const LK = { x: 0, y: 0, vx: 0, vy: 0 };
+          B13C.VIEW_H = 560; B13C.VIEW_H_M = 460; // Medium+ draws more per sprite: a slightly narrower view keeps its frame rate
           B13C.zoomFor = (len, bo, dz) => {
-            const sm = Math.min(W, H), base = clamp(sm / 410, 0.84, 1.05);
-            const lf = Math.max(0.5, Math.pow(1 + Math.max(0, len - 20) / 240, -0.34));
-            return clamp(base * lf * (1 - 0.06 * bo) * (1 - 0.06 * dz), 0.46, 1.2);
+            // 13r: every screen sees the same arena height (VIEW_H world units at the start length): fair across iPhone/iPad/desktop,
+            // about 35 % more arena than 13q on a phone in landscape; grows gently with length so a big snake never fills the screen
+            const sm = Math.min(W, H), base = clamp(sm / (QL >= 1 ? B13C.VIEW_H_M : B13C.VIEW_H), 0.35, 2.6);
+            const lf = Math.max(0.55, Math.pow(1 + Math.max(0, len - 20) / 260, -0.3));
+            return clamp(base * lf * (1 - 0.05 * bo) * (1 - 0.05 * dz), 0.25, 2.6);
           };
           B13C.cam = (focus) => {
             const h = focus.seg[0], dt = Math.min(0.1, Math.max(0.001, fdt)), bo = focus.boost && focus.len > 12 ? 1 : 0;
@@ -10732,8 +10774,9 @@
             if (Math.hypot(h.x - cam.x, h.y - cam.y) > 900) { cam.x = h.x; cam.y = h.y; cam.vx = cam.vy = 0; LK.x = LK.y = LK.vx = LK.vy = 0; }
             damp(LK, "x", "vx", lx, 0.45, dt); damp(LK, "y", "vy", ly, 0.45, dt);
             damp(cam, "x", "vx", h.x + LK.x, 0.11, dt); damp(cam, "y", "vy", h.y + LK.y, 0.11, dt);
+            if (cam.f13r !== focus) { cam.f13r = focus; cam.s = zs; cam.vs = 0; } // 13r: a new match starts at its zoom (no slow zoom-out drift)
             damp(cam, "s", "vs", zs, 0.85, dt); damp(cam, "t", "vt", 0.95, 0.6, dt);
-            cam.s = clamp(cam.s, 0.4, 1.3); cam.t = clamp(cam.t, 0.7, 1.45);
+            cam.s = clamp(cam.s, 0.25, 2.6); cam.t = clamp(cam.t, 0.7, 1.45);
           };
 
           // ---------- 3. path-following body: every segment sits on the head's real trail at a fixed arc distance ----------
@@ -10816,13 +10859,15 @@
               ctx.globalAlpha = 0.2 * ga; tube(sn, segR, 1, 0, 0, 1.9, 6);
               ctx.globalCompositeOperation = "source-over";
             }
-            ctx.strokeStyle = me ? "#fff2b8" : "#05070d"; ctx.globalAlpha = (me ? 0.95 : 0.78) * ga; tube(sn, segR, 1, 0, 0, 1.9, me ? 3.4 : 2.6);
+            ctx.strokeStyle = me ? "#fff2b8" : "#eef4ff"; ctx.globalAlpha = (me ? 0.95 : 0.62) * ga; tube(sn, segR, 1, 0, 0, 1.9, me ? 3.4 : 2.2);
             ctx.restore(); ctx.globalAlpha = ga;
           };
           // background dim before food and snakes, plus a CSS vignette while playing
           let vgOn = null;
+          B13C.lum = (c) => { const m = /^#([0-9a-f]{6})$/i.exec(String(c || "")); if (!m) return 0.2; const n = parseInt(m[1], 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
           B13C.dim = () => {
-            ctx.fillStyle = "rgba(3,6,14," + (MAPS[mapI].dim ?? 0.16) + ")"; ctx.fillRect(0, 0, W, H);
+            const M0 = MAPS[mapI], dm = M0.dim13r !== undefined ? M0.dim13r : (M0.dim13r = (B13C.lum(M0.floor) > 0.5 ? Math.min(0.12, M0.dim ?? 0.12) : 0));
+            if (dm > 0) { ctx.fillStyle = "rgba(3,6,14," + dm + ")"; ctx.fillRect(0, 0, W, H); }
             const on = state === "play"; if (on !== vgOn) { vgOn = on; document.body.classList.toggle("b13c-play", on); }
           };
 
@@ -10840,10 +10885,10 @@
             ctx.save(); ctx.textBaseline = "middle"; ctx.textAlign = "left";
             ctx.font = `${me ? 800 : 700} 12px system-ui, sans-serif`; const tw = Math.min(150, ctx.measureText(nm).width);
             const bw = lv ? 9 + ls.length * 6.6 : 0, cw = own ? 15 : 0, h = 19, w = 6 + bw + (lv ? 5 : 0) + (av ? 19 : 0) + tw + cw + 8, x = Math.round(tx - w / 2), y = y0 - h + 4;
-            ctx.globalAlpha = sn.pg > 0 ? 0.5 : 0.94;
-            rr(x, y, w, h, h / 2); ctx.fillStyle = me ? "rgba(26,20,6,.78)" : "rgba(6,10,20,.66)"; ctx.fill();
+            ctx.globalAlpha = sn.pg > 0 ? 0.55 : 1;
+            rr(x, y, w, h, h / 2); ctx.fillStyle = me ? "rgba(26,20,6,.86)" : "rgba(6,10,24,.82)"; ctx.fill();
             const fr = me && typeof FRC === "object" && FRC[NX.eq.fr];
-            ctx.lineWidth = me ? 1.6 : 1; ctx.strokeStyle = fr ? fr[0] : me ? "#ffd45a" : sn.tm !== undefined && TC[sn.tm] ? TC[sn.tm][1] || "rgba(255,255,255,.18)" : "rgba(255,255,255,.18)"; ctx.stroke();
+            ctx.lineWidth = me ? 1.6 : 1; ctx.strokeStyle = fr ? fr[0] : me ? "#ffd45a" : sn.tm !== undefined && TC[sn.tm] ? TC[sn.tm][1] || "rgba(255,255,255,.4)" : "rgba(255,255,255,.4)"; ctx.stroke();
             let cx = x + 6;
             if (lv) { // tier level badge
               const by = y + 3, bh = h - 6;
@@ -10933,7 +10978,7 @@
             $("b13cown").classList.toggle("x-hide", !isOwner());
             $("b13cdp").classList.toggle("x-hide", !PS.del);
             $("b13cdelb").classList.toggle("x-hide", PS.del || isOwner());
-            $("b13cver").textContent = _t("b13cVer", { v: "13q" });
+            $("b13cver").textContent = _t("b13cVer", { v: "13r" });
             el.querySelectorAll('.x-seg[data-k="lang"] button').forEach((b) => { const on = b.dataset.v === S.lang; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
           }
           B13C.psPaint = psPaint;
@@ -10943,7 +10988,7 @@
             if (!online()) return; const p = prof(); if (!p || v === p.username) return;
             try {
               const r = await ON.rpc("set_username", { p_username: v });
-              p.username = r.username; P.name = r.username; if (ACC["@on"]) ACC["@on"].u = r.username; commit(); profile(); psPaint(); toast(_t("b13cSaved"));
+              const nn = window.__ssApplyName(r); p.username = nn; commit(); profile(); psPaint(); try { B13H.paint && B13H.paint(); } catch (_) {} toast(_t("b13cSaved"));
             } catch (e) { const c = e.code || e.message; m.textContent = c === "rename_cooldown" ? _t("b13cRenCd") : c === "username_taken" ? _t("taken") : c === "invalid_username" ? _t("unameBad") : ON.err(e); }
           };
           NFG.nfb13cdel = () => { PS.del = true; psPaint(); const i = $("b13cdc"); if (i) { i.value = ""; i.focus({ preventScroll: true }); } };
@@ -11070,6 +11115,7 @@
         {
           // texture tint / grid / tile size for the new arenas (the arrays were sized for the first 8)
           MAPS.forEach((m, i) => { if (m.tx) { TXA[i] = m.txa; TXG[i] = 0.18; TXW[i] = m.txw; } });
+          MAPS.forEach((m, i) => { TXA[i] = +((TXA[i] ?? 0.3) * 0.4).toFixed(3); TXG[i] = Math.min(0.7, (TXG[i] ?? 0.25) * 1.35); }); // 13r: brighter floors, clearer grid
           if (MAPS[1] && MAPS[1].dim === undefined) MAPS[1].dim = 0.22; // bright desert + ice: a little more dim so snakes and food pop
           if (MAPS[2] && MAPS[2].dim === undefined) MAPS[2].dim = 0.24;
           const sm0 = setMap;
@@ -11498,7 +11544,7 @@
           cv.addEventListener("click", () => { flourish(); try { beep(720, 0.08, "triangle", 0.035, 1100); } catch (_) {} kick(); setTimeout(() => { const lk = $("b13hnv").querySelector('[data-hm="sk"]'); if (lk && visible()) lk.click(); }, still() ? 0 : 520); }); // tap the hero = Locker (the floating hanger button was a duplicate)
           function drawSnake(tmNow) {
             const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
-            const d = Math.min(window.devicePixelRatio || 1, QL <= 0 ? 1.5 : 2);
+            const d = Math.min(window.devicePixelRatio || 1, QL <= 0 ? 1.25 : 1.5); // 13r: 2x -> 1.5x backing store (44 % fewer pixels per frame)
             if (cv.width !== Math.round(w * d) || cv.height !== Math.round(h * d)) { cv.width = Math.round(w * d); cv.height = Math.round(h * d); }
             cg.setTransform(d, 0, 0, d, 0, 0); cg.clearRect(0, 0, w, h);
             const t = still() ? 1.2 : (tmNow - HS.t0) / 1000;
@@ -11538,13 +11584,17 @@
             for (let i = 0; i < coilN; i++) order.push(i);
             order.sort((a, b) => P[a][1] - P[b][1]);
             for (let i = coilN; i < n; i++) order.push(i);
-            cg.shadowColor = hexA(glow, 0.55); cg.shadowBlur = still() ? 6 : 8 + rear * 10;
+            { // 13r: soft skin-coloured halo from one cached sprite (was shadowBlur on every segment)
+              const hk = "h13r" + glow; let hs = HS[hk];
+              if (!hs) { hs = document.createElement("canvas"); hs.width = hs.height = 64; const q = hs.getContext("2d"), rg = q.createRadialGradient(32, 32, 6, 32, 32, 32); rg.addColorStop(0, hexA(glow, 0.5)); rg.addColorStop(1, hexA(glow, 0)); q.fillStyle = rg; q.fillRect(0, 0, 64, 64); for (const k of Object.keys(HS)) if (k.startsWith("h13r")) delete HS[k]; HS[hk] = hs; }
+              cg.globalCompositeOperation = "lighter"; cg.globalAlpha = 0.55 + rear * 0.35;
+              for (let i = 0; i < n; i += 4) { const [x, y, s] = P[i], r = R0 * s * br * 1.9; cg.drawImage(hs, x - r, y - r, r * 2, r * 2); }
+              cg.globalAlpha = 1; cg.globalCompositeOperation = "source-over";
+            }
             for (const i of order) {
               const [x, y, s] = P[i], r = R0 * s * br, k = ((n - 1 - i) / 2.2) | 0;
               cg.drawImage(ball(colAt(k), ovs && ovs.length ? ovs[k % ovs.length] : null), x - r, y - r, r * 2, r * 2);
-              if (i === coilN - 1) cg.shadowBlur = 0;
             }
-            cg.shadowBlur = 0;
             // rim light along the neck (skin colour, light from upper left)
             cg.globalCompositeOperation = "lighter"; cg.strokeStyle = hexA(glow, 0.35); cg.lineWidth = R0 * 0.22; cg.lineCap = "round"; cg.beginPath();
             for (let i = coilN; i < n - 4; i++) { const [x, y, s] = P[i]; const r = R0 * s * br; if (i === coilN) cg.moveTo(x - r * 0.72, y - r * 0.3); else cg.lineTo(x - r * 0.72, y - r * 0.3); }
@@ -11591,7 +11641,7 @@
           // build13i hotfix: block-scoped name. A sloppy-mode block `function loop` (Annex B) overwrote the game's main loop, so matches never ran.
           const hLoop = (tm) => {
             raf = 0; if (!visible()) return;
-            if (!still() || !drawn || HS.sp.length) { drawSnake(tm); }
+            if (!drawn || HS.sp.length || (!still() && tm - (HS.lt13r || 0) >= 31)) { HS.lt13r = tm; drawSnake(tm); } // 13r: idle motion at 30 fps
             if (!still() || HS.sp.length) raf = requestAnimationFrame(hLoop);
           };
           document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
@@ -12355,16 +12405,18 @@
               let lock = false;
               if (!s) el.textContent = ""; else if (s.exempt) el.textContent = ""; else if (s.free_left > 0) { el.textContent = _t("jNm1"); el.className = "j-nms ok"; }
               else if (!s.can) { el.textContent = _t("jNmLock", { d: fmtD(s.unlock_at) }); el.className = "j-nms lk"; lock = true; } else { el.textContent = _t("jNmCan"); el.className = "j-nms ok"; }
-              if (inp) inp.disabled = lock; if (bt) bt.disabled = lock; };
+              if (inp) inp.disabled = lock; if (bt) { bt.disabled = false; bt.classList.toggle("j-nlk", lock); } };
             const loadN = async () => { if (!online()) return; try { J.nst = await ON.rpc("name_change_status"); } catch (_) { J.nst = null; } paintN(); };
             J.loadN = loadN;
             const ovP = $("b13cps"); if (ovP) new MutationObserver(() => { if (!ovP.classList.contains("x-hide")) loadN(); }).observe(ovP, { attributes: true, attributeFilter: ["class"] });
             if (NFH.relang) NFH.relang.push(paintN);
             const _ren = NFG.nfb13cren;
             NFG.nfb13cren = async (b) => {
-              const v = $("b13cnm").value.trim(), p = tv(() => ON.st.profile, null); if (!online() || !p || !v || v === p.username) return _ren(b);
-              const s = J.nst; if (s && s.exempt) return _ren(b);
-              if (s && !s.can) { $("b13cnmm").textContent = _t("jNmLock", { d: fmtD(s.unlock_at) }); return; }
+              const v = $("b13cnm").value.trim(), p = tv(() => ON.st.profile, null), s = J.nst;
+              if (online() && s && !s.exempt && !s.can) { const t = _t("jNmLock", { d: fmtD(s.unlock_at) }); $("b13cnmm").textContent = t; toast(t); return; }
+              if (online() && p && (!v || v === p.username)) { const i = $("b13cnm"); if (i) { i.focus({ preventScroll: true }); try { i.select(); } catch (_) {} } return; }
+              if (!online() || !p) return _ren(b);
+              if (s && s.exempt) return _ren(b);
               const until = new Date(Date.now() + 182.5 * 864e5).toISOString();
               B13.pop(`<div class="j-pcw j-nmc"><h3>✏️ ${esc(_t("jNmConfT", { x: v }))}</h3><p>${esc(_t("jNmConf", { d: fmtD(until) }))}</p><div class="b13-row2"><button type="button" class="x-btn x-main" id="jnmok">${esc(_t("jNmGo"))}</button><button type="button" class="x-btn x-sub" data-b13x="1">${esc(_t("onCancel"))}</button></div></div>`);
               $("jnmok").addEventListener("click", async () => { B13.popX(); await _ren(b); loadN(); }, { once: true });
@@ -12400,7 +12452,7 @@
           // ID title by tier: Owner #1 · Legend #2 · Royal #3–5 · Antique #6–20 · Diamond #21–50 · Gold #51–999 · Classic 1000+
           const idTitle = (id) => { id = +id || 0; return id === 1 ? "owner" : id === 2 ? "legend" : id <= 5 ? "royal" : id <= 20 ? "antique" : id <= 50 ? "diamond" : id <= 999 ? "gold" : "classic"; };
           K.idTitle = idTitle;
-          const idT = (id) => id ? `<span class="k-idt t-${idTitle(id)}">${esc(_t("kT_" + idTitle(id)))}</span>` : "";
+          const idT = (id) => id && +id !== 1 ? `<span class="k-idt t-${idTitle(id)}">${esc(_t("kT_" + idTitle(id)))}</span>` : "";
           const frameOf = (p, earned) => { const e = new Set(earned || []); return +p.player_id === 1 ? "own" : e.has("legend_month") || (p.league && p.league.lg) ? "leg" : e.has("champ_week") || (p.league && p.league.c1) ? "chp" : p.vip_id ? "vip" : ""; };
 
           // ---------- shared overlay shell (uses the panel chrome of build10) ----------
@@ -12553,7 +12605,7 @@
             const secs = [["acct", "kSecAcct"], ["prof", "kSecProf"], ["priv", "kSecPriv"], ["app", "kSecApp"], ["more", "kSecMore"]];
             let h = `<div class="k-tabs k-stabs" role="tablist">${secs.map(([k, l]) => `<button type="button" role="tab" data-ksec="${k}" class="${ST.sec === k ? "on" : ""}">${esc(_t(l))}</button>`).join("")}</div><div class="k-sbody">`;
             if (ST.sec === "acct") {
-              h += `<section class="k-sec"><h4>${esc(_t("kName"))}</h4><div class="k-inl"><input id="ksnm" maxlength="20" value="${esc(p.username || "")}" ${nameLock ? "disabled" : ""} dir="auto" aria-label="${esc(_t("kName"))}"><button type="button" class="x-btn x-main" data-kset="name" ${nameLock ? "disabled" : ""}>${esc(_t("save"))}</button></div>` +
+              h += `<section class="k-sec"><h4>${esc(_t("kName"))}</h4><div class="k-inl"><input id="ksnm" maxlength="20" value="${esc(p.username || "")}" ${nameLock ? "disabled" : ""} dir="auto" aria-label="${esc(_t("kName"))}"><button type="button" class="x-btn x-main${nameLock ? " j-nlk" : ""}" data-kset="name">${esc(_t("save"))}</button></div>` +
                 `<p class="k-note">${ns ? esc(ns.exempt ? "" : ns.free_left > 0 ? _t("jNm1") : !ns.can ? _t("jNmLock", { d: fmtD(ns.unlock_at) }) : _t("jNmCan")) : esc(_t("b13cNameN"))}</p><p class="x-err" id="ksnmm" role="alert"></p></section>` +
                 `<section class="k-sec"><h4>${esc(_t("kEmail"))}</h4><p class="k-cur" dir="ltr">${esc(ST.email || "…")}</p><div class="k-inl"><input id="ksem" type="email" autocomplete="email" placeholder="${esc(_t("kNewEmail"))}" dir="ltr"><input id="ksemp" type="password" autocomplete="current-password" placeholder="${esc(_t("kCurPw"))}"><button type="button" class="x-btn x-main" data-kset="email">${esc(_t("kChangeEmail"))}</button></div><p class="x-err" id="ksemm" role="alert"></p></section>` +
                 `<section class="k-sec"><h4>${esc(_t("kChangePw"))}</h4><div class="k-inl k-inl3"><input id="kspw0" type="password" autocomplete="current-password" placeholder="${esc(_t("kCurPw"))}"><input id="kspw1" type="password" autocomplete="new-password" placeholder="${esc(_t("kNewPw"))}"><input id="kspw2" type="password" autocomplete="new-password" placeholder="${esc(_t("kNewPw2"))}"></div>` +
@@ -12617,8 +12669,10 @@
             }
             const b = e.target.closest("[data-kset]"); if (!b) return; const a = b.dataset.kset;
             const busy = async (fn) => { b.disabled = true; try { await fn(); } finally { b.disabled = false; } };
-            if (a === "name") busy(async () => { const v = $("ksnm").value.trim(), p = me(); if (!v || !p || v === p.username) return; msg("ksnmm", "");
-              const ns = J.nst; const doIt = async () => { try { const r = await ON.rpc("set_username", { p_username: v }); p.username = r.username; P.name = r.username; try { commit(); profile(); } catch (_) {} toast(_t("kSaved")); if (J.loadN) await J.loadN(); setPaint(); } catch (er) { const c = er.code || er.message; msg("ksnmm", c === "username_taken" ? _t("taken") : c === "invalid_username" ? _t("unameBad") : c === "rename_cooldown" || c === "rename_locked" ? _t("jNmLock", { d: fmtD(tv(() => J.nst.unlock_at, "")) }) : errT(er)); } };
+            if (a === "name") busy(async () => { const v = $("ksnm").value.trim(), p = me(), n0 = J.nst;
+              if (n0 && !n0.exempt && !n0.can) { const t = _t("jNmLock", { d: fmtD(n0.unlock_at) }); msg("ksnmm", t); toast(t); return; }
+              if (!v || !p || v === p.username) { const i = $("ksnm"); if (i) { i.focus({ preventScroll: true }); try { i.select(); } catch (_) {} } return; } msg("ksnmm", "");
+              const ns = J.nst; const doIt = async () => { try { const r = await ON.rpc("set_username", { p_username: v }); const nn = window.__ssApplyName(r); p.username = nn; try { commit(); profile(); B13H.paint && B13H.paint(); } catch (_) {} toast(_t("kSaved")); if (J.loadN) await J.loadN(); setPaint(); } catch (er) { const c = er.code || er.message; msg("ksnmm", c === "username_taken" ? _t("taken") : c === "invalid_username" ? _t("unameBad") : c === "rename_cooldown" || c === "rename_locked" ? _t("jNmLock", { d: fmtD(tv(() => J.nst.unlock_at, "")) }) : errT(er)); } };
               if (ns && !ns.exempt) { B13.pop(`<div class="j-pcw j-nmc"><h3>✏️ ${esc(_t("jNmConfT", { x: v }))}</h3><p>${esc(_t("jNmConf", { d: fmtD(new Date(Date.now() + 182.5 * 864e5).toISOString()) }))}</p><div class="b13-row2"><button type="button" class="x-btn x-main" id="ksnmok">${esc(_t("jNmGo"))}</button><button type="button" class="x-btn x-sub" data-b13x="1">${esc(_t("onCancel"))}</button></div></div>`);
                 $("ksnmok").addEventListener("click", () => { B13.popX(); doIt(); }, { once: true }); } else await doIt(); });
             else if (a === "email") busy(async () => { const ne = $("ksem").value.trim(); msg("ksemm", ""); if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(ne)) { msg("ksemm", _t("kEmailBad")); return; }
@@ -13057,8 +13111,8 @@
           const lss = (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} };
           const SO = () => window.SSoul;
           const online = () => cur === "@on" && !!(ON.st && ON.st.profile);
-          const homeVis = () => { const h = $("b13h"); return !!h && !!h.offsetParent && !$("menu").classList.contains("x-hide"); };
-          const anyOpen = () => !!document.querySelector(".ss-modal") || !$("b13pop").classList.contains("x-hide") || [...document.querySelectorAll(".x-ov:not(.x-hide)")].some((o) => o.id !== "menu" && o.offsetParent);
+          const homeVis = () => { const h = $("b13h"); return !!h && !h.classList.contains("x-hide") && !$("menu").classList.contains("x-hide") && document.body.classList.contains("b13h-on"); };
+          const anyOpen = () => !!document.querySelector(".ss-modal") || !$("b13pop").classList.contains("x-hide") || [...document.querySelectorAll(".x-ov:not(.x-hide)")].some((o) => o.id !== "menu");
           const esc2 = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
           let nm0 = "", lang0 = "", greetAt = 0, lowQ = null, statusP = null;
           // ---------- prefs <-> game settings (sound/music on-off, vibration) ----------
@@ -14979,7 +15033,7 @@ button.b13-usd { background: linear-gradient(180deg, #7dff9a, #1fae55) !importan
 /* subtle vignette while playing (the canvas adds a light dim under food and snakes) */
 #b13cvg { position: fixed; inset: 0; pointer-events: none; z-index: 1; display: none;
   background: radial-gradient(ellipse 75% 70% at 50% 52%, rgba(0, 0, 0, 0) 58%, rgba(2, 4, 10, .34) 100%); }
-body.b13c-play #b13cvg { display: block; }
+body.b13c-play #b13cvg { display: none; }
 /* update banner */
 #b13cup { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); display: flex; align-items: center; gap: 10px;
   padding: 6px 6px 6px 14px; border-radius: 999px; background: rgba(12, 18, 36, .94); border: 1px solid rgba(233, 193, 96, .6); color: #fff3c4; font: 700 12.5px/1.2 system-ui, sans-serif;
@@ -16044,7 +16098,7 @@ body #over:not(.x-hide) #pxrank { animation: j-zoom .55s cubic-bezier(.2, 1.3, .
 .j-nmc p { white-space: normal; overflow-wrap: anywhere; color: #d6defa; font-size: 14px; }
 .j-nmc .b13-row2 { display: flex; gap: 8px; }
 .j-nmc .b13-row2 .x-btn { flex: 1 1 0; min-width: 0; width: auto !important; height: 42px !important; min-height: 0 !important; margin: 0 !important; padding: 0 10px !important; font: 800 15px/1 var(--disp, system-ui) !important; letter-spacing: 0 !important; white-space: nowrap; border-radius: 12px; }
-#b13cps [data-go="nfb13cren"]:disabled, #b13cnm:disabled { opacity: .45; filter: grayscale(.6); cursor: not-allowed; }
+#b13cps [data-go="nfb13cren"].j-nlk, [data-kset="name"].j-nlk, #ksnm:disabled, #b13cps [data-go="nfb13cren"]:disabled, #b13cnm:disabled { opacity: .45; filter: grayscale(.6); cursor: not-allowed; }
 
 </style>
 <style id="ss13k">
@@ -16304,7 +16358,7 @@ body.b13h-low .k-sky, body.b13h-low .k-av .k-avr { animation: none !important; }
 #nfpass .px-cta { flex-shrink: 0 !important; min-width: max-content !important; padding-inline: 12px !important; }
 
 /* team lobby popover sits in the home panel's stacking context: hide the bottom nav while it is open so nothing covers it */
-body.k-tmo #b13hnv, body:has(.j-tmp:not(.x-hide)) #b13hnv { visibility: hidden; }
+body.k-tmo #b13hnv { visibility: hidden; }
 .j-tmp .j-tmw { max-height: calc(100vh - 16px); }
 /* shop: "Pass · Level N" lock buttons were cut to "البا…" in Arabic */
 #nfshop .px-bt button[data-go="nfpass"] { white-space: normal !important; line-height: 1.05 !important; font-size: 10px !important; text-overflow: clip !important; overflow: visible !important; padding-inline: 4px !important; }
@@ -16881,7 +16935,7 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
   // ------------------------------------------------------------------ living background
   const BG = { host: null, root: null, cv: null, g: null, sN: null, sD: null, tint: null, fl: null, fr: null, shafts: [], run: false, raf: 0, last: 0, t: 0,
     w: 0, h: 0, dpr: 1, parts: [], clouds: [], tx: 0, ty: 0, cx: 0, cy: 0, ph: null, phT: 0, vis: true, paused: false, io: null, ro: null };
-  const qDpr = () => Math.min(W.devicePixelRatio || 1, prefs.fps >= 60 ? 1.5 : 1);
+  const qDpr = () => Math.min(W.devicePixelRatio || 1, prefs.fps >= 60 ? 1.25 : 1);
   const bgResize = () => {
     if (!BG.root) return; const r = BG.root.getBoundingClientRect(); BG.w = Math.max(1, r.width); BG.h = Math.max(1, r.height); BG.dpr = qDpr();
     BG.cv.width = Math.round(BG.w * BG.dpr); BG.cv.height = Math.round(BG.h * BG.dpr); seedParts(); if (!BG.run) bgDraw(0);
@@ -16943,7 +16997,7 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
   const bgTick = (tn) => {
     if (!BG.run) return;
     BG.raf = requestAnimationFrame(bgTick);
-    const minDt = prefs.fps >= 60 ? 0 : 1000 / prefs.fps - 2;
+    const minDt = Math.max(1000 / 24 - 2, prefs.fps >= 60 ? 0 : 1000 / prefs.fps - 2); // 13r: slow drift needs no more than 24 fps
     if (tn - BG.last < minDt) return;
     const dt = clamp((tn - (BG.last || tn)) / 1000, 0, 0.05); BG.last = tn; BG.t += dt;
     if (tn - BG.phT > 60000) { BG.phT = tn; bgApplyPhase(); }
@@ -17506,6 +17560,55 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
 html, body { overscroll-behavior: none; overflow: hidden; } body { position: fixed; inset: 0; width: 100%; height: 100%; }
 .x-ov { overscroll-behavior: none; }
 .x-ov .x-box, .x-ov [class*="-gr"], .x-ov ol, .x-spane { overscroll-behavior: contain; }
+</style>
+<style id="ss13r-anim">
+/* shine sweeps: own layer, transform only */
+#menu .x-ltabs button::after, .px-rw.r3::before, .px-rw.leg:not(.ok)::before, .x-ov .x-btn.x-main::after, .px-rpb::after, .px-shn::after, .px-xpb u::after, .px-card.r3 .px-pv::after { will-change: transform; backface-visibility: hidden; }
+/* PLAY sweep animated "left" (a layout every frame on the home screen) -> transform */
+#b13h .h-play::after { left: 0 !important; will-change: transform; animation-name: h-sweep13r !important; }
+@keyframes h-sweep13r { 0%, 55% { transform: translateX(-40px) skewX(-20deg); } 100% { transform: translateX(min(110vw, 480px)) skewX(-20deg); } }
+/* breathing glow animated filter (repaint every frame) -> scale only, static glow */
+@keyframes ss-breathe { 0%, 100% { scale: 1; } 50% { scale: 1.035; } }
+.ss-breathe { filter: drop-shadow(0 0 8px rgba(120, 255, 140, .35)); }
+/* gold buttons pulsed box-shadow (repaint every frame) -> opacity pulse */
+@keyframes px-glow { 0%, 100% { opacity: 1; } 50% { opacity: .9; } }
+</style>
+<style id="ss13r-pop">
+#b13pop.j-pp { background: rgba(2, 6, 20, .62) !important; place-items: center; padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); box-sizing: border-box; overflow-y: auto; }
+#b13pop.j-pp > .b13-pb, #b13pop.j-pp .b13-pb.k-wide { width: min(520px, calc(100vw - 20px)) !important; max-height: calc(100vh - 12px) !important; max-height: calc(100dvh - 12px) !important; overflow-y: auto; padding: 0 !important; border: 0 !important; box-shadow: none !important; background: transparent !important; margin: auto; }
+#b13pop.j-pp .j-pcw { position: relative; gap: 0; width: 100%; max-height: none; overflow: visible; }
+#b13pop.j-pp .j-pc { gap: 6px; padding: 10px 12px 10px; }
+#b13pop.j-pp .j-pch { gap: 10px; padding-inline-end: 36px; min-width: 0; }
+#b13pop.j-pp .j-pc .j-pav { width: 52px; height: 52px; font-size: 30px; }
+#b13pop.j-pp .j-pnm { gap: 2px; }
+#b13pop.j-pp .j-pnm > b { font-size: 17px; line-height: 1.2; }
+#b13pop.j-pp .j-prow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; row-gap: 3px; }
+#b13pop.j-pp .j-plg .b13d-bd { width: 30px; height: 30px; }
+#b13pop.j-pp .j-plg { font-size: 10px; max-width: 64px; text-align: center; }
+#b13pop.j-pp .k-cx { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+#b13pop.j-pp .k-cbio { margin: 0; font-size: 12.5px; line-height: 1.3; }
+#b13pop.j-pp .k-cmd { display: flex !important; flex-wrap: wrap; gap: 4px; align-items: center; width: 100%; }
+#b13pop.j-pp .k-cmd > span { width: 30px; height: 30px; padding: 2px; border-radius: 8px; }
+#b13pop.j-pp .k-cmd small { margin-inline-start: 4px !important; font-size: 11px; white-space: nowrap; }
+#b13pop.j-pp .j-psg { gap: 4px; }
+#b13pop.j-pp .j-pst { padding: 3px 2px; border-radius: 9px; }
+#b13pop.j-pp .j-pst b { font-size: 14px; }
+#b13pop.j-pp .j-pst small { font-size: 10px; }
+#b13pop.j-pp .j-pba .x-btn, #b13pop.j-pp .j-pba .j-stc { height: 34px !important; font-size: 13px !important; }
+#b13pop.j-pp .j-pcx { position: absolute !important; top: 7px; inset-inline-end: 7px; width: 32px !important; height: 32px !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important; border-radius: 50% !important; font-size: 0 !important; display: grid !important; place-items: center; z-index: 2; background: rgba(8, 14, 44, .72) !important; border: 1.5px solid rgba(255, 214, 89, .55) !important; }
+#b13pop.j-pp .j-pcx::before { content: "\2715"; font-size: 15px; line-height: 1; color: #ffe7a8; font-weight: 800; }
+#b13pop.j-pp .j-pcw > h3 { padding-inline-end: 40px; }
+/* one Owner badge: the #1 ID chip already says Owner */
+.jid.own ~ .b13c-own, .jid.own ~ .k-idt.t-owner, .jid.own ~ .j-role { display: none !important; }
+@media (max-height: 400px) {
+  #b13pop.j-pp .j-pc { gap: 5px; padding: 8px 10px; }
+  #b13pop.j-pp .j-pc .j-pav { width: 46px; height: 46px; }
+  #b13pop.j-pp .k-cmd > span { width: 26px; height: 26px; }
+}
+@media (max-width: 480px) {
+  #b13pop.j-pp .j-psg { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #b13pop.j-pp .j-pba .x-btn { flex: 1 1 30%; padding: 0 6px !important; }
+}
 </style>
 </body>
 </html>
