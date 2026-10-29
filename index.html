@@ -17284,6 +17284,16 @@
             ibxAu_unban: ["رفع الإيقاف أو إيقاف الدردشة", "Suspension or chat pause lifted", "Askı veya sohbet kapatma kaldırıldı", "Levée de suspension ou de chat", "Fin de suspensión o pausa de chat", "निलंबन या चैट रोक हटी"],
             ibxAu_card: ["البطاقات الصفراء والحمراء (الحارس)", "Yellow and red cards (Guard)", "Sarı ve kırmızı kartlar (Koruma)", "Cartons jaunes et rouges (Garde)", "Tarjetas amarillas y rojas (Guardia)", "पीले और लाल कार्ड (गार्ड)"],
             ibxAu_appeal: ["نتيجة الاعتراض على البطاقة", "Card appeal result", "Kart itirazı sonucu", "Résultat d'appel de carton", "Resultado de apelación", "कार्ड अपील का नतीजा"],
+            ibxAu_id_grant: ["الأيدي المميز (منح / تغيير / سحب)", "Special ID (granted / changed / removed)", "Özel ID (verildi / değişti / kaldırıldı)", "ID spécial (attribué / changé / retiré)", "ID especial (dado / cambiado / retirado)", "ख़ास ID (दी / बदली / हटाई)"],
+            ibxAu_gift: ["هدايا ورصيد (🪙 عملات / 💎 جواهر)", "Gifts & balance (🪙 coins / 💎 gems)", "Hediye ve bakiye (🪙 altın / 💎 mücevher)", "Cadeaux et solde (🪙 pièces / 💎 gemmes)", "Regalos y saldo (🪙 monedas / 💎 gemas)", "उपहार और बैलेंस (🪙 सिक्के / 💎 रत्न)"],
+            ibxAu_rename: ["تغيير الاسم من الإدارة", "Name changed by the team", "Ekip tarafından ad değişikliği", "Nom changé par l'équipe", "Nombre cambiado por el equipo", "टीम ने नाम बदला"],
+            ibxAu_photo: ["حذف صورة الملف", "Profile photo removed", "Profil fotoğrafı kaldırıldı", "Photo de profil retirée", "Foto de perfil retirada", "प्रोफ़ाइल फ़ोटो हटाई गई"],
+            ibxAu_card_rm: ["إلغاء بطاقة", "Card removed", "Kart kaldırıldı", "Carton retiré", "Tarjeta retirada", "कार्ड हटाया गया"],
+            ibxAu_restore: ["استعادة محتوى (تراجع عن التنظيف)", "Content restored (clean-up undone)", "İçerik geri yüklendi (temizleme geri alındı)", "Contenu rétabli (nettoyage annulé)", "Contenido restaurado (limpieza deshecha)", "सामग्री वापस (सफ़ाई रद्द)"],
+            ibxAu_league: ["استبعاد من الدوري / رجوع", "Weekly league removal / return", "Haftalık ligden çıkarma / dönüş", "Retrait / retour en ligue hebdo", "Retiro / vuelta a la liga semanal", "साप्ताहिक लीग से हटाना / वापसी"],
+            ibxAu_support: ["رد الدعم", "Support reply", "Destek yanıtı", "Réponse de l'assistance", "Respuesta de soporte", "सपोर्ट का जवाब"],
+            ibxAu_role: ["انتهاء دور الطاقم", "Staff role ended", "Ekip görevi sona erdi", "Fin du rôle dans l'équipe", "Fin del rol en el equipo", "स्टाफ़ भूमिका ख़त्म"],
+            ibxAu_other: ["أي إجراء إداري آخر على الحساب", "Any other admin action on an account", "Hesapta diğer yönetici işlemleri", "Toute autre action admin sur un compte", "Cualquier otra acción de admin en una cuenta", "खाते पर कोई और एडमिन कार्रवाई"],
             ibxAu_kick: ["الإخراج من مباراة", "Removed from a match", "Maçtan çıkarılma", "Exclusion d'un match", "Expulsión de partida", "मैच से हटाना"],
             ibxOn: ["مفعّل", "On", "Açık", "Activé", "Activado", "चालू"],
             ibxOffL: ["متوقف", "Off", "Kapalı", "Désactivé", "Desactivado", "बंद"],
@@ -17581,8 +17591,8 @@
           };
           const autoH = () => {
             const a = C.auto; if (!a) return "<p class='k-note'>…</p>";
-            return `<p class="k-note">${esc(_t("ibxAutoH"))}</p><div class="ibx-auto">${["rankup", "ban", "mute", "unban", "card", "appeal", "kick"].map((k) => {
-              const kd = { rankup: "rankup", ban: "ban", mute: "notice", unban: "notice", card: "card", appeal: "notice", kick: "kick" }[k], L = TY[kd];
+            return `<p class="k-note">${esc(_t("ibxAutoH"))}</p><div class="ibx-auto">${["rankup", "ban", "mute", "unban", "card", "appeal", "kick", "id_grant", "gift", "rename", "photo", "card_rm", "restore", "league", "support", "role", "other"].map((k) => {
+              const kd = { rankup: "rankup", ban: "ban", mute: "notice", unban: "notice", card: "card", appeal: "notice", kick: "kick", card_rm: "card" }[k] || "notice", L = TY[kd];
               return `<button type="button" class="ibx-sw${a[k] !== false ? " on" : ""}" data-ka="ibxauto" data-k="${k}" style="--ac:${L.c};--ac2:${L.c2}"><span class="ibx-ic sm">${L.i}</span><span>${esc(_t("ibxAu_" + k))}</span><i class="ibx-tg" aria-label="${esc(_t(a[k] !== false ? "ibxOn" : "ibxOffL"))}"></i></button>`;
             }).join("")}</div>`;
           };
