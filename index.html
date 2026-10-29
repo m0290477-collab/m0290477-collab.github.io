@@ -10955,13 +10955,16 @@
               if (!r || !r.ok || !/^https:\/\/checkout\.stripe\.com\//.test(r.url || "")) throw Object.assign(new Error("onErr"), { code: "onErr" });
               KV.set("ss-pending-checkout", JSON.stringify({ s: r.session_id, u: ON.uid, t: Date.now() }));
               location.href = r.url;
-            } catch (e) { toast(e.code === "vip_taken" ? _t("b13VipTaken") : e.code === "vip_already" ? _t("b13VipHave") : e.code === "already_owned" ? _t("onE_owned") : ON.err(e)); }
+            } catch (e) { if (e.code === "vip_taken" && B13.idsLoad) B13.idsLoad(); toast(e.code === "vip_taken" ? _t("vsGone") : e.code === "vip_already" ? _t("b13VipHave") : e.code === "already_owned" ? _t("onE_owned") : ON.err(e)); }
             finally { setTimeout(() => { B13.busy = false; }, 1500); }
           };
           B13.itemUsd = (id) => B13.buyUsd("web.item", { item: id });
           B13.granted = (g) => {
             if (!g) return;
-            if (g.vip) toast("👑 " + _t("b13VipGot", { n: g.vip }));
+            if (g.vip) { const h = `<span class="b13-vip big" dir="ltr">#${g.vip | 0}</span>`;
+              B13.pop(`<div class="vs-cg"><div class="vs-cf" aria-hidden="true">🎉</div><h3>${esc(_t("vsCongT"))}</h3><div class="vs-big">${h}</div><p>${esc(_t("vsCongB", { n: "\u2068#" + (g.vip | 0) + "\u2069" }))}</p>` +
+                `<button class="x-btn x-main" data-b13x="1">${esc(_t("vsOk"))}</button></div>`);
+              setTimeout(() => { try { window.__IBX && __IBX.poll && __IBX.poll(true); } catch (_) {} if (B13.idsLoad) B13.idsLoad(); }, 1500); }
             else if (g.entitlement) toast("👑 " + _t("nfPremOn"));
             else if (g.to && g.to !== ON.uid) toast("🎁 " + _t("b13GiftSent"));
             else if (g.item) toast("✅ " + B13.name(g.item));
@@ -10993,8 +10996,13 @@
           function idsPaint() {
             const d = B13.ids || { ids: [] }, m = d.mine;
             $("b13idm").innerHTML = m ? `<span class="b13-vip big" dir="ltr">#${m.num}</span> ${esc(_t("b13IdsMine"))}` : "";
-            $("b13idg").innerHTML = (d.ids || []).map((x) => `<button type="button" class="b13-id${x.taken ? " tk" : ""}${x.mine ? " me" : ""} p${x.price_cents >= 79900 ? 3 : x.price_cents >= 29900 ? 2 : x.price_cents >= 14900 ? 1 : 0}" data-b13id="${x.num}" ${x.taken || m ? "disabled" : ""}>` +
-              `<b dir="ltr">#${x.num}</b><small dir="ltr">${x.mine ? "✓" : x.taken ? esc(x.holder || _t("b13Taken")) : esc(B13C.m0(x.price_cents)) + `</small><small class="b13c-fv">∞ ${esc(_t("b13cForever"))}`}</small></button>`).join("");
+            const vs13u = (x) => !x.mine && (x.sold || (x.taken && !x.held && x.sold === undefined)); // vs13u: sold = bought or admin-granted
+            const left = (d.ids || []).filter((x) => !x.taken && !x.mine).length;
+            $("b13idm").innerHTML += `<span class="vs-left">${esc(_t("vsLeft", { n: left }))}</span>`;
+            $("b13idg").innerHTML = (d.ids || []).map((x) => { const sd = vs13u(x), hd = !x.mine && !sd && x.taken;
+              return `<button type="button" class="b13-id${x.taken ? " tk" : ""}${sd ? " vs-sd" : ""}${hd ? " vs-hd" : ""}${x.mine ? " me" : ""} p${x.price_cents >= 79900 ? 3 : x.price_cents >= 29900 ? 2 : x.price_cents >= 14900 ? 1 : 0}" data-b13id="${x.num}" ${x.taken || m ? "disabled" : ""}${sd ? ` aria-label="${esc(_t("vsSoldA", { n: x.num }))}"` : ""}>` +
+              `<b dir="ltr">#${x.num}</b>` + (x.mine ? `<small dir="ltr">✓</small>` : sd ? `<small>${esc(_t("vsSold"))}</small><i class="vs-rib" aria-hidden="true"><span>${esc(_t("vsSold"))}</span></i>` :
+                hd ? `<small>⏳ ${esc(_t("vsHeld"))}</small>` : `<small dir="ltr">${esc(B13C.m0(x.price_cents))}</small><small class="b13c-fv">∞ ${esc(_t("b13cForever"))}</small>`) + `</button>`; }).join("");
           }
           $("b13idg").addEventListener("click", (e) => {
             const b = e.target.closest("[data-b13id]"); if (!b || b.disabled) return; const n = +b.dataset.b13id, x = (B13.ids.ids || []).find((q) => q.num === n); if (!x) return;
@@ -11003,6 +11011,8 @@
           });
           $("b13pop").addEventListener("click", (e) => { const b = e.target.closest("[data-b13vip]"); if (b) { popX(); B13.buyUsd("web.vip", { num: +b.dataset.b13vip }); } });
           NFG.nfb13ids = () => { if (state === "play") return; if (ios()) { toast(_t("b13WebOnly")); return; } if (!online()) { toast(_t("onSignNeed")); show("login"); return; } $("b13idg").innerHTML = `<p class="x-note">…</p>`; show("b13ids"); idsLoad(); };
+          B13.idsLoad = idsLoad; window.__VS = { load: idsLoad, congrats: (n) => B13.granted({ vip: n | 0 }) }; // vs13u (display only)
+          setInterval(() => { const o = $("b13ids"); if (o && !o.classList.contains("x-hide") && !document.hidden && state !== "play" && online()) idsLoad(); }, 20000);
 
           // ---------- Premium (real-money) tab ----------
           function premPaint() {
@@ -18659,6 +18669,8 @@
           { let n = 0; const t = setInterval(() => { n++; if (hookAdmin() || n > 8) { clearInterval(t); if (!(window.__srwA && __srwA.__nx)) hookAdmin(); } }, 600); }
           { let tries = 0; const keep = setInterval(() => { if (++tries > 60) clearInterval(keep); const a = window.__srwA; if (a && !a.__nx) hookAdmin(); }, 1000); } // the rewards module may (re)define its hooks later
         }
+        // vs13u: VIP ID sold-out strings
+        { const VS_I18N = {"vsSold": ["تم البيع", "SOLD OUT", "SATILDI", "VENDU", "VENDIDO", "बिक गया"], "vsSoldA": ["#{n} · تم البيع", "#{n} · sold out", "#{n} · satıldı", "#{n} · vendu", "#{n} · vendido", "#{n} · बिक गया"], "vsHeld": ["محجوز مؤقتاً", "Reserved", "Ayrıldı", "Réservé", "Reservado", "आरक्षित"], "vsGone": ["هذا الأيدي انباع للتو — اختر رقماً آخر", "This ID was just sold — pick another one", "Bu ID az önce satıldı — başka birini seç", "Cet ID vient d'être vendu — choisis-en un autre", "Este ID se acaba de vender: elige otro", "यह ID अभी-अभी बिक गई — कोई दूसरी चुनें"], "vsCongT": ["ألف مبروك! 🎉", "Congratulations! 🎉", "Tebrikler! 🎉", "Félicitations ! 🎉", "¡Enhorabuena! 🎉", "बहुत-बहुत बधाई! 🎉"], "vsCongB": ["مبروك على الأيدي المميز {n}! صار لك للأبد.", "Congratulations on your VIP ID {n}! It's yours forever.", "VIP ID'n {n} için tebrikler! Artık sonsuza dek senin.", "Félicitations pour ton ID VIP {n} ! Il est à toi pour toujours.", "¡Enhorabuena por tu ID VIP {n}! Es tuyo para siempre.", "आपकी VIP ID {n} के लिए बधाई! यह हमेशा के लिए आपकी है।"], "vsOk": ["يا سلام!", "Awesome!", "Harika!", "Génial !", "¡Genial!", "शानदार!"], "vsLeft": ["متبقي {n} من 49", "{n} of 49 left", "49'dan {n} kaldı", "{n} sur 49 restants", "Quedan {n} de 49", "49 में से {n} बचे"]}; for (const k in VS_I18N) if (!I18N[k]) I18N[k] = VS_I18N[k]; }
         // ---------- 13u lvl: one unlock ladder, levels 1 to 400 (server sql/100_lvl400.sql decides; this mirrors it) ----------
         // LAD key -> [ladder level, old level]; accounts that existed at the switch keep their old gates (floor from lv13u_state).
         // RET: duplicate skins taken out of the shop; owners keep them (Locker shows them as Legacy). Only const arrows, every hook guarded.
@@ -23554,6 +23566,30 @@ html[dir=rtl] #kadm .ibx-adm select.ibx-sel { background-position: 16px 50%, 11p
 [dir="rtl"] .nx13-bar.e { background: linear-gradient(270deg, #ff9a9a, #d84a4a); }
 .nx13w > .k-li > small, .nx13w-sec .k-li > small { width: auto !important; flex: 0 0 auto; text-align: end; white-space: nowrap; }
 .nx13w > .k-li > span, .nx13w-sec .k-li > span { flex: 1 1 auto; }
+</style>
+<style id="ss13u-vs">
+/* vs13u: VIP ID store sold-out state */
+.b13-id { position: relative; overflow: hidden; }
+.b13-id.vs-sd { opacity: 1; filter: none; cursor: not-allowed; border-color: rgba(255, 255, 255, .14) !important; box-shadow: none !important;
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .035) 0 6px, transparent 6px 12px), linear-gradient(180deg, #2a2f3d, #141822); }
+.b13-id.vs-sd b { color: #8c93a6; text-decoration: line-through; text-decoration-color: rgba(255, 90, 90, .7); text-decoration-thickness: 2px; }
+.b13-id.vs-sd > small { color: #ff8a8a; font-weight: 800; letter-spacing: .03em; visibility: hidden; }
+.vs-rib { position: absolute; inset: 0; pointer-events: none; display: block; }
+.vs-rib span { position: absolute; top: 68%; left: 50%; width: 160%; transform: translate(-50%, -50%) rotate(-24deg); padding: 2px 0; text-align: center;
+  font-style: normal; font-size: 9px; font-weight: 900; letter-spacing: .1em; color: #fff; white-space: nowrap;
+  background: linear-gradient(90deg, #b3122d, #ff3d5a 50%, #b3122d); box-shadow: 0 1px 4px rgba(0, 0, 0, .5); text-shadow: 0 1px 0 rgba(0, 0, 0, .35); }
+[dir="rtl"] .vs-rib span { transform: translate(-50%, -50%) rotate(24deg); letter-spacing: 0; font-size: 10px; }
+.b13-id.vs-hd { opacity: .6; filter: grayscale(.4); }
+.b13-id.vs-hd > small { color: #ffd76a; }
+.vs-left { display: inline-block; margin-inline-start: 8px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; color: #ffe07a;
+  background: rgba(242, 199, 90, .12); border: 1px solid rgba(242, 199, 90, .35); }
+.vs-cg { text-align: center; }
+.vs-cg .vs-cf { font-size: 40px; line-height: 1; animation: vsPop .6s cubic-bezier(.2, 1.6, .4, 1) both; }
+.vs-cg h3 { margin: 6px 0 4px; font-size: 22px; color: #ffe07a; }
+.vs-cg .vs-big .b13-vip { font-size: 30px; padding: 2px 14px; }
+.vs-cg p { margin: 10px 0 12px; }
+@keyframes vsPop { from { transform: scale(.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .vs-cg .vs-cf { animation: none; } }
 </style>
 <style id="ss13u-lvl">
 .lv4-lk { filter: saturate(.55); opacity: .82; }
