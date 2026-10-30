@@ -3163,7 +3163,7 @@
         }
         resize(); // window resize is handled once by orient(), which calls resize()
 
-        let A = 3000; const A0 = 3000, AMX = 9000, FOOD_MIN0 = 455, BASE = 170; const fMin = () => Math.round(FOOD_MIN0 * (A / A0) * (A / A0)); // A: current arena side (Classic, Forest, Cyber are 1.5x) // normal food density cut ~35% (was 700); death drops are extra
+        let A = 3000; const A0 = 3000, AMX = 12000, FOOD_MIN0 = 455, BASE = 170; const fMin = () => Math.round(FOOD_MIN0 * (A / A0) * (A / A0)); // A: current arena side (Classic, Forest, Cyber are 1.5x) // normal food density cut ~35% (was 700); death drops are extra
         // bot names in every language (ar, en, tr, fr, es, hi); bn(i) gives name i in the current language
         const BN = [["صقر", "Falcon", "Şahin", "Faucon", "Halcón", "बाज़"], ["نمر", "Tiger", "Kaplan", "Tigre", "Tigre", "बाघ"], ["ليث", "Lion", "Aslan", "Lion", "León", "शेर"],
           ["برق", "Bolt", "Şimşek", "Éclair", "Rayo", "बिजली"], ["ريح", "Wind", "Rüzgar", "Vent", "Viento", "हवा"], ["شهاب", "Meteor", "Meteor", "Météore", "Meteoro", "उल्का"],
@@ -4154,7 +4154,7 @@
           g.fillStyle = "rgba(255,255,255,.1)"; for (const r of MP.roads) { g.fillRect((r - RW) * k, 0, 2 * RW * k, A * k); g.fillRect(0, (r - RW) * k, A * k, 2 * RW * k); }
         }
         function setMap(i) {
-          i = 0; mapI = i; MFX = MAPS[i].b ?? i; obs = []; const t = MAPS[i].ob, ak = MAPS[i].sz || 1, ar = ak * ak;
+          i = (i | 0) === 29 && MAPS[29] ? 29 : 0; mapI = i; MFX = MAPS[i].b ?? i; obs = []; const t = MAPS[i].ob, ak = MAPS[i].sz || 1, ar = ak * ak;
           A = Math.round(A0 * ak);
           if (t !== "city") { /* build9: open PvP arena, the interior has no obstacles or hazards */ } else if (t === "forest") { // clusters of trees and rocks, overlapping so there are no deadly gaps inside a cluster
             const NC = Math.round(8 * ar);
@@ -5542,7 +5542,7 @@
             const txOn = txFloor(fx0, fx1, fy0, fy1);
             if (txOn) { ctx.globalAlpha = TXA[mapI]; ctx.fillStyle = M.floor; ctx.fill(); ctx.globalAlpha = TXG[mapI]; }
             ctx.strokeStyle = M.grid; ctx.lineWidth = 1; ctx.beginPath();
-            const G = txOn ? (mapI === 0 ? 1e9 : 120) : 60;
+            const G = txOn ? (mapI === 0 || mapI === 29 ? 1e9 : 120) : 60;
             for (let x = Math.ceil(fx0 / G) * G; x <= fx1; x += G) { pr(x, fy0, 0); ctx.moveTo(PX, PY); pr(x, fy1, 0); ctx.lineTo(PX, PY); }
             for (let y = Math.ceil(fy0 / G) * G; y <= fy1; y += G) { pr(fx0, y, 0); ctx.moveTo(PX, PY); pr(fx1, y, 0); ctx.lineTo(PX, PY); }
             ctx.stroke();
@@ -6912,7 +6912,7 @@
             S.tf = 2; S.music = 1; if (d.S) for (const k in S) if (k in d.S) S[k] = d.S[k];
             nfLoad(d.X);
             if (Array.isArray(d.cc) && d.cc.length === 2 && d.cc.every((c) => /^#[0-9a-f]{6}$/i.test(c))) { SKINS[CUST].c = d.cc.slice(0, 2); $("cc1").value = d.cc[0]; $("cc2").value = d.cc[1]; skinsEl.children[CUST].style.background = swatch(SKINS[CUST]); }
-            mapSel = 0; if (state === "menu" && mapI !== mapSel) setMap(mapSel);
+            mapSel = window.__tahSel ? __tahSel() : 0; if (state === "menu" && mapI !== mapSel) setMap(mapSel);
             lbS = 1; aqReset(4);
             $("nick").value = P.name; paintSkins(); applySettings(); profile(); achR = aReady();
           } finally { loading = false; }
@@ -10054,7 +10054,7 @@
             if (!o.on) return;
             const used = o.mUsed.slice(); o.mUsed = [];
             const mode = ["n", "t", "s", "r", "d", "p", "l"].includes(MD) ? MD : "n";
-            o.mp = rpc("start_match", { p_mode: mode, p_difficulty: mode === "r" ? 2 : clamp(S.diff | 0, 0, 4), p_map: clamp(mapI | 0, 0, MAPS.length - 1) })
+            o.mp = rpc("start_match", { p_mode: mode, p_difficulty: mode === "r" ? 2 : clamp(S.diff | 0, 0, 4), p_map: (window.__tahW ? __tahW(mapI) : clamp(mapI | 0, 0, MAPS.length - 1)) })
               .then((r) => { o.mid = r.match_id; for (const b of used) rpc("use_boost", { p_match_id: r.match_id, p_boost: b }).catch(() => {}); return r.match_id; })
               .catch((e) => { o.mid = null; if (e.code === "maintenance" || e.code === "banned") toast(o.err(e)); return null; });
           };
@@ -11607,7 +11607,7 @@
           const sm0 = setMap;
           setMap = function (i) { sm0(i); try { txPat(mapI); } catch (_) {} }; // start loading the chosen arena's texture right away
           try { txPat(mapI); } catch (_) {}
-          const TH = (i) => (i | 0) === 0 ? "ui/bab/a0.webp?v=1" : "ui/bab/a0.webp?v=1"; // build13h: illustrated arena previews
+          const TH = (i) => (i | 0) === 29 ? "ui/tah/a29.webp?v=2" : "ui/bab/a0.webp?v=1"; // build13h: illustrated arena previews
           const grid = $("b13dgr"), sel = $("b13dsel"), go = $("b13dgo");
           const card = (m, i) => {
             const lk = mapLock(i), on = i === mapSel;
@@ -11618,11 +11618,11 @@
           };
           const paintSel = () => {
             const m = MAPS[mapSel]; sel.innerHTML = `<b>${m.e} ${esc(_t("map" + mapSel))}</b><small>${esc(_t("mapd" + mapSel))}</small>`;
-            $("b13dcnt").textContent = _t("b13dCnt", { n: MAPS.length });
+            $("b13dcnt").textContent = _t("b13dCnt", { n: window.__TAH2 ? 2 : MAPS.length });
           };
-          const paint = () => { grid.innerHTML = MAPS.slice(0, 1).map(card).join(""); paintSel(); };
+          const paint = () => { grid.innerHTML = [0, 29].filter((i) => MAPS[i]).map((i) => card(MAPS[i], i)).join(""); paintSel(); };
           B13D.mapOpen = () => {
-            if (state === "play" || window.__BAB1) return;
+            if (state === "play" || (window.__BAB1 && !window.__TAH2)) return;
             if (mapLock(mapSel)) { const ok = MAPS.findIndex((_, i) => !mapLock(i)); mapSel = ok < 0 ? 0 : ok; }
             back = "menu"; paint(); show("b13dmp");
             if (!B13D.o13pre) { B13D.o13pre = MAPS.map((_, i) => { const im = new Image(); im.decoding = "async"; im.src = TH(i); if (im.decode) im.decode().catch(() => {}); return im; }); }
@@ -11661,7 +11661,7 @@
             const b = e.target.closest && e.target.closest('[data-go="mplay"],[data-go="maps"]'); if (!b || b.disabled) return;
             if (b.dataset.go === "mplay" && (S.mode === "l" || S.mode === "p")) return;
             if (!cur) return; // signed-out: the normal flow shows the sign-in screen
-            e.preventDefault(); e.stopImmediatePropagation(); if (window.__BAB1) { if (b.dataset.go === "mplay" && state !== "play") { mapSel = 0; o13Heavy++; setMap(0); start(); } return; } B13D.mapOpen();
+            e.preventDefault(); e.stopImmediatePropagation(); if (window.__BAB1) { if (b.dataset.go === "mplay" && state !== "play") { mapSel = window.__tahSel ? __tahSel() : 0; o13Heavy++; setMap(mapSel); start(); } else if (b.dataset.go === "maps" && window.__TAH2 && state !== "play") B13D.mapOpen(); return; } B13D.mapOpen();
           }, true);
           NFH.relang.push(() => { if (!$("b13dmp").classList.contains("x-hide")) paint(); });
         }
@@ -11980,7 +11980,7 @@
             $("b13hmd").innerHTML = MODES.map(([k, l]) => `<button type="button" role="tab" class="h-mode${m === k ? " on" : ""}" data-b13m="${k}" aria-selected="${m === k}">${esc(_t(l))}</button>`).join("") +
               `<button type="button" class="h-mode more${inMore ? " on" : ""}" data-b13s="more">${inMore ? esc(_t(MORE.find((x) => x[0] === m)[1])) : `<span class="h-ml">${esc(_t("b13hMore"))}</span>`} ▾</button>`;
             const mi = tryv(() => mapSel | 0, 0), lock = tryv(() => !!mapLock(mi), false);
-            $("b13hmp").innerHTML = `<span class="h-th" style="background-image:url(${(mi | 0) === 0 ? "ui/bab/a0.webp?v=1" : "ui/bab/a0.webp?v=1"})"></span><span class="h-mt"><span class="h-lab b">${esc(_t("b13hArena"))}</span><b class="h-disp h-stroke">${esc(_t("map" + mi))}</b></span><span class="h-disp h-chev" aria-hidden="true">${lock ? '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="11" rx="2.5" fill="#ffc53a" stroke="#0a0f2a" stroke-width="1.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="#ffe08a" stroke-width="2.4"/></svg>' : "›"}</span>`;
+            $("b13hmp").innerHTML = `<span class="h-th" style="background-image:url(${(mi | 0) === 29 ? "ui/tah/a29.webp?v=2" : "ui/bab/a0.webp?v=1"})"></span><span class="h-mt"><span class="h-lab b">${esc(_t("b13hArena"))}</span><b class="h-disp h-stroke">${esc(_t("map" + mi))}</b></span><span class="h-disp h-chev" aria-hidden="true">${lock ? '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="11" rx="2.5" fill="#ffc53a" stroke="#0a0f2a" stroke-width="1.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="#ffe08a" stroke-width="2.4"/></svg>' : "›"}</span>`;
             $("b13hmp").classList.toggle("x-hide", m === "l" || m === "p");
             $("b13hpy").querySelector("b").textContent = _t("b13hPlay");
           }
@@ -12305,7 +12305,7 @@
             };
             const detail = () => {
               const i = tryv(() => mapSel | 0, 0), m = MAPS[i], lk = mapLock(i);
-              det.innerHTML = `<span class="h-ari" style="background-image:url(${(i | 0) === 0 ? "ui/bab/a0.webp?v=1" : "ui/bab/a0.webp?v=1"})"></span><b class="h-disp h-t2 h-stroke">${esc(_t("map" + i))}</b><small class="h-mu h-ard2">${esc(_t("mapd" + i))}</small>` +
+              det.innerHTML = `<span class="h-ari" style="background-image:url(${(i | 0) === 29 ? "ui/tah/a29.webp?v=2" : "ui/bab/a0.webp?v=1"})"></span><b class="h-disp h-t2 h-stroke">${esc(_t("map" + i))}</b><small class="h-mu h-ard2">${esc(_t("mapd" + i))}</small>` +
                 `<div class="h-sts"><span><b dir="ltr">${fmt(arSide(i))}</b><small>${esc(_t("b13hSize"))}</small></span><span><b>${esc(_t(arCity(i) ? "b13hObst" : "b13hOpenPvP"))}</b><small>${esc(_t("b13hType"))}</small></span>` +
                 `<span><b>${lk ? LOCK : "✓"}</b><small>${esc(lk || _t("b13hReady"))}</small></span></div>`;
               $("b13dgo").disabled = !!lk;
@@ -12549,7 +12549,7 @@
               ctx.save(); ctx.fillStyle = "rgba(4,6,16,.82)"; ctx.beginPath();
               if (cy0 < 0) q(cx0, cy0, cx1, cy0, cx1, 0, cx0, 0); if (cy1 > A) q(cx0, A, cx1, A, cx1, cy1, cx0, cy1);
               if (cx0 < 0) q(cx0, Math.max(0, cy0), 0, Math.max(0, cy0), 0, Math.min(A, cy1), cx0, Math.min(A, cy1)); if (cx1 > A) q(A, Math.max(0, cy0), cx1, Math.max(0, cy0), cx1, Math.min(A, cy1), A, Math.min(A, cy1));
-              if (mapI !== 0) ctx.fill();
+              if (mapI !== 0 && mapI !== 29) ctx.fill();
               const col = warn > 0.05 ? `rgba(255,${Math.round(120 - 80 * warn)},60,${0.55 + 0.4 * warn * (0.6 + 0.4 * Math.sin(time * 8))})` : `rgba(${M.wc || "255,210,120"},.7)`;
               ctx.strokeStyle = col; ctx.lineWidth = 3 + warn * 5; ctx.beginPath();
               const seg = (x0, y0, x1, y1) => { const n = 24; for (let i = 0; i <= n; i++) { const t = i / n; pr(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, 1); i ? ctx.lineTo(PX, PY) : ctx.moveTo(PX, PY); } };
@@ -15331,7 +15331,7 @@
           const stStart = async () => {
             if (SP.sid) stStop(null); if (!isOn()) return; const gen = ++SP.gen;
             SP.t0 = Date.now(); SP.ids = new WeakMap(); SP.nid = 1; SP.sent = new Set(); SP.full = true; SP.n = 0; SP.seenV = {}; SP.lowQ = tv5(() => !!window.__ssBsv || S.q === "l" || S.q === "lo", false);
-            let r = null; try { r = await ON.rpc("spx_start", { p_mode: String(tv5(() => MD, "") || "").slice(0, 8), p_map: tv5(() => mapI, 0) | 0 }); } catch (_) { return; }
+            let r = null; try { r = await ON.rpc("spx_start", { p_mode: String(tv5(() => MD, "") || "").slice(0, 8), p_map: (window.__tahW ? __tahW(tv5(() => mapI, 0)) : tv5(() => mapI, 0) | 0) }); } catch (_) { return; }
             if (gen !== SP.gen || !r || !r.sid || !r.topic || r.fr === 0) return; // no friends: nobody could watch, no socket
             SP.sid = r.sid;
             SP.rt = mkRT(r.topic, "p", { join: () => { if (SP.rt) SP.rt.track({ o: 1 }); }, ps: onPres, deny: () => {}, lost: () => {} });
@@ -15763,7 +15763,7 @@
             }
             SH.innerHTML = `<div class="mu-bd" data-mu="x"></div><div class="mu-cd" dir="auto">` +
               `<button type="button" class="mu-x" data-mu="x" aria-label="${esc6(T("muClose"))}">✕</button>` +
-              `<span class="mu-im" style="background-image:url(${(i | 0) === 0 ? "ui/bab/a0.webp?v=1" : "ui/bab/a0.webp?v=1"})"></span>` +
+              `<span class="mu-im" style="background-image:url(${(i | 0) === 29 ? "ui/tah/a29.webp?v=2" : "ui/bab/a0.webp?v=1"})"></span>` +
               `<div class="mu-tx"><b class="mu-nm">${esc6(nm)}</b><small class="mu-ds">${esc6(ds)}</small>${body}` +
               (MU.err ? `<p class="mu-er" role="alert">${esc6(MU.err)}</p>` : "") + `</div></div>`;
           };
@@ -15987,12 +15987,12 @@
               let m;
               if (MD === "p") {
                 if (code) { m = await post("/v1/match", { code }); if (m.s === 404) { toast(_t("rtNoCode")); m = null; } }
-                if (!m) m = await post("/v1/private", { map: mapI | 0, bots: true });
+                if (!m) m = await post("/v1/private", { map: (window.__tahW ? __tahW(mapI) : mapI | 0), bots: true });
               } else {
                 const pty = MD === "t" && !!(window.__PT && __PT.inParty());
                 if (pty && __PT.isLeader()) await __PT.sync();
                 const prv = MD === "t" && !!(window.__TPV && __TPV.on()) && !(pty && !__PT.isLeader()); // 13u-tm: members always follow their leader
-                m = prv ? await post("/v1/private", { map: mapI | 0, team: true, ts: tSz(), party: pty }) : await post("/v1/match", { mode: MD, map: mapI | 0, ts: MD === "t" ? tSz() : 0, party: pty });
+                m = prv ? await post("/v1/private", { map: (window.__tahW ? __tahW(mapI) : mapI | 0), team: true, ts: tSz(), party: pty }) : await post("/v1/match", { mode: MD, map: (window.__tahW ? __tahW(mapI) : mapI | 0), ts: MD === "t" ? tSz() : 0, party: pty });
                 if (m.s === 409 && m.j && m.j.error === "party_wait") { clearTimeout(to); X.on = false; pill(""); toast("" + _t("ptWait")); if (state === "play") home(); return; }
               }
               if (X.gen !== myGen || !X.on) return;
@@ -16079,7 +16079,7 @@
               case "welcome": {
                 X.room = d.room; X.tn = d.room.ts ? d.room.tn : 0; X.ts = d.room.ts | 0; X.meta.clear(); X.myTm = -1;
                 for (const mt of d.sm || []) X.meta.set(mt[0], mt);
-                if (d.room.map !== mapI) setMap(d.room.map);
+                { const um = window.__tahU ? __tahU(d.room.map) : d.room.map; if (um !== mapI) setMap(um); }
                 obs = []; A = d.room.w;
                 if (MD === "t" && X.tn) { TMS.n = Math.min(TC.length, X.tn); TMS.sz = X.ts; TMS.t0 = time - (d.room.t | 0); TMS.lim = d.room.lim || 300; TMS.el = {}; TMS.res = ""; TMS.fin = 0; }
                 X.priv13 = !!d.room.private; if (d.room.code) { try { $("room").value = d.room.code; } catch (_) {} toast(_t("rtCode", { x: d.room.code })); }
@@ -16339,7 +16339,7 @@
               rr(g, 0, 0, m, m, m / 2); g.fillStyle = bg; g.fill();
               g.save(); rr(g, 0, 0, m, m, m / 2); g.clip();
               // arena floor in the theme tint, border in the map's wall colour
-              g.globalAlpha = 0.34; g.fillStyle = M.floor || "#0a1430"; g.fillRect(pad, pad, inner, inner); g.globalAlpha = 1;
+              g.globalAlpha = 0.34; g.fillStyle = M.floor || "#0a1430"; g.fillRect(pad, pad, inner, inner); g.globalAlpha = 1; if (window.__TAHMM) __TAHMM(g, pad, inner);
               g.strokeStyle = "rgba(255,255,255,.05)"; g.lineWidth = 1; g.beginPath();
               for (let i = 1; i < 4; i++) { const q = pad + (inner * i) / 4; g.moveTo(q, pad); g.lineTo(q, pad + inner); g.moveTo(pad, q); g.lineTo(pad + inner, q); } g.stroke();
               g.strokeStyle = `rgba(${M.wc || "255,214,120"},.75)`; g.lineWidth = 1.2; g.strokeRect(pad, pad, inner, inner);
@@ -16805,7 +16805,7 @@
             PT.first = false; PT.paint();
           };
           PT.load = async () => { if (!online() || PT.busy) return; PT.busy = true; try { PT.apply(await ON.rpc("party_state")); } catch (_) {} finally { PT.busy = false; } };
-          PT.sync = async () => { try { PT.apply(await ON.rpc("party_create", { p_ts: tSz(), p_map: mapI | 0 })); } catch (_) {} };
+          PT.sync = async () => { try { PT.apply(await ON.rpc("party_create", { p_ts: tSz(), p_map: (window.__tahW ? __tahW(mapI) : mapI | 0) })); } catch (_) {} };
           PT.follow = (pa) => { // the leader was seated: members start the same Teams match (the server puts them on the leader's team)
             toast("" + _t("ptGo"));
             try { B13.popX(); } catch (_) { try { $("b13pop").classList.add("x-hide"); } catch (_) {} }
@@ -16858,7 +16858,7 @@
             const b = e.target.closest && e.target.closest('[data-jpa="ptinv"]'); if (!b) return;
             e.preventDefault(); e.stopPropagation();
             const id = b.dataset.id, f = tv(() => (J.fr.friends || []).find((x) => x.id === id), null);
-            (async () => { try { if (!PT.st || !PT.st.party) await ON.rpc("party_create", { p_ts: tSz(), p_map: mapI | 0 }); PT.apply(await ON.rpc("party_invite", { p_user: id })); toast("" + _t("ptInvSent", { x: f ? f.username : "" })); beep(784, 0.12, "triangle", 0.05, 1175); } catch (e2) { toast(PT.err(e2)); } })();
+            (async () => { try { if (!PT.st || !PT.st.party) await ON.rpc("party_create", { p_ts: tSz(), p_map: (window.__tahW ? __tahW(mapI) : mapI | 0) }); PT.apply(await ON.rpc("party_invite", { p_user: id })); toast("" + _t("ptInvSent", { x: f ? f.username : "" })); beep(784, 0.12, "triangle", 0.05, 1175); } catch (e2) { toast(PT.err(e2)); } })();
           }, true);
 
           // ---------- invite links (#7): billke.com/?inv=<player id> and billke.com/?room=<code> ----------
@@ -17979,7 +17979,7 @@
                 else { how.push(T("b13gLv", { n: inf.level })); if (inf.coins > 0) how.push(T("dsH_mapC")); }
                 if (inf.ok) state = st(inf.unlock === "free" ? "open" : "open"); else { state = st("lock"); if (inf.unlock === "level" && inf.level) prog = lvPg(inf.level); }
               } else { const lk = tv(() => mapLock(i), ""); how.push(lk ? lk : T("dsH_free")); state = st(lk ? "lock" : "open"); }
-              return { ic: icImg((i | 0) === 0 ? "ui/bab/a0.webp?v=1" : "ui/bab/a0.webp?v=1"), nm: T("map" + i), cat: T1("p10Arena", "maps"), rar: null, what: T("mapd" + i), how, pg: prog, st: state, wide: 1 };
+              return { ic: icImg((i | 0) === 29 ? "ui/tah/a29.webp?v=2" : "ui/bab/a0.webp?v=1"), nm: T("map" + i), cat: T1("p10Arena", "maps"), rar: null, what: T("mapd" + i), how, pg: prog, st: state, wide: 1 };
             },
             md: (id) => {
               if (!I18N["km_" + id]) return null;
@@ -19175,7 +19175,7 @@
             g.globalAlpha = 0.9; g.beginPath(); g.moveTo(40, 21); g.lineTo(41, 24); g.lineTo(44, 25); g.lineTo(41, 26); g.lineTo(40, 29); g.lineTo(39, 26); g.lineTo(36, 25); g.lineTo(39, 24); g.closePath(); g.fill(); g.globalAlpha = 1;
             return (GS[i] = c); };
           const GC = new Map();
-          const pearl0 = pearl; pearl = function (col) { if (mapI !== 0 || window.__BABOFF) return pearl0(col); let i = GC.get(col); if (i === undefined) { i = gemOf(col); if (GC.size < 2000) GC.set(col, i); } return gemSpr(i); };
+          const pearl0 = pearl; pearl = function (col) { if ((mapI !== 0 && mapI !== 29) || window.__BABOFF) return pearl0(col); let i = GC.get(col); if (i === undefined) { i = gemOf(col); if (GC.size < 2000) GC.set(col, i); } return gemSpr(i); };
         }
         // HUD labels (translated): Length / Kills plates
         {
@@ -20643,6 +20643,318 @@
           BPX.decoKb = decoKb;
           { const _go = gameOver; gameOver = function () { const r = _go.apply(this, arguments); bt(() => decoKb()); setTimeout(() => bt(() => decoKb()), 60); return r; }; }
         }
+        // ===== ss13u-bigmap: shared support for arenas larger than 9000 (grid sizes, opponent density) =====
+        try {
+          if (!window.__BIGMAP) {
+            window.__BIGMAP = 1;
+            // practice / offline: more opponents on a bigger arena so it does not feel empty (scaled by side length, capped per quality so the iPhone budget holds)
+            const opp0 = window.__s13sOpp;
+            if (typeof opp0 === "function") window.__s13sOpp = (n, q, ar, add) => {
+              let e = opp0(n, q, ar, add);
+              if (A > 9000) e = Math.min(q === "l" ? 22 : q === "m" ? 30 : 38, Math.round(e * A / 9000));
+              return e;
+            };
+          }
+        } catch (_) {}
+        // ===== ss13u-mapsize: Babylon 11000 in practice / offline =====
+        try { MAPS[0].sz = 11000 / 3000; if (mapI === 0 && !(typeof RTX === "object" && RTX && RTX.on)) setMap(0); } catch (_) {}
+        // ===== ss13u-bigmap: shared support for arenas larger than 9000 (grid sizes, opponent density) =====
+        try {
+          if (!window.__BIGMAP) {
+            window.__BIGMAP = 1;
+            // practice / offline: more opponents on a bigger arena so it does not feel empty (scaled by side length, capped per quality so the iPhone budget holds)
+            const opp0 = window.__s13sOpp;
+            if (typeof opp0 === "function") window.__s13sOpp = (n, q, ar, add) => {
+              let e = opp0(n, q, ar, add);
+              if (A > 9000) e = Math.min(q === "l" ? 22 : q === "m" ? 30 : 38, Math.round(e * A / 9000));
+              return e;
+            };
+          }
+        } catch (_) {}
+        // ===== ss13u-tahrir (realism r2: photographic tiles, sprite traffic/props): arena 29 = Tahrir Square (ساحة التحرير), Baghdad — real OSM layout (ODbL), Freedom Monument, palm garden, yellow taxis =====
+        try {
+          window.__TAH2 = 1;
+          const TAH = 29, TL = {"v":1,"win":[-362.0,-405.0,730.0,62.0],"core":[-125.0,-150.0,135.0,110.0],"rc":[0.18,26.02],"risle":50.5,"rroad":62.75,"palms":[[-19.8,29.2,0,1.03],[-10.0,34.1,2,1.01],[9.0,-10.5,0,0.93],[-18.2,3.5,1,0.94],[24.6,23.6,0,1.05],[10.0,-3.5,1,0.99],[9.7,56.1,1,0.97],[1.4,45.5,0,0.93],[18.8,33.1,1,0.96],[15.9,56.9,1,0.96],[-8.1,50.5,2,1.04],[-4.4,61.7,0,0.9],[9.1,9.0,2,1.05],[0.2,16.1,0,0.85],[29.7,31.3,0,0.89],[15.5,1.6,1,0.86],[-16.3,-10.7,1,0.91],[-7.0,-3.5,1,0.97],[-15.6,47.8,1,1.12],[15.9,11.5,0,1.11],[0.1,66.9,2,1.12],[-22.8,17.9,2,1.03],[-14.1,63.6,2,0.96],[29.1,15.4,0,1.07],[-3.3,27.2,1,1.0],[10.4,33.5,0,0.93],[4.1,35.5,2,0.92],[-5.4,43.8,1,1.0],[3.3,-15.0,0,0.89],[9.1,22.7,0,0.93],[15.0,45.3,0,0.86],[12.7,64.0,2,0.97],[-10.4,10.0,2,1.01],[-15.1,15.3,0,0.98],[22.2,3.8,2,0.9],[26.1,-1.9,1,0.99],[-20.7,-5.9,1,0.99],[1.9,-0.1,1,1.03],[-23.8,7.2,0,0.93],[22.4,12.7,1,0.92],[-6.3,18.0,2,1.13],[29.6,41.6,0,1.02],[-18.7,55.5,1,1.06],[2.3,51.8,2,0.98],[-24.7,49.7,2,0.97],[-31.0,25.7,1,0.86],[-3.2,4.4,2,1.02],[-18.0,22.5,1,0.93],[21.4,39.4,1,1.01],[-29.8,32.8,0,1.04],[15.6,-7.1,1,1.09],[-30.3,46.1,0,0.97],[-23.5,42.5,0,0.91],[-17.0,39.2,0,1.14],[2.4,-6.6,2,1.0],[-14.2,-1.3,2,1.13],[23.1,46.2,1,1.15],[1.4,22.2,0,0.86],[2.6,61.2,0,1.08],[14.5,28.6,0,0.92],[-28.9,16.4,2,0.93],[-11.7,24.2,0,0.91],[17.1,19.1,2,1.13],[9.1,40.1,1,1.07],[2.6,7.7,1,0.86],[-4.6,-11.3,2,1.07],[5.1,29.3,0,1.0],[8.6,47.6,0,0.96],[21.9,55.4,1,0.92],[-11.4,57.4,1,1.01],[-30.8,4.8,1,1.0],[6.5,17.1,2,0.86],[-2.4,34.9,2,1.13],[35.4,15.0,1,1.08],[-24.4,36.0,0,0.93],[21.7,-8.6,0,0.89],[8.2,2.9,0,1.06],[-11.5,42.4,0,0.91],[-4.1,11.0,1,0.98],[-24.9,23.7,2,1.12],[29.3,3.4,0,1.09],[-21.3,-86.0,1,1.08],[-11.8,-86.0,2,1.01],[-2.3,-86.1,0,1.01],[7.2,-86.1,0,0.94],[16.7,-86.1,2,0.94],[26.2,-86.1,0,1.07],[31.2,-90.2,0,1.15],[30.1,-99.6,2,1.1],[29.0,-109.1,2,1.06],[28.0,-118.5,2,1.08],[26.9,-127.9,2,1.0],[25.8,-137.4,1,1.14],[24.8,-146.8,1,1.13],[23.7,-156.3,1,0.92],[22.6,-165.7,2,1.06],[21.6,-175.1,2,1.04],[20.5,-184.6,0,1.13],[19.5,-194.0,0,1.01],[18.4,-203.5,0,1.12],[17.3,-212.9,2,1.13],[16.3,-222.3,0,0.9],[15.2,-231.8,2,0.98],[14.1,-241.2,0,1.15],[13.1,-250.7,2,0.94],[12.0,-260.1,1,1.02],[10.9,-269.5,1,1.08],[9.9,-279.0,0,0.97],[8.8,-288.4,1,0.96],[7.7,-297.9,2,1.05],[6.7,-307.3,2,0.9],[5.6,-316.8,0,1.08],[4.5,-326.2,0,1.13],[3.5,-335.6,0,1.11],[2.4,-345.1,1,1.0],[1.4,-354.5,1,0.99],[0.3,-364.0,1,0.91],[-0.8,-373.4,0,0.97],[-1.8,-382.8,2,1.1],[-2.9,-392.3,2,0.98],[-4.0,-401.7,0,1.03],[-51.9,-399.1,1,0.91],[-50.8,-389.6,2,0.92],[-49.6,-380.2,1,0.98],[-48.2,-370.8,1,1.1],[-46.7,-361.4,1,0.96],[-45.3,-352.0,1,1.14],[-42.7,-343.9,0,0.99],[-39.9,-335.6,2,1.02],[-39.0,-326.1,1,1.1],[-38.0,-316.7,0,1.09],[-37.0,-307.2,0,0.95],[-36.0,-297.8,0,0.96],[-35.0,-288.3,0,1.01],[-34.0,-278.9,2,1.04],[-33.2,-269.4,0,0.95],[-32.6,-260.0,2,1.05],[-32.0,-250.5,1,1.09],[-31.4,-241.0,1,1.01],[-30.8,-231.5,2,0.92],[-30.2,-222.0,0,1.08],[-29.5,-212.6,0,1.08],[-28.9,-203.1,1,1.07],[-28.3,-193.6,1,0.93],[-27.7,-184.1,1,1.02],[-27.1,-174.6,2,0.99],[-26.5,-165.2,1,1.03],[-25.8,-155.7,1,0.91],[-25.2,-146.2,2,1.06],[-24.6,-136.7,0,1.13],[-24.0,-127.2,1,1.02],[-23.4,-117.8,1,1.03],[-22.8,-108.3,0,0.91],[-22.2,-98.8,0,1.07],[-21.5,-89.3,1,0.99],[-6.8,-211.4,1,0.91],[4.2,-263.1,2,0.85],[-30.0,-370.2,0,0.86],[-10.3,-114.9,0,1.1],[-4.1,-161.9,2,0.87],[-19.3,-170.7,1,1.05],[2.1,-177.2,2,0.94],[-16.5,-377.5,2,1.04],[-27.9,-339.1,0,0.91],[-32.6,-402.4,2,0.99],[-4.9,-350.8,1,1.05],[-2.8,-104.1,1,0.83],[-14.3,-184.0,0,0.89],[-40.3,-389.8,1,0.85],[-19.0,-350.7,0,1.04],[6.1,-208.8,0,0.83],[2.3,-277.3,2,0.87],[21.5,-98.5,1,0.88],[-20.4,-205.7,1,0.83],[-30.2,-324.5,0,0.93],[-3.0,-335.7,2,1.03],[18.8,-112.8,0,1.01],[-27.2,-260.0,2,1.05],[8.5,-127.6,0,0.82],[-12.9,-132.8,2,0.86],[12.8,-191.4,2,1.09],[-8.8,-196.8,2,0.91],[-0.1,-306.4,2,0.82],[-14.3,-149.3,1,1.06],[-14.3,-391.8,2,0.94],[-12.1,-313.7,0,0.82],[8.3,-149.1,2,1.09],[7.3,-241.0,2,0.97],[-15.5,-97.2,0,1.07],[15.2,-164.8,0,0.84],[2.3,-225.0,2,0.94],[-15.5,-221.3,1,0.95],[-34.7,-357.5,2,1.0],[19.8,-142.1,1,0.84],[-14.9,-326.9,2,0.9],[-26.3,-309.4,1,0.85],[-25.3,-241.9,1,1.09],[0.0,-91.2,0,0.99],[5.5,-114.3,0,0.96],[-27.0,-385.9,1,0.8],[-0.9,-139.6,0,0.96],[-9.7,-364.1,0,0.87],[-1.2,-322.1,0,0.91],[-43.6,-374.7,2,1.03],[-19.1,-404.5,0,1.07],[-27.9,-273.9,1,0.81],[283.4,257.6,0,0.91],[313.5,228.8,1,0.92],[210.4,241.8,0,0.94],[251.8,266.1,2,1.02],[317.3,254.4,1,0.84],[231.6,245.4,2,0.94],[234.2,271.5,2,0.91],[218.0,266.6,2,0.86],[261.7,243.4,1,0.85],[302.5,247.5,2,1.04],[362.3,257.9,0,0.86],[336.1,248.8,2,0.96],[269.8,264.0,0,0.84],[244.8,250.3,1,0.86],[349.4,229.9,0,0.86],[274.8,234.3,0,0.99],[304.1,268.0,2,0.99],[323.9,238.8,0,1.02],[287.3,241.0,2,0.86],[365.6,239.3,1,1.04],[364.3,221.1,0,0.81],[243.6,235.7,1,1.0],[296.9,229.7,0,0.94],[345.7,261.5,1,0.96],[351.2,245.4,1,1.04],[334.6,229.1,1,0.99],[329.3,262.4,2,0.81]],"lamps":[[49.1,26.0],[47.4,38.7],[42.5,50.5],[34.8,60.6],[24.6,68.4],[12.8,73.3],[0.2,74.9],[-12.5,73.3],[-24.3,68.4],[-34.4,60.6],[-42.2,50.5],[-47.1,38.7],[-48.7,26.0],[-47.1,13.4],[-42.2,1.6],[-34.4,-8.6],[-24.3,-16.3],[-12.5,-21.2],[0.2,-22.9],[12.8,-21.2],[24.6,-16.3],[34.8,-8.6],[42.5,1.6],[47.4,13.4],[341.5,-25.1],[307.9,-19.6],[274.5,-13.6],[241.1,-6.8],[207.6,-5.0],[174.3,1.7],[141.1,9.1],[108.0,16.9],[86.9,33.8],[128.6,37.9],[162.0,31.5],[195.3,24.7],[26.9,133.1],[28.0,99.2],[35.0,186.4],[37.4,220.3],[39.5,254.3],[41.6,288.2],[-59.9,-378.0],[-54.1,-344.5],[-47.7,-311.1],[-42.1,-277.6],[-39.5,-243.7],[-37.3,-209.8],[-35.1,-175.8],[-32.9,-141.9],[-30.7,-108.0],[-28.5,-74.0],[-41.4,-39.2],[43.4,-49.9],[40.4,-83.8],[37.3,-117.7],[34.2,-151.5],[31.1,-185.4],[28.0,-219.2],[24.3,-253.0],[21.9,-286.9],[21.5,-320.9],[17.4,-354.6],[13.2,-388.4],[-283.9,243.0],[-215.9,242.6],[-181.9,241.8],[-147.9,241.4],[-113.9,239.9],[-247.4,259.3],[-77.4,254.5],[-356.6,-262.7],[-328.9,-282.3],[-301.1,-302.0],[-273.3,-321.6],[-245.6,-341.2],[-217.8,-360.9],[-190.0,-380.5],[-162.3,-400.1],[-84.4,5.9],[-118.1,1.4],[-151.8,-3.2],[-185.6,-6.9],[-219.4,-10.2],[-253.2,-12.4],[-286.7,-13.2],[-320.4,-17.8],[-354.0,-22.3],[330.4,206.2],[296.7,210.6],[263.0,215.2],[229.4,219.8],[195.6,224.0],[161.9,228.2],[128.1,232.5],[94.4,236.7],[-7.1,245.8],[-41.1,247.2],[352.3,190.2],[-207.6,14.6],[-173.9,19.0],[-140.1,22.7],[-106.4,27.1],[-73.9,35.0],[-61.8,206.5],[-61.6,172.5],[-61.3,138.5],[-60.6,104.5],[-5.9,102.4]],"kiosks":[[-88.0,-70.0,1],[58,-44,3],[-100.0,62.0,1],[42.0,101.0,2],[-55.0,-129.0,1],[18.0,-158.0,2],[-88,30,0],[62.0,-12.0,3]],"paths":[{"p":[[57.7,26.0],[57.5,21.0],[56.9,16.0],[55.8,11.1],[54.3,6.3],[52.3,1.7],[50.0,-2.8],[47.3,-7.0],[44.3,-11.0],[40.9,-14.7],[37.2,-18.1],[33.2,-21.1],[29.0,-23.8],[24.5,-26.1],[19.9,-28.1],[15.1,-29.6],[10.2,-30.7],[5.2,-31.3],[0.2,-31.5],[-4.8,-31.3],[-9.8,-30.7],[-14.7,-29.6],[-19.5,-28.1],[-24.1,-26.1],[-28.6,-23.8],[-32.8,-21.1],[-36.8,-18.1],[-40.5,-14.7],[-43.9,-11.0],[-47.0,-7.0],[-49.7,-2.8],[-52.0,1.7],[-53.9,6.3],[-55.4,11.1],[-56.5,16.0],[-57.2,21.0],[-57.4,26.0],[-57.2,31.0],[-56.5,36.0],[-55.4,40.9],[-53.9,45.7],[-52.0,50.3],[-49.7,54.8],[-47.0,59.0],[-43.9,63.0],[-40.5,66.7],[-36.8,70.1],[-32.8,73.2],[-28.6,75.9],[-24.1,78.2],[-19.5,80.1],[-14.7,81.6],[-9.8,82.7],[-4.8,83.4],[0.2,83.6],[5.2,83.4],[10.2,82.7],[15.1,81.6],[19.9,80.1],[24.5,78.2],[29.0,75.9],[33.2,73.2],[37.2,70.1],[40.9,66.7],[44.3,63.0],[47.3,59.0],[50.0,54.8],[52.3,50.3],[54.3,45.7],[55.8,40.9],[56.9,36.0],[57.5,31.0],[57.7,26.0]],"loop":1,"n":10},{"p":[[61.1,26.0],[60.9,20.7],[60.2,15.4],[59.1,10.2],[57.5,5.2],[55.4,0.3],[53.0,-4.5],[50.1,-8.9],[46.9,-13.2],[43.3,-17.1],[39.4,-20.7],[35.1,-23.9],[30.7,-26.8],[25.9,-29.2],[21.0,-31.3],[16.0,-32.9],[10.8,-34.0],[5.5,-34.7],[0.2,-34.9],[-5.1,-34.7],[-10.4,-34.0],[-15.6,-32.9],[-20.7,-31.3],[-25.6,-29.2],[-30.3,-26.8],[-34.8,-23.9],[-39.0,-20.7],[-42.9,-17.1],[-46.5,-13.2],[-49.7,-8.9],[-52.6,-4.5],[-55.1,0.3],[-57.1,5.2],[-58.7,10.2],[-59.8,15.4],[-60.5,20.7],[-60.8,26.0],[-60.5,31.3],[-59.8,36.6],[-58.7,41.8],[-57.1,46.9],[-55.1,51.8],[-52.6,56.5],[-49.7,61.0],[-46.5,65.2],[-42.9,69.1],[-39.0,72.7],[-34.8,75.9],[-30.3,78.8],[-25.6,81.3],[-20.7,83.3],[-15.6,84.9],[-10.4,86.0],[-5.1,86.7],[0.2,87.0],[5.5,86.7],[10.8,86.0],[16.0,84.9],[21.0,83.3],[25.9,81.3],[30.7,78.8],[35.1,75.9],[39.4,72.7],[43.3,69.1],[46.9,65.2],[50.1,61.0],[53.0,56.5],[55.4,51.8],[57.5,46.9],[59.1,41.8],[60.2,36.6],[60.9,31.3],[61.1,26.0]],"loop":1,"n":11},{"p":[[64.7,26.0],[64.5,20.4],[63.7,14.8],[62.5,9.3],[60.8,3.9],[58.7,-1.3],[56.1,-6.3],[53.1,-11.0],[49.6,-15.5],[45.8,-19.6],[41.7,-23.4],[37.2,-26.9],[32.5,-29.9],[27.5,-32.5],[22.3,-34.6],[16.9,-36.3],[11.4,-37.5],[5.8,-38.3],[0.2,-38.5],[-5.4,-38.3],[-11.0,-37.5],[-16.5,-36.3],[-21.9,-34.6],[-27.1,-32.5],[-32.1,-29.9],[-36.8,-26.9],[-41.3,-23.4],[-45.5,-19.6],[-49.3,-15.5],[-52.7,-11.0],[-55.7,-6.3],[-58.3,-1.3],[-60.5,3.9],[-62.2,9.3],[-63.4,14.8],[-64.1,20.4],[-64.4,26.0],[-64.1,31.6],[-63.4,37.2],[-62.2,42.7],[-60.5,48.1],[-58.3,53.3],[-55.7,58.3],[-52.7,63.0],[-49.3,67.5],[-45.5,71.7],[-41.3,75.5],[-36.8,78.9],[-32.1,81.9],[-27.1,84.5],[-21.9,86.7],[-16.5,88.4],[-11.0,89.6],[-5.4,90.3],[0.2,90.6],[5.8,90.3],[11.4,89.6],[16.9,88.4],[22.3,86.7],[27.5,84.5],[32.5,81.9],[37.2,78.9],[41.7,75.5],[45.8,71.7],[49.6,67.5],[53.1,63.0],[56.1,58.3],[58.7,53.3],[60.8,48.1],[62.5,42.7],[63.7,37.2],[64.5,31.6],[64.7,26.0]],"loop":1,"n":11},{"p":[[68.1,26.0],[67.9,20.1],[67.1,14.2],[65.8,8.4],[64.0,2.8],[61.8,-2.7],[59.0,-8.0],[55.8,-13.0],[52.2,-17.7],[48.2,-22.0],[43.9,-26.0],[39.2,-29.6],[34.2,-32.8],[28.9,-35.6],[23.4,-37.8],[17.8,-39.6],[12.0,-40.9],[6.1,-41.7],[0.2,-41.9],[-5.7,-41.7],[-11.6,-40.9],[-17.4,-39.6],[-23.1,-37.8],[-28.5,-35.6],[-33.8,-32.8],[-38.8,-29.6],[-43.5,-26.0],[-47.9,-22.0],[-51.9,-17.7],[-55.5,-13.0],[-58.7,-8.0],[-61.4,-2.7],[-63.7,2.8],[-65.5,8.4],[-66.7,14.2],[-67.5,20.1],[-67.8,26.0],[-67.5,31.9],[-66.7,37.8],[-65.5,43.6],[-63.7,49.3],[-61.4,54.7],[-58.7,60.0],[-55.5,65.0],[-51.9,69.7],[-47.9,74.1],[-43.5,78.1],[-38.8,81.7],[-33.8,84.9],[-28.5,87.6],[-23.1,89.9],[-17.4,91.7],[-11.6,92.9],[-5.7,93.7],[0.2,94.0],[6.1,93.7],[12.0,92.9],[17.8,91.7],[23.4,89.9],[28.9,87.6],[34.2,84.9],[39.2,81.7],[43.9,78.1],[48.2,74.1],[52.2,69.7],[55.8,65.0],[59.0,60.0],[61.8,54.7],[64.0,49.3],[65.8,43.6],[67.1,37.8],[67.9,31.9],[68.1,26.0]],"loop":1,"n":12},{"p":[[366.0,-32.0],[320.9,-25.2],[236.0,-9.0],[218.8,-10.4],[157.9,1.8],[113.5,12.6],[85.1,18.3],[70.9,16.9],[64.3,14.6],[56.1,9.2]],"loop":0,"n":6},{"p":[[366.0,-35.5],[320.3,-28.6],[235.7,-12.5],[221.7,-14.2],[218.2,-13.9],[157.1,-1.7],[112.7,9.2],[84.7,14.8],[72.1,13.6],[65.8,11.4],[58.1,6.4]],"loop":0,"n":6},{"p":[[366.0,-39.0],[319.7,-32.1],[235.3,-16.0],[222.0,-17.7],[217.6,-17.3],[156.4,-5.1],[111.9,5.7],[84.4,11.3],[72.9,10.2],[67.3,8.2],[60.2,3.5]],"loop":0,"n":6},{"p":[[50.0,56.1],[61.0,48.1],[72.4,41.5],[97.3,33.9],[196.2,14.2],[214.7,9.6],[223.0,6.0],[236.0,-1.9],[241.6,-3.9],[337.0,-22.8],[366.0,-27.6]],"loop":0,"n":6},{"p":[[52.2,58.9],[63.0,51.0],[73.8,44.7],[98.3,37.2],[196.9,17.6],[215.7,13.0],[220.6,11.2],[233.0,3.6],[242.3,-0.4],[337.7,-19.3],[366.0,-24.1]],"loop":0,"n":6},{"p":[[54.3,61.6],[64.9,53.9],[75.2,47.9],[99.2,40.6],[197.6,21.0],[216.5,16.4],[222.2,14.3],[234.8,6.6],[243.3,2.9],[338.3,-15.9],[366.0,-20.5]],"loop":0,"n":6},{"p":[[30.5,143.0],[29.4,120.7],[30.0,107.4],[34.6,83.6],[39.7,71.0]],"loop":0,"n":1},{"p":[[34.0,142.8],[32.9,120.5],[33.5,107.9],[38.0,84.4],[42.9,72.3]],"loop":0,"n":1},{"p":[[37.5,142.6],[36.4,120.5],[37.0,108.2],[41.3,85.4],[46.2,73.6]],"loop":0,"n":1},{"p":[[28.3,142.8],[32.9,198.7],[40.7,323.0]],"loop":0,"n":3},{"p":[[24.8,143.1],[29.4,198.9],[37.2,323.0]],"loop":0,"n":3},{"p":[[21.3,143.4],[25.9,199.1],[33.7,323.0]],"loop":0,"n":3},{"p":[[-67.7,-403.0],[-44.7,-273.9],[-30.1,-48.8],[-32.3,-29.1],[-34.6,-23.4]],"loop":0,"n":7},{"p":[[-71.2,-403.0],[-48.2,-273.7],[-33.6,-48.7],[-35.8,-29.8],[-37.9,-24.8]],"loop":0,"n":7},{"p":[[-74.7,-403.0],[-51.6,-273.3],[-37.1,-48.8],[-39.2,-30.7],[-41.1,-26.1]],"loop":0,"n":7},{"p":[[50.3,-6.4],[30.8,-224.1],[25.3,-272.9],[24.7,-320.7],[14.6,-403.0]],"loop":0,"n":8},{"p":[[53.8,-6.7],[34.2,-224.4],[28.8,-273.3],[28.2,-320.9],[18.1,-403.0]],"loop":0,"n":8},{"p":[[57.3,-6.9],[37.7,-224.7],[32.3,-273.5],[31.7,-321.4],[21.7,-403.0]],"loop":0,"n":8},{"p":[[-360.0,-256.0],[-152.0,-403.0]],"loop":0,"n":5},{"p":[[-360.0,-250.8],[-144.7,-403.0]],"loop":0,"n":5},{"p":[[-46.0,-9.5],[-57.2,-1.6],[-66.9,2.3],[-75.7,3.7],[-159.5,-7.4],[-247.3,-16.2],[-264.8,-13.3],[-360.0,-26.3]],"loop":0,"n":6},{"p":[[-48.2,-12.3],[-58.5,-4.9],[-67.8,-1.1],[-75.7,0.2],[-159.1,-10.9],[-247.2,-19.8],[-264.3,-16.7],[-360.0,-29.8]],"loop":0,"n":6},{"p":[[-50.4,-15.0],[-60.1,-8.0],[-68.8,-4.5],[-75.7,-3.4],[-158.8,-14.4],[-246.8,-23.2],[-251.9,-23.0],[-264.2,-20.2],[-360.0,-33.3]],"loop":0,"n":6},{"p":[[366.0,198.6],[49.7,239.4],[34.8,240.8],[-49.2,244.3],[-60.3,246.7],[-66.0,249.1]],"loop":0,"n":9},{"p":[[366.0,195.1],[49.4,235.9],[34.7,237.3],[-49.5,240.8],[-61.5,243.4],[-67.3,245.9]],"loop":0,"n":9},{"p":[[366.0,191.6],[49.0,232.5],[34.4,233.9],[-49.6,237.3],[-62.4,240.0],[-68.7,242.6]],"loop":0,"n":9},{"p":[[-163.1,-403.0],[-200.7,-377.0],[-360.0,-262.8]],"loop":0,"n":5},{"p":[[-170.5,-403.0],[-360.0,-268.0]],"loop":0,"n":4},{"p":[[11.9,-351.9],[4.9,-403.0]],"loop":0,"n":1},{"p":[[15.4,-352.3],[8.4,-403.0]],"loop":0,"n":1},{"p":[[18.9,-352.8],[12.0,-403.0]],"loop":0,"n":1},{"p":[[25.3,-272.7],[12.0,-351.8]],"loop":0,"n":1},{"p":[[28.8,-273.3],[15.4,-352.3]],"loop":0,"n":1},{"p":[[32.2,-273.9],[18.9,-352.9]],"loop":0,"n":1},{"p":[[-47.2,-340.8],[-44.3,-317.5],[-44.7,-273.6]],"loop":0,"n":1},{"p":[[-50.6,-340.3],[-47.8,-317.5],[-48.2,-273.7]],"loop":0,"n":1},{"p":[[-54.1,-339.9],[-51.3,-317.3],[-51.7,-273.7]],"loop":0,"n":1},{"p":[[-56.1,-403.0],[-47.2,-340.8]],"loop":0,"n":1},{"p":[[-59.6,-403.0],[-50.6,-340.3]],"loop":0,"n":1},{"p":[[-63.2,-403.0],[-54.1,-339.8]],"loop":0,"n":1},{"p":[[-45.3,240.6],[-42.3,120.4],[-39.9,115.4],[-34.6,108.8],[-26.4,102.9],[-19.3,100.3],[-7.0,99.6],[1.4,101.2],[11.5,104.9]],"loop":0,"n":3},{"p":[[-42.0,240.7],[-39.2,121.4],[-37.1,117.2],[-32.4,111.2],[-24.9,105.8],[-18.4,103.4],[-7.5,102.8],[0.4,104.3],[10.4,108.0]],"loop":0,"n":3},{"p":[[-360.0,-22.5],[-316.8,-16.2],[-269.6,-10.8],[-262.7,-8.4],[-254.2,-2.8],[-246.7,-0.4],[-129.3,13.7],[-77.9,20.7],[-65.6,28.7],[-55.6,40.5]],"loop":0,"n":6},{"p":[[-360.0,-19.0],[-317.3,-12.7],[-270.2,-7.4],[-264.2,-5.3],[-255.7,0.4],[-247.3,3.0],[-78.7,24.1],[-68.0,31.2],[-58.6,42.4]],"loop":0,"n":6},{"p":[[-360.0,-15.5],[-317.8,-9.3],[-270.8,-3.9],[-266.1,-2.3],[-257.0,3.6],[-247.7,6.5],[-79.8,27.5],[-70.4,33.8],[-61.5,44.3]],"loop":0,"n":6},{"p":[[39.8,323.0],[31.9,199.0],[30.5,142.9]],"loop":0,"n":3},{"p":[[43.4,323.0],[35.4,198.8],[34.0,142.8]],"loop":0,"n":3},{"p":[[46.9,323.0],[38.9,198.7],[37.5,142.7]],"loop":0,"n":3},{"p":[[-58.3,250.3],[-58.3,156.3],[-57.9,109.8],[-56.9,97.6],[-54.9,86.4],[-50.2,79.2],[-43.3,75.6],[-35.8,75.8]],"loop":0,"n":3},{"p":[[-54.9,250.1],[-54.8,156.4],[-54.4,109.8],[-53.5,98.2],[-51.7,87.7],[-49.5,83.5],[-45.2,80.0],[-42.5,79.0],[-36.8,79.2]],"loop":0,"n":3},{"p":[[-51.4,249.9],[-51.3,156.4],[-50.0,98.6],[-48.3,88.7],[-46.7,85.7],[-41.6,82.5],[-37.7,82.6]],"loop":0,"n":3},{"p":[[-8.0,88.3],[13.1,103.6],[18.9,109.9],[23.1,116.7],[28.2,142.4]],"loop":0,"n":1},{"p":[[-10.0,91.1],[11.0,106.5],[15.9,111.7],[19.7,117.7],[24.8,143.1]],"loop":0,"n":1},{"p":[[-12.1,93.9],[8.7,109.1],[13.2,113.9],[16.4,119.0],[21.4,143.8]],"loop":0,"n":1},{"p":[[-52.1,54.7],[-57.0,73.9],[-63.5,91.6],[-63.8,245.9]],"loop":0,"n":4},{"p":[[-55.6,54.0],[-60.3,72.9],[-67.0,91.1],[-67.3,245.9]],"loop":0,"n":4},{"p":[[-59.0,53.3],[-63.6,71.8],[-70.4,91.0],[-70.8,245.9]],"loop":0,"n":4},{"p":[[-66.0,242.6],[-60.1,245.2],[-48.9,247.2],[19.8,244.3],[48.5,241.7],[191.9,224.4],[366.0,200.6]],"loop":0,"n":9},{"p":[[-67.3,245.9],[-61.3,248.5],[-49.1,250.7],[20.0,247.7],[48.9,245.2],[192.4,227.9],[366.0,204.1]],"loop":0,"n":9},{"p":[[-68.7,249.1],[-62.1,251.9],[-49.0,254.2],[20.2,251.2],[49.2,248.6],[192.8,231.4],[366.0,207.7]],"loop":0,"n":9},{"p":[[-35.3,18.8],[33.4,27.5]],"loop":0,"n":1},{"p":[[-35.7,22.3],[33.0,31.0]],"loop":0,"n":1},{"p":[[-36.2,25.8],[32.7,34.4]],"loop":0,"n":1},{"p":[[33.7,26.7],[-35.2,17.6]],"loop":0,"n":1},{"p":[[34.0,23.3],[-34.7,14.2]],"loop":0,"n":1},{"p":[[34.4,19.8],[-34.2,10.7]],"loop":0,"n":1},{"p":[[73.3,28.9],[83.0,27.8],[217.4,-0.8],[237.6,-2.3]],"loop":0,"n":3},{"p":[[73.7,32.3],[83.5,31.2],[218.1,2.6],[237.6,1.2]],"loop":0,"n":3},{"p":[[74.1,35.8],[84.3,34.6],[218.7,6.1],[237.6,4.7]],"loop":0,"n":3},{"p":[[-266.8,-10.1],[-238.9,-8.0],[-160.8,0.5],[-68.9,14.2]],"loop":0,"n":4},{"p":[[-267.0,-6.6],[-239.3,-4.5],[-161.2,4.0],[-69.4,17.6]],"loop":0,"n":4},{"p":[[-267.3,-3.1],[-239.6,-1.1],[-161.6,7.5],[-69.9,21.1]],"loop":0,"n":4},{"p":[[-69.0,13.0],[-239.2,-9.4],[-261.9,-13.5]],"loop":0,"n":4},{"p":[[-68.5,9.5],[-238.7,-12.9],[-261.3,-16.9]],"loop":0,"n":4},{"p":[[-68.1,6.1],[-238.2,-16.3],[-260.6,-20.3]],"loop":0,"n":4},{"p":[[234.2,-9.4],[222.9,-3.5],[210.9,0.5],[157.3,11.0],[88.1,27.0],[75.1,28.4]],"loop":0,"n":3},{"p":[[232.4,-12.4],[221.7,-6.8],[210.2,-3.0],[156.6,7.6],[87.3,23.6],[74.8,24.9]],"loop":0,"n":3},{"p":[[230.7,-15.5],[220.3,-10.0],[209.4,-6.4],[155.8,4.2],[86.6,20.1],[74.5,21.5]],"loop":0,"n":3}],"rails":[[[50.3,26.0],[50.2,28.0],[50.1,30.0],[49.9,31.9],[49.7,33.9],[49.3,35.8],[48.9,37.7],[48.4,39.6],[47.8,41.5],[47.2,43.4],[46.5,45.2],[45.7,47.0],[44.8,48.8],[43.9,50.5],[42.9,52.2],[41.8,53.9],[40.7,55.5],[39.5,57.0],[38.3,58.6],[37.0,60.0],[35.6,61.4],[34.2,62.8],[32.7,64.1],[31.2,65.4],[29.6,66.6],[28.0,67.7],[26.4,68.7],[24.7,69.7],[22.9,70.7],[21.2,71.5],[19.4,72.3],[17.5,73.0],[15.7,73.7],[13.8,74.2],[11.9,74.7],[10.0,75.2],[8.0,75.5],[6.1,75.8],[4.1,76.0],[2.1,76.1],[0.2,76.1],[-1.8,76.1],[-3.8,76.0],[-5.7,75.8],[-7.7,75.5],[-9.6,75.2],[-11.5,74.7],[-13.4,74.2],[-15.3,73.7],[-17.2,73.0],[-19.0,72.3],[-20.8,71.5],[-22.6,70.7],[-24.3,69.7],[-26.0,68.7],[-27.7,67.7],[-29.3,66.6],[-30.8,65.4],[-32.4,64.1],[-33.8,62.8],[-35.2,61.4],[-36.6,60.0],[-37.9,58.6],[-39.2,57.0],[-40.4,55.5],[-41.5,53.9],[-42.5,52.2],[-43.5,50.5],[-44.5,48.8],[-45.3,47.0],[-46.1,45.2],[-46.8,43.4],[-47.5,41.5],[-48.0,39.6],[-48.5,37.7],[-49.0,35.8],[-49.3,33.9],[-49.6,31.9],[-49.8,30.0],[-49.9,28.0],[-49.9,26.0],[-49.9,24.1],[-49.8,22.1],[-49.6,20.1],[-49.3,18.2],[-49.0,16.2],[-48.5,14.3],[-48.0,12.4],[-47.5,10.5],[-46.8,8.7],[-46.1,6.8],[-45.3,5.0],[-44.5,3.3],[-43.5,1.5],[-42.5,-0.2],[-41.5,-1.8],[-40.4,-3.4],[-39.2,-5.0],[-37.9,-6.5],[-36.6,-8.0],[-35.2,-9.4],[-33.8,-10.8],[-32.4,-12.1],[-30.8,-13.3],[-29.3,-14.5],[-27.7,-15.6],[-26.0,-16.7],[-24.3,-17.7],[-22.6,-18.6],[-20.8,-19.5],[-19.0,-20.3],[-17.2,-21.0],[-15.3,-21.6],[-13.4,-22.2],[-11.5,-22.7],[-9.6,-23.1],[-7.7,-23.5],[-5.7,-23.7],[-3.8,-23.9],[-1.8,-24.0],[0.2,-24.1],[2.1,-24.0],[4.1,-23.9],[6.1,-23.7],[8.0,-23.5],[10.0,-23.1],[11.9,-22.7],[13.8,-22.2],[15.7,-21.6],[17.5,-21.0],[19.4,-20.3],[21.2,-19.5],[22.9,-18.6],[24.7,-17.7],[26.4,-16.7],[28.0,-15.6],[29.6,-14.5],[31.2,-13.3],[32.7,-12.1],[34.2,-10.8],[35.6,-9.4],[37.0,-8.0],[38.3,-6.5],[39.5,-5.0],[40.7,-3.4],[41.8,-1.8],[42.9,-0.2],[43.9,1.5],[44.8,3.3],[45.7,5.0],[46.5,6.8],[47.2,8.7],[47.8,10.5],[48.4,12.4],[48.9,14.3],[49.3,16.2],[49.7,18.2],[49.9,20.1],[50.1,22.1],[50.2,24.1],[50.3,26.0]],[[-140.2,324.0],[-10.2,310.1],[16.8,298.5],[70.6,291.5],[173.5,282.6],[311.2,269.4],[325.0,265.4],[367.0,262.0]]],"mon":{"slab":[-21.5,-74.5,32.5,-73.1,6.0,15.0],"pil":[[-19.3,-80.0,-17.4,-71.1],[28.5,-80.0,30.2,-71.0]]},"tower":{"b":[-24.7,198.8,5.8,231.9],"h":55.0},"bank":[[-448.2,363.3],[-434.2,369.2],[-322.8,344.8],[-259.0,336.5],[-10.2,310.1],[16.8,298.5],[70.6,291.5],[311.2,269.4],[325.0,265.4],[467.9,253.6],[762.7,252.5],[766.8,248.7],[838.2,247.4],[898.2,256.2],[1003.4,281.8],[1154.3,311.2],[1209.5,320.1],[1540.0,349.8],[1779.3,381.9],[1831.2,392.9],[2031.9,420.0],[2140.4,456.3],[2312.2,539.9],[2426.4,599.7]]};
+          const SPAN = TL.win[2], X0 = TL.win[0], Y0 = TL.win[1];
+          // ---------- arena entry + names (6 langs) ----------
+          if (!MAPS[TAH]) MAPS[TAH] = { e: MAPS[0].e, bg: "#7d7262", floor: "#9a907e", grid: "rgba(0,0,0,0)", wf: "rgba(214,204,182,.96)", wc: "255,236,200", fog: "150,132,104", turn: 1, sz: 12000 / 3000 };
+          TXA[TAH] = 0; TXG[TAH] = 0; TXW[TAH] = 600;
+          // r2 fix: the stock top-of-screen sky fade (fog colour at .85) washed the upper third out on a photographic ground; Tahrir gets a faint, ground-toned depth haze instead
+          MAPS[TAH].fog = "104,98,88";
+          try { const c = document.createElement("canvas"); c.width = 2; c.height = 128; const g = c.getContext("2d"), gr = g.createLinearGradient(0, 0, 0, 128);
+            gr.addColorStop(0, "rgba(104,98,88,.26)"); gr.addColorStop(0.5, "rgba(104,98,88,.08)"); gr.addColorStop(1, "rgba(104,98,88,0)"); g.fillStyle = gr; g.fillRect(0, 0, 2, 128); SKY["104,98,88"] = c; } catch (_) {}
+          Object.assign(I18N, {
+            map29: ["ساحة التحرير", "Tahrir Square", "Tahrir Meydanı", "Place Tahrir", "Plaza Tahrir", "तहरीर चौक"],
+            mapd29: ["قلب بغداد: نصب الحرية وحديقة النخيل والتكسيات الصفر عند جسر الجمهورية ودجلة", "The heart of Baghdad: the Freedom Monument, the palm garden and yellow taxis by the Jumhuriya Bridge and the Tigris", "Bağdat'ın kalbi: Özgürlük Anıtı, palmiye bahçesi ve Cumhuriyet Köprüsü ile Dicle kıyısında sarı taksiler", "Le cœur de Bagdad : le monument de la Liberté, le jardin de palmiers et les taxis jaunes près du pont al-Joumhouriya et du Tigre", "El corazón de Bagdad: el Monumento a la Libertad, el jardín de palmeras y los taxis amarillos junto al puente Yumhuriya y el Tigris", "बग़दाद का दिल: आज़ादी स्मारक, खजूर का बाग़ और जुम्हूरिया पुल व दजला के पास पीली टैक्सियाँ"],
+          });
+          // ---------- selection (persisted on this device), wire id for the server (worker / SQL know ids 0..28: Tahrir travels as 5, a 9000 open arena) ----------
+          const SK = "ss-tah-sel";
+          window.__tahSel = () => { try { return localStorage.getItem(SK) === "29" ? TAH : 0; } catch (_) { return 0; } };
+          window.__tahW = (m) => ((m | 0) === TAH ? 5 : Math.max(0, Math.min(28, m | 0)));
+          window.__tahU = (m) => ((m | 0) === 5 ? TAH : m | 0);
+          document.addEventListener("click", (e) => { const c = e.target.closest && e.target.closest("#b13dgr .b13d-c[data-m]"); if (!c) return; const i = +c.dataset.m; try { localStorage.setItem(SK, i === TAH ? "29" : "0"); } catch (_) {} setTimeout(() => { try { B13H && B13H.paint && B13H.paint(); } catch (_) {} }, 50); }, true);
+          mapSel = window.__tahSel();
+          try { NFH.home.push(() => { const m = window.__tahSel(); if (mapSel !== m) { mapSel = m; if (state !== "play") setMap(m); } }); } catch (_) {}
+
+          // ---------- assets: photographic ground tiles (L1 7x7 whole map, L2 4x4 square core on High), sprites ----------
+          const IM = {}, IMT = {}, im = (k) => { let o = IM[k]; if (!o) { o = IM[k] = new Image(); o.decoding = "async"; o.src = "ui/tah/" + k + ".webp?v=2"; } IMT[k] = performance.now(); return o.complete && o.naturalWidth ? o : null; };
+          const PERM = ["ground_lo", "cars", "signs", "relief", "tower", "trav", "palm0", "palm1", "palm2", "lamp0", "lamp1", "kiosk0", "kiosk1", "kiosk2", "mini"];
+          const tahLoad = () => PERM.forEach(im);
+          let evT = 0; const evict = () => { const n = performance.now(); if (n - evT < 2000) return; evT = n;
+            for (const k in IM) if (k[0] === "L" && n - IMT[k] > 6000) { IM[k].src = ""; delete IM[k]; delete IMT[k]; } };
+          window.__TAHIM = () => Object.keys(IM).filter((k) => IM[k].complete && IM[k].naturalWidth).map((k) => k + ":" + IM[k].naturalWidth + "x" + IM[k].naturalHeight);
+          const smT = setMap; setMap = function (i) { smT(i); if (mapI === TAH) tahLoad(); };
+          if (mapSel === TAH && state === "menu") setMap(TAH);
+          // vehicles: atlas cells [sx, sy, sw, sh, shx, shy, shw, shh, length m, width m, pad]; Baghdad mix: mostly yellow-white taxis
+          const SIGNS = [[-428.8,251.2,3.5,0],[-410.9,250.2,4.0,1],[-399.6,272.2,6.2,2],[-384.1,246.4,5.5,3],[-360.1,246.8,4.4,4],[-343.4,247.2,4.9,5],[-274.5,243.4,3.5,6],[-250.6,243.0,3.5,7],[-221.3,240.1,3.9,8],[-175.6,238.1,5.9,9],[-135.5,238.2,4.1,0],[-94.9,238.7,6.2,1],[81.3,5.8,3.6,2],[98.7,3.5,4.2,3],[128.1,-2.7,5.5,4],[204.4,-15.3,5.0,5],[236.7,-21.6,3.5,6],[254.5,-25.1,4.4,7]];
+          const VS = {"taxi0":[10,0,112,47,0,49,132,67,4.7,1.97,10],"taxi1":[144,0,112,48,134,50,132,68,4.7,2.01,10],"taxi2":[278,0,112,52,268,54,132,72,4.7,2.18,10],"white":[412,0,110,48,402,50,130,68,4.6,2.01,10],"silverh":[544,0,100,49,534,51,120,69,4.2,2.06,10],"suv":[666,0,117,55,656,57,137,75,4.9,2.3,10],"silver":[805,0,110,47,795,49,130,67,4.6,1.97,10],"whiteh":[10,134,103,48,0,184,123,68,4.3,2.0,10],"suv2":[135,134,117,56,125,192,137,76,4.9,2.35,10],"mini":[274,134,144,68,264,204,164,88,6.0,2.83,10],"mini2":[440,134,156,67,430,203,176,87,6.5,2.79,10],"bus":[618,134,276,79,608,215,296,99,11.5,3.29,10],"pickup":[10,316,120,57,0,375,140,77,5.0,2.38,10],"tuk0":[152,316,69,34,142,352,89,54,2.9,1.43,10],"tuk1":[243,316,69,34,233,352,89,54,2.9,1.43,10]}, VK = Object.keys(VS);
+          const VMIX = [["taxi0", 0.2], ["taxi1", 0.14], ["taxi2", 0.08], ["white", 0.09], ["silver", 0.07], ["silverh", 0.05], ["whiteh", 0.05], ["suv", 0.06], ["suv2", 0.04], ["mini", 0.05], ["mini2", 0.04], ["pickup", 0.05], ["bus", 0.03], ["tuk0", 0.03], ["tuk1", 0.02]];
+          const VPICK = (r) => { let a = 0; for (const [k, w] of VMIX) { a += w; if (r < a) return k; } return "taxi0"; };
+          // ---------- world transform (layout in metres -> world units; follows A, so online rooms (room.w) scale the same layout) ----------
+          const Z = { A: -1 };
+          const tz = () => {
+            if (Z.A === A) return Z;
+            const s = A / SPAN, wx = (x) => (x - X0) * s, wy = (y) => (y - Y0) * s;
+            Z.A = A; Z.s = s; Z.wx = wx; Z.wy = wy; Z.E = TL.win[3] * s;
+            Z.core = [wx(TL.core[0]), wy(TL.core[1]), wx(TL.core[2]), wy(TL.core[3])];
+            Z.tall = [];
+            TL.palms.forEach((p, i) => Z.tall.push({ dk: "tah", tk: "palm", x: wx(p[0]), y: wy(p[1]), v: p[2], k: p[3], r: 5 * s, z: 11 * p[3] * s }));
+            TL.lamps.forEach((p) => Z.tall.push({ dk: "tah", tk: "lamp", x: wx(p[0]), y: wy(p[1]), r: 30, z: 10 * s }));
+            SIGNS.forEach((p) => Z.tall.push({ dk: "tah", tk: "sign", x: wx(p[0]), y: wy(p[1]), w: p[2] * s, v: p[3], r: p[2] * s / 2 + 20, z: 4.5 * s }));
+            TL.kiosks.forEach((p) => Z.tall.push({ dk: "tah", tk: "kiosk", x: wx(p[0]), y: wy(p[1]), v: p[2], r: 40, z: 3 * s }));
+            { const m = TL.mon.slab; Z.mon = { dk: "tah", tk: "mon", x: wx((m[0] + m[2]) / 2), y: wy(m[3]) + 0.01, r: (m[2] - m[0]) * s / 2 + 60, z: m[5] * s }; Z.tall.push(Z.mon); }
+            { const b = TL.tower.b; Z.tall.push({ dk: "tah", tk: "tower", x: wx((b[0] + b[2]) / 2), y: wy(b[3]), r: (b[2] - b[0]) * s / 2 + 80, z: TL.tower.h * s }); }
+            Z.paths = TL.paths.map((p, j) => {
+              const P = p.p.map((q) => [wx(q[0]), wy(q[1])]), L = [0];
+              for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+              const T = L[L.length - 1], n = p.n, cars = [];
+              let sd = (j * 9301 + 49297) % 233280;
+              const rnd = () => (sd = (sd * 9301 + 49297) % 233280) / 233280;
+              for (let c = 0; c < n; c++) { const r = rnd(); const ty = VPICK(r, rnd()); cars.push({ o: (c + rnd() * 0.5) / n * T, c: ty, sp: (0.8 + rnd() * 0.3) * (VS[ty][8] > 8 ? 0.8 : 1) }); }
+              return { P, L, T, loop: !!p.loop, cars, x0: Math.min(...P.map((q) => q[0])), x1: Math.max(...P.map((q) => q[0])), y0: Math.min(...P.map((q) => q[1])), y1: Math.max(...P.map((q) => q[1])) };
+            });
+            Z.rails = TL.rails.map((r) => r.map((q) => [wx(q[0]), wy(q[1])]));
+            return Z;
+          };
+          window.__TAHZ = () => tz();
+
+          // ---------- ground: photographic tiles drawn in perspective strips (each strip = 2 exact affine triangles); missing tiles fall back to ground_lo ----------
+          const txF0 = txFloor;
+          txFloor = function (fx0, fx1, fy0, fy1) {
+            if (mapI !== TAH) return txF0.apply(this, arguments);
+            const lo = im("ground_lo"); if (!lo) return false;
+            const z = tz(), E = z.E, hi = QL >= 1;
+            const c0 = unpr(0, 0), c1 = unpr(W, 0), c2 = unpr(0, H), c3 = unpr(W, H);
+            const ex0 = Math.max(-E, Math.min(c0.x, c2.x) - 60), ex1 = Math.min(A + E, Math.max(c1.x, c3.x) + 60), ey0 = Math.max(-E, c0.y - 60), ey1 = Math.min(A + E, c2.y + 120);
+            if (!(ex1 > ex0 && ey1 > ey0)) return false;
+            pr(cam.x, ey0, 0); const ya = Math.max(0, PY); pr(cam.x, ey1, 0); const yb = Math.min(H, PY);
+            if (!(yb > ya + 1)) return false;
+            const sm0 = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; if (ctx.imageSmoothingQuality) ctx.imageSmoothingQuality = QL >= 2 ? "medium" : "low";
+            const N = QL <= 0 ? 22 : QL === 1 ? 30 : 38, st = (yb - ya) / N, SW = A + 2 * E, fs = lo.naturalWidth / SW;
+            const T1 = SW / 7, T2 = SW / 14;
+            // which tiles are on screen: request them (lazy), use the ones decoded
+            const L1 = [], L2 = [];
+            // Medium+: L2 (16.8 px/m) tiles; an L2 tile still loading borrows its L1 parent. Low: L1 (8.4 px/m) only.
+            const need1 = {};
+            if (hi) { for (let j = Math.max(0, Math.floor((ey0 + E) / T2)); j <= Math.min(13, Math.floor((ey1 + E) / T2)); j++)
+              for (let i = Math.max(0, Math.floor((ex0 + E) / T2)); i <= Math.min(13, Math.floor((ex1 + E) / T2)); i++) { const g = im("L2_" + i + "_" + j); if (g) L2.push([g, -E + i * T2, -E + j * T2, T2]); else need1[(i >> 1) + "_" + (j >> 1)] = 1; } }
+            else for (let j = Math.max(0, Math.floor((ey0 + E) / T1)); j <= Math.min(6, Math.floor((ey1 + E) / T1)); j++)
+              for (let i = Math.max(0, Math.floor((ex0 + E) / T1)); i <= Math.min(6, Math.floor((ex1 + E) / T1)); i++) need1[i + "_" + j] = 1;
+            for (const k in need1) { const g = im("L1_" + k), ij = k.split("_"); if (g) L1.push([g, -E + ij[0] * T1, -E + ij[1] * T1, T1]); }
+            const full = (lst, x0, y0, x1, y1) => { let a = 0; for (const t of lst) { const ix = Math.min(x1, t[1] + t[3]) - Math.max(x0, t[1]), iy = Math.min(y1, t[2] + t[3]) - Math.max(y0, t[2]); if (ix > 0 && iy > 0) a += ix * iy; } return a >= (x1 - x0) * (y1 - y0) * 0.999; };
+            const blit = (lst, x0, y0, x1, y1) => { for (const t of lst) { const g = t[0], tx = t[1], ty = t[2], ts = t[3], k = g.naturalWidth / ts;
+              const ix0 = Math.max(x0, tx), ix1 = Math.min(x1, tx + ts), iy0 = Math.max(y0, ty), iy1 = Math.min(y1, ty + ts);
+              if (ix1 > ix0 && iy1 > iy0) ctx.drawImage(g, (ix0 - tx) * k, (iy0 - ty) * k, (ix1 - ix0) * k, (iy1 - iy0) * k, ix0, iy0, ix1 - ix0, iy1 - iy0); } };
+            const tri = (P, Q, R, a, c, ox, oy, x0, y0, x1, y1) => {
+              const cx = (P[0] + Q[0] + R[0]) / 3, cy = (P[1] + Q[1] + R[1]) / 3, g = (p) => [p[0] + (p[0] > cx ? 1 : -1), p[1] + (p[1] > cy ? 1.2 : -1.2)];
+              const p = g(P), q = g(Q), r = g(R);
+              ctx.save(); ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.lineTo(r[0], r[1]); ctx.closePath(); ctx.clip();
+              ctx.setTransform(dpr * a[0], dpr * a[1], dpr * c[0], dpr * c[1], dpr * ox, dpr * oy);
+              { const py = (y1 - y0) * 0.6 + 2, px = 30; x0 = Math.max(-E, x0 - px); x1 = Math.min(A + E, x1 + px); y0 = Math.max(-E, y0 - py); y1 = Math.min(A + E, y1 + py); }
+              const f2 = L2.length && full(L2, x0, y0, x1, y1);
+              if (!f2) { if (!L1.length || !full(L1.concat(L2), x0, y0, x1, y1)) ctx.drawImage(lo, (x0 + E) * fs, (y0 + E) * fs, (x1 - x0) * fs, (y1 - y0) * fs, x0, y0, x1 - x0, y1 - y0);
+                if (L1.length) blit(L1, x0, y0, x1, y1); }
+              if (L2.length) blit(L2, x0, y0, x1, y1);
+              ctx.restore();
+            };
+            for (let i = 0; i < N; i++) {
+              const s0 = ya + i * st, s1 = s0 + st;
+              const wa = unpr(CX, s0).y, wb = unpr(CX, s1).y; if (!(wb > wa)) continue;
+              const y0 = Math.max(wa, ey0), y1 = Math.min(wb, ey1); if (y1 <= y0) continue;
+              const l0 = unpr(0, s0).x, l1 = unpr(0, s1).x, r0 = unpr(W, s0).x, r1 = unpr(W, s1).x;
+              const x0 = Math.max(ex0, Math.min(l0, l1) - 4), x1 = Math.min(ex1, Math.max(r0, r1) + 4); if (x1 <= x0) continue;
+              // r2 fix: each strip is cut into K columns before the two affine triangles, so straight lane lines / bridge parapets no longer kink into zigzags at the triangle diagonal
+              const K = QL <= 0 ? 2 : 3;
+              for (let k = 0; k < K; k++) {
+                const cx0 = x0 + (x1 - x0) * k / K, cx1 = x0 + (x1 - x0) * (k + 1) / K;
+                const TL_ = mpP(cx0, y0, 0), TR = mpP(cx1, y0, 0), BL = mpP(cx0, y1, 0), BR = mpP(cx1, y1, 0), dx = cx1 - cx0, dy = y1 - y0;
+                const a1 = [(TR[0] - TL_[0]) / dx, (TR[1] - TL_[1]) / dx], c1 = [(BL[0] - TL_[0]) / dy, (BL[1] - TL_[1]) / dy];
+                tri(TL_, TR, BL, a1, c1, TL_[0] - cx0 * a1[0] - y0 * c1[0], TL_[1] - cx0 * a1[1] - y0 * c1[1], cx0, y0, cx1, y1);
+                const a2 = [(BR[0] - BL[0]) / dx, (BR[1] - BL[1]) / dx], c2 = [(BR[0] - TR[0]) / dy, (BR[1] - TR[1]) / dy];
+                tri(TR, BR, BL, a2, c2, BR[0] - cx1 * a2[0] - y1 * c2[0], BR[1] - cx1 * a2[1] - y1 * c2[1], cx0, y0, cx1, y1);
+              }
+            }
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = sm0;
+            // warm Baghdad haze toward the horizon (ground only, under snakes)
+            if (QL > 0 && window.__TAHHZ) { const hz = ctx.createLinearGradient(0, ya, 0, ya + (yb - ya) * 0.4); hz.addColorStop(0, "rgba(222,204,170,.16)"); hz.addColorStop(1, "rgba(222,204,170,0)"); ctx.fillStyle = hz; ctx.fillRect(0, ya, W, (yb - ya) * 0.4); }
+            evict();
+            return true;
+          };
+          let TRP = null; const trav = () => { if (TRP) return TRP; const t = im("trav"); if (!t) return "#d9ccb0"; TRP = ctx.createPattern(t, "repeat"); return TRP; };
+          // shaded box with a stone pattern: draws each face with the pattern then a light/shadow veil (sun from upper-left)
+          const pBox = (x0, y0, x1, y1, z0, z1, fill, vf, vs, vt) => {
+            const f0 = mpP(x0, y1, z0), f1 = mpP(x1, y1, z0), f2 = mpP(x1, y1, z1), f3 = mpP(x0, y1, z1), t0 = mpP(x0, y0, z1), t1 = mpP(x1, y0, z1);
+            const face = (a, b, c, d, v) => { mpFace(a, b, c, d, fill); if (v) mpFace(a, b, c, d, v); };
+            if (cam.x < x0) face(mpP(x0, y0, z0), f0, f3, t0, vs[0]); else if (cam.x > x1) face(mpP(x1, y0, z0), f1, f2, t1, vs[1]);
+            face(f0, f1, f2, f3, vf); face(t0, t1, f2, f3, vt);
+          };
+
+          // ---------- arena edge: travertine parapet with a slender galvanised railing ----------
+          const wallT = wall;
+          wall = function (x0, y0, x1, y1) {
+            if (mapI !== TAH) return wallT.apply(this, arguments);
+            const s = tz().s, hp = 0.85 * s, hr = 1.9 * s;
+            const a = mpP(x0, y0, 0), b = mpP(x1, y1, 0), c = mpP(x1, y1, hp), d = mpP(x0, y0, hp);
+            mpFace(a, b, c, d, trav()); mpFace(a, b, c, d, "rgba(60,48,30,.18)");
+            ctx.lineCap = "round"; ctx.strokeStyle = "#eee5d2"; ctx.lineWidth = Math.max(1.2, 0.2 * s * PK); ctx.beginPath(); ctx.moveTo(d[0], d[1]); ctx.lineTo(c[0], c[1]); ctx.stroke();
+            ctx.strokeStyle = "rgba(40,30,20,.45)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+            const horiz = y0 === y1, A0_ = horiz ? x0 : y0, A1_ = horiz ? x1 : y1, sp = 2.0 * s;
+            ctx.strokeStyle = "rgba(150,156,160,.95)"; ctx.lineWidth = Math.max(0.8, 0.07 * s * PK); ctx.beginPath();
+            for (let t = Math.ceil(A0_ / sp) * sp; t <= A1_; t += sp) { const px = horiz ? t : x0, py = horiz ? y0 : t; pr(px, py, hp); ctx.moveTo(PX, PY); pr(px, py, hr); ctx.lineTo(PX, PY); }
+            ctx.stroke(); ctx.strokeStyle = "rgba(214,218,220,.95)"; ctx.lineWidth = Math.max(1, 0.09 * s * PK); ctx.beginPath();
+            for (const zz of [hr, hp + (hr - hp) * 0.5]) { pr(x0, y0, zz); ctx.moveTo(PX, PY); pr(x1, y1, zz); ctx.lineTo(PX, PY); }
+            ctx.stroke();
+          };
+
+          // ---------- floor pass: railings + traffic sprites with soft shadows (drawn under snakes, so they never hide a snake) ----------
+          const SUNX = 0.55, SUNY = 0.835;
+          const quad = (img, sx, sy, sw, sh, x, y, ca, sa, hl, hw, zz) => { // top-down sprite on a horizontal plane at height zz
+            const nx = -sa, ny = ca;
+            mpMap(img, sx, sy, sw, sh, mpP(x - ca * hl - nx * hw, y - sa * hl - ny * hw, zz), mpP(x + ca * hl - nx * hw, y + sa * hl - ny * hw, zz), mpP(x - ca * hl + nx * hw, y - sa * hl + ny * hw, zz));
+          };
+          const drawCar = (x, y, a, ty, s, al) => {
+            const cars = im("cars"), v = VS[ty]; if (!cars || !v) return;
+            const ca = Math.cos(a), sa = Math.sin(a), L = v[8] * s, Wd = v[9] * s, k = L / v[2], pd = v[10] * k;
+            const hz = (v[8] > 8 ? 3.2 : v[8] < 3.5 ? 1.8 : 1.5) * s * 0.5;
+            ctx.globalAlpha = al * 0.85; quad(cars, v[4], v[5], v[6], v[7], x + SUNX * hz, y + SUNY * hz, ca, sa, L / 2 + pd, Wd / 2 + pd, 0);
+            ctx.globalAlpha = al; quad(cars, v[0], v[1], v[2], v[3], x, y, ca, sa, L / 2, Wd / 2, 0.25 * s);
+            ctx.globalAlpha = 1;
+          };
+          const mpF0 = mpFloor;
+          mpFloor = function (vis, fx0, fx1, fy0, fy1) {
+            if (mapI !== TAH) return mpF0.apply(this, arguments);
+            const z = tz(), s = z.s;
+            // railings: slender galvanised steel (posts + two rails)
+            ctx.lineCap = "round";
+            for (const r of z.rails) {
+              ctx.strokeStyle = "rgba(196,200,202,.9)"; ctx.lineWidth = Math.max(0.8, 0.06 * s * PK); ctx.beginPath(); let on = false;
+              for (let i = 0; i < r.length; i++) { const q = r[i]; if (!vis(q[0], q[1], 40)) { on = false; continue; } pr(q[0], q[1], 1.1 * s); if (on) ctx.lineTo(PX, PY); else ctx.moveTo(PX, PY); on = true; }
+              ctx.stroke();
+              if (QL > 0) { ctx.strokeStyle = "rgba(120,126,130,.85)"; ctx.beginPath(); for (let i = 0; i < r.length; i += 1) { const q = r[i]; if (!vis(q[0], q[1], 40)) continue; pr(q[0], q[1], 0); ctx.moveTo(PX, PY); pr(q[0], q[1], 1.1 * s); ctx.lineTo(PX, PY); } ctx.lineWidth = Math.max(0.6, 0.04 * s * PK); ctx.stroke(); }
+            }
+            if ((window.__TAHOFF | 0) & 1) return;
+            const vx0 = fx0 - 200, vx1 = fx1 + 200, vy0 = fy0 - 200, vy1 = fy1 + 200, spd = 6.2 * s;
+            for (const p of z.paths) {
+              if (p.x1 < vx0 || p.x0 > vx1 || p.y1 < vy0 || p.y0 > vy1) continue;
+              const P = p.P, L = p.L, T = p.T;
+              for (const c of p.cars) {
+                let d = (c.o + time * spd * c.sp) % T; if (d < 0) d += T;
+                let al = 1; if (!p.loop) { const e = Math.min(d, T - d); if (e < 14 * s) al = Math.max(0, e / (14 * s)); if (al <= 0.02) continue; }
+                let i = 1; while (i < L.length - 1 && L[i] < d) i++;
+                const f = (d - L[i - 1]) / Math.max(1e-6, L[i] - L[i - 1]), x = P[i - 1][0] + (P[i][0] - P[i - 1][0]) * f, y = P[i - 1][1] + (P[i][1] - P[i - 1][1]) * f;
+                if (!vis(x, y, 60)) continue;
+                drawCar(x, y, Math.atan2(P[i][1] - P[i - 1][1], P[i][0] - P[i - 1][0]), c.c, s, al);
+              }
+            }
+          };
+
+          // ---------- tall props: palms, lamps, kiosks, the Freedom Monument, the Turkish Restaurant tower (photographic sprites / textures; shadows are baked in the ground) ----------
+          const fadeAt = (x0, y0, x1, y1) => { // screen rect over the player's head -> see-through
+            const pl = player && player.alive && state === "play" ? player.seg[0] : null; if (!pl) return 1;
+            pr(pl.x, pl.y, pl.r || 10); return PX > x0 && PX < x1 && PY > y0 && PY < y1 ? 0.32 : 1;
+          };
+          const mpTallT = mpTall;
+          mpTall = function (vis) {
+            const out = mpTallT.apply(this, arguments);
+            if (mapI !== TAH || ((window.__TAHOFF | 0) & 2)) return out;
+            const z = tz(); let add = false;
+            for (const o of z.tall) if (vis(o.x, o.y, o.r + o.z * 0.6)) { out.push(o); add = true; }
+            if (add) out.sort((a, b) => a.y - b.y);
+            return out;
+          };
+          const drawMon = (o) => {
+            const z = tz(), s = z.s, m = TL.mon.slab, x0 = z.wx(m[0]), x1 = z.wx(m[2]), yb = z.wy(m[1]), yf = z.wy(m[3]), z0 = m[4] * s, z1 = m[5] * s;
+            const tl = mpP(x0, yf, z1), br = mpP(x1, yf, 0); const fa = fadeAt(tl[0], tl[1], br[0], br[1] + 4) < 1 && player && player.seg[0].y < yf + 4 ? 0.35 : 1;
+            ctx.globalAlpha = fa;
+            const tp = trav();
+            // the two end piers (legs), then the slab: travertine top/ends, bronze-on-travertine relief face
+            for (const p of TL.mon.pil) pBox(z.wx(p[0]), z.wy(p[1]), z.wx(p[2]), z.wy(p[3]), 0, z1, tp, "rgba(40,30,20,.06)", ["rgba(255,250,235,.08)", "rgba(30,24,20,.32)"], "rgba(255,248,230,.18)");
+            pBox(x0, yb, x1, yf, z0, z1, tp, "rgba(40,30,20,.06)", ["rgba(255,250,235,.08)", "rgba(30,24,20,.32)"], "rgba(255,248,230,.2)");
+            const rf = im("relief");
+            if (rf) { const nb = QL <= 0 ? 3 : 6, ih = rf.naturalHeight, iw = rf.naturalWidth;
+              for (let b = 0; b < nb; b++) { const za = z1 - (z1 - z0) * b / nb, zb = z1 - (z1 - z0) * (b + 1) / nb;
+                mpMap(rf, 0, ih * b / nb, iw, ih / nb + (b < nb - 1 ? 0.5 : 0), mpP(x0, yf + 0.5, za), mpP(x1, yf + 0.5, za), mpP(x0, yf + 0.5, zb)); } }
+            // soffit: the underside in deep shade
+            ctx.globalAlpha = fa * 0.6; mpFace(mpP(x0, yf, z0), mpP(x1, yf, z0), mpP(x1, yf, z0 - 0.3 * s), mpP(x0, yf, z0 - 0.3 * s), "#3d362d"); ctx.globalAlpha = 1;
+          };
+          const drawTower = (o) => {
+            const z = tz(), s = z.s, b = TL.tower.b, x0 = z.wx(b[0]), x1 = z.wx(b[2]), y0 = z.wy(b[1]), y1 = z.wy(b[3]), h = TL.tower.h * s;
+            const tl = mpP(x0, y1, h), br = mpP(x1, y1, 0), fa = fadeAt(tl[0], tl[1], br[0], br[1]);
+            ctx.globalAlpha = fa;
+            const tw = im("tower");
+            pBox(x0, y0, x1, y1, 0, h, "#8d877b", null, ["rgba(0,0,0,0)", "rgba(0,0,0,0)"], null);
+            if (tw) { const nb = QL <= 0 ? 4 : 10, ih = tw.naturalHeight, iw = tw.naturalWidth;
+              const band = (P0, P1, veil) => { for (let k = 0; k < nb; k++) { const za = h - h * k / nb, zb = h - h * (k + 1) / nb;
+                const a = [P0[0], P0[1]], c = [P1[0], P1[1]];
+                mpMap(tw, 0, ih * k / nb, iw, ih / nb + (k < nb - 1 ? 0.5 : 0), mpP(a[0], a[1], za), mpP(c[0], c[1], za), mpP(a[0], a[1], zb)); }
+                if (veil) { mpFace(mpP(P0[0], P0[1], 0), mpP(P1[0], P1[1], 0), mpP(P1[0], P1[1], h), mpP(P0[0], P0[1], h), veil); } };
+              if (cam.x < x0) band([x0, y0], [x0, y1], "rgba(255,246,228,.06)"); else if (cam.x > x1) band([x1, y1], [x1, y0], "rgba(20,22,30,.38)");
+              band([x0, y1 + 0.3], [x1, y1 + 0.3], "rgba(20,22,30,.12)"); }
+            // roof: concrete slab with parapet, plant room and water tanks
+            const rf = [mpP(x0, y0, h), mpP(x1, y0, h), mpP(x1, y1, h), mpP(x0, y1, h)];
+            ctx.beginPath(); ctx.moveTo(rf[0][0], rf[0][1]); for (let i = 1; i < 4; i++) ctx.lineTo(rf[i][0], rf[i][1]); ctx.closePath(); ctx.fillStyle = "#9c968a"; ctx.fill();
+            const ix = (x1 - x0) * 0.32, iy = (y1 - y0) * 0.3;
+            pBox(x0 + ix, y0 + iy, x1 - ix, y1 - iy, h, h + 3.2 * s, "#a7a194", "rgba(0,0,0,.04)", ["rgba(255,255,255,.05)", "rgba(0,0,0,.3)"], "rgba(255,250,240,.12)");
+            ctx.globalAlpha = 1;
+          };
+          const mpObjT = mpObj;
+          mpObj = function (o) {
+            if (o.dk !== "tah") return mpObjT.apply(this, arguments);
+            const s = tz().s;
+            if (o.tk === "palm") {
+              const pm = im("palm" + o.v); if (!pm) return;
+              const h = o.z * 1.05, w = h * pm.naturalWidth / pm.naturalHeight;
+              pr(o.x, o.y, 0); const bx = PX, by = PY, k = PK; pr(o.x, o.y, h); const ty = PY, ww = w * k;
+              const fa = fadeAt(bx - ww * 0.45, ty, bx + ww * 0.45, ty + (by - ty) * 0.6);
+              if (fa < 1) ctx.globalAlpha = fa; mpBB(pm, o.x, o.y, w, h, 0); ctx.globalAlpha = 1;
+            } else if (o.tk === "lamp") {
+              const lm = im(o.y % 2 < 1 ? "lamp0" : "lamp1"); const h = o.z, n = mpNight();
+              if (lm) { const w = h * lm.naturalWidth / lm.naturalHeight; pr(o.x, o.y, 0); const bx = PX, by = PY; pr(o.x, o.y, h); const fa = fadeAt(bx - 8, PY, bx + 8, by); if (fa < 1) ctx.globalAlpha = fa; mpBB(lm, o.x, o.y, w, h, 0); ctx.globalAlpha = 1; }
+              if (n > 0.05 && QL > 0) { pr(o.x, o.y, h * 0.93); const d = 6 * s * PK; ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.6 * n; ctx.drawImage(mpSoft("255,214,140"), PX - d / 2, PY - d / 2, d, d); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; }
+            } else if (o.tk === "kiosk") {
+              const km = im("kiosk" + (o.v % 3)); if (!km) return;
+              const w = 3.4 * s, h = w * km.naturalHeight / km.naturalWidth; mpBB(km, o.x, o.y, w, h, 0);
+            } else if (o.tk === "sign") { // rooftop shop sign on two steel posts, Arabic lettering
+              const sg = im("signs"); if (!sg) return;
+              const x0 = o.x - o.w / 2, x1 = o.x + o.w / 2, zb = 1.6 * s, zt = zb + o.w / 4, fa = (() => { const a = mpP(x0, o.y, zt), b = mpP(x1, o.y, 0); return fadeAt(a[0], a[1], b[0], b[1]); })();
+              ctx.globalAlpha = fa * 0.35; mpFace(mpP(x0, o.y, 0), mpP(x1, o.y, 0), mpP(x1 + SUNX * zt * 0.75, o.y + SUNY * zt * 0.75, 0), mpP(x0 + SUNX * zt * 0.75, o.y + SUNY * zt * 0.75, 0), "#14161e");
+              ctx.globalAlpha = fa; ctx.strokeStyle = "#4a4d52"; ctx.lineWidth = Math.max(1, 0.12 * s * PK); ctx.beginPath();
+              for (const px of [x0 + o.w * 0.18, x1 - o.w * 0.18]) { pr(px, o.y, 0); ctx.moveTo(PX, PY); pr(px, o.y, zb); ctx.lineTo(PX, PY); } ctx.stroke();
+              mpMap(sg, 0, o.v * 128, 512, 128, mpP(x0, o.y, zt), mpP(x1, o.y, zt), mpP(x0, o.y, zb));
+              ctx.globalAlpha = 1;
+            } else if (o.tk === "mon") drawMon(o);
+            else if (o.tk === "tower") drawTower(o);
+          };
+          // ---------- minimap: the square under the dots, with a north tick (the map is turned so the monument is "up") ----------
+          window.__TAHMM = (g, pad, inner) => {
+            if (mapI !== TAH) return; const mm = im("mini"); if (!mm) return;
+            g.globalAlpha = 0.8; g.drawImage(mm, pad, pad, inner, inner); g.globalAlpha = 1;
+            const a = Math.atan2(-Math.cos(0.9275), -Math.sin(0.9275)), cx = pad + inner / 2, cy = pad + inner / 2, r = inner / 2 + pad * 0.55;
+            const tx = cx + Math.cos(a) * r, ty = cy + Math.sin(a) * r, ca = Math.cos(a), sa = Math.sin(a);
+            g.beginPath(); g.moveTo(tx + ca * 3.2, ty + sa * 3.2); g.lineTo(tx - sa * 2.4 - ca * 1.6, ty + ca * 2.4 - sa * 1.6); g.lineTo(tx + sa * 2.4 - ca * 1.6, ty - ca * 2.4 - sa * 1.6); g.closePath();
+            g.fillStyle = "#ff5a4a"; g.fill(); g.strokeStyle = "rgba(40,20,0,.8)"; g.lineWidth = 0.7; g.stroke();
+          };
+        } catch (e) { try { console.warn("tahrir", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
     </script>
@@ -28175,6 +28487,11 @@ body #over #pxrank .j-dc .bp-pt img, #sskb .bp-pt img { width: 100% !important; 
 #b13pop.j-pp .bp-bot .bp-cx > * { width: auto !important; margin: 0 !important; }
 #b13pop.j-pp .bp-bot .j-pba .bp-busy { height: 28px !important; }
 
+</style>
+<style id="ss13u-tahrir">
+html body #b13hmp { pointer-events: auto !important; cursor: pointer; }
+html body.b13h-on #b13hmp span.h-chev { display: inline-flex !important; }
+html body #b13hart, html body #b13hrnd { display: none !important; }
 </style>
 </body>
 </html>
