@@ -19661,6 +19661,212 @@
             LN.stat = () => ({ up: up(), sys: LN.sys, rtOk: !!B13.rtOk, msgAgo: LN.msgAt ? Date.now() - LN.msgAt : null, lat: LN.lat.slice(-12), lastPoke: LN.lastPoke, lastCatch: LN.lastCatch, ledMax: LN.ledMax, log: LN.log.slice(-8) });
           }
         } catch (e) { try { console.warn("ss13u live", e); } catch (_) {} }
+        // ===== ss13u-mods: moderator panel (shield button, mod_* RPCs) + owner live toast on moderator actions (ss13u_mods/src/mods_game.js) =====
+        // Server: sql/104_mods.sql. Every power is checked on the server (mod_* refuse instantly after a revoke); this UI only shows what a
+        // moderator may do. Inserted inside the main IIFE (uses ON, state, LANG, I18N, _t, $, esc). No block-level function declarations.
+        try {
+          const MDK = {"mdShield": ["لوحة المشرف", "Moderator panel", "Moderatör paneli", "Panneau de modération", "Panel de moderación", "मॉडरेटर पैनल"], "mdTitle": ["المشرف", "Moderator", "Moderatör", "Modération", "Moderación", "मॉडरेटर"], "mdReports": ["البلاغات", "Reports", "Şikayetler", "Signalements", "Denuncias", "रिपोर्ट"], "mdPlayers": ["اللاعبون", "Players", "Oyuncular", "Joueurs", "Jugadores", "खिलाड़ी"], "mdSupport": ["الدعم", "Support", "Destek", "Assistance", "Soporte", "सपोर्ट"], "mdSearchPh": ["الاسم أو رقم اللاعب", "Name or player ID", "İsim veya oyuncu ID", "Nom ou ID du joueur", "Nombre o ID de jugador", "नाम या प्लेयर ID"], "mdSearch": ["بحث", "Search", "Ara", "Rechercher", "Buscar", "खोजें"], "mdNoReports": ["ماكو بلاغات مفتوحة", "No open reports", "Açık şikayet yok", "Aucun signalement ouvert", "No hay denuncias abiertas", "कोई खुली रिपोर्ट नहीं"], "mdNoSupport": ["ماكو رسائل دعم مفتوحة", "No open support messages", "Açık destek mesajı yok", "Aucun message d'assistance ouvert", "No hay mensajes de soporte abiertos", "कोई खुला सपोर्ट संदेश नहीं"], "mdNoPlayers": ["ما لقينا لاعبين", "No players found", "Oyuncu bulunamadı", "Aucun joueur trouvé", "No se encontraron jugadores", "कोई खिलाड़ी नहीं मिला"], "mdSearchHint": ["ابحث عن لاعب بالاسم أو برقم اللاعب", "Search a player by name or player ID", "Bir oyuncuyu isim veya oyuncu ID ile ara", "Cherche un joueur par nom ou ID", "Busca un jugador por nombre o ID", "नाम या प्लेयर ID से खिलाड़ी खोजें"], "mdBy": ["بلاغ من {x}", "Reported by {x}", "Şikayet eden: {x}", "Signalé par {x}", "Denunciado por {x}", "{x} ने रिपोर्ट किया"], "mdOpenPl": ["فتح اللاعب", "Open player", "Oyuncuyu aç", "Voir le joueur", "Ver jugador", "खिलाड़ी खोलें"], "mdActioned": ["تم الإجراء", "Action taken", "İşlem yapıldı", "Action prise", "Acción tomada", "कार्रवाई की गई"], "mdDismiss": ["رفض البلاغ", "Dismiss", "Reddet", "Rejeter", "Descartar", "खारिज करें"], "mdMute": ["كتم الدردشة", "Mute chat", "Sohbeti sustur", "Couper le chat", "Silenciar chat", "चैट म्यूट करें"], "mdBan": ["حظر مؤقت", "Temporary ban", "Geçici yasak", "Bannissement temporaire", "Bloqueo temporal", "अस्थायी बैन"], "mdWarn": ["بطاقة صفراء", "Yellow card", "Sarı kart", "Carton jaune", "Tarjeta amarilla", "पीला कार्ड"], "mdRename": ["إعادة تعيين الاسم", "Reset name", "İsmi sıfırla", "Réinitialiser le nom", "Restablecer nombre", "नाम रीसेट करें"], "mdPhoto": ["إزالة الصورة", "Reset photo", "Fotoğrafı sıfırla", "Réinitialiser la photo", "Restablecer foto", "फ़ोटो रीसेट करें"], "mdReason": ["السبب (مطلوب)", "Reason (required)", "Neden (zorunlu)", "Raison (obligatoire)", "Motivo (obligatorio)", "कारण (ज़रूरी)"], "mdReasonShort": ["اكتب سبباً (3 أحرف على الأقل)", "Write a reason (at least 3 characters)", "Bir neden yaz (en az 3 karakter)", "Écris une raison (3 caractères min.)", "Escribe un motivo (mínimo 3 caracteres)", "कारण लिखें (कम से कम 3 अक्षर)"], "mdDur": ["المدة", "Duration", "Süre", "Durée", "Duración", "अवधि"], "mdH": ["{n} س", "{n} h", "{n} sa", "{n} h", "{n} h", "{n} घं"], "mdConfirm": ["تأكيد", "Confirm", "Onayla", "Confirmer", "Confirmar", "पुष्टि करें"], "mdCancel": ["إلغاء", "Cancel", "İptal", "Annuler", "Cancelar", "रद्द करें"], "mdDone": ["تم", "Done", "Tamam", "Fait", "Hecho", "हो गया"], "mdReplyPh": ["اكتب ردّك على اللاعب", "Write your reply to the player", "Oyuncuya yanıtını yaz", "Écris ta réponse au joueur", "Escribe tu respuesta al jugador", "खिलाड़ी को अपना जवाब लिखें"], "mdSend": ["إرسال الرد", "Send reply", "Yanıtı gönder", "Envoyer la réponse", "Enviar respuesta", "जवाब भेजें"], "mdMutedTo": ["مكتوم حتى {t}", "Muted until {t}", "{t} tarihine kadar susturuldu", "Muet jusqu'à {t}", "Silenciado hasta {t}", "{t} तक म्यूट"], "mdBannedTo": ["محظور حتى {t}", "Banned until {t}", "{t} tarihine kadar yasaklı", "Banni jusqu'à {t}", "Bloqueado hasta {t}", "{t} तक बैन"], "mdCards": ["البطاقات: {n}", "Cards: {n}", "Kartlar: {n}", "Cartons : {n}", "Tarjetas: {n}", "कार्ड: {n}"], "mdOpenRep": ["بلاغات مفتوحة: {n}", "Open reports: {n}", "Açık şikayetler: {n}", "Signalements ouverts : {n}", "Denuncias abiertas: {n}", "खुली रिपोर्ट: {n}"], "mdLevel": ["المستوى {n}", "Level {n}", "Seviye {n}", "Niveau {n}", "Nivel {n}", "लेवल {n}"], "mdProtected": ["محمي: المالك فقط يقدر يتصرف بهذا الحساب", "Protected: only the owner can act on this account", "Korumalı: bu hesapta yalnızca sahip işlem yapabilir", "Protégé : seul le propriétaire peut agir sur ce compte", "Protegido: solo el propietario puede actuar sobre esta cuenta", "सुरक्षित: इस खाते पर केवल मालिक कार्रवाई कर सकता है"], "mdHint": ["كل إجراء يحتاج سبباً، والمالك يشوف كل شيء.", "Every action needs a reason. The owner sees everything.", "Her işlem bir neden ister. Sahip her şeyi görür.", "Chaque action demande une raison. Le propriétaire voit tout.", "Cada acción necesita un motivo. El propietario lo ve todo.", "हर कार्रवाई के लिए कारण ज़रूरी है। मालिक सब कुछ देखता है।"], "mdLeft": ["المتبقي اليوم: {x}", "Left today: {x}", "Bugün kalan: {x}", "Restant aujourd'hui : {x}", "Restante hoy: {x}", "आज बाकी: {x}"], "mdRenameNote": ["الاسم راح يصير {x}", "The name will change to {x}", "İsim {x} olarak değişecek", "Le nom deviendra {x}", "El nombre cambiará a {x}", "नाम {x} हो जाएगा"], "mdPhotoNote": ["تنشال صورة الملف الشخصي وترجع الصورة الافتراضية.", "The profile photo is removed and the default avatar is set.", "Profil fotoğrafı kaldırılır ve varsayılan avatar ayarlanır.", "La photo de profil est retirée et l'avatar par défaut est remis.", "Se quita la foto de perfil y se pone el avatar predeterminado.", "प्रोफ़ाइल फ़ोटो हटाई जाएगी और डिफ़ॉल्ट अवतार लगेगा।"], "mdWarnNote": ["البطاقة الصفراء تحذير. البطاقة الثالثة يعطيها المالك فقط.", "A yellow card is a warning. Only the owner can give a third card.", "Sarı kart bir uyarıdır. Üçüncü kartı yalnızca sahip verebilir.", "Un carton jaune est un avertissement. Seul le propriétaire peut donner un troisième carton.", "Una tarjeta amarilla es una advertencia. Solo el propietario puede dar una tercera.", "पीला कार्ड एक चेतावनी है। तीसरा कार्ड केवल मालिक दे सकता है।"], "mdBack": ["رجوع", "Back", "Geri", "Retour", "Atrás", "वापस"], "mdClose": ["إغلاق", "Close", "Kapat", "Fermer", "Cerrar", "बंद करें"], "mdE_daily_cap": ["وصلت للحد اليومي لهذا الإجراء", "Daily limit reached for this action", "Bu işlem için günlük sınıra ulaşıldı", "Limite quotidienne atteinte pour cette action", "Límite diario alcanzado para esta acción", "इस कार्रवाई की दैनिक सीमा पूरी हो गई"], "mdE_needs_owner": ["هذا اللاعب عنده بطاقتين. البطاقة الثالثة للمالك فقط.", "This player already has 2 cards. Only the owner can give the next one.", "Bu oyuncunun zaten 2 kartı var. Sonrakini yalnızca sahip verebilir.", "Ce joueur a déjà 2 cartons. Seul le propriétaire peut donner le suivant.", "Este jugador ya tiene 2 tarjetas. Solo el propietario puede dar la siguiente.", "इस खिलाड़ी के पास पहले से 2 कार्ड हैं। अगला केवल मालिक दे सकता है।"], "mdE_mod_max_24h": ["المشرف يقدر يقيّد لحد 24 ساعة فقط", "Moderators can restrict for up to 24 hours", "Moderatörler en fazla 24 saat kısıtlayabilir", "Les modérateurs peuvent restreindre 24 heures maximum", "Los moderadores pueden restringir hasta 24 horas", "मॉडरेटर अधिकतम 24 घंटे तक रोक सकते हैं"], "mdE_not_moderator": ["ما عدت مشرفاً", "You are no longer a moderator", "Artık moderatör değilsin", "Tu n'es plus modérateur", "Ya no eres moderador", "अब आप मॉडरेटर नहीं हैं"], "mdE_username_taken": ["هذا الاسم مأخوذ", "That name is taken", "Bu isim alınmış", "Ce nom est déjà pris", "Ese nombre ya está en uso", "यह नाम लिया जा चुका है"], "mdE_already_resolved": ["تمت معالجته من قبل", "Already handled", "Zaten işlendi", "Déjà traité", "Ya gestionado", "पहले ही निपटाया गया"], "mdE_same_name": ["الاسم معاد تعيينه من قبل", "The name was already reset", "İsim zaten sıfırlandı", "Le nom a déjà été réinitialisé", "El nombre ya se restableció", "नाम पहले ही रीसेट हो चुका है"], "mdE_other": ["صار خطأ ({x})", "Something went wrong ({x})", "Bir hata oluştu ({x})", "Une erreur est survenue ({x})", "Algo salió mal ({x})", "कुछ गड़बड़ हुई ({x})"], "mdA_ban": ["حظر", "Ban", "Yasak", "Ban", "Bloqueo", "बैन"], "mdA_mute": ["كتم", "Mute", "Susturma", "Muet", "Silencio", "म्यूट"], "mdA_warn": ["بطاقة صفراء", "Yellow card", "Sarı kart", "Carton jaune", "Tarjeta amarilla", "पीला कार्ड"], "mdA_rename": ["إعادة الاسم", "Name reset", "İsim sıfırlama", "Nom réinitialisé", "Nombre restablecido", "नाम रीसेट"], "mdA_photo": ["إزالة الصورة", "Photo reset", "Fotoğraf sıfırlama", "Photo réinitialisée", "Foto restablecida", "फ़ोटो रीसेट"], "mdA_resolve": ["معالجة بلاغ", "Report handled", "Şikayet işlendi", "Signalement traité", "Denuncia gestionada", "रिपोर्ट निपटाई"], "mdA_reply": ["رد دعم", "Support reply", "Destek yanıtı", "Réponse d'assistance", "Respuesta de soporte", "सपोर्ट जवाब"], "mdOTitle": ["المشرفون", "Moderators", "Moderatörler", "Modérateurs", "Moderadores", "मॉडरेटर"], "mdOAdd": ["إضافة مشرف", "Add moderator", "Moderatör ekle", "Ajouter un modérateur", "Añadir moderador", "मॉडरेटर जोड़ें"], "mdOPid": ["رقم اللاعب", "Player ID", "Oyuncu ID", "ID du joueur", "ID de jugador", "प्लेयर ID"], "mdOAddQ": ["تخلي {x} (#{id}) مشرفاً؟ يقدر يكتم، يحظر لحد 24 ساعة، يعطي بطاقات صفراء، يعيد الأسماء والصور، يعالج البلاغات ويرد على الدعم. لا شيء غير هذا.", "Make {x} (#{id}) a moderator? They can mute, ban for up to 24 h, give yellow cards, reset names and photos, handle reports and answer support. Nothing else.", "{x} (#{id}) moderatör olsun mu? Susturabilir, en fazla 24 saat yasaklayabilir, sarı kart verebilir, isim ve fotoğraf sıfırlayabilir, şikayetleri işleyip desteğe yanıt verebilir. Başka bir şey değil.", "Faire de {x} (#{id}) un modérateur ? Il pourra couper le chat, bannir 24 h max, donner des cartons jaunes, réinitialiser noms et photos, traiter les signalements et répondre à l'assistance. Rien d'autre.", "¿Hacer moderador a {x} (#{id})? Podrá silenciar, bloquear hasta 24 h, dar tarjetas amarillas, restablecer nombres y fotos, gestionar denuncias y responder al soporte. Nada más.", "{x} (#{id}) को मॉडरेटर बनाएँ? वे म्यूट कर सकेंगे, 24 घंटे तक बैन, पीले कार्ड, नाम और फ़ोटो रीसेट, रिपोर्ट निपटाना और सपोर्ट का जवाब। इसके अलावा कुछ नहीं।"], "mdONotFound": ["ماكو لاعب بهذا الرقم", "No player with this ID", "Bu ID ile oyuncu yok", "Aucun joueur avec cet ID", "No hay ningún jugador con este ID", "इस ID का कोई खिलाड़ी नहीं"], "mdORevoke": ["سحب الإشراف", "Remove moderator", "Moderatörlüğü kaldır", "Retirer le modérateur", "Quitar moderador", "मॉडरेटर हटाएँ"], "mdORevokeQ": ["تسحب صلاحية الإشراف من {x}؟ لوحته تتسكر فوراً.", "Remove moderator rights from {x}? Their panel closes right away.", "{x} kişisinin moderatör yetkisi kaldırılsın mı? Paneli hemen kapanır.", "Retirer les droits de modération de {x} ? Son panneau se ferme aussitôt.", "¿Quitar los permisos de moderador a {x}? Su panel se cierra al instante.", "{x} से मॉडरेटर अधिकार हटाएँ? उनका पैनल तुरंत बंद हो जाएगा।"], "mdONone": ["ماكو مشرفين بعد", "No moderators yet", "Henüz moderatör yok", "Aucun modérateur pour l'instant", "Aún no hay moderadores", "अभी कोई मॉडरेटर नहीं"], "mdOSince": ["مشرف من {t}", "Moderator since {t}", "{t} tarihinden beri moderatör", "Modérateur depuis le {t}", "Moderador desde {t}", "{t} से मॉडरेटर"], "mdO7d": ["{n} إجراء خلال 7 أيام", "{n} actions in 7 days", "7 günde {n} işlem", "{n} actions en 7 jours", "{n} acciones en 7 días", "7 दिनों में {n} कार्रवाई"], "mdOUndoneN": ["{n} ملغي", "{n} undone", "{n} geri alındı", "{n} annulées", "{n} deshechas", "{n} वापस ली गईं"], "mdOFeed": ["نشاط المشرفين", "Moderator activity", "Moderatör etkinliği", "Activité des modérateurs", "Actividad de moderadores", "मॉडरेटर गतिविधि"], "mdOAll": ["الكل", "All", "Tümü", "Tous", "Todos", "सभी"], "mdOUndo": ["تراجع", "Undo", "Geri al", "Annuler l'action", "Deshacer", "वापस लें"], "mdOUndoQ": ["تلغي إجراء المشرف هذا؟ اللاعب يوصله إشعار.", "Undo this moderator action? The player gets a notice.", "Bu moderatör işlemi geri alınsın mı? Oyuncuya bildirim gider.", "Annuler cette action du modérateur ? Le joueur reçoit un avis.", "¿Deshacer esta acción del moderador? El jugador recibe un aviso.", "इस मॉडरेटर कार्रवाई को वापस लें? खिलाड़ी को सूचना जाएगी।"], "mdOUndone": ["ملغي", "Undone", "Geri alındı", "Annulée", "Deshecha", "वापस ली गई"], "mdOActive": ["سارٍ", "Active", "Aktif", "Active", "Activa", "सक्रिय"], "mdOEnded": ["منتهي", "Ended", "Bitti", "Terminée", "Terminada", "समाप्त"], "mdONoFeed": ["ماكو إجراءات من المشرفين بعد", "No moderator actions yet", "Henüz moderatör işlemi yok", "Aucune action de modérateur pour l'instant", "Aún no hay acciones de moderadores", "अभी कोई मॉडरेटर कार्रवाई नहीं"], "mdOToast": ["المشرف {m}: {a} على {x}", "Moderator {m}: {a} on {x}", "Moderatör {m}: {x} için {a}", "Modérateur {m} : {a} sur {x}", "Moderador {m}: {a} a {x}", "मॉडरेटर {m}: {x} पर {a}"], "mdOCaps": ["الحد اليومي لكل مشرف", "Daily limit per moderator", "Moderatör başına günlük sınır", "Limite quotidienne par modérateur", "Límite diario por moderador", "हर मॉडरेटर की दैनिक सीमा"], "mdOToday": ["اليوم", "Today", "Bugün", "Aujourd'hui", "Hoy", "आज"], "mdOLast": ["آخر إجراء {t}", "Last action {t}", "Son işlem {t}", "Dernière action {t}", "Última acción {t}", "आख़िरी कार्रवाई {t}"], "mdOOnly": ["أنت الوحيد اللي يعطي الإشراف ويسحبه. كل إجراء يظهر هنا مع سببه.", "Only you can give or remove moderator rights. Every action shows up here with its reason.", "Moderatörlüğü yalnızca sen verip kaldırabilirsin. Her işlem nedeniyle burada görünür.", "Toi seul peux donner ou retirer les droits de modération. Chaque action apparaît ici avec sa raison.", "Solo tú puedes dar o quitar permisos de moderador. Cada acción aparece aquí con su motivo.", "मॉडरेटर अधिकार केवल आप दे या हटा सकते हैं। हर कार्रवाई कारण के साथ यहाँ दिखती है।"]};
+          for (const k in MDK) if (!I18N[k]) I18N[k] = MDK[k];
+          const MD = (window.__MODS = window.__MODS || {});
+          if (!MD.v1) {
+            MD.v1 = 1;
+            const tv = (f, d) => { try { const v = f(); return v === undefined || v === null || Number.isNaN(v) ? d : v; } catch (_) { return d; } };
+            const L = (k, v) => String(_t(k, v));
+            const E = (k, v) => esc(L(k, v));
+            const SAi = (n) => tv(() => window.SSAdmin.icon(n), "");
+            const prof = () => tv(() => ON.st.profile, null);
+            const isMod = () => !!(ON && ON.on && prof() && prof().role === "moderator" && +prof().player_id !== 1);
+            const isOwn = () => !!(ON && ON.on && prof() && prof().role === "owner" && +prof().player_id === 1);
+            const loc = () => (LANG === "ar" ? "ar-u-nu-latn" : LANG === "hi" ? "hi-IN" : LANG === "en" ? "en-GB" : LANG);
+            const fmt = (iso) => tv(() => new Intl.DateTimeFormat(loc(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(iso)), String(iso || "").slice(0, 16));
+            const ago = (iso) => { const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000) | 0; return s < 90 ? (LANG === "ar" ? "الآن" : "now") : s < 5400 ? (s / 60 | 0) + (LANG === "ar" ? " د" : " min") : s < 172800 ? (s / 3600 | 0) + (LANG === "ar" ? " س" : " h") : (s / 86400 | 0) + (LANG === "ar" ? " ي" : " d"); };
+            const live = (iso) => !!iso && (String(iso).startsWith("infinity") || Date.parse(iso) > Date.now());
+            const errT = (e) => { const c = String((e && (e.code || e.message)) || e || "");
+              if (c === "owner_protected" || c === "moderator_protected" || c === "not_allowed") return L("mdProtected");
+              if (c === "reason_required") return L("mdReasonShort");
+              if (I18N["mdE_" + c]) return L("mdE_" + c);
+              return L("mdE_other", { x: c.slice(0, 40) }); };
+            const S = MD.S = { tab: "rep", rep: null, sup: null, q: "", users: null, user: null, me: null, open: false, busy: false };
+            const rpc = (fn, a) => ON.rpc(fn, a || {});
+
+            // ---------- panel shell ----------
+            let root = null;
+            const ensure = () => {
+              if (root && root.isConnected) return root;
+              root = document.createElement("div"); root.id = "kmod"; root.className = "x-hide";
+              root.innerHTML = '<div class="md-app sa-app" role="dialog" aria-modal="true"></div>';
+              document.body.appendChild(root);
+              root.addEventListener("click", onClick);
+              root.addEventListener("submit", (e) => { const f = e.target.closest("[data-mf]"); if (!f) return; e.preventDefault(); if (f.dataset.mf === "q") { S.q = (f.querySelector("input").value || "").trim(); S.user = null; S.users = null; paint(); load(); } });
+              return root;
+            };
+            const close = () => { S.open = false; if (root) { root.classList.add("x-hide"); const d = root.querySelector(".sa-dlgw"); if (d) d.remove(); } };
+            MD.close = close;
+            const used = (k) => tv(() => +S.me.used[k] || 0, 0), cap = (k) => tv(() => +S.me.caps[k] || 0, 0);
+            const left = (k) => Math.max(0, cap(k) - used(k));
+            const head = () => {
+              const n1 = S.rep ? S.rep.length : 0, n3 = S.sup ? S.sup.length : 0;
+              const tb = (id, k, n) => `<button type="button" role="tab" class="${S.tab === id ? "on" : ""}" data-m="tab" data-v="${id}">${E(k)}${n ? ` <b class="sa-cnt" dir="ltr">${n}</b>` : ""}</button>`;
+              return `<header class="sa-top md-top"><span class="md-shd">${SAi("shield")}</span><div class="sa-brand"><b>Super Snake</b><small>${E("mdTitle")}</small></div>` +
+                `<div class="sa-seg md-tabs" role="tablist">${tb("rep", "mdReports", n1)}${tb("pl", "mdPlayers", 0)}${tb("sup", "mdSupport", n3)}</div><span class="sa-sp"></span>` +
+                `<button type="button" class="sa-tbtn" data-m="refresh" aria-label="${E("mdSearch")}">${SAi("refresh")}</button>` +
+                `<button type="button" class="sa-tbtn sa-exit" data-m="close" aria-label="${E("mdClose")}">${SAi("close")}</button></header>`;
+            };
+            const loading = '<div class="sa-load"><i></i><i></i><i></i></div>';
+            const empty = (k) => `<div class="sa-empty">${SAi("check")}<span>${E(k)}</span></div>`;
+            const pill = (t, c) => `<span class="sa-pill${c ? " " + c : ""}">${esc(t)}</span>`;
+            const btn = (m, label, cls, data, icon) => `<button type="button" class="sa-btn${cls ? " " + cls : ""}" data-m="${m}"${Object.entries(data || {}).map(([k, v]) => ` data-${k}="${esc(v)}"`).join("")}>${icon ? SAi(icon) : ""}<span>${label}</span></button>`;
+            const whoB = (name, pid, uid) => uid ? `<button type="button" class="sa-who" data-m="pl" data-id="${esc(uid)}"><bdi>${esc(name || "?")}</bdi><small dir="ltr">#${esc(pid || "")}</small></button>` : `<span class="sa-who"><bdi>${esc(name || "?")}</bdi></span>`;
+            const repHTML = () => {
+              if (S.rep === null) return loading;
+              if (!S.rep.length) return empty("mdNoReports");
+              return S.rep.map((r) => `<div class="sa-item"><div class="sa-ih">${pill(r.reason || "report", "amber")}${whoB(r.reported, r.reported_pid, r.reported_id)}<small class="sa-at">${esc(ago(r.at))}</small></div>` +
+                `<small class="sa-note">${E("mdBy", { x: r.reporter || "?" })}</small>` +
+                (r.message ? `<p class="md-q" dir="auto">${esc(r.message)}</p>` : "") + (r.details ? `<p class="md-txt" dir="auto">${esc(r.details)}</p>` : "") +
+                `<div class="sa-iacts">${r.reported_id ? btn("pl", E("mdOpenPl"), "", { id: r.reported_id }, "users") : ""}${btn("res", E("mdActioned"), "main", { id: r.id, s: "actioned" }, "check")}${btn("res", E("mdDismiss"), "", { id: r.id, s: "dismissed" }, "close")}</div></div>`).join("");
+            };
+            const supHTML = () => {
+              if (S.sup === null) return loading;
+              if (!S.sup.length) return empty("mdNoSupport");
+              return S.sup.map((t) => `<div class="sa-item"><div class="sa-ih"><span class="sa-who"><bdi>${esc(t.username || "?")}</bdi><small dir="ltr">#${esc(t.player_id || "")}</small></span><small class="sa-at">${esc(ago(t.at))}</small></div>` +
+                `<p class="md-txt" dir="auto">${esc(t.text || "")}</p><textarea class="md-ta" id="md-rp${t.id}" rows="2" maxlength="1000" dir="auto" placeholder="${E("mdReplyPh")}"></textarea>` +
+                `<p class="sa-err" id="md-re${t.id}"></p><div class="sa-iacts">${btn("reply", E("mdSend"), "main", { id: t.id }, "mail")}</div></div>`).join("");
+            };
+            const userHTML = () => {
+              const u = S.user; if (!u || !u.username) return loading;
+              const st = [];
+              if (live(u.muted_until)) st.push(pill(L("mdMutedTo", { t: fmt(u.muted_until) }), "amber"));
+              if (live(u.banned_until)) st.push(pill(L("mdBannedTo", { t: fmt(u.banned_until) }), "red"));
+              if (u.cards) st.push(pill(L("mdCards", { n: u.cards }), u.red ? "red" : "amber"));
+              if (u.open_reports) st.push(pill(L("mdOpenRep", { n: u.open_reports }), ""));
+              const acts = u.protected ? `<p class="sa-warn">${SAi("lock")}${E("mdProtected")}</p>` :
+                `<div class="md-acts">${btn("act", E("mdMute"), "", { k: "mute" }, "mute")}${btn("act", E("mdBan"), "red", { k: "ban" }, "ban")}${btn("act", E("mdWarn"), "", { k: "warn" }, "card")}${btn("act", E("mdRename"), "", { k: "rename" }, "id")}${btn("act", E("mdPhoto"), "", { k: "photo" }, "photo")}</div>`;
+              return `<div class="sa-bar">${btn("back", E("mdBack"), "", null, "back")}</div><div class="sa-item md-card"><div class="sa-ih"><span class="sa-av">${esc(String(u.username || "?").slice(0, 1).toUpperCase())}</span>` +
+                `<span class="sa-rmain"><b><bdi>${esc(u.username)}</bdi></b><small dir="ltr">#${esc(u.vip_id || u.player_id)} · ${E("mdLevel", { n: u.level | 0 })}</small></span>${u.staff ? pill(u.staff, "gold") : ""}</div>` +
+                (st.length ? `<div class="md-st">${st.join("")}</div>` : "") + acts + `</div>`;
+            };
+            const plHTML = () => {
+              if (S.user) return userHTML();
+              const f = `<form class="sa-search" data-mf="q">${SAi("search")}<input type="search" autocomplete="off" dir="auto" maxlength="40" placeholder="${E("mdSearchPh")}" value="${esc(S.q)}"><button type="submit" class="sa-btn main">${E("mdSearch")}</button></form>`;
+              if (!S.q) return f + `<p class="sa-note">${E("mdSearchHint")}</p>`;
+              if (S.users === null) return f + loading;
+              if (!S.users.length) return f + empty("mdNoPlayers");
+              return f + S.users.map((u) => `<button type="button" class="sa-row sa-urow" data-m="pl" data-id="${esc(u.id)}"><span class="sa-av">${esc(String(u.username || "?").slice(0, 1).toUpperCase())}</span>` +
+                `<span class="sa-rmain"><b><bdi>${esc(u.username)}</bdi></b><small dir="ltr">#${esc(u.vip_id || u.player_id)} · ${E("mdLevel", { n: u.level | 0 })}</small></span>` +
+                `${u.staff ? pill(u.staff, "gold") : ""}${live(u.banned_until) ? pill(L("mdA_ban"), "red") : ""}${live(u.muted_until) ? pill(L("mdA_mute"), "amber") : ""}${u.open_reports ? pill("" + u.open_reports, "") : ""}</button>`).join("");
+            };
+            const capLine = () => S.me && S.me.caps ? `<p class="sa-note md-cap">${E("mdHint")} · ${E("mdLeft", { x: ["ban", "mute", "warn"].map((k) => L("mdA_" + k) + " " + left(k)).join(" · ") })}</p>` : `<p class="sa-note md-cap">${E("mdHint")}</p>`;
+            const paint = () => {
+              if (!root || !S.open) return;
+              const app = root.querySelector(".md-app"); const mn = app.querySelector(".md-main"), sc = mn ? mn.scrollTop : 0;
+              app.setAttribute("dir", LANG === "ar" ? "rtl" : "ltr"); app.setAttribute("lang", LANG);
+              app.innerHTML = head() + `<main class="md-main sa-scroll">${capLine()}${S.tab === "rep" ? repHTML() : S.tab === "sup" ? supHTML() : plHTML()}</main>`;
+              const m2 = app.querySelector(".md-main"); if (m2) m2.scrollTop = sc;
+            };
+            const load = async () => {
+              try {
+                const me = await rpc("mod_me"); S.me = me;
+                if (!me || !me.mod) { close(); toast("" + L("mdE_not_moderator")); return; }
+                if (S.tab === "rep" || S.rep === null) S.rep = await rpc("mod_reports", { p_status: "open" });
+                if (S.tab === "sup" || S.sup === null) S.sup = await rpc("mod_support", { p_status: "open" });
+                if (S.tab === "pl") {
+                  if (S.user && S.user.id) S.user = await rpc("mod_user", { p_user: S.user.id });
+                  else if (S.q) S.users = await rpc("mod_users", { p_query: S.q, p_limit: 30 });
+                }
+              } catch (e) { const c = String((e && (e.code || e.message)) || ""); if (c === "not_moderator") { close(); toast("" + L("mdE_not_moderator")); return; } toast("" + errT(e)); }
+              paint();
+            };
+            MD.open = async () => {
+              if (state === "play" || !isMod()) return;
+              ensure(); S.open = true; S.rep = S.rep || null; root.classList.remove("x-hide"); paint(); await load();
+            };
+
+            // ---------- reason dialog (inside #kmod so the Babylon admin styles apply) ----------
+            const dialog = (o) => {
+              const w = document.createElement("div"); w.className = "sa-dlgw"; w.setAttribute("dir", LANG === "ar" ? "rtl" : "ltr");
+              w.innerHTML = `<div class="sa-dlg${o.danger ? " danger" : ""}" role="dialog" aria-modal="true"><div class="sa-dlgh">${SAi(o.icon || "shield")}<h3>${esc(o.title)}</h3><button type="button" class="sa-x" data-dx="1" aria-label="${E("mdClose")}">${SAi("close")}</button></div>` +
+                `<div class="sa-dlgb">${o.body || ""}${o.durs ? `<p class="sa-lab">${E("mdDur")}</p><div class="sa-chips">${o.durs.map((h, i) => `<button type="button" class="${i === o.durs.length - 1 ? "on" : ""}" data-dh="${h}">${E("mdH", { n: h })}</button>`).join("")}</div>` : ""}` +
+                `<label class="sa-lab">${E("mdReason")}<textarea id="md-dr" rows="2" maxlength="300" dir="auto"></textarea></label><p class="sa-err" id="md-de"></p></div>` +
+                `<div class="sa-dlgf"><button type="button" class="sa-btn" data-dx="1">${E("mdCancel")}</button><button type="button" class="sa-btn ${o.danger ? "red" : "main"}" id="md-dok">${E("mdConfirm")}</button></div></div>`;
+              root.appendChild(w);
+              const x = () => w.remove();
+              w.addEventListener("click", async (e) => {
+                if (e.target === w || e.target.closest("[data-dx]")) { x(); return; }
+                const ch = e.target.closest("[data-dh]"); if (ch) { w.querySelectorAll("[data-dh]").forEach((b) => b.classList.toggle("on", b === ch)); return; }
+                if (!e.target.closest("#md-dok")) return;
+                const r = w.querySelector("#md-dr").value.trim(), er = w.querySelector("#md-de"), ok = w.querySelector("#md-dok");
+                if (r.length < 3) { er.textContent = L("mdReasonShort"); return; }
+                const hb = w.querySelector("[data-dh].on"), h = hb ? +hb.dataset.dh : 0;
+                ok.disabled = true;
+                try { await o.run(r, h); x(); toast("" + L("mdDone")); await load(); }
+                catch (e2) { er.textContent = errT(e2); ok.disabled = false; if (String((e2 && (e2.code || e2.message)) || "") === "not_moderator") { setTimeout(close, 1200); } }
+              });
+              setTimeout(() => { const t = w.querySelector("#md-dr"); if (t) t.focus({ preventScroll: true }); }, 30);
+            };
+            const onClick = async (e) => {
+              const el = e.target.closest("[data-m]"); if (!el || !root.contains(el) || el.disabled || el.closest(".sa-dlgw")) return;
+              const m = el.dataset.m, d = el.dataset;
+              if (m === "close") { close(); return; }
+              if (m === "refresh") { S.rep = null; S.sup = null; paint(); load(); return; }
+              if (m === "tab") { S.tab = d.v; paint(); load(); return; }
+              if (m === "back") { S.user = null; paint(); load(); return; }
+              if (m === "pl") { S.tab = "pl"; S.user = { id: d.id }; paint(); load(); return; }
+              const u = S.user;
+              if (m === "res") return dialog({ title: L(d.s === "actioned" ? "mdActioned" : "mdDismiss"), icon: "flag", run: (r) => rpc("mod_resolve", { p_report: +d.id, p_status: d.s, p_reason: r }) });
+              if (m === "reply") {
+                const ta = root.querySelector("#md-rp" + d.id), er = root.querySelector("#md-re" + d.id), t = ta ? ta.value.trim() : "";
+                if (t.length < 3) { if (er) er.textContent = L("mdReasonShort"); return; }
+                el.disabled = true;
+                try { await rpc("mod_support_reply", { p_id: +d.id, p_reply: t, p_done: true }); toast("" + L("mdDone")); S.sup = null; await load(); }
+                catch (e2) { if (er) er.textContent = errT(e2); el.disabled = false; }
+                return;
+              }
+              if (m === "act" && u && u.id) {
+                const nm = `<p class="md-who"><bdi>${esc(u.username)}</bdi> <small dir="ltr">#${esc(u.vip_id || u.player_id)}</small></p>`;
+                if (d.k === "mute") return dialog({ title: L("mdMute"), icon: "mute", body: nm, durs: [1, 6, 24], run: (r, h) => rpc("mod_mute", { p_user: u.id, p_hours: h || 24, p_reason: r, p_code: "other" }) });
+                if (d.k === "ban") return dialog({ title: L("mdBan"), icon: "ban", danger: true, body: nm, durs: [1, 6, 24], run: (r, h) => rpc("mod_ban", { p_user: u.id, p_hours: h || 24, p_reason: r, p_code: "other" }) });
+                if (d.k === "warn") return dialog({ title: L("mdWarn"), icon: "card", body: nm + `<p class="sa-note">${E("mdWarnNote")}</p>`, run: (r) => rpc("mod_warn", { p_user: u.id, p_reason: r, p_code: "other" }) });
+                if (d.k === "rename") return dialog({ title: L("mdRename"), icon: "id", body: nm + `<p class="sa-note">${E("mdRenameNote", { x: "player" + u.player_id })}</p>`, run: (r) => rpc("mod_rename", { p_user: u.id, p_reason: r }) });
+                if (d.k === "photo") return dialog({ title: L("mdPhoto"), icon: "photo", body: nm + `<p class="sa-note">${E("mdPhotoNote")}</p>`, run: (r) => rpc("mod_reset_photo", { p_user: u.id, p_reason: r }) });
+              }
+            };
+
+            // ---------- shield button in the lobby header (moderators only) ----------
+            const shieldSvg = '<svg class="md-sh" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l8 3v6.2c0 5-3.4 8.4-8 9.6-4.6-1.2-8-4.6-8-9.6V5.6z"/><path class="md-sh2" d="M8.6 12.1l2.4 2.4 4.6-4.8"/></svg>';
+            const tick = () => {
+              try {
+                const m = isMod();
+                let b = $("b13hmod");
+                if (!b && m) { const g = $("b13hgift"); if (g && g.parentNode) { b = document.createElement("button"); b.type = "button"; b.id = "b13hmod"; b.className = "h-ib h-glass md-hbtn"; b.innerHTML = shieldSvg; b.addEventListener("click", (e) => { e.stopPropagation(); MD.open(); }); g.parentNode.insertBefore(b, g); try { window.__babGate && window.__babGate(); } catch (_) {} } }
+                if (b) { b.classList.toggle("x-hide", !m); b.setAttribute("aria-label", L("mdShield")); b.title = L("mdShield"); }
+                if (!m && S.open) close();
+                if (S.open && state === "play") close();
+              } catch (_) {}
+            };
+            setInterval(tick, 1500); setTimeout(tick, 300);
+            try { NFH.relang.push(() => { tick(); paint(); }); NFH.home.push(() => setTimeout(tick, 50)); } catch (_) {}
+
+            // ---------- pokes: "role" (my role changed -> re-sync now) and "mod" (owner: a moderator acted -> live toast) ----------
+            const LN = window.__LN;
+            if (LN && typeof LN.poke === "function" && !LN.poke.__mods) {
+              const p0 = LN.poke; let lastMod = 0, lastRole = 0;
+              LN.poke = async (p, topic) => {
+                const k = String((p && p.k) || "");
+                if (k !== "role" && k !== "mod") return p0(p, topic);
+                if (!ON || !ON.on || !ON.uid || (topic && topic !== "realtime:b13-" + ON.uid)) return;   // payload never trusted: only re-reads
+                const n = Date.now();
+                if (k === "role") { if (n - lastRole < 2000) return; lastRole = n; try { await ON.sync(); } catch (_) {} tick(); if (S.open) load(); return; }
+                if (!isOwn() || n - lastMod < 1500) return; lastMod = n;
+                try {
+                  const L1 = await rpc("owner_mod_feed", { p_mod: null, p_limit: 1 }); const x = L1 && L1[0];
+                  if (x && Date.now() - Date.parse(x.at) < 120000 && LN.show) LN.show({ k: "mod", ic: "bell", key: "mod|" + x.id, t: L("mdOToast", { m: x.mod || "?", a: L("mdA_" + (x.mk || "ban")), x: x.target || "?" }), b: x.reason || "" });
+                } catch (_) {}
+                try { window.__MODS_O && window.__MODS_O.poke(); } catch (_) {}
+              };
+              LN.poke.__mods = 1;
+            }
+          }
+        } catch (e) { try { console.warn("mods", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
     </script>
@@ -26408,6 +26614,402 @@ SSAdmin.addI18n({
   SA.onSearch = () => go("players");
   SA.onShell = async (a, el) => { if (await SA.onShellBase(a, el)) return; if (a === "side") S.root.querySelector(".a-app").classList.toggle("side-open"); };
   SA.boot({ mount(root) { S.root = root; render(); loadCur(); }, render() { render(); loadCur(); } });
+})();
+
+</script>
+<style id="ss13u-mods">
+#kmod {
+  --g1: #fff3c4; --g2: #f0c75e; --g3: #b9822a; --g4: #5e3a0c;
+  --gold: linear-gradient(180deg, #fff1b8 0%, #f2c860 28%, #b97e22 55%, #f6d77c 78%, #8a5a14 100%);
+  --rim: 0 0 0 1px #2b1904, 0 0 0 2px #dcb04c, 0 3px 8px rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(255, 228, 150, .25);
+  --rim-s: 0 0 0 1px rgba(231, 189, 88, .55), inset 0 1px 0 rgba(255, 236, 180, .12);
+  --lap: linear-gradient(180deg, rgba(40, 80, 200, .18), rgba(2, 8, 40, .55)), url(ui/bab/lapis_d.webp) 0 0 / 120px repeat, #0c1d63;
+  --panel: linear-gradient(180deg, rgba(16, 36, 118, .94), rgba(6, 14, 52, .96));
+  --card: linear-gradient(180deg, rgba(22, 46, 134, .78), rgba(9, 19, 60, .88));
+  --ink: #eef2ff; --ink2: #b8c4f0; --ink3: #8996c9; --line: rgba(231, 189, 88, .28);
+  --green: linear-gradient(180deg, #c9f77e 0%, #5fd046 35%, #1f9a35 75%, #157a29 100%);
+  --ruby: linear-gradient(180deg, #ff8a7a 0%, #e0303a 45%, #9e121c 100%);
+  --amber: #ffc94d; --red: #ff6b6b; --ok: #4fe08a;
+  --r: 10px; --gap: 8px;
+}
+#kmod, #kmod * { box-sizing: border-box; }
+#kmod, #kmod { margin: 0; height: 100%; }
+#kmod { font: 14px/1.35 var(--sans); color: var(--ink); background: #071033; -webkit-font-smoothing: antialiased; overflow: hidden; }
+#kmod button, #kmod input, #kmod select, #kmod textarea { font: inherit; color: inherit; }
+#kmod .sa-hide { display: none !important; }
+#kmod bdi { unicode-bidi: isolate; }
+#kmod .sa-ic { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+#kmod .sa-gt { font-family: var(--disp); font-weight: 800; letter-spacing: .02em; background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .6)); }
+#kmod .sa-h4 { display: flex; align-items: center; gap: 6px; margin: 12px 0 6px; font: 700 12px/1.2 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--g2); }
+#kmod[lang=ar] .sa-h4 { letter-spacing: 0; text-transform: none; font-size: 13px; }
+#kmod .sa-h4 .sa-ic { width: 15px; height: 15px; }
+#kmod .sa-h4 small { font-weight: 400; color: var(--ink3); text-transform: none; letter-spacing: 0; }
+#kmod .sa-note { color: var(--ink3); font-size: 12px; margin: 4px 0; }
+#kmod .sa-err { color: var(--red); font-size: 12px; margin: 4px 0; min-height: 0; }
+#kmod .sa-err:empty { display: none; }
+#kmod .sa-det { display: block; color: var(--ink3); font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+#kmod .sa-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 0; border-radius: 9px; cursor: pointer; white-space: nowrap;
+  background: linear-gradient(180deg, #2a4bc4, #142a7a); box-shadow: var(--rim); color: #f4f6ff; font-weight: 600; font-size: 13px; }
+#kmod .sa-btn:hover { filter: brightness(1.12); }
+#kmod .sa-btn:active { transform: translateY(1px); }
+#kmod .sa-btn:disabled { opacity: .55; cursor: default; }
+#kmod .sa-btn:focus-visible, #kmod .sa-seg button:focus-visible, #kmod .sa-row:focus-visible, #kmod .sa-who:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+#kmod .sa-btn .sa-ic { width: 16px; height: 16px; }
+#kmod .sa-btn.main { background: var(--green); color: #082a0e; text-shadow: 0 1px 0 rgba(255, 255, 255, .35); }
+#kmod .sa-btn.red { background: var(--ruby); color: #fff; }
+#kmod .sa-btn.amber { background: linear-gradient(180deg, #ffe58a, #f2b02a 55%, #b57712); color: #3a2300; }
+#kmod .sa-btn.ghost { background: rgba(10, 20, 70, .55); box-shadow: var(--rim-s); }
+#kmod .sa-btn.red.ghost { background: rgba(120, 10, 20, .35); color: #ffb3b3; box-shadow: 0 0 0 1px rgba(255, 107, 107, .55); }
+#kmod .sa-btn.sm { min-height: 28px; padding: 0 10px; font-size: 12px; }
+#kmod .sa-btn.wide { width: 100%; min-height: 40px; font-size: 14px; }
+#kmod .sa-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; line-height: 18px; white-space: nowrap; background: rgba(140, 160, 230, .18); color: var(--ink2); max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+#kmod .sa-pill.red { background: rgba(255, 80, 80, .2); color: #ffb0b0; }
+#kmod .sa-pill.amber { background: rgba(255, 196, 64, .2); color: #ffd98a; }
+#kmod .sa-pill.green { background: rgba(80, 224, 140, .16); color: #9ff0c0; }
+#kmod .sa-pill.gold { background: rgba(240, 199, 94, .18); color: var(--g1); box-shadow: inset 0 0 0 1px rgba(240, 199, 94, .4); }
+#kmod .sa-pill.grey { background: rgba(255, 255, 255, .08); color: var(--ink3); }
+#kmod .sa-pill.cat-cheat { background: rgba(255, 120, 80, .2); color: #ffc0a0; }
+#kmod .sa-pill.cat-abuse { background: rgba(255, 90, 160, .18); color: #ffb3d9; }
+#kmod .sa-pill.cat-report { background: rgba(255, 196, 64, .18); color: #ffd98a; }
+#kmod .sa-seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 3px; border-radius: 10px; background: rgba(4, 10, 40, .55); box-shadow: var(--rim-s); margin: 2px 0 8px; max-width: 100%; }
+#kmod .sa-seg button { border: 0; background: transparent; color: var(--ink2); padding: 5px 11px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 600; min-height: 28px; white-space: nowrap; }
+#kmod .sa-seg button.on { background: linear-gradient(180deg, #f6d77c, #c18a2c); color: #2a1800; box-shadow: 0 1px 0 rgba(255, 255, 255, .4) inset; }
+#kmod .sa-cnt { display: inline-block; min-width: 18px; padding: 0 5px; margin-inline-start: 3px; border-radius: 9px; background: var(--red); color: #fff; font-size: 11px; line-height: 17px; text-align: center; }
+#kmod .sa-seg button.on .sa-cnt { background: #7a1010; }
+#kmod .sa-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+#kmod .sa-chips button { border: 0; padding: 5px 10px; min-height: 30px; border-radius: 99px; background: rgba(20, 40, 120, .7); box-shadow: var(--rim-s); color: var(--ink2); cursor: pointer; font-size: 12.5px; }
+#kmod .sa-chips button.on { background: linear-gradient(180deg, #f6d77c, #c18a2c); color: #2a1800; font-weight: 700; }
+#kmod .sa-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 2px 0 8px; }
+#kmod .sa-bar.end { justify-content: flex-end; }
+#kmod .sa-bar .sa-seg { margin: 0; }
+#kmod input:not([type=checkbox]), #kmod select, #kmod textarea { width: 100%; min-height: 34px; padding: 6px 10px; border-radius: 8px; border: 0; background: rgba(2, 6, 28, .65); box-shadow: inset 0 0 0 1px rgba(231, 189, 88, .35); color: var(--ink); outline: none; }
+#kmod input:focus, #kmod select:focus, #kmod textarea:focus { box-shadow: inset 0 0 0 2px var(--g2); }
+#kmod textarea { resize: vertical; min-height: 54px; }
+#kmod select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--g2) 50%), linear-gradient(135deg, var(--g2) 50%, transparent 50%); background-position: calc(100% - 14px) 52%, calc(100% - 9px) 52%; background-size: 5px 5px; background-repeat: no-repeat; padding-inline-end: 26px; }
+#kmod[dir=rtl] select { background-position: 14px 52%, 9px 52%; }
+#kmod .sa-lab { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink2); margin: 6px 0; }
+#kmod .sa-lab.in { flex-direction: row; align-items: center; gap: 6px; margin: 0; white-space: nowrap; }
+#kmod .sa-lab.in input { width: 96px; }
+#kmod .sa-chk { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 6px 0; cursor: pointer; }
+#kmod .sa-chk input { width: 18px; height: 18px; accent-color: #e0b24a; }
+#kmod .sa-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+#kmod .sa-grid2.keys { grid-template-columns: repeat(4, 1fr); }
+#kmod .sa-rng { display: flex; align-items: center; gap: 6px; }
+#kmod .sa-rng input { width: 100%; }
+#kmod .sa-inline { display: flex; gap: 8px; margin: 6px 0; }
+#kmod .sa-search { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 12px; border-radius: 12px; background: rgba(2, 6, 28, .7); box-shadow: inset 0 0 0 1px rgba(231, 189, 88, .45); margin-bottom: 8px; }
+#kmod[dir=rtl] .sa-search { padding: 4px 12px 4px 4px; }
+#kmod .sa-search .sa-ic { color: var(--g2); }
+#kmod .sa-search input { background: transparent; box-shadow: none; padding: 0; min-height: 36px; }
+#kmod .sa-search.big { padding-block: 6px; border-radius: 14px; }
+#kmod .sa-search.big input { font-size: 17px; min-height: 44px; }
+#kmod .sa-search.big .sa-btn { min-height: 42px; padding: 0 18px; }
+#kmod .sa-list { display: flex; flex-direction: column; gap: 6px; }
+#kmod .sa-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: start; border: 0; padding: 8px 10px; border-radius: var(--r); background: var(--card); box-shadow: var(--rim-s); cursor: pointer; min-height: 48px; }
+#kmod .sa-row:hover { box-shadow: 0 0 0 1px var(--g2); }
+#kmod .sa-rmain { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+#kmod .sa-rmain b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kmod .sa-rmain small { color: var(--ink3); font-size: 12px; }
+#kmod .sa-rtags { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+#kmod .sa-av { display: inline-grid; place-items: center; width: 34px; height: 34px; flex: 0 0 auto; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #5a7cff, #142a7a); box-shadow: 0 0 0 2px #dcb04c, 0 2px 6px rgba(0, 0, 0, .5); font-weight: 800; color: var(--g1); }
+#kmod .sa-av.lg { width: 52px; height: 52px; font-size: 22px; }
+#kmod .sa-item { padding: 9px 11px; border-radius: var(--r); background: var(--card); box-shadow: var(--rim-s); margin-bottom: 7px; }
+#kmod .sa-item.off { opacity: .6; }
+#kmod .sa-item p { margin: 5px 0; overflow-wrap: anywhere; }
+#kmod .sa-ih { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+#kmod .sa-ih > b { font-weight: 700; }
+#kmod .sa-at { margin-inline-start: auto; color: var(--ink3); font-size: 11.5px; white-space: nowrap; }
+#kmod .sa-iacts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; align-items: center; }
+#kmod .sa-quote { padding: 5px 9px; border-inline-start: 3px solid var(--g3); background: rgba(0, 0, 0, .22); border-radius: 4px; color: var(--ink2); }
+#kmod .sa-reply { display: flex; flex-direction: column; gap: 0; margin-top: 6px; }
+#kmod .sa-reply .sa-iacts { margin-top: 6px; }
+#kmod .sa-who { display: inline-flex; align-items: center; gap: 4px; border: 0; padding: 1px 8px 1px 6px; border-radius: 99px; background: rgba(240, 199, 94, .12); box-shadow: inset 0 0 0 1px rgba(240, 199, 94, .35); color: var(--g1); cursor: pointer; font-weight: 600; font-size: 12.5px; max-width: 100%; }
+#kmod .sa-who small { color: var(--g2); font-weight: 500; }
+#kmod .sa-who:hover { background: rgba(240, 199, 94, .25); }
+#kmod .sa-empty { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 18px; color: var(--ink3); border-radius: var(--r); border: 1px dashed rgba(231, 189, 88, .3); }
+#kmod .sa-empty .sa-ic { color: var(--ok); }
+#kmod .sa-load { display: flex; gap: 6px; justify-content: center; padding: 18px; }
+#kmod .sa-load i { width: 8px; height: 8px; border-radius: 50%; background: var(--g2); animation: saP 1s ease-in-out infinite; }
+#kmod .sa-load i:nth-child(2) { animation-delay: .15s; }
+#kmod .sa-load i:nth-child(3) { animation-delay: .3s; }
+@keyframes saP { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: none; } }
+#kmod .sa-mini { display: flex; flex-direction: column; border-radius: var(--r); background: rgba(2, 8, 36, .45); box-shadow: var(--rim-s); overflow: hidden; }
+#kmod .sa-mini > div { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 10px; border-bottom: 1px solid rgba(231, 189, 88, .12); min-width: 0; }
+#kmod .sa-mini > div:last-child { border-bottom: 0; }
+#kmod .sa-mini > div > span { min-width: 0; display: flex; flex-direction: column; overflow-wrap: anywhere; }
+#kmod .sa-mini small { color: var(--ink3); font-size: 11.5px; }
+#kmod .sa-mini b { white-space: nowrap; font-weight: 600; font-size: 12.5px; }
+#kmod .sa-mini b.pos { color: var(--ok); }
+#kmod .sa-mini b.neg { color: var(--red); }
+#kmod .sa-mini.log > div > span { display: block; }
+#kmod .sa-clk { cursor: pointer; }
+#kmod .sa-clk:hover { background: rgba(240, 199, 94, .08); }
+#kmod .sa-sec { padding: 10px 12px; border-radius: 12px; background: rgba(4, 12, 48, .5); box-shadow: var(--rim-s); margin-bottom: 10px; min-width: 0; }
+#kmod .sa-sec > .sa-h4:first-child { margin-top: 0; }
+#kmod .sa-sec.alert { box-shadow: 0 0 0 1px var(--red), inset 0 0 24px rgba(255, 60, 60, .15); }
+#kmod .sa-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+#kmod .sa-cols > .sa-sec { margin-bottom: 0; }
+#kmod .sa-cols + * { margin-top: 10px; }
+#kmod .sa-cur { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: rgba(240, 199, 94, .1); box-shadow: inset 0 0 0 1px rgba(240, 199, 94, .35); color: var(--g1); margin: 4px 0 8px; }
+#kmod .sa-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 6px; }
+#kmod .sa-kpis.sm { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+#kmod .sa-kpi { position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto auto; column-gap: 8px; align-items: center; text-align: start; border: 0; padding: 9px 11px; border-radius: 12px; background: var(--card); box-shadow: var(--rim-s); color: var(--ink); min-width: 0; }
+#kmod button.sa-kpi { cursor: pointer; }
+#kmod button.sa-kpi:hover { box-shadow: 0 0 0 1px var(--g2); }
+#kmod .sa-kpi .sa-ic { grid-row: 1 / 3; width: 22px; height: 22px; color: var(--g2); }
+#kmod .sa-kpi b { font: 800 20px/1.1 var(--disp); color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kmod .sa-kpi small { color: var(--ink2); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kmod .sa-kpi em { grid-column: 1 / -1; font-style: normal; color: var(--ink3); font-size: 11px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kmod .sa-kpi.hot { background: linear-gradient(180deg, rgba(36, 90, 60, .85), rgba(8, 36, 30, .92)); }
+#kmod .sa-kpi.hot .sa-ic { color: var(--ok); }
+#kmod .sa-kpi.lv-ok b { color: var(--ok); }
+#kmod .sa-kpi.lv-warn b { color: var(--amber); }
+#kmod .sa-kpi.lv-bad b { color: var(--red); }
+#kmod .sa-kpi.warn b { color: var(--amber); }
+#kmod .sa-needs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+#kmod .sa-need { display: flex; align-items: center; gap: 8px; border: 0; padding: 8px 10px; border-radius: 10px; background: linear-gradient(180deg, rgba(120, 40, 20, .55), rgba(60, 14, 10, .7)); box-shadow: 0 0 0 1px rgba(255, 160, 90, .45); color: #ffe2c8; cursor: pointer; text-align: start; min-height: 40px; }
+#kmod .sa-need span { flex: 1 1 auto; min-width: 0; font-size: 12.5px; }
+#kmod .sa-need b { min-width: 22px; padding: 0 6px; border-radius: 10px; background: var(--red); color: #fff; font-size: 12px; text-align: center; line-height: 20px; }
+#kmod .sa-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-inline-end: 6px; background: var(--red); vertical-align: middle; flex: 0 0 auto; }
+#kmod .sa-dot.ok { background: var(--ok); box-shadow: 0 0 8px rgba(79, 224, 138, .6); }
+#kmod .sa-dot.warn { background: var(--amber); }
+#kmod .sa-meter { height: 7px; border-radius: 4px; background: rgba(255, 255, 255, .1); overflow: hidden; margin: 2px 0 8px; }
+#kmod .sa-meter i { display: block; height: 100%; background: var(--ok); }
+#kmod .sa-meter i.warn { background: var(--amber); }
+#kmod .sa-meter i.bad { background: var(--red); }
+#kmod .sa-table { border-radius: var(--r); background: rgba(2, 8, 36, .45); box-shadow: var(--rim-s); overflow-x: auto; margin-bottom: 10px; }
+#kmod .sa-tr { display: grid; grid-template-columns: minmax(96px, 1.4fr) repeat(7, minmax(44px, 1fr)); gap: 4px; padding: 5px 10px; border-bottom: 1px solid rgba(231, 189, 88, .1); font-size: 12px; min-width: 520px; }
+#kmod .sa-tr.th { color: var(--g2); font-weight: 700; font-size: 11px; }
+#kmod .sa-tr b { text-align: center; }
+#kmod .sa-tr b.z { color: var(--ink3); font-weight: 400; }
+#kmod .sa-tr.th span:not(:first-child) { text-align: center; }
+#kmod .sa-bars { display: flex; align-items: flex-end; gap: 6px; height: 110px; padding: 4px 0 18px; }
+#kmod .sa-bars span { flex: 1; height: 100%; display: flex; align-items: flex-end; gap: 2px; position: relative; }
+#kmod .sa-bars i { flex: 1; border-radius: 3px 3px 0 0; min-height: 2px; }
+#kmod .sa-bars i.f { background: var(--g2); }
+#kmod .sa-bars i.e { background: var(--red); }
+#kmod .sa-bars small { position: absolute; bottom: -16px; left: 0; right: 0; text-align: center; font-size: 10px; color: var(--ink3); }
+#kmod .sa-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-inline: 6px 4px; vertical-align: middle; }
+#kmod .sa-key.f { background: var(--g2); }
+#kmod .sa-key.e { background: var(--red); }
+#kmod .sa-hbar { display: block; height: 4px; border-radius: 2px; background: var(--g2); margin-top: 3px; }
+#kmod .sa-hbar.e { background: var(--red); }
+#kmod .sa-switches { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
+#kmod .sa-sw { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; padding: 7px 10px; border-radius: 10px; background: var(--card); box-shadow: var(--rim-s); cursor: pointer; text-align: start; font-size: 12.5px; color: var(--ink2); min-height: 40px; }
+#kmod .sa-sw i { position: relative; flex: 0 0 auto; width: 36px; height: 20px; border-radius: 10px; background: rgba(255, 255, 255, .15); transition: background .15s; }
+#kmod .sa-sw i::after { content: ""; position: absolute; top: 2px; inset-inline-start: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: inset-inline-start .15s; }
+#kmod .sa-sw.on { color: var(--ink); }
+#kmod .sa-sw.on i { background: #2fb45a; }
+#kmod .sa-sw.on i::after { inset-inline-start: 18px; }
+#kmod .sa-pcard { display: flex; flex-direction: column; gap: 8px; }
+#kmod .sa-phead { display: flex; gap: 12px; align-items: center; }
+#kmod .sa-pmeta { min-width: 0; flex: 1; }
+#kmod .sa-pname { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+#kmod .sa-pname > b { font: 800 20px/1.15 var(--disp); color: #fff; }
+#kmod .sa-idchip { padding: 1px 9px; border-radius: 6px; background: linear-gradient(180deg, #f6d77c, #b98226); color: #2a1800; font-weight: 800; font-size: 12.5px; box-shadow: 0 0 0 1px #2b1904; }
+#kmod .sa-psub { display: block; color: var(--ink3); font-size: 12px; margin: 2px 0 4px; overflow-wrap: anywhere; }
+#kmod .sa-ptags { display: flex; flex-wrap: wrap; gap: 4px; }
+#kmod .sa-cards { display: inline-flex; gap: 3px; vertical-align: middle; }
+#kmod .sa-cards i { width: 11px; height: 15px; border-radius: 2px; background: rgba(255, 255, 255, .14); }
+#kmod .sa-cards i.y { background: linear-gradient(160deg, #ffe46b, #d99100); }
+#kmod .sa-cards i.r { background: linear-gradient(160deg, #ff7a6b, #a30d16); }
+#kmod .sa-cards.sm i { width: 8px; height: 11px; }
+#kmod .sa-gcard { display: inline-block; width: 12px; height: 16px; border-radius: 2px; transform: rotate(-8deg); background: linear-gradient(160deg, #ffe46b, #d99100); }
+#kmod .sa-gcard.r { background: linear-gradient(160deg, #ff7a6b, #a30d16); }
+#kmod .sa-pstats { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 6px; }
+#kmod .sa-pstats span { display: grid; grid-template-columns: auto 1fr; column-gap: 6px; align-items: center; padding: 6px 9px; border-radius: 10px; background: rgba(2, 8, 36, .45); box-shadow: var(--rim-s); min-width: 0; }
+#kmod .sa-pstats .sa-ic { grid-row: 1 / 3; color: var(--g2); }
+#kmod .sa-pstats b { font: 800 16px/1.1 var(--disp); white-space: nowrap; }
+#kmod .sa-pstats small { color: var(--ink3); font-size: 11px; }
+#kmod .sa-pacts { display: flex; flex-wrap: wrap; gap: 8px; }
+#kmod .sa-pag { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; border-radius: 10px; background: rgba(2, 8, 36, .4); box-shadow: var(--rim-s); }
+#kmod .sa-pag > small { color: var(--g2); font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+#kmod[lang=ar] .sa-pag > small { letter-spacing: 0; font-size: 11.5px; }
+#kmod .sa-pag > div { display: flex; flex-wrap: wrap; gap: 6px; }
+#kmod .sa-pag.danger { box-shadow: 0 0 0 1px rgba(255, 107, 107, .35); }
+#kmod .sa-pag.danger > small { color: #ff9b9b; }
+#kmod .sa-tl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+#kmod .sa-tl li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; background: rgba(2, 8, 36, .4); font-size: 12.5px; }
+#kmod .sa-tl .sa-ic { color: var(--g2); width: 16px; height: 16px; }
+#kmod .sa-tl small { color: var(--ink3); font-size: 11px; white-space: nowrap; }
+#kmod .sa-comp { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; }
+#kmod .sa-ccol { min-width: 0; }
+#kmod .sa-ccol > .sa-h4:first-child { margin-top: 2px; }
+#kmod .sa-chips.wrap button { font-size: 12px; }
+#kmod .sa-ltabs { display: flex; gap: 4px; margin-bottom: 6px; }
+#kmod .sa-ltabs button { flex: 1; border: 0; min-height: 28px; border-radius: 7px; background: rgba(20, 40, 120, .7); box-shadow: var(--rim-s); color: var(--ink3); font-weight: 700; font-size: 12px; cursor: pointer; position: relative; }
+#kmod .sa-ltabs button.on { background: linear-gradient(180deg, #f6d77c, #c18a2c); color: #2a1800; }
+#kmod .sa-ltabs button.ok::after { content: ""; position: absolute; top: 4px; inset-inline-end: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+#kmod .sa-ccol #sa-mt { margin-bottom: 6px; font-weight: 700; }
+#kmod .sa-count { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: rgba(240, 199, 94, .1); color: var(--g1); font-weight: 700; margin: 8px 0; }
+#kmod .sa-dlgw { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 10px; background: rgba(2, 4, 18, .72); backdrop-filter: blur(3px); }
+#kmod .sa-dlg { width: min(460px, 100%); max-height: calc(100dvh - 20px); display: flex; flex-direction: column; border-radius: 14px; background: var(--panel); box-shadow: var(--rim), 0 20px 50px rgba(0, 0, 0, .6); }
+#kmod .sa-dlg.danger { box-shadow: 0 0 0 1px #2b1904, 0 0 0 2px #e05050, 0 20px 50px rgba(0, 0, 0, .6); }
+#kmod .sa-dlgh { display: flex; align-items: center; gap: 8px; padding: 10px 12px 6px; }
+#kmod .sa-dlgh > .sa-ic { color: var(--g2); width: 20px; height: 20px; }
+#kmod .sa-dlg.danger .sa-dlgh > .sa-ic { color: var(--red); }
+#kmod .sa-dlgh h3 { flex: 1; margin: 0; font: 800 17px/1.2 var(--disp); color: var(--g1); }
+#kmod .sa-x { border: 0; background: transparent; color: var(--ink3); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+#kmod .sa-x:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+#kmod .sa-dlgb { padding: 0 12px; overflow-y: auto; min-height: 0; }
+#kmod .sa-dlgb > p { margin: 6px 0; }
+#kmod .sa-dlgwho { font-weight: 700; color: var(--g1); }
+#kmod .sa-dlgf { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 12px 12px; }
+#kmod .sa-dlgf .sa-btn { min-width: 110px; }
+#kmod .sa-warn { display: flex; align-items: center; gap: 6px; color: #ffb3b3; font-size: 12px; margin: 6px 0; }
+#kmod .sa-gm { margin-top: 4px; }
+#kmod #sa-toast { position: fixed; z-index: 60; bottom: 14px; left: 50%; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 8px 16px; border-radius: 10px; background: var(--panel); box-shadow: var(--rim); color: var(--g1); font-weight: 600; transition: .2s; max-width: 90vw; text-align: center; }
+#kmod #sa-toast.on { opacity: 1; transform: translate(-50%, 0); }
+#kmod #sa-toast.bad { color: #ffb3b3; }
+#kmod .sa-app { position: fixed; inset: 0; display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(4, 8, 30, .35), rgba(4, 8, 30, .6)), #0a1238 url(ui/bab/hall.webp) center / cover no-repeat; }
+#kmod .sa-top { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 4px 12px; flex: 0 0 auto;
+  background: url(ui/bab/ledge_t.webp) 0 0 / auto 6px repeat-x, url(ui/bab/ledge_b.webp) 0 100% / auto 9px repeat-x, url(ui/bab/stone.webp) 0 50% / auto 100% repeat-x, #c79a5c; box-shadow: 0 4px 10px rgba(0, 0, 0, .45); position: relative; z-index: 3; }
+#kmod .sa-top .sa-brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#kmod .sa-top .sa-brand b { font: 800 18px/1 var(--disp); color: #fff6d6; text-shadow: 0 1px 0 #3a2300, 0 0 6px rgba(0, 0, 0, .5); white-space: nowrap; }
+#kmod .sa-top .sa-brand small { padding: 2px 8px; border-radius: 6px; background: rgba(12, 29, 99, .85); color: var(--g1); font-size: 11px; font-weight: 700; box-shadow: 0 0 0 1px #e7bd58; white-space: nowrap; }
+#kmod .sa-tbtn { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 9px; background: linear-gradient(180deg, #2a4bc4, #142a7a); box-shadow: var(--rim); color: var(--g1); cursor: pointer; flex: 0 0 auto; }
+#kmod .sa-tbtn:hover { filter: brightness(1.15); }
+#kmod .sa-sp { flex: 1 1 auto; }
+#kmod .sa-mode { font-size: 11px; color: #3a2300; font-weight: 700; white-space: nowrap; background: rgba(255, 246, 214, .7); padding: 2px 8px; border-radius: 6px; }
+#kmod .sa-langb { display: inline-flex; border-radius: 9px; overflow: hidden; box-shadow: var(--rim); flex: 0 0 auto; }
+#kmod .sa-langb button { border: 0; padding: 0 9px; height: 30px; background: #142a7a; color: var(--ink2); font-size: 12px; font-weight: 700; cursor: pointer; }
+#kmod .sa-langb button.on { background: linear-gradient(180deg, #f6d77c, #c18a2c); color: #2a1800; }
+#kmod .sa-scroll { overflow-y: auto; overscroll-behavior: contain; min-height: 0; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(231, 189, 88, .45) transparent; }
+#kmod .sa-scroll::-webkit-scrollbar { width: 6px; }
+#kmod .sa-scroll::-webkit-scrollbar-thumb { background: rgba(231, 189, 88, .45); border-radius: 3px; }
+#kmod .sa-ptitle { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
+#kmod .sa-ptitle .sa-ic { width: 22px; height: 22px; color: var(--g2); }
+#kmod .sa-ptitle h2 { margin: 0; font: 800 21px/1.15 var(--disp); }
+@media (max-height: 480px) {
+#kmod { font-size: 13px; }
+#kmod .sa-top { min-height: 40px; padding: 3px 10px; }
+#kmod .sa-top .sa-brand b { font-size: 16px; }
+#kmod .sa-tbtn { width: 30px; height: 30px; }
+#kmod .sa-btn { min-height: 32px; padding: 0 10px; font-size: 12.5px; }
+#kmod .sa-kpi { padding: 7px 9px; }
+#kmod .sa-kpi b { font-size: 17px; }
+#kmod .sa-kpi .sa-ic { width: 18px; height: 18px; }
+#kmod .sa-ptitle { margin-bottom: 6px; }
+#kmod .sa-ptitle h2 { font-size: 18px; }
+#kmod .sa-pname > b { font-size: 18px; }
+#kmod .sa-av.lg { width: 44px; height: 44px; font-size: 19px; }
+#kmod .sa-grid2.keys { grid-template-columns: repeat(2, 1fr); }
+#kmod .sa-dlgh { padding-top: 8px; }
+#kmod .sa-dlgf { padding-bottom: 8px; }
+#kmod .sa-search.big input { font-size: 15px; min-height: 36px; }
+#kmod .sa-search.big .sa-btn { min-height: 36px; }
+}
+@media (max-width: 720px) {
+#kmod .sa-cols, #kmod .sa-comp { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+#kmod, #kmod * { animation: none !important; transition: none !important; }
+}
+
+/* ---- lobby shield button (moderators only) ---- */
+#b13h .h-ib.md-hbtn .md-sh { width: 26px; height: 26px; fill: #f2c860; stroke: #5e3a0c; stroke-width: 1.3; filter: drop-shadow(0 2px 0 rgba(0,0,0,.45)); }
+#b13h .h-ib.md-hbtn .md-sh .md-sh2 { fill: none; stroke: #1a2f8a; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* ---- moderator panel overlay ---- */
+#kmod { position: fixed; inset: 0; z-index: 9000; background: #071033; font-family: 'SSText', system-ui, sans-serif; }
+#kmod .md-app { position: absolute; inset: 0; display: flex; flex-direction: column; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+#kmod .md-top { flex: 0 0 auto; gap: 8px; }
+#kmod .md-shd { display: inline-grid; place-items: center; width: 30px; height: 30px; color: #f2c860; }
+#kmod .md-shd .sa-ic { width: 24px; height: 24px; }
+#kmod .md-tabs { margin-inline-start: 8px; min-width: 0; overflow-x: auto; }
+#kmod .md-main { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 10px 14px 18px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+#kmod .md-main > * { max-width: 860px; margin-inline: auto; }
+#kmod .md-cap { margin-bottom: 8px; }
+#kmod .md-q { margin: 6px 0 2px; padding: 6px 9px; border-radius: 8px; background: rgba(0,0,0,.28); border-inline-start: 3px solid #f2c860; font-size: 13px; overflow-wrap: anywhere; }
+#kmod .md-txt { margin: 6px 0; font-size: 13px; color: var(--ink2); white-space: pre-wrap; overflow-wrap: anywhere; }
+#kmod .md-ta { width: 100%; resize: vertical; min-height: 54px; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line); background: rgba(3,8,34,.6); color: var(--ink); font: 13px/1.35 'SSText', system-ui, sans-serif; }
+#kmod .md-st { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+#kmod .md-acts { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
+#kmod .md-acts .sa-btn { width: 100%; min-height: 40px; }
+#kmod .md-who { margin: 0 0 6px; font-weight: 700; }
+#kmod .sa-dlgw { position: absolute; z-index: 5; }
+#kmod .sa-exit { padding: 0; width: 34px; justify-content: center; }
+@media (max-width: 700px) { #kmod .sa-brand { display: none; } #kmod .md-tabs { margin-inline-start: 0; } #kmod .md-main { padding: 8px 10px 14px; } }
+
+#kadm #ssadm .md-add { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin: 6px 0 10px; }
+#kadm #ssadm .md-add input { width: 120px; }
+#kadm #ssadm .md-mods { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+#kadm #ssadm .md-ks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
+#kadm #ssadm .md-kh { color: var(--g2); font-weight: 700; }
+#kadm #ssadm .md-k { display: inline-flex; align-items: baseline; gap: 4px; padding: 2px 8px; border-radius: 99px; background: rgba(0,0,0,.25); box-shadow: var(--rim-s); }
+#kadm #ssadm .md-k small { color: var(--ink3); }
+#kadm #ssadm .md-mw { display: inline-flex; align-items: center; gap: 4px; }
+#kadm #ssadm .md-mw small { color: var(--ink3); }
+#kadm #ssadm .md-ar .sa-ic { width: 14px; height: 14px; transform: scaleX(-1); opacity: .7; }
+#kadm #ssadm [dir=rtl] .md-ar .sa-ic { transform: none; }
+#kadm #ssadm .md-txt { margin: 6px 0 0; font-size: 13px; color: var(--ink2); white-space: pre-wrap; overflow-wrap: anywhere; }
+#kadm #ssadm .md-txt small { color: var(--ink3); margin-inline-start: 4px; }
+#kadm #ssadm .md-ev .sa-ih { flex-wrap: wrap; row-gap: 4px; }
+</style>
+<script id="ss13u-mods-js">
+try { window.SSAdmin && SSAdmin.addI18n({"mdShield": ["لوحة المشرف", "Moderator panel"], "mdTitle": ["المشرف", "Moderator"], "mdReports": ["البلاغات", "Reports"], "mdPlayers": ["اللاعبون", "Players"], "mdSupport": ["الدعم", "Support"], "mdSearchPh": ["الاسم أو رقم اللاعب", "Name or player ID"], "mdSearch": ["بحث", "Search"], "mdNoReports": ["ماكو بلاغات مفتوحة", "No open reports"], "mdNoSupport": ["ماكو رسائل دعم مفتوحة", "No open support messages"], "mdNoPlayers": ["ما لقينا لاعبين", "No players found"], "mdSearchHint": ["ابحث عن لاعب بالاسم أو برقم اللاعب", "Search a player by name or player ID"], "mdBy": ["بلاغ من {x}", "Reported by {x}"], "mdOpenPl": ["فتح اللاعب", "Open player"], "mdActioned": ["تم الإجراء", "Action taken"], "mdDismiss": ["رفض البلاغ", "Dismiss"], "mdMute": ["كتم الدردشة", "Mute chat"], "mdBan": ["حظر مؤقت", "Temporary ban"], "mdWarn": ["بطاقة صفراء", "Yellow card"], "mdRename": ["إعادة تعيين الاسم", "Reset name"], "mdPhoto": ["إزالة الصورة", "Reset photo"], "mdReason": ["السبب (مطلوب)", "Reason (required)"], "mdReasonShort": ["اكتب سبباً (3 أحرف على الأقل)", "Write a reason (at least 3 characters)"], "mdDur": ["المدة", "Duration"], "mdH": ["{n} س", "{n} h"], "mdConfirm": ["تأكيد", "Confirm"], "mdCancel": ["إلغاء", "Cancel"], "mdDone": ["تم", "Done"], "mdReplyPh": ["اكتب ردّك على اللاعب", "Write your reply to the player"], "mdSend": ["إرسال الرد", "Send reply"], "mdMutedTo": ["مكتوم حتى {t}", "Muted until {t}"], "mdBannedTo": ["محظور حتى {t}", "Banned until {t}"], "mdCards": ["البطاقات: {n}", "Cards: {n}"], "mdOpenRep": ["بلاغات مفتوحة: {n}", "Open reports: {n}"], "mdLevel": ["المستوى {n}", "Level {n}"], "mdProtected": ["محمي: المالك فقط يقدر يتصرف بهذا الحساب", "Protected: only the owner can act on this account"], "mdHint": ["كل إجراء يحتاج سبباً، والمالك يشوف كل شيء.", "Every action needs a reason. The owner sees everything."], "mdLeft": ["المتبقي اليوم: {x}", "Left today: {x}"], "mdRenameNote": ["الاسم راح يصير {x}", "The name will change to {x}"], "mdPhotoNote": ["تنشال صورة الملف الشخصي وترجع الصورة الافتراضية.", "The profile photo is removed and the default avatar is set."], "mdWarnNote": ["البطاقة الصفراء تحذير. البطاقة الثالثة يعطيها المالك فقط.", "A yellow card is a warning. Only the owner can give a third card."], "mdBack": ["رجوع", "Back"], "mdClose": ["إغلاق", "Close"], "mdE_daily_cap": ["وصلت للحد اليومي لهذا الإجراء", "Daily limit reached for this action"], "mdE_needs_owner": ["هذا اللاعب عنده بطاقتين. البطاقة الثالثة للمالك فقط.", "This player already has 2 cards. Only the owner can give the next one."], "mdE_mod_max_24h": ["المشرف يقدر يقيّد لحد 24 ساعة فقط", "Moderators can restrict for up to 24 hours"], "mdE_not_moderator": ["ما عدت مشرفاً", "You are no longer a moderator"], "mdE_username_taken": ["هذا الاسم مأخوذ", "That name is taken"], "mdE_already_resolved": ["تمت معالجته من قبل", "Already handled"], "mdE_same_name": ["الاسم معاد تعيينه من قبل", "The name was already reset"], "mdE_other": ["صار خطأ ({x})", "Something went wrong ({x})"], "mdA_ban": ["حظر", "Ban"], "mdA_mute": ["كتم", "Mute"], "mdA_warn": ["بطاقة صفراء", "Yellow card"], "mdA_rename": ["إعادة الاسم", "Name reset"], "mdA_photo": ["إزالة الصورة", "Photo reset"], "mdA_resolve": ["معالجة بلاغ", "Report handled"], "mdA_reply": ["رد دعم", "Support reply"], "mdOTitle": ["المشرفون", "Moderators"], "mdOAdd": ["إضافة مشرف", "Add moderator"], "mdOPid": ["رقم اللاعب", "Player ID"], "mdOAddQ": ["تخلي {x} (#{id}) مشرفاً؟ يقدر يكتم، يحظر لحد 24 ساعة، يعطي بطاقات صفراء، يعيد الأسماء والصور، يعالج البلاغات ويرد على الدعم. لا شيء غير هذا.", "Make {x} (#{id}) a moderator? They can mute, ban for up to 24 h, give yellow cards, reset names and photos, handle reports and answer support. Nothing else."], "mdONotFound": ["ماكو لاعب بهذا الرقم", "No player with this ID"], "mdORevoke": ["سحب الإشراف", "Remove moderator"], "mdORevokeQ": ["تسحب صلاحية الإشراف من {x}؟ لوحته تتسكر فوراً.", "Remove moderator rights from {x}? Their panel closes right away."], "mdONone": ["ماكو مشرفين بعد", "No moderators yet"], "mdOSince": ["مشرف من {t}", "Moderator since {t}"], "mdO7d": ["{n} إجراء خلال 7 أيام", "{n} actions in 7 days"], "mdOUndoneN": ["{n} ملغي", "{n} undone"], "mdOFeed": ["نشاط المشرفين", "Moderator activity"], "mdOAll": ["الكل", "All"], "mdOUndo": ["تراجع", "Undo"], "mdOUndoQ": ["تلغي إجراء المشرف هذا؟ اللاعب يوصله إشعار.", "Undo this moderator action? The player gets a notice."], "mdOUndone": ["ملغي", "Undone"], "mdOActive": ["سارٍ", "Active"], "mdOEnded": ["منتهي", "Ended"], "mdONoFeed": ["ماكو إجراءات من المشرفين بعد", "No moderator actions yet"], "mdOToast": ["المشرف {m}: {a} على {x}", "Moderator {m}: {a} on {x}"], "mdOCaps": ["الحد اليومي لكل مشرف", "Daily limit per moderator"], "mdOToday": ["اليوم", "Today"], "mdOLast": ["آخر إجراء {t}", "Last action {t}"], "mdOOnly": ["أنت الوحيد اللي يعطي الإشراف ويسحبه. كل إجراء يظهر هنا مع سببه.", "Only you can give or remove moderator rights. Every action shows up here with its reason."]}); } catch (_) {}
+/* ss13u-mods: owner admin (version A) section "Moderators": grant/revoke by player ID, per-mod counters, live activity feed with filter + undo.
+   Calls owner_set_moderator / owner_mods / owner_mod_feed / owner_mod_undo (sql/104_mods.sql; server re-checks owner #1 on every call). */
+(function () {
+  const SA = window.SSAdmin; if (!SA || !SA.M || SA.M.mods) return;
+  const T = SA.T, IC = SA.icon, esc = SA.esc, nf = SA.nf, H = SA.h;
+  const grp = (SA.GROUPS || []).find((g) => g[0] === "mod"); if (grp && grp[3].indexOf("mods") < 0) grp[3].unshift("mods");
+  const KINDS = ["ban", "mute", "warn", "rename", "photo", "resolve", "reply"];
+  const M = (SA.M.mods = { id: "mods", title: "mdOTitle", icon: "shield", st: { list: null, caps: null, feed: null, f: "", pid: "" },
+    async load() {
+      const s = this.st;
+      const [o, f] = await Promise.all([SA.rpc("owner_mods"), SA.rpc("owner_mod_feed", { p_mod: s.f || null, p_limit: 150 })]);
+      s.list = (o && o.mods) || []; s.caps = (o && o.caps) || {}; s.feed = f || []; s.at = Date.now();
+    },
+    modCard(m) {
+      const u = m.used || {}, c = this.st.caps || {};
+      const cnt = KINDS.filter((k) => (u[k] | 0) > 0 || k === "ban" || k === "mute").map((k) => `<span class="md-k"><small>${T("mdA_" + k)}</small><b dir="ltr">${nf(u[k] | 0)}/${nf(c[k] | 0)}</b></span>`).join("");
+      return `<div class="sa-item md-mod"><div class="sa-ih">${H.who(m.username, m.player_id, m.id)}${H.pill(SA.t("mdTitle"), "gold")}<small class="sa-at">${m.last_at ? T("mdOLast", { t: SA.ago(m.last_at) }) : ""}</small></div>` +
+        `<small class="sa-note">${m.since ? T("mdOSince", { t: SA.fmtD(m.since) }) + " · " : ""}${T("mdO7d", { n: nf(m.total7 | 0) })}${m.undone ? " · " + T("mdOUndoneN", { n: nf(m.undone) }) : ""}</small>` +
+        `<div class="md-ks"><small class="md-kh">${T("mdOToday")}</small>${cnt}</div>` +
+        `<div class="sa-iacts">${H.btn("mods:filter", T("mdOFeed"), this.st.f === m.id ? "main" : "", { id: m.id }, "scroll")}${H.btn("mods:revoke", T("mdORevoke"), "red", { pid: m.player_id, name: m.username }, "close")}</div></div>`;
+    },
+    row(x) {
+      const st = x.undone ? H.pill(SA.t("mdOUndone"), "") : x.active === true ? H.pill(SA.t("mdOActive"), "green") : x.active === false ? H.pill(SA.t("mdOEnded"), "") : "";
+      const extra = x.mk === "rename" ? ` · <bdi>${esc(x.from || "")}</bdi> → <bdi>${esc(x.to || "")}</bdi>` : (x.mk === "ban" || x.mk === "mute") && x.hours ? ` · ${esc(x.hours)} h` : "";
+      return `<div class="sa-item md-ev"><div class="sa-ih">${H.pill(SA.t("mdA_" + (x.mk || "ban")), x.mk === "ban" ? "red" : x.mk === "mute" || x.mk === "warn" ? "amber" : "gold")}` +
+        `<span class="md-mw"><small>${T("mdTitle")}</small> ${H.who(x.mod, x.mod_pid, x.mod_id)}</span><span class="md-ar">${IC("back")}</span>${x.target_id ? H.who(x.target, x.target_pid, x.target_id) : ""}${st}<small class="sa-at" title="${esc(SA.fmtD(x.at, 1))}">${esc(SA.ago(x.at))}</small></div>` +
+        `<p class="md-txt" dir="auto">${esc(x.reason || "—")}<small dir="ltr">${extra}</small></p>` +
+        (x.undoable && !x.undone && x.active !== false ? `<div class="sa-iacts">${H.btn("mods:undo", T("mdOUndo"), "", { id: x.id }, "undo")}</div>` : "") + `</div>`;
+    },
+    html() {
+      const s = this.st;
+      if (s.list === null) return H.loading();
+      const add = `<form class="sa-inline md-add" data-form="mods:add"><label class="sa-lab in">${T("mdOPid")}<input id="md-opid" dir="ltr" inputmode="numeric" maxlength="9" autocomplete="off" value="${esc(s.pid)}" placeholder="#"></label><button type="submit" class="sa-btn main">${IC("shield")}<span>${T("mdOAdd")}</span></button></form>`;
+      const caps = s.caps ? `<p class="sa-note">${T("mdOCaps")}: ${KINDS.map((k) => T("mdA_" + k) + " " + nf(s.caps[k] | 0)).join(" · ")}</p>` : "";
+      const mods = s.list.length ? s.list.map((m) => this.modCard(m)).join("") : H.empty("mdONone");
+      const fopts = [["", SA.t("mdOAll")]].concat(s.list.map((m) => [m.id, m.username]));
+      const feed = s.feed && s.feed.length ? s.feed.map((x) => this.row(x)).join("") : H.empty("mdONoFeed");
+      return `<p class="sa-note">${T("mdOOnly")}</p>${add}${caps}<div class="md-mods">${mods}</div>` +
+        `<h4 class="sa-h4">${IC("scroll")}${T("mdOFeed")}</h4>${s.list.length ? `<div class="sa-bar">${H.seg("mods:f", s.f, fopts)}</div>` : ""}<div class="md-feed">${feed}</div>`;
+    },
+    async act(a, el) {
+      const d = el.dataset, s = this.st;
+      if (a === "f" || a === "filter") { s.f = a === "f" ? d.v : (s.f === d.id ? "" : d.id); s.feed = null; SA.repaint(); await SA.load("mods"); SA.repaint(); return; }
+      if (a === "revoke") return SA.dialog({ title: SA.t("mdORevoke"), icon: "shield", reason: false, danger: true, dangerNote: "kaConfirm",
+        body: `<p>${T("mdORevokeQ", { x: d.name || "#" + d.pid })}</p>`, run: () => SA.rpc("owner_set_moderator", { p_player: +d.pid, p_on: false, p_reason: "" }) });
+      if (a === "undo") return SA.dialog({ title: SA.t("mdOUndo"), icon: "undo", body: `<p>${T("mdOUndoQ")}</p>`, run: (r) => SA.rpc("owner_mod_undo", { p_log: +d.id, p_reason: r }) });
+    },
+    async form(f) {
+      const s = this.st, v = String((SA.$("md-opid") || {}).value || "").trim().replace(/^#/, ""); s.pid = v;
+      if (!/^\d{1,9}$/.test(v)) { SA.toast(SA.t("mdONotFound"), true); return; }
+      let u = null;
+      try { const L = await SA.rpc("adm2_users", { p_query: "#" + v, p_limit: 5 }); u = (L || []).find((x) => String(x.player_id) === v) || null; } catch (e) { SA.toast(SA.errText(e), true); return; }
+      if (!u || u.deleted) { SA.toast(SA.t("mdONotFound"), true); return; }
+      if (+u.player_id === 1 || u.role === "owner") { SA.toast(SA.t("kaProtected"), true); return; }
+      return SA.dialog({ title: SA.t("mdOAdd"), icon: "shield", reason: false, body: `<p>${T("mdOAddQ", { x: u.username, id: u.player_id })}</p>`,
+        run: async () => { await SA.rpc("owner_set_moderator", { p_player: +v, p_on: true, p_reason: "" }); s.pid = ""; } });
+    },
+  });
+  // live: a moderator acted -> refresh this section if it is on screen (poke handled in the game module), plus a 15 s safety refresh
+  const visible = () => { const h = SA.host, ov = h && h.parentNode; return !!(h && ov && !ov.classList.contains("x-hide") && !document.hidden && h.querySelector('.a-it.on[data-sgo="mods"]') && !h.querySelector(".sa-dlgw")); };
+  const refresh = () => { if (!visible()) return; SA.load("mods").then(() => { const mn = SA.host.querySelector(".a-main"), st = mn ? mn.scrollTop : 0; SA.repaint(); const m2 = SA.host.querySelector(".a-main"); if (m2) m2.scrollTop = st; }); };
+  window.__MODS_O = { poke: refresh, M };
+  setInterval(() => { try { refresh(); } catch (_) {} }, 15000);
 })();
 
 </script>
