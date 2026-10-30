@@ -13344,7 +13344,26 @@
             admPaintK();
           };
           K.admCtx = { AD, paint: () => admPaintK(), load: () => admLoadK() };
-          K.openAdmin = () => { if (state === "play" || !isOwner()) return; setTitle("kadm", "" + _t("kAdmin")); admPaintK(); show("kadm"); admLoadK(); };
+          const A4I = {"aGuardT": ["الحارس والبطاقات", "Guard & cards", "Muhafız ve kartlar", "Garde et cartons", "Guardia y tarjetas", "गार्ड और कार्ड"], "aTitle": ["لوحة المالك", "Owner panel", "Sahip paneli", "Panneau du propriétaire", "Panel del propietario", "मालिक पैनल"], "aHome": ["الرئيسية", "Home", "Ana sayfa", "Accueil", "Inicio", "होम"], "aG_players": ["اللاعبون", "Players", "Oyuncular", "Joueurs", "Jugadores", "खिलाड़ी"], "aG_mod": ["الإشراف", "Moderation", "Moderasyon", "Modération", "Moderación", "मॉडरेशन"], "aG_eco": ["الاقتصاد", "Economy", "Ekonomi", "Économie", "Economía", "अर्थव्यवस्था"], "aG_content": ["المحتوى والرسائل", "Content", "İçerik", "Contenu", "Contenido", "सामग्री"], "aG_game": ["اللعبة", "Game", "Oyun", "Jeu", "Juego", "गेम"], "aG_sys": ["النظام والسجلات", "System & logs", "Sistem ve kayıtlar", "Système et journaux", "Sistema y registros", "सिस्टम और लॉग"], "aLiveNow": ["داخل المباريات الآن", "In matches now", "Şu an maçta", "En match maintenant", "En partida ahora", "अभी मैच में"], "aLiveRooms": ["{n} غرفة عامة", "{n} public rooms", "{n} genel oda", "{n} salons publics", "{n} salas públicas", "{n} सार्वजनिक रूम"], "aNeeds": ["يحتاج انتباهك", "Needs attention", "İlgi bekliyor", "À traiter", "Requiere atención", "ध्यान चाहिए"], "aAllClear": ["كل شيء نظيف، ما في شي ينتظر", "All clear, nothing waiting", "Her şey temiz, bekleyen yok", "Tout est en ordre, rien en attente", "Todo en orden, nada pendiente", "सब ठीक है, कुछ बाकी नहीं"], "aSupOpen": ["رسائل دعم مفتوحة", "Open support", "Açık destek", "Support ouvert", "Soporte abierto", "खुला सपोर्ट"], "aGuardQ": ["للمراجعة (الحارس)", "Guard review", "Muhafız incelemesi", "Revue de la Garde", "Revisión de Guardia", "गार्ड समीक्षा"], "aAppeals": ["اعتراضات", "Appeals", "İtirazlar", "Appels", "Apelaciones", "अपील"], "aCleanOpen": ["المنظّف: مؤشَّر", "Cleaner flags", "Temizleyici işaretleri", "Signalements du nettoyeur", "Marcas del limpiador", "क्लीनर फ़्लैग"], "aErr24": ["أخطاء آخر 24 ساعة", "Errors 24h", "Hatalar 24 sa", "Erreurs 24 h", "Errores 24 h", "त्रुटियाँ 24 घं"], "aOps": ["حالة الخدمة", "Service status", "Hizmet durumu", "État du service", "Estado del servicio", "सेवा की स्थिति"], "aRevenue": ["الإيرادات (كل الوقت)", "Revenue (all time)", "Gelir (tüm zamanlar)", "Revenus (total)", "Ingresos (total)", "कमाई (कुल)"], "aToday": ["اليوم", "Today", "Bugün", "Aujourd'hui", "Hoy", "आज"], "a7d": ["7 أيام", "7 days", "7 gün", "7 jours", "7 días", "7 दिन"], "aSearchPh": ["الاسم أو #الرقم أو VIP أو البريد", "Name, #ID, VIP or email", "Ad, #ID, VIP veya e-posta", "Nom, #ID, VIP ou e-mail", "Nombre, #ID, VIP o correo", "नाम, #ID, VIP या ईमेल"], "aSearchGo": ["بحث", "Search", "Ara", "Rechercher", "Buscar", "खोजें"], "aNoMatch": ["ما في لاعب بهذا البحث", "No player matches", "Eşleşen oyuncu yok", "Aucun joueur trouvé", "Ningún jugador coincide", "कोई खिलाड़ी नहीं मिला"], "aResults": ["{n} نتيجة", "{n} results", "{n} sonuç", "{n} résultats", "{n} resultados", "{n} परिणाम"], "aRecent": ["آخر من فتحتهم", "Recently opened", "Son açılanlar", "Ouverts récemment", "Abiertos recientemente", "हाल में खोले गए"], "aTypeToSearch": ["اكتب اسم أو رقم لاعب للبدء", "Type a name or ID to start", "Başlamak için ad veya ID yaz", "Tape un nom ou un ID pour commencer", "Escribe un nombre o ID para empezar", "शुरू करने के लिए नाम या ID लिखें"], "aOverview": ["نظرة عامة", "Overview", "Genel bakış", "Aperçu", "Resumen", "सारांश"], "aModeration": ["الإشراف", "Moderation", "Moderasyon", "Modération", "Moderación", "मॉडरेशन"], "aEconomy": ["الاقتصاد", "Economy", "Ekonomi", "Économie", "Economía", "अर्थव्यवस्था"], "aTimeline": ["السجل الزمني", "Timeline", "Zaman çizelgesi", "Chronologie", "Cronología", "टाइमलाइन"], "aActModerate": ["إشراف", "Moderate", "Denetle", "Modérer", "Moderar", "मॉडरेट करें"], "aActEconomy": ["رصيد وهوية", "Economy & ID", "Ekonomi ve ID", "Économie et ID", "Economía e ID", "अर्थव्यवस्था और ID"], "aActProfile": ["الملف", "Profile", "Profil", "Profil", "Perfil", "प्रोफ़ाइल"], "aActDanger": ["منطقة خطرة", "Danger zone", "Tehlikeli bölge", "Zone dangereuse", "Zona peligrosa", "खतरनाक क्षेत्र"], "aYellow": ["بطاقة صفراء", "Yellow card", "Sarı kart", "Carton jaune", "Tarjeta amarilla", "पीला कार्ड"], "aRedBan": ["حمراء (حظر)", "Red card (ban)", "Kırmızı kart (yasak)", "Carton rouge (bannissement)", "Tarjeta roja (baneo)", "लाल कार्ड (बैन)"], "aGuardUnban": ["فك حظر الحارس", "Guard unban", "Muhafız yasağını kaldır", "Débannir (Garde)", "Desbanear (Guardia)", "गार्ड अनबैन"], "aCardsN": ["{n}/3 بطاقات", "{n}/3 cards", "{n}/3 kart", "{n}/3 cartons", "{n}/3 tarjetas", "{n}/3 कार्ड"], "aBanned": ["محظور", "Banned", "Yasaklı", "Banni", "Baneado", "बैन"], "aMuted": ["مكتوم", "Muted", "Susturuldu", "Muet", "Silenciado", "म्यूट"], "aClean": ["سليم", "Clean", "Temiz", "Propre", "Limpio", "साफ़"], "aJoined": ["انضم {d}", "Joined {d}", "Katıldı {d}", "Inscrit {d}", "Se unió {d}", "जुड़े {d}"], "aSeen": ["آخر ظهور {d}", "Seen {d}", "Görüldü {d}", "Vu {d}", "Visto {d}", "देखा गया {d}"], "aLevel": ["المستوى", "Level", "Seviye", "Niveau", "Nivel", "लेवल"], "aCoins": ["عملات", "Coins", "Altın", "Pièces", "Monedas", "सिक्के"], "aGems": ["جواهر", "Gems", "Mücevher", "Gemmes", "Gemas", "रत्न"], "aGames": ["مباريات", "Games", "Maçlar", "Parties", "Partidas", "मैच"], "aKills": ["قتلى", "Kills", "Öldürmeler", "Éliminations", "Eliminaciones", "किल"], "aModeProg": ["تقدم الأوضاع", "Mode progress", "Mod ilerlemesi", "Progression des modes", "Progreso de modos", "मोड प्रगति"], "aGrantAdd": ["إضافة", "Add", "Ekle", "Ajouter", "Añadir", "जोड़ें"], "aGrantRemove": ["خصم", "Remove", "Çıkar", "Retirer", "Quitar", "हटाएँ"], "aGrantAfter": ["بعد التنفيذ: {c} عملة · {g} جوهرة", "After: {c} coins · {g} gems", "Sonra: {c} altın · {g} mücevher", "Après : {c} pièces · {g} gemmes", "Después: {c} monedas · {g} gemas", "बाद में: {c} सिक्के · {g} रत्न"], "aGrantLimit": ["الحد: مليون عملة و 10 آلاف جوهرة", "Limit: 1,000,000 coins · 10,000 gems", "Sınır: 1.000.000 altın · 10.000 mücevher", "Limite : 1 000 000 pièces · 10 000 gemmes", "Límite: 1.000.000 monedas · 10.000 gemas", "सीमा: 10,00,000 सिक्के · 10,000 रत्न"], "aTypeId": ["للتأكيد اكتب رقم اللاعب {n}", "To confirm, type the player ID {n}", "Onaylamak için oyuncu ID'sini yaz: {n}", "Pour confirmer, tape l'ID du joueur {n}", "Para confirmar, escribe el ID del jugador {n}", "पुष्टि के लिए खिलाड़ी ID {n} लिखें"], "aTypeIdBad": ["الرقم غير مطابق", "ID does not match", "ID eşleşmiyor", "L'ID ne correspond pas", "El ID no coincide", "ID मेल नहीं खाती"], "aDangerNote": ["إجراء نهائي ولا يمكن التراجع عنه", "Permanent. This cannot be undone.", "Kalıcı. Geri alınamaz.", "Définitif. Impossible d'annuler.", "Permanente. No se puede deshacer.", "स्थायी। इसे वापस नहीं किया जा सकता।"], "aCancel": ["إلغاء", "Cancel", "İptal", "Annuler", "Cancelar", "रद्द करें"], "aClose": ["إغلاق", "Close", "Kapat", "Fermer", "Cerrar", "बंद करें"], "aSave": ["حفظ", "Save", "Kaydet", "Enregistrer", "Guardar", "सहेजें"], "aApply": ["تطبيق", "Apply", "Uygula", "Appliquer", "Aplicar", "लागू करें"], "aPreviewRO": ["معاينة: التعديلات معطلة (قراءة فقط)", "Preview: changes are disabled (read-only)", "Önizleme: değişiklikler kapalı (salt okunur)", "Aperçu : modifications désactivées (lecture seule)", "Vista previa: cambios desactivados (solo lectura)", "प्रीव्यू: बदलाव बंद हैं (केवल पढ़ें)"], "aMockData": ["بيانات تجريبية", "Sample data", "Örnek veri", "Données d'exemple", "Datos de ejemplo", "नमूना डेटा"], "aLiveData": ["بيانات حقيقية · قراءة فقط", "Live data · read-only", "Canlı veri · salt okunur", "Données réelles · lecture seule", "Datos reales · solo lectura", "लाइव डेटा · केवल पढ़ें"], "aSignIn": ["دخول المالك", "Owner sign-in", "Sahip girişi", "Connexion propriétaire", "Acceso del propietario", "मालिक साइन-इन"], "aEmail": ["البريد", "Email", "E-posta", "E-mail", "Correo", "ईमेल"], "aPass": ["كلمة السر", "Password", "Şifre", "Mot de passe", "Contraseña", "पासवर्ड"], "aNotOwner": ["هذا الحساب ليس المالك", "This account is not the owner", "Bu hesap sahip değil", "Ce compte n'est pas le propriétaire", "Esta cuenta no es la del propietario", "यह खाता मालिक का नहीं है"], "aCmdPh": ["اكتب أمراً أو قسماً أو لاعباً…", "Type a command, section or player…", "Komut, bölüm veya oyuncu yaz…", "Tape une commande, une section ou un joueur…", "Escribe un comando, sección o jugador…", "कमांड, सेक्शन या खिलाड़ी लिखें…"], "aCmdHint": ["Ctrl K", "Ctrl K", "Ctrl K", "Ctrl K", "Ctrl K", "Ctrl K"], "aCmdSections": ["الأقسام", "Sections", "Bölümler", "Sections", "Secciones", "सेक्शन"], "aCmdActions": ["إجراءات سريعة", "Quick actions", "Hızlı işlemler", "Actions rapides", "Acciones rápidas", "त्वरित कार्य"], "aCmdPlayers": ["لاعبون", "Players", "Oyuncular", "Joueurs", "Jugadores", "खिलाड़ी"], "aQueues": ["قوائم الانتظار", "Queues", "Kuyruklar", "Files d'attente", "Colas", "कतारें"], "aSettings": ["الإعدادات", "Settings", "Ayarlar", "Paramètres", "Ajustes", "सेटिंग्स"], "aInboxZero": ["القائمة فارغة", "Queue is empty", "Kuyruk boş", "File vide", "Cola vacía", "कतार खाली है"], "aPickItem": ["اختر عنصراً من القائمة", "Pick an item from the list", "Listeden bir öğe seç", "Choisis un élément dans la liste", "Elige un elemento de la lista", "सूची से एक आइटम चुनें"], "aNext": ["التالي", "Next", "Sonraki", "Suivant", "Siguiente", "अगला"], "aItemsN": ["{n} عنصر", "{n} items", "{n} öğe", "{n} éléments", "{n} elementos", "{n} आइटम"], "aQ_reports": ["بلاغات اللاعبين", "Player reports", "Oyuncu şikâyetleri", "Signalements de joueurs", "Reportes de jugadores", "खिलाड़ी रिपोर्ट"], "aQ_support": ["الدعم", "Support", "Destek", "Support", "Soporte", "सपोर्ट"], "aQ_guard": ["مراجعة الحارس", "Guard review", "Muhafız incelemesi", "Revue de la Garde", "Revisión de Guardia", "गार्ड समीक्षा"], "aQ_appeals": ["اعتراضات البطاقات", "Card appeals", "Kart itirazları", "Appels de cartons", "Apelaciones de tarjetas", "कार्ड अपील"], "aQ_cleaner": ["المنظّف", "Cleaner", "Temizleyici", "Nettoyeur", "Limpiador", "क्लीनर"], "aQ_matches": ["مباريات مُعلَّمة", "Flagged matches", "İşaretli maçlar", "Parties signalées", "Partidas marcadas", "फ़्लैग किए मैच"], "aQ_buys": ["مشتريات مُعلَّمة", "Flagged purchases", "İşaretli satın alımlar", "Achats signalés", "Compras marcadas", "फ़्लैग की गई खरीद"], "aOpenPlayer": ["ملف اللاعب", "Player file", "Oyuncu dosyası", "Fiche joueur", "Ficha del jugador", "खिलाड़ी फ़ाइल"], "aMarkReviewed": ["تمت المراجعة", "Mark reviewed", "İncelendi olarak işaretle", "Marquer comme vu", "Marcar como revisado", "समीक्षा हुई चिह्नित करें"], "aFilter": ["تصفية…", "Filter…", "Filtrele…", "Filtrer…", "Filtrar…", "फ़िल्टर…"], "aAllActions": ["كل الإجراءات", "All actions", "Tüm işlemler", "Toutes les actions", "Todas las acciones", "सभी कार्य"], "aMaintOnQ": ["تشغيل وضع الصيانة يمنع اللاعبين من بدء مباريات. متأكد؟", "Maintenance stops players from starting matches. Turn it on?", "Bakım modu oyuncuların maç başlatmasını engeller. Açılsın mı?", "La maintenance empêche les joueurs de lancer des parties. L'activer ?", "El mantenimiento impide a los jugadores iniciar partidas. ¿Activarlo?", "मेंटेनेंस में खिलाड़ी मैच शुरू नहीं कर पाते। चालू करें?"], "aMultQ": ["تغيير مضاعف {k} إلى {v} لكل اللاعبين؟", "Set {k} to {v} for every player?", "Tüm oyuncular için {k} = {v} yapılsın mı?", "Régler {k} à {v} pour tous les joueurs ?", "¿Fijar {k} en {v} para todos los jugadores?", "सभी खिलाड़ियों के लिए {k} को {v} करें?"], "aRegenQ": ["إعادة توليد عروض الشهر القادم؟ العروض الحالية للشهر القادم تُستبدل.", "Regenerate next month's offers? Next month's current offers are replaced.", "Gelecek ayın teklifleri yeniden oluşturulsun mu? Mevcut teklifler değiştirilir.", "Régénérer les offres du mois prochain ? Les offres actuelles seront remplacées.", "¿Regenerar las ofertas del próximo mes? Las actuales se reemplazan.", "अगले महीने के ऑफ़र फिर से बनाएँ? मौजूदा ऑफ़र बदल दिए जाएँगे।"], "aHideQ": ["إخفاء هذا العرض من المتجر؟", "Hide this offer from the shop?", "Bu teklif mağazadan gizlensin mi?", "Masquer cette offre de la boutique ?", "¿Ocultar esta oferta de la tienda?", "यह ऑफ़र दुकान से छिपाएँ?"], "aPriceRange": ["السعر بين {a} و {b}", "Price between {a} and {b}", "Fiyat {a} ile {b} arasında", "Prix entre {a} et {b}", "Precio entre {a} y {b}", "कीमत {a} और {b} के बीच"], "aAutoCardsQ": ["تغيير البطاقات التلقائية للحارس؟", "Change Guard automatic cards?", "Muhafız otomatik kartları değiştirilsin mi?", "Modifier les cartons automatiques de la Garde ?", "¿Cambiar las tarjetas automáticas de Guardia?", "गार्ड के ऑटोमैटिक कार्ड बदलें?"], "aAnnOffQ": ["إيقاف الإعلان الظاهر للاعبين؟", "Turn off the announcement players see?", "Oyuncuların gördüğü duyuru kapatılsın mı?", "Désactiver l'annonce vue par les joueurs ?", "¿Desactivar el anuncio que ven los jugadores?", "खिलाड़ियों को दिखने वाली घोषणा बंद करें?"], "aCurrent": ["الحالي", "Current", "Mevcut", "Actuel", "Actual", "मौजूदा"], "aStatus": ["الحالة", "Status", "Durum", "Statut", "Estado", "स्थिति"], "aNone": ["لا شيء", "Nothing here", "Burada bir şey yok", "Rien ici", "Nada aquí", "यहाँ कुछ नहीं"], "aLangAR": ["العربية", "العربية", "العربية", "العربية", "العربية", "العربية"], "aLangEN": ["English", "English", "English", "English", "English", "English"], "aVersionA": ["A · لوحة وشريط جانبي", "A · Dashboard + sidebar", "A · Pano + kenar çubuğu", "A · Tableau de bord + barre latérale", "A · Panel + barra lateral", "A · डैशबोर्ड + साइडबार"], "aVersionB": ["B · اللاعب أولاً", "B · Player-first", "B · Önce oyuncu", "B · Joueur d'abord", "B · Primero el jugador", "B · खिलाड़ी पहले"], "aVersionC": ["C · صندوق المهام", "C · Task inbox", "C · Görev kutusu", "C · Boîte de tâches", "C · Bandeja de tareas", "C · टास्क इनबॉक्स"], "aVersionD": ["D · مربعات وأوامر", "D · Tiles + commands", "D · Kutucuklar + komutlar", "D · Tuiles + commandes", "D · Mosaicos + comandos", "D · टाइल + कमांड"], "aTabPlayers": ["اللاعبون", "Players", "Oyuncular", "Joueurs", "Jugadores", "खिलाड़ी"], "aTabQueues": ["الطوابير", "Queues", "Kuyruklar", "Files d'attente", "Colas", "कतारें"], "aTabGameEco": ["اللعبة والاقتصاد", "Game & economy", "Oyun ve ekonomi", "Jeu et économie", "Juego y economía", "गेम और अर्थव्यवस्था"], "aTabMsgs": ["الرسائل", "Messages", "Mesajlar", "Messages", "Mensajes", "संदेश"], "aTabSystem": ["النظام", "System", "Sistem", "Système", "Sistema", "सिस्टम"], "aBanList": ["قائمة الإيقافات", "Ban list", "Yasak listesi", "Liste des bannis", "Lista de baneos", "बैन सूची"], "aSecMaint": ["الصيانة", "Maintenance", "Bakım", "Maintenance", "Mantenimiento", "मेंटेनेंस"], "aSecMult": ["المضاعفات", "Multipliers", "Çarpanlar", "Multiplicateurs", "Multiplicadores", "गुणक"], "aSecModeRw": ["مكافآت الأوضاع", "Mode rewards", "Mod ödülleri", "Récompenses des modes", "Recompensas por modo", "मोड इनाम"], "aDays": ["{n} أيام", "{n} days", "{n} gün", "{n} jours", "{n} días", "{n} दिन"], "aGoTo": ["افتح", "Open", "Aç", "Ouvrir", "Abrir", "खोलें"], "aRunning": ["يعمل", "Running", "Çalışıyor", "En marche", "En marcha", "चल रहा है"], "aDisabled": ["متوقف", "Disabled", "Kapalı", "Désactivé", "Desactivado", "बंद"], "aLiveAuto": ["يتحدث كل 15 ثانية", "Auto-refresh 15 s", "Otomatik yenileme 15 sn", "Actualisation auto 15 s", "Actualización auto 15 s", "ऑटो-रिफ़्रेश 15 से"], "aFrom": ["من", "From", "Kimden", "De", "De", "से"], "aAbout": ["عن", "About", "Hakkında", "À propos", "Acerca de", "बारे में"], "aMsgTo": ["إلى", "To", "Kime", "À", "Para", "को"], "aLangs": ["اللغات", "Languages", "Diller", "Langues", "Idiomas", "भाषाएँ"], "aCount": ["عدد المستلمين", "Recipients", "Alıcılar", "Destinataires", "Destinatarios", "प्राप्तकर्ता"], "aSend": ["إرسال", "Send", "Gönder", "Envoyer", "Enviar", "भेजें"], "aSchedule": ["جدولة", "Schedule", "Zamanla", "Programmer", "Programar", "शेड्यूल करें"], "aRecipients": ["المستلمون", "Recipients", "Alıcılar", "Destinataires", "Destinatarios", "प्राप्तकर्ता"], "aPlayersCount": ["لاعب", "players", "oyuncu", "joueurs", "jugadores", "खिलाड़ी"], "aPublicRooms": ["غرف عامة", "public rooms", "genel oda", "salons publics", "salas públicas", "सार्वजनिक रूम"], "aStripeLive": ["حقيقي", "Live", "Canlı", "Réel", "Real", "लाइव"], "aStripeTest": ["تجريبي", "Test", "Test", "Test", "Prueba", "टेस्ट"], "aOpenReports": ["بلاغات مفتوحة", "Open reports", "Açık şikâyetler", "Signalements ouverts", "Reportes abiertos", "खुली रिपोर्ट"], "aWhatsWrong": ["ما الذي يحدث", "What's happening", "Neler oluyor", "Que se passe-t-il", "Qué está pasando", "क्या हो रहा है"], "aShortcuts": ["اختصارات", "Shortcuts", "Kısayollar", "Raccourcis", "Atajos", "शॉर्टकट"], "aExit": ["رجوع للعبة", "Back to game", "Oyuna dön", "Retour au jeu", "Volver al juego", "गेम पर वापस"]};
+          for (const k in A4I) if (!I18N[k]) I18N[k] = A4I[k];
+          const a4lang = () => (LANG === "ar" ? "ar" : "en");
+          K.openAdmin = () => {
+            if (state === "play" || !isOwner()) return;
+            const SA = window.SSAdmin;
+            if (!SA || !SA.shell) { setTitle("kadm", "" + _t("kAdmin")); admPaintK(); show("kadm"); admLoadK(); return; }
+            const ov = $("kadm"); let el = $("ssadm");
+            if (!el) {
+              el = document.createElement("div"); el.id = "ssadm"; ov.appendChild(el);
+              SA.host = el; SA.G6 = I18N; SA.grpc = (fn, a) => ON.rpc(fn, a); SA.gt = (k, v) => (I18N[k] ? _t(k, v) : null);
+              SA.loc = () => (LANG === "ar" ? "ar-u-nu-latn" : LANG === "hi" ? "hi-IN" : LANG === "en" ? "en-GB" : LANG);
+              SA.exit = () => { ov.classList.remove("sa-on"); show("menu"); };
+              SA.setMode("game"); SA.setLang(a4lang()); SA.bind(el);
+              ov.classList.add("sa-on"); show("kadm"); SA.shell.mount(el);
+              if (NFH.relang) NFH.relang.push(() => { try { SA.setLang(a4lang()); if (!ov.classList.contains("x-hide")) SA.shell.render(); } catch (_) {} });
+              return;
+            }
+            SA.setLang(a4lang()); ov.classList.add("sa-on"); show("kadm"); SA.shell.render();
+          };
           // the old owner panel entry now opens v2
           NFG.nfb13cadm = () => K.openAdmin();
           const PRESETS = ["cheat", "abuse", "name", "spam", "imp", "bug", "other"];
@@ -25132,5 +25151,1265 @@ html body.b13h-on #b13hev .h-t { white-space: normal !important; display: -webki
 #lnt .lnt-tx b, #lnt .lnt-tx span { unicode-bidi: plaintext; }
 @media (prefers-reduced-motion: reduce) { #lnt, #lnt.in, #lnt.out { transition: none !important; } }
 </style>
+<style id="ss13u-admin4">
+#kadm #ssadm {
+  --g1: #fff3c4; --g2: #f0c75e; --g3: #b9822a; --g4: #5e3a0c;
+  --gold: linear-gradient(180deg, #fff1b8 0%, #f2c860 28%, #b97e22 55%, #f6d77c 78%, #8a5a14 100%);
+  --rim: 0 0 0 1px #2b1904, 0 0 0 2px #dcb04c, 0 3px 8px rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(255, 228, 150, .25);
+  --rim-s: 0 0 0 1px rgba(231, 189, 88, .55), inset 0 1px 0 rgba(255, 236, 180, .12);
+  --lap: linear-gradient(180deg, rgba(40, 80, 200, .18), rgba(2, 8, 40, .55)), url(ui/bab/lapis_d.webp) 0 0 / 120px repeat, #0c1d63;
+  --panel: linear-gradient(180deg, rgba(16, 36, 118, .94), rgba(6, 14, 52, .96));
+  --card: linear-gradient(180deg, rgba(22, 46, 134, .78), rgba(9, 19, 60, .88));
+  --ink: #eef2ff; --ink2: #b8c4f0; --ink3: #8996c9; --line: rgba(231, 189, 88, .28);
+  --green: linear-gradient(180deg, #c9f77e 0%, #5fd046 35%, #1f9a35 75%, #157a29 100%);
+  --ruby: linear-gradient(180deg, #ff8a7a 0%, #e0303a 45%, #9e121c 100%);
+  --amber: #ffc94d; --red: #ff6b6b; --ok: #4fe08a;
+  --r: 10px; --gap: 8px;
+}
+#kadm #ssadm, #kadm #ssadm * { box-sizing: border-box; }
+#kadm #ssadm, #kadm #ssadm { margin: 0; height: 100%; }
+#kadm #ssadm { font: 14px/1.35 var(--sans); color: var(--ink); background: #071033; -webkit-font-smoothing: antialiased; overflow: hidden; }
+#kadm #ssadm button, #kadm #ssadm input, #kadm #ssadm select, #kadm #ssadm textarea { font: inherit; color: inherit; }
+#kadm #ssadm .sa-hide { display: none !important; }
+#kadm #ssadm bdi { unicode-bidi: isolate; }
+#kadm #ssadm .sa-ic { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+#kadm #ssadm .sa-gt { font-family: var(--disp); font-weight: 800; letter-spacing: .02em; background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .6)); }
+#kadm #ssadm .sa-h4 { display: flex; align-items: center; gap: 6px; margin: 12px 0 6px; font: 700 12px/1.2 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--g2); }
+#kadm #ssadm[lang=ar] .sa-h4 { letter-spacing: 0; text-transform: none; font-size: 13px; }
+#kadm #ssadm .sa-h4 .sa-ic { width: 15px; height: 15px; }
+#kadm #ssadm .sa-h4 small { font-weight: 400; color: var(--ink3); text-transform: none; letter-spacing: 0; }
+#kadm #ssadm .sa-note { color: var(--ink3); font-size: 12px; margin: 4px 0; }
+#kadm #ssadm .sa-err { color: var(--red); font-size: 12px; margin: 4px 0; min-height: 0; }
+#kadm #ssadm .sa-err:empty { display: none; }
+#kadm #ssadm .sa-det { display: block; color: var(--ink3); font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+#kadm #ssadm .sa-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 0; border-radius: 9px; cursor: pointer; white-space: nowrap;
+  background: linear-gradient(180deg, #2a4bc4, #142a7a); box-shadow: var(--rim); color: #f4f6ff; font-weight: 600; font-size: 13px; }
+#kadm #ssadm .sa-btn:hover { filter: brightness(1.12); }
+#kadm #ssadm .sa-btn:active { transform: translateY(1px); }
+#kadm #ssadm .sa-btn:disabled { opacity: .55; cursor: default; }
+#kadm #ssadm .sa-btn:focus-visible, #kadm #ssadm .sa-seg button:focus-visible, #kadm #ssadm .sa-row:focus-visible, #kadm #ssadm .sa-who:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+#kadm #ssadm .sa-btn .sa-ic { width: 16px; height: 16px; }
+#kadm #ssadm .sa-btn.main { background: var(--green); color: #082a0e; text-shadow: 0 1px 0 rgba(255, 255, 255, .35); }
+#kadm #ssadm .sa-btn.red { background: var(--ruby); color: #fff; }
+#kadm #ssadm .sa-btn.amber { background: linear-gradient(180deg, #ffe58a, #f2b02a 55%, #b57712); color: #3a2300; }
+#kadm #ssadm .sa-btn.ghost { background: rgba(10, 20, 70, .55); box-shadow: var(--rim-s); }
+#kadm #ssadm .sa-btn.red.ghost { background: rgba(120, 10, 20, .35); color: #ffb3b3; box-shadow: 0 0 0 1px rgba(255, 107, 107, .55); }
+#kadm #ssadm .sa-btn.sm { min-height: 28px; padding: 0 10px; font-size: 12px; }
+#kadm #ssadm .sa-btn.wide { width: 100%; min-height: 40px; font-size: 14px; }
+#kadm #ssadm .sa-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; line-height: 18px; white-space: nowrap; background: rgba(140, 160, 230, .18); color: var(--ink2); max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+#kadm #ssadm .sa-pill.red { background: rgba(255, 80, 80, .2); color: #ffb0b0; }
+#kadm #ssadm .sa-pill.amber { background: rgba(255, 196, 64, .2); color: #ffd98a; }
+#kadm #ssadm .sa-pill.green { background: rgba(80, 224, 140, .16); color: #9ff0c0; }
+#kadm #ssadm .sa-pill.gold { background: rgba(240, 199, 94, .18); color: var(--g1); box-shadow: inset 0 0 0 1px rgba(240, 199, 94, .4); }
+#kadm #ssadm .sa-pill.grey { background: rgba(255, 255, 255, .08); color: var(--ink3); }
+#kadm #ssadm .sa-pill.cat-cheat { background: rgba(255, 120, 80, .2); color: #ffc0a0; }
+#kadm #ssadm .sa-pill.cat-abuse { background: rgba(255, 90, 160, .18); color: #ffb3d9; }
+#kadm #ssadm .sa-pill.cat-report { background: rgba(255, 196, 64, .18); color: #ffd98a; }
+#kadm #ssadm .sa-seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 3px; border-radius: 10px; background: rgba(4, 10, 40, .55); box-shadow: var(--rim-s); margin: 2px 0 8px; max-width: 100%; }
+#kadm #ssadm .sa-seg button { border: 0; background: transparent; color: var(--ink2); padding: 5px 11px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 600; min-height: 28px; white-space: nowrap; }
+#kadm #ssadm .sa-seg button.on { background: linear-gradient(180deg, #f6d77c, #c18a2c); color: #2a1800; box-shadow: 0 1px 0 rgba(255, 255, 255, .4) inset; }
+#kadm #ssadm .sa-cnt { display: inline-block; min-width: 18px; padding: 0 5px; margin-inline-start: 3px; border-radius: 9px; background: var(--red); color: #fff; font-size: 11px; line-height: 17px; text-align: center; }
+#kadm #ssadm .sa-seg button.on .sa-cnt { background: #7a1010; }
+#kadm #ssadm .sa-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+#kadm #ssadm .sa-chips button { border: 0; padding: 5px 10px; min-height: 30px; border-radius: 99px; background: rgba(20, 40, 120, .7); box-shadow: var(--rim-s); color: var(--ink2); cursor: pointer; font-size: 12.5px; }
+#kadm #ssadm .sa-chips button.on { background: linear-gradient(180deg, #f6d77c, #c18a2c); color: #2a1800; font-weight: 700; }
+#kadm #ssadm .sa-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 2px 0 8px; }
+#kadm #ssadm .sa-bar.end { justify-content: flex-end; }
+#kadm #ssadm .sa-bar .sa-seg { margin: 0; }
+#kadm #ssadm input:not([type=checkbox]), #kadm #ssadm select, #kadm #ssadm textarea { width: 100%; min-height: 34px; padding: 6px 10px; border-radius: 8px; border: 0; background: rgba(2, 6, 28, .65); box-shadow: inset 0 0 0 1px rgba(231, 189, 88, .35); color: var(--ink); outline: none; }
+#kadm #ssadm input:focus, #kadm #ssadm select:focus, #kadm #ssadm textarea:focus { box-shadow: inset 0 0 0 2px var(--g2); }
+#kadm #ssadm textarea { resize: vertical; min-height: 54px; }
+#kadm #ssadm select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--g2) 50%), linear-gradient(135deg, var(--g2) 50%, transparent 50%); background-position: calc(100% - 14px) 52%, calc(100% - 9px) 52%; background-size: 5px 5px; background-repeat: no-repeat; padding-inline-end: 26px; }
+#kadm #ssadm[dir=rtl] select { background-position: 14px 52%, 9px 52%; }
+#kadm #ssadm .sa-lab { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink2); margin: 6px 0; }
+#kadm #ssadm .sa-lab.in { flex-direction: row; align-items: center; gap: 6px; margin: 0; white-space: nowrap; }
+#kadm #ssadm .sa-lab.in input { width: 96px; }
+#kadm #ssadm .sa-chk { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 6px 0; cursor: pointer; }
+#kadm #ssadm .sa-chk input { width: 18px; height: 18px; accent-color: #e0b24a; }
+#kadm #ssadm .sa-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+#kadm #ssadm .sa-grid2.keys { grid-template-columns: repeat(4, 1fr); }
+#kadm #ssadm .sa-rng { display: flex; align-items: center; gap: 6px; }
+#kadm #ssadm .sa-rng input { width: 100%; }
+#kadm #ssadm .sa-inline { display: flex; gap: 8px; margin: 6px 0; }
+#kadm #ssadm .sa-search { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 12px; border-radius: 12px; background: rgba(2, 6, 28, .7); box-shadow: inset 0 0 0 1px rgba(231, 189, 88, .45); margin-bottom: 8px; }
+#kadm #ssadm[dir=rtl] .sa-search { padding: 4px 12px 4px 4px; }
+#kadm #ssadm .sa-search .sa-ic { color: var(--g2); }
+#kadm #ssadm .sa-search input { background: transparent; box-shadow: none; padding: 0; min-height: 36px; }
+#kadm #ssadm .sa-search.big { padding-block: 6px; border-radius: 14px; }
+#kadm #ssadm .sa-search.big input { font-size: 17px; min-height: 44px; }
+#kadm #ssadm .sa-search.big .sa-btn { min-height: 42px; padding: 0 18px; }
+#kadm #ssadm .sa-list { display: flex; flex-direction: column; gap: 6px; }
+#kadm #ssadm .sa-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: start; border: 0; padding: 8px 10px; border-radius: var(--r); background: var(--card); box-shadow: var(--rim-s); cursor: pointer; min-height: 48px; }
+#kadm #ssadm .sa-row:hover { box-shadow: 0 0 0 1px var(--g2); }
+#kadm #ssadm .sa-rmain { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+#kadm #ssadm .sa-rmain b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kadm #ssadm .sa-rmain small { color: var(--ink3); font-size: 12px; }
+#kadm #ssadm .sa-rtags { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+#kadm #ssadm .sa-av { display: inline-grid; place-items: center; width: 34px; height: 34px; flex: 0 0 auto; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #5a7cff, #142a7a); box-shadow: 0 0 0 2px #dcb04c, 0 2px 6px rgba(0, 0, 0, .5); font-weight: 800; color: var(--g1); }
+#kadm #ssadm .sa-av.lg { width: 52px; height: 52px; font-size: 22px; }
+#kadm #ssadm .sa-item { padding: 9px 11px; border-radius: var(--r); background: var(--card); box-shadow: var(--rim-s); margin-bottom: 7px; }
+#kadm #ssadm .sa-item.off { opacity: .6; }
+#kadm #ssadm .sa-item p { margin: 5px 0; overflow-wrap: anywhere; }
+#kadm #ssadm .sa-ih { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+#kadm #ssadm .sa-ih > b { font-weight: 700; }
+#kadm #ssadm .sa-at { margin-inline-start: auto; color: var(--ink3); font-size: 11.5px; white-space: nowrap; }
+#kadm #ssadm .sa-iacts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; align-items: center; }
+#kadm #ssadm .sa-quote { padding: 5px 9px; border-inline-start: 3px solid var(--g3); background: rgba(0, 0, 0, .22); border-radius: 4px; color: var(--ink2); }
+#kadm #ssadm .sa-reply { display: flex; flex-direction: column; gap: 0; margin-top: 6px; }
+#kadm #ssadm .sa-reply .sa-iacts { margin-top: 6px; }
+#kadm #ssadm .sa-who { display: inline-flex; align-items: center; gap: 4px; border: 0; padding: 1px 8px 1px 6px; border-radius: 99px; background: rgba(240, 199, 94, .12); box-shadow: inset 0 0 0 1px rgba(240, 199, 94, .35); color: var(--g1); cursor: pointer; font-weight: 600; font-size: 12.5px; max-width: 100%; }
+#kadm #ssadm .sa-who small { color: var(--g2); font-weight: 500; }
+#kadm #ssadm .sa-who:hover { background: rgba(240, 199, 94, .25); }
+#kadm #ssadm .sa-empty { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 18px; color: var(--ink3); border-radius: var(--r); border: 1px dashed rgba(231, 189, 88, .3); }
+#kadm #ssadm .sa-empty .sa-ic { color: var(--ok); }
+#kadm #ssadm .sa-load { display: flex; gap: 6px; justify-content: center; padding: 18px; }
+#kadm #ssadm .sa-load i { width: 8px; height: 8px; border-radius: 50%; background: var(--g2); animation: saP 1s ease-in-out infinite; }
+#kadm #ssadm .sa-load i:nth-child(2) { animation-delay: .15s; }
+#kadm #ssadm .sa-load i:nth-child(3) { animation-delay: .3s; }
+@keyframes saP { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: none; } }
+#kadm #ssadm .sa-mini { display: flex; flex-direction: column; border-radius: var(--r); background: rgba(2, 8, 36, .45); box-shadow: var(--rim-s); overflow: hidden; }
+#kadm #ssadm .sa-mini > div { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 10px; border-bottom: 1px solid rgba(231, 189, 88, .12); min-width: 0; }
+#kadm #ssadm .sa-mini > div:last-child { border-bottom: 0; }
+#kadm #ssadm .sa-mini > div > span { min-width: 0; display: flex; flex-direction: column; overflow-wrap: anywhere; }
+#kadm #ssadm .sa-mini small { color: var(--ink3); font-size: 11.5px; }
+#kadm #ssadm .sa-mini b { white-space: nowrap; font-weight: 600; font-size: 12.5px; }
+#kadm #ssadm .sa-mini b.pos { color: var(--ok); }
+#kadm #ssadm .sa-mini b.neg { color: var(--red); }
+#kadm #ssadm .sa-mini.log > div > span { display: block; }
+#kadm #ssadm .sa-clk { cursor: pointer; }
+#kadm #ssadm .sa-clk:hover { background: rgba(240, 199, 94, .08); }
+#kadm #ssadm .sa-sec { padding: 10px 12px; border-radius: 12px; background: rgba(4, 12, 48, .5); box-shadow: var(--rim-s); margin-bottom: 10px; min-width: 0; }
+#kadm #ssadm .sa-sec > .sa-h4:first-child { margin-top: 0; }
+#kadm #ssadm .sa-sec.alert { box-shadow: 0 0 0 1px var(--red), inset 0 0 24px rgba(255, 60, 60, .15); }
+#kadm #ssadm .sa-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+#kadm #ssadm .sa-cols > .sa-sec { margin-bottom: 0; }
+#kadm #ssadm .sa-cols + * { margin-top: 10px; }
+#kadm #ssadm .sa-cur { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: rgba(240, 199, 94, .1); box-shadow: inset 0 0 0 1px rgba(240, 199, 94, .35); color: var(--g1); margin: 4px 0 8px; }
+#kadm #ssadm .sa-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 6px; }
+#kadm #ssadm .sa-kpis.sm { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+#kadm #ssadm .sa-kpi { position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto auto; column-gap: 8px; align-items: center; text-align: start; border: 0; padding: 9px 11px; border-radius: 12px; background: var(--card); box-shadow: var(--rim-s); color: var(--ink); min-width: 0; }
+#kadm #ssadm button.sa-kpi { cursor: pointer; }
+#kadm #ssadm button.sa-kpi:hover { box-shadow: 0 0 0 1px var(--g2); }
+#kadm #ssadm .sa-kpi .sa-ic { grid-row: 1 / 3; width: 22px; height: 22px; color: var(--g2); }
+#kadm #ssadm .sa-kpi b { font: 800 20px/1.1 var(--disp); color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kadm #ssadm .sa-kpi small { color: var(--ink2); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kadm #ssadm .sa-kpi em { grid-column: 1 / -1; font-style: normal; color: var(--ink3); font-size: 11px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kadm #ssadm .sa-kpi.hot { background: linear-gradient(180deg, rgba(36, 90, 60, .85), rgba(8, 36, 30, .92)); }
+#kadm #ssadm .sa-kpi.hot .sa-ic { color: var(--ok); }
+#kadm #ssadm .sa-kpi.lv-ok b { color: var(--ok); }
+#kadm #ssadm .sa-kpi.lv-warn b { color: var(--amber); }
+#kadm #ssadm .sa-kpi.lv-bad b { color: var(--red); }
+#kadm #ssadm .sa-kpi.warn b { color: var(--amber); }
+#kadm #ssadm .sa-needs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+#kadm #ssadm .sa-need { display: flex; align-items: center; gap: 8px; border: 0; padding: 8px 10px; border-radius: 10px; background: linear-gradient(180deg, rgba(120, 40, 20, .55), rgba(60, 14, 10, .7)); box-shadow: 0 0 0 1px rgba(255, 160, 90, .45); color: #ffe2c8; cursor: pointer; text-align: start; min-height: 40px; }
+#kadm #ssadm .sa-need span { flex: 1 1 auto; min-width: 0; font-size: 12.5px; }
+#kadm #ssadm .sa-need b { min-width: 22px; padding: 0 6px; border-radius: 10px; background: var(--red); color: #fff; font-size: 12px; text-align: center; line-height: 20px; }
+#kadm #ssadm .sa-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-inline-end: 6px; background: var(--red); vertical-align: middle; flex: 0 0 auto; }
+#kadm #ssadm .sa-dot.ok { background: var(--ok); box-shadow: 0 0 8px rgba(79, 224, 138, .6); }
+#kadm #ssadm .sa-dot.warn { background: var(--amber); }
+#kadm #ssadm .sa-meter { height: 7px; border-radius: 4px; background: rgba(255, 255, 255, .1); overflow: hidden; margin: 2px 0 8px; }
+#kadm #ssadm .sa-meter i { display: block; height: 100%; background: var(--ok); }
+#kadm #ssadm .sa-meter i.warn { background: var(--amber); }
+#kadm #ssadm .sa-meter i.bad { background: var(--red); }
+#kadm #ssadm .sa-table { border-radius: var(--r); background: rgba(2, 8, 36, .45); box-shadow: var(--rim-s); overflow-x: auto; margin-bottom: 10px; }
+#kadm #ssadm .sa-tr { display: grid; grid-template-columns: minmax(96px, 1.4fr) repeat(7, minmax(44px, 1fr)); gap: 4px; padding: 5px 10px; border-bottom: 1px solid rgba(231, 189, 88, .1); font-size: 12px; min-width: 520px; }
+#kadm #ssadm .sa-tr.th { color: var(--g2); font-weight: 700; font-size: 11px; }
+#kadm #ssadm .sa-tr b { text-align: center; }
+#kadm #ssadm .sa-tr b.z { color: var(--ink3); font-weight: 400; }
+#kadm #ssadm .sa-tr.th span:not(:first-child) { text-align: center; }
+#kadm #ssadm .sa-bars { display: flex; align-items: flex-end; gap: 6px; height: 110px; padding: 4px 0 18px; }
+#kadm #ssadm .sa-bars span { flex: 1; height: 100%; display: flex; align-items: flex-end; gap: 2px; position: relative; }
+#kadm #ssadm .sa-bars i { flex: 1; border-radius: 3px 3px 0 0; min-height: 2px; }
+#kadm #ssadm .sa-bars i.f { background: var(--g2); }
+#kadm #ssadm .sa-bars i.e { background: var(--red); }
+#kadm #ssadm .sa-bars small { position: absolute; bottom: -16px; left: 0; right: 0; text-align: center; font-size: 10px; color: var(--ink3); }
+#kadm #ssadm .sa-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-inline: 6px 4px; vertical-align: middle; }
+#kadm #ssadm .sa-key.f { background: var(--g2); }
+#kadm #ssadm .sa-key.e { background: var(--red); }
+#kadm #ssadm .sa-hbar { display: block; height: 4px; border-radius: 2px; background: var(--g2); margin-top: 3px; }
+#kadm #ssadm .sa-hbar.e { background: var(--red); }
+#kadm #ssadm .sa-switches { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
+#kadm #ssadm .sa-sw { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; padding: 7px 10px; border-radius: 10px; background: var(--card); box-shadow: var(--rim-s); cursor: pointer; text-align: start; font-size: 12.5px; color: var(--ink2); min-height: 40px; }
+#kadm #ssadm .sa-sw i { position: relative; flex: 0 0 auto; width: 36px; height: 20px; border-radius: 10px; background: rgba(255, 255, 255, .15); transition: background .15s; }
+#kadm #ssadm .sa-sw i::after { content: ""; position: absolute; top: 2px; inset-inline-start: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: inset-inline-start .15s; }
+#kadm #ssadm .sa-sw.on { color: var(--ink); }
+#kadm #ssadm .sa-sw.on i { background: #2fb45a; }
+#kadm #ssadm .sa-sw.on i::after { inset-inline-start: 18px; }
+#kadm #ssadm .sa-pcard { display: flex; flex-direction: column; gap: 8px; }
+#kadm #ssadm .sa-phead { display: flex; gap: 12px; align-items: center; }
+#kadm #ssadm .sa-pmeta { min-width: 0; flex: 1; }
+#kadm #ssadm .sa-pname { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+#kadm #ssadm .sa-pname > b { font: 800 20px/1.15 var(--disp); color: #fff; }
+#kadm #ssadm .sa-idchip { padding: 1px 9px; border-radius: 6px; background: linear-gradient(180deg, #f6d77c, #b98226); color: #2a1800; font-weight: 800; font-size: 12.5px; box-shadow: 0 0 0 1px #2b1904; }
+#kadm #ssadm .sa-psub { display: block; color: var(--ink3); font-size: 12px; margin: 2px 0 4px; overflow-wrap: anywhere; }
+#kadm #ssadm .sa-ptags { display: flex; flex-wrap: wrap; gap: 4px; }
+#kadm #ssadm .sa-cards { display: inline-flex; gap: 3px; vertical-align: middle; }
+#kadm #ssadm .sa-cards i { width: 11px; height: 15px; border-radius: 2px; background: rgba(255, 255, 255, .14); }
+#kadm #ssadm .sa-cards i.y { background: linear-gradient(160deg, #ffe46b, #d99100); }
+#kadm #ssadm .sa-cards i.r { background: linear-gradient(160deg, #ff7a6b, #a30d16); }
+#kadm #ssadm .sa-cards.sm i { width: 8px; height: 11px; }
+#kadm #ssadm .sa-gcard { display: inline-block; width: 12px; height: 16px; border-radius: 2px; transform: rotate(-8deg); background: linear-gradient(160deg, #ffe46b, #d99100); }
+#kadm #ssadm .sa-gcard.r { background: linear-gradient(160deg, #ff7a6b, #a30d16); }
+#kadm #ssadm .sa-pstats { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 6px; }
+#kadm #ssadm .sa-pstats span { display: grid; grid-template-columns: auto 1fr; column-gap: 6px; align-items: center; padding: 6px 9px; border-radius: 10px; background: rgba(2, 8, 36, .45); box-shadow: var(--rim-s); min-width: 0; }
+#kadm #ssadm .sa-pstats .sa-ic { grid-row: 1 / 3; color: var(--g2); }
+#kadm #ssadm .sa-pstats b { font: 800 16px/1.1 var(--disp); white-space: nowrap; }
+#kadm #ssadm .sa-pstats small { color: var(--ink3); font-size: 11px; }
+#kadm #ssadm .sa-pacts { display: flex; flex-wrap: wrap; gap: 8px; }
+#kadm #ssadm .sa-pag { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; border-radius: 10px; background: rgba(2, 8, 36, .4); box-shadow: var(--rim-s); }
+#kadm #ssadm .sa-pag > small { color: var(--g2); font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+#kadm #ssadm[lang=ar] .sa-pag > small { letter-spacing: 0; font-size: 11.5px; }
+#kadm #ssadm .sa-pag > div { display: flex; flex-wrap: wrap; gap: 6px; }
+#kadm #ssadm .sa-pag.danger { box-shadow: 0 0 0 1px rgba(255, 107, 107, .35); }
+#kadm #ssadm .sa-pag.danger > small { color: #ff9b9b; }
+#kadm #ssadm .sa-tl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+#kadm #ssadm .sa-tl li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; background: rgba(2, 8, 36, .4); font-size: 12.5px; }
+#kadm #ssadm .sa-tl .sa-ic { color: var(--g2); width: 16px; height: 16px; }
+#kadm #ssadm .sa-tl small { color: var(--ink3); font-size: 11px; white-space: nowrap; }
+#kadm #ssadm .sa-comp { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; }
+#kadm #ssadm .sa-ccol { min-width: 0; }
+#kadm #ssadm .sa-ccol > .sa-h4:first-child { margin-top: 2px; }
+#kadm #ssadm .sa-chips.wrap button { font-size: 12px; }
+#kadm #ssadm .sa-ltabs { display: flex; gap: 4px; margin-bottom: 6px; }
+#kadm #ssadm .sa-ltabs button { flex: 1; border: 0; min-height: 28px; border-radius: 7px; background: rgba(20, 40, 120, .7); box-shadow: var(--rim-s); color: var(--ink3); font-weight: 700; font-size: 12px; cursor: pointer; position: relative; }
+#kadm #ssadm .sa-ltabs button.on { background: linear-gradient(180deg, #f6d77c, #c18a2c); color: #2a1800; }
+#kadm #ssadm .sa-ltabs button.ok::after { content: ""; position: absolute; top: 4px; inset-inline-end: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+#kadm #ssadm .sa-ccol #sa-mt { margin-bottom: 6px; font-weight: 700; }
+#kadm #ssadm .sa-count { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: rgba(240, 199, 94, .1); color: var(--g1); font-weight: 700; margin: 8px 0; }
+#kadm #ssadm .sa-dlgw { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 10px; background: rgba(2, 4, 18, .72); backdrop-filter: blur(3px); }
+#kadm #ssadm .sa-dlg { width: min(460px, 100%); max-height: calc(100dvh - 20px); display: flex; flex-direction: column; border-radius: 14px; background: var(--panel); box-shadow: var(--rim), 0 20px 50px rgba(0, 0, 0, .6); }
+#kadm #ssadm .sa-dlg.danger { box-shadow: 0 0 0 1px #2b1904, 0 0 0 2px #e05050, 0 20px 50px rgba(0, 0, 0, .6); }
+#kadm #ssadm .sa-dlgh { display: flex; align-items: center; gap: 8px; padding: 10px 12px 6px; }
+#kadm #ssadm .sa-dlgh > .sa-ic { color: var(--g2); width: 20px; height: 20px; }
+#kadm #ssadm .sa-dlg.danger .sa-dlgh > .sa-ic { color: var(--red); }
+#kadm #ssadm .sa-dlgh h3 { flex: 1; margin: 0; font: 800 17px/1.2 var(--disp); color: var(--g1); }
+#kadm #ssadm .sa-x { border: 0; background: transparent; color: var(--ink3); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+#kadm #ssadm .sa-x:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+#kadm #ssadm .sa-dlgb { padding: 0 12px; overflow-y: auto; min-height: 0; }
+#kadm #ssadm .sa-dlgb > p { margin: 6px 0; }
+#kadm #ssadm .sa-dlgwho { font-weight: 700; color: var(--g1); }
+#kadm #ssadm .sa-dlgf { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 12px 12px; }
+#kadm #ssadm .sa-dlgf .sa-btn { min-width: 110px; }
+#kadm #ssadm .sa-warn { display: flex; align-items: center; gap: 6px; color: #ffb3b3; font-size: 12px; margin: 6px 0; }
+#kadm #ssadm .sa-gm { margin-top: 4px; }
+#kadm #ssadm #sa-toast { position: fixed; z-index: 60; bottom: 14px; left: 50%; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 8px 16px; border-radius: 10px; background: var(--panel); box-shadow: var(--rim); color: var(--g1); font-weight: 600; transition: .2s; max-width: 90vw; text-align: center; }
+#kadm #ssadm #sa-toast.on { opacity: 1; transform: translate(-50%, 0); }
+#kadm #ssadm #sa-toast.bad { color: #ffb3b3; }
+#kadm #ssadm .sa-app { position: fixed; inset: 0; display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(4, 8, 30, .35), rgba(4, 8, 30, .6)), #0a1238 url(ui/bab/hall.webp) center / cover no-repeat; }
+#kadm #ssadm .sa-top { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 4px 12px; flex: 0 0 auto;
+  background: url(ui/bab/ledge_t.webp) 0 0 / auto 6px repeat-x, url(ui/bab/ledge_b.webp) 0 100% / auto 9px repeat-x, url(ui/bab/stone.webp) 0 50% / auto 100% repeat-x, #c79a5c; box-shadow: 0 4px 10px rgba(0, 0, 0, .45); position: relative; z-index: 3; }
+#kadm #ssadm .sa-top .sa-brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#kadm #ssadm .sa-top .sa-brand b { font: 800 18px/1 var(--disp); color: #fff6d6; text-shadow: 0 1px 0 #3a2300, 0 0 6px rgba(0, 0, 0, .5); white-space: nowrap; }
+#kadm #ssadm .sa-top .sa-brand small { padding: 2px 8px; border-radius: 6px; background: rgba(12, 29, 99, .85); color: var(--g1); font-size: 11px; font-weight: 700; box-shadow: 0 0 0 1px #e7bd58; white-space: nowrap; }
+#kadm #ssadm .sa-tbtn { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 9px; background: linear-gradient(180deg, #2a4bc4, #142a7a); box-shadow: var(--rim); color: var(--g1); cursor: pointer; flex: 0 0 auto; }
+#kadm #ssadm .sa-tbtn:hover { filter: brightness(1.15); }
+#kadm #ssadm .sa-sp { flex: 1 1 auto; }
+#kadm #ssadm .sa-mode { font-size: 11px; color: #3a2300; font-weight: 700; white-space: nowrap; background: rgba(255, 246, 214, .7); padding: 2px 8px; border-radius: 6px; }
+#kadm #ssadm .sa-langb { display: inline-flex; border-radius: 9px; overflow: hidden; box-shadow: var(--rim); flex: 0 0 auto; }
+#kadm #ssadm .sa-langb button { border: 0; padding: 0 9px; height: 30px; background: #142a7a; color: var(--ink2); font-size: 12px; font-weight: 700; cursor: pointer; }
+#kadm #ssadm .sa-langb button.on { background: linear-gradient(180deg, #f6d77c, #c18a2c); color: #2a1800; }
+#kadm #ssadm .sa-scroll { overflow-y: auto; overscroll-behavior: contain; min-height: 0; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(231, 189, 88, .45) transparent; }
+#kadm #ssadm .sa-scroll::-webkit-scrollbar { width: 6px; }
+#kadm #ssadm .sa-scroll::-webkit-scrollbar-thumb { background: rgba(231, 189, 88, .45); border-radius: 3px; }
+#kadm #ssadm .sa-ptitle { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
+#kadm #ssadm .sa-ptitle .sa-ic { width: 22px; height: 22px; color: var(--g2); }
+#kadm #ssadm .sa-ptitle h2 { margin: 0; font: 800 21px/1.15 var(--disp); }
+@media (max-height: 480px) {
+#kadm #ssadm { font-size: 13px; }
+#kadm #ssadm .sa-top { min-height: 40px; padding: 3px 10px; }
+#kadm #ssadm .sa-top .sa-brand b { font-size: 16px; }
+#kadm #ssadm .sa-tbtn { width: 30px; height: 30px; }
+#kadm #ssadm .sa-btn { min-height: 32px; padding: 0 10px; font-size: 12.5px; }
+#kadm #ssadm .sa-kpi { padding: 7px 9px; }
+#kadm #ssadm .sa-kpi b { font-size: 17px; }
+#kadm #ssadm .sa-kpi .sa-ic { width: 18px; height: 18px; }
+#kadm #ssadm .sa-ptitle { margin-bottom: 6px; }
+#kadm #ssadm .sa-ptitle h2 { font-size: 18px; }
+#kadm #ssadm .sa-pname > b { font-size: 18px; }
+#kadm #ssadm .sa-av.lg { width: 44px; height: 44px; font-size: 19px; }
+#kadm #ssadm .sa-grid2.keys { grid-template-columns: repeat(2, 1fr); }
+#kadm #ssadm .sa-dlgh { padding-top: 8px; }
+#kadm #ssadm .sa-dlgf { padding-bottom: 8px; }
+#kadm #ssadm .sa-search.big input { font-size: 15px; min-height: 36px; }
+#kadm #ssadm .sa-search.big .sa-btn { min-height: 36px; }
+}
+@media (max-width: 720px) {
+#kadm #ssadm .sa-cols, #kadm #ssadm .sa-comp { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+#kadm #ssadm, #kadm #ssadm * { animation: none !important; transition: none !important; }
+}
+#kadm #ssadm .a-body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 216px minmax(0, 1fr); }
+#kadm #ssadm .a-side { padding: 10px 8px 14px; background: linear-gradient(180deg, rgba(8, 18, 70, .92), rgba(3, 8, 34, .95)); box-shadow: inset -1px 0 0 rgba(231, 189, 88, .35); }
+#kadm #ssadm[dir=rtl] .a-side { box-shadow: inset 1px 0 0 rgba(231, 189, 88, .35); }
+#kadm #ssadm .a-grp { margin-top: 10px; }
+#kadm #ssadm .a-grp > small { display: block; padding: 0 10px 3px; color: var(--g2); font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#kadm #ssadm[lang=ar] .a-grp > small { letter-spacing: 0; font-size: 11.5px; }
+#kadm #ssadm .a-it { display: flex; align-items: center; gap: 9px; width: 100%; border: 0; background: transparent; color: var(--ink2); padding: 0 10px; min-height: 34px; border-radius: 9px; cursor: pointer; text-align: start; font-size: 13.5px; }
+#kadm #ssadm .a-it span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kadm #ssadm .a-it .sa-ic { color: var(--g3); }
+#kadm #ssadm .a-it:hover { background: rgba(240, 199, 94, .08); color: #fff; }
+#kadm #ssadm .a-it.on { background: linear-gradient(180deg, rgba(246, 215, 124, .95), rgba(193, 138, 44, .95)); color: #2a1800; font-weight: 700; }
+#kadm #ssadm .a-it.on .sa-ic { color: #2a1800; }
+#kadm #ssadm .a-main { padding: 14px 18px 24px; }
+#kadm #ssadm .a-home2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 10px; margin-top: 4px; }
+#kadm #ssadm .a-burger { display: none; }
+@media (max-height: 480px) {
+#kadm #ssadm .a-body { grid-template-columns: 178px minmax(0, 1fr); }
+#kadm #ssadm .a-side { padding: 6px 6px 10px; }
+#kadm #ssadm .a-it { min-height: 30px; font-size: 12.5px; gap: 7px; }
+#kadm #ssadm .a-grp { margin-top: 6px; }
+#kadm #ssadm .a-main { padding: 10px 12px 18px; }
+#kadm #ssadm .a-main .sa-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+#kadm #ssadm .a-main .sa-kpi em { display: none; }
+}
+@media (max-width: 760px) {
+#kadm #ssadm .a-body { grid-template-columns: 54px minmax(0, 1fr); }
+#kadm #ssadm .a-side { padding: 6px 4px; }
+#kadm #ssadm .a-it { justify-content: center; padding: 0; position: relative; }
+#kadm #ssadm .a-it span, #kadm #ssadm .a-grp > small { display: none; }
+#kadm #ssadm .a-it .sa-cnt { position: absolute; top: 1px; inset-inline-end: 2px; font-size: 9px; min-width: 15px; line-height: 14px; padding: 0 3px; }
+#kadm #ssadm .a-grp { margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(231, 189, 88, .2); }
+#kadm #ssadm .a-burger { display: inline-grid; }
+#kadm #ssadm .a-app.side-open .a-body { grid-template-columns: 200px minmax(0, 1fr); }
+#kadm #ssadm .a-app.side-open .a-it { justify-content: flex-start; padding: 0 10px; }
+#kadm #ssadm .a-app.side-open .a-it span, #kadm #ssadm .a-app.side-open .a-grp > small { display: block; }
+#kadm #ssadm .a-home2 { grid-template-columns: 1fr; }
+#kadm #ssadm .a-main .sa-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+#kadm.sa-on > .x-box { display: none !important; }
+#kadm.sa-on { padding: 0 !important; background: #071033; }
+#kadm #ssadm { position: fixed; inset: 0; z-index: 1; height: auto; text-align: start; }
+#kadm #ssadm .sa-app { padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+#kadm #ssadm .sa-exit { display: inline-flex; align-items: center; gap: 4px; padding: 0 10px; width: auto; }
+#kadm #ssadm .sa-exit span { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+@media (max-width: 760px) { #kadm #ssadm .sa-exit span { display: none; } #kadm #ssadm .sa-exit { padding: 0; width: 34px; justify-content: center; } }
+</style>
+<script id="ss13u-admin4-js">
+/* Super Snake owner admin — shared core (data adapter, i18n, dialogs, feature modules).
+   Every server call uses the SAME function names and parameters as the live panel (index.html 3925baeb).
+   The four versions (A–D) only differ in information architecture: they call SA.M[*].html()/act() and SA.player.*. */
+(function () {
+  "use strict";
+  const SA = (window.SSAdmin = window.SSAdmin || {});
+  // ---------------------------------------------------------------- utils
+  const esc = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const nf = (v) => Number(v || 0).toLocaleString("en-US");
+  const tv = (f, d) => { try { const r = f(); return r === undefined ? d : r; } catch (_) { return d; } };
+  const EMO = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{1F000}-\u{1F2FF}\uFE0F\u200D]/gu;
+  SA.esc = esc; SA.nf = nf; SA.tv = tv;
+  SA.$ = (id) => document.getElementById(id);
+
+  // ---------------------------------------------------------------- i18n
+  const I = (SA.I18N = SA.I18N || {});
+  SA.addI18n = (o) => { for (const k in o) I[k] = o[k]; };
+  SA.lang = "en";
+  SA.t = (k, v) => {
+    const r = I[k]; let s = r ? (SA.lang === "ar" ? r[0] : r[1]) || r[1] : k;
+    s = String(s).replace(EMO, "").replace(/\s{2,}/g, " ").trim();
+    if (v) s = s.replace(/\{(\w+)\}/g, (m, n) => (v[n] == null ? m : v[n]));
+    return s;
+  };
+  const T = (k, v) => esc(SA.t(k, v));
+  SA.T = T;
+  SA.fmtD = (iso, time) => { if (!iso) return "—"; try { return new Intl.DateTimeFormat(SA.lang === "ar" ? "ar-u-nu-latn" : "en-GB", time ? { dateStyle: "medium", timeStyle: "short" } : { dateStyle: "medium" }).format(new Date(iso)); } catch (_) { return String(iso).slice(0, 16); } };
+  SA.ago = (iso) => { if (!iso) return "—"; const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000) | 0; const ar = SA.lang === "ar";
+    return s < 90 ? (ar ? "الآن" : "now") : s < 5400 ? (s / 60 | 0) + (ar ? " د" : " min") : s < 172800 ? (s / 3600 | 0) + (ar ? " س" : " h") : (s / 86400 | 0) + (ar ? " ي" : " d"); };
+  SA.money = (c) => "$" + ((c | 0) / 100).toFixed(2);
+
+  // ---------------------------------------------------------------- icons (inline SVG, gold stroke via currentColor)
+  const P = {
+    home: "M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",
+    users: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 3.5a4 4 0 0 1 0 7.5M22 21c0-3-1.6-5-4.5-5.7",
+    ban: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM5.6 5.6l12.8 12.8",
+    flag: "M5 21V4M5 4h11l-2 4 2 4H5",
+    shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M9 12l2 2 4-4",
+    chat: "M4 5h16v11H9l-5 4z",
+    broom: "M14 3l7 7M11 6l7 7-4 4H8l-4-4zM6 15l-3 6 6-3",
+    mail: "M3 6h18v12H3zM3 7l9 6 9-6",
+    horn: "M3 10v4h3l7 4V6L6 10zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11",
+    gear: "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 10h0a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z",
+    gift: "M3 9h18v4H3zM5 13h14v8H5zM12 9v12M12 9c-2-4-6-4-6-1.5S10 9 12 9zm0 0c2-4 6-4 6-1.5S14 9 12 9z",
+    cart: "M3 4h2l2.5 11h11L21 7H6.5M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm9 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z",
+    tag: "M3 12V3h9l9 9-9 9zM7.5 7.5h.01",
+    pulse: "M3 12h4l3-8 4 16 3-8h4",
+    wrench: "M14.7 6.3a4 4 0 0 0-5.4 5L3 17.6 6.4 21l6.3-6.3a4 4 0 0 0 5-5.4l-2.6 2.6-2.4-.6-.6-2.4z",
+    scroll: "M7 3h11v15a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-2h11v2a3 3 0 0 0 3 3M7 3a2 2 0 0 0-2 2v11M10 8h5M10 12h5",
+    search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4",
+    refresh: "M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4",
+    back: "M15 5l-7 7 7 7",
+    close: "M6 6l12 12M18 6L6 18",
+    check: "M5 12l5 5 9-10",
+    coin: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v10M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4",
+    gem: "M6 3h12l3 6-9 12L3 9zM3 9h18M12 21L8 9l4-6 4 6z",
+    card: "M7 3h10v18H7z",
+    trophy: "M8 4h8v5a4 4 0 0 1-8 0zM8 6H4a3 3 0 0 0 4 4M16 6h4a3 3 0 0 1-4 4M12 13v4M8 21h8M9 17h6",
+    bolt: "M13 2L4 14h7l-1 8 9-12h-7z",
+    trash: "M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14",
+    edit: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4",
+    star: "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+    id: "M3 5h18v14H3zM7 15c0-2 1.5-3 3-3s3 1 3 3M10 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM15 9h3M15 13h3",
+    bell: "M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0",
+    lock: "M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4",
+    grid: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
+    inbox: "M3 13l3-9h12l3 9v7H3zM3 13h5l1 3h6l1-3h5",
+    menu: "M4 6h16M4 12h16M4 18h16",
+    globe: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",
+    undo: "M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3",
+    mute: "M4 9v6h4l5 4V5L8 9zM17 9l4 6M21 9l-4 6",
+    photo: "M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6M15 9h.01",
+  };
+  SA.icon = (n, cls) => `<svg class="sa-ic${cls ? " " + cls : ""}" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n] || P.grid}"/></svg>`;
+  const IC = SA.icon;
+
+  // ---------------------------------------------------------------- data adapter
+  // modes: "mock" (sample data, writes simulated), "live" (real Supabase, READS ONLY in preview), "game" (dropped into index.html: ON.rpc, reads+writes)
+  const READS = new Set(["adm2_dashboard", "adm2_users", "adm2_user", "adm2_bans", "adm2_reports", "adm2_support", "adm2_log", "get_announcement", "get_public_config",
+    "adm3_mod", "adm3_errors", "adm3_top_errors", "adm3_fix_summary", "adm3_offers", "adm3_mod_test", "adm4_rewards", "adm4_mode_user", "admin_flagged_matches", "admin_list_purchases",
+    "gd_admin_summary", "gd_admin_feed", "gd_admin_player", "gd_admin_appeals", "adm_ibx_hist", "adm_ibx_count", "ops_status"]);
+  SA.READS = READS;
+  const isRead = (fn, a) => READS.has(fn) || ((fn === "adm_ibx_auto") && a && a.p_patch == null);
+  const SBU = "https://btmvxfiwprkgqcgquozq.supabase.co", SBK = "sb_publishable_o0TaQLE_ZaFJrqe_ZemmBQ_uHo5nnne";
+  const RTU = "https://super-snake-realtime.molierk.workers.dev", REGIONS = ["wnam", "enam", "sam", "weur", "eeur", "apac", "oc", "afr", "me"];
+  SA.api = { mode: "mock", sess: null };
+  SA.setMode = (m, opt) => { SA.api.mode = m; Object.assign(SA.api, opt || {}); };
+  const liveSess = () => {
+    if (SA.api.sess) return SA.api.sess;
+    try { const s = JSON.parse(localStorage.getItem("ss-sess") || "null"); if (s && s.access_token) return (SA.api.sess = s); } catch (_) {}
+    return null;
+  };
+  const liveRefresh = async () => {
+    const s = liveSess(); if (!s) return null;
+    if (s.expires_at && s.expires_at * 1000 > Date.now() + 60e3) return s;
+    const r = await fetch(SBU + "/auth/v1/token?grant_type=refresh_token", { method: "POST", headers: { apikey: SBK, "Content-Type": "application/json" }, body: JSON.stringify({ refresh_token: s.refresh_token }) });
+    if (!r.ok) { SA.api.sess = null; return null; }
+    const j = await r.json(); const ns = { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: j.expires_at || ((Date.now() / 1000) | 0) + (j.expires_in || 3600) };
+    SA.api.sess = ns; try { if (localStorage.getItem("ss-sess")) localStorage.setItem("ss-sess", JSON.stringify(ns)); } catch (_) {}
+    return ns;
+  };
+  SA.signIn = async (email, password) => {
+    const r = await fetch(SBU + "/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: SBK, "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+    const j = await r.json(); if (!r.ok) throw new Error(j.error_description || j.msg || "sign_in_failed");
+    SA.api.sess = { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: j.expires_at || ((Date.now() / 1000) | 0) + (j.expires_in || 3600) };
+    return true;
+  };
+  const liveRpc = async (fn, a) => {
+    const s = await liveRefresh(); if (!s) { const e = new Error("signed_out"); e.code = "signed_out"; throw e; }
+    const r = await fetch(SBU + "/rest/v1/rpc/" + fn, { method: "POST", headers: { apikey: SBK, "Content-Type": "application/json", Authorization: "Bearer " + s.access_token }, body: JSON.stringify(a || {}) });
+    const tx = await r.text(); let j = null; try { j = tx ? JSON.parse(tx) : null; } catch (_) { j = tx; }
+    if (!r.ok) { const c = (j && (j.message || j.code)) || r.status; const e = new Error(String(c)); e.code = String(c); throw e; }
+    return j;
+  };
+  SA.rpc = async (fn, a) => {
+    const m = SA.api.mode;
+    if (m === "game") return SA.grpc(fn, a);
+    if (m === "live") {
+      if (!isRead(fn, a)) { const e = new Error("preview_read_only"); e.code = "preview_read_only"; throw e; }
+      return liveRpc(fn, a);
+    }
+    return SA.mock.rpc(fn, a || {});
+  };
+  SA.rooms = async () => {
+    if (SA.api.mode === "mock") return SA.mock.rooms();
+    const res = await Promise.all(REGIONS.map((r) => fetch(RTU + "/v1/rooms?region=" + r).then((x) => x.json()).catch(() => ({ rooms: [] }))));
+    let rooms = 0, humans = 0; const by = {};
+    res.forEach((x) => (x.rooms || []).forEach((q) => { if ((q.humans | 0) > 0) { rooms++; humans += q.humans | 0; by[q.mode] = (by[q.mode] || 0) + (q.humans | 0); } }));
+    return { rooms, humans, by };
+  };
+  SA.errText = (e) => {
+    const c = (e && (e.code || e.message)) || String(e);
+    if (c === "preview_read_only") return SA.t("aPreviewRO");
+    if (c === "owner_protected") return SA.t("kaProtected");
+    if (I["ibxE_" + c]) return SA.t("ibxE_" + c);
+    return c;
+  };
+
+  // ---------------------------------------------------------------- toast + dialogs
+  SA.toast = (msg, bad) => {
+    let el = SA.$("sa-toast"); if (!el) { el = document.createElement("div"); el.id = "sa-toast"; el.setAttribute("role", "status"); (SA.host || document.body).appendChild(el); }
+    el.textContent = msg; el.className = "on" + (bad ? " bad" : ""); clearTimeout(SA._tt); SA._tt = setTimeout(() => { el.className = ""; }, 2600);
+  };
+  // confirm dialog: reason (required ≥3), optional extra fields, optional typed confirmation, two-step for danger
+  SA.dialog = (o) => new Promise((res) => {
+    const root = document.createElement("div"); root.className = "sa-dlgw"; root.setAttribute("dir", SA.lang === "ar" ? "rtl" : "ltr");
+    root.innerHTML = `<div class="sa-dlg${o.danger ? " danger" : ""}" role="dialog" aria-modal="true" aria-labelledby="sa-dlgt"><div class="sa-dlgh">${o.icon ? IC(o.icon) : ""}<h3 id="sa-dlgt">${esc(o.title)}</h3><button type="button" class="sa-x" data-dx="1" aria-label="${T("aClose")}">${IC("close")}</button></div>` +
+      `<div class="sa-dlgb">${o.body || ""}${o.fields || ""}` +
+      (o.reason !== false ? `<label class="sa-lab">${T("kaReason")}<textarea id="sa-dr" rows="2" maxlength="300" dir="auto"></textarea></label>` : "") +
+      (o.after || "") + (o.typed ? `<label class="sa-lab">${T("aTypeId", { n: o.typed })}<input id="sa-dty" dir="ltr" inputmode="numeric" autocomplete="off"></label>` : "") +
+      (o.danger ? `<p class="sa-warn">${IC("lock")}${T(o.dangerNote || "aDangerNote")}</p>` : "") +
+      `<p class="sa-err" id="sa-de"></p></div><div class="sa-dlgf"><button type="button" class="sa-btn" data-dx="1">${T("aCancel")}</button><button type="button" class="sa-btn ${o.danger ? "red" : "main"}" id="sa-dok">${esc(o.ok || SA.t("kaConfirm"))}</button></div></div>`;
+    (SA.host || document.body).appendChild(root);
+    const close = (v) => { root.remove(); document.removeEventListener("keydown", onK, true); res(v); };
+    const onK = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(false); } };
+    document.addEventListener("keydown", onK, true);
+    root.addEventListener("click", (e) => { if (e.target === root || e.target.closest("[data-dx]")) close(false); });
+    if (o.mount) o.mount(root);
+    const ok = root.querySelector("#sa-dok"); let armed = !o.danger;
+    const first = root.querySelector("input,textarea,select"); if (first) setTimeout(() => first.focus({ preventScroll: true }), 30);
+    ok.addEventListener("click", async () => {
+      const er = root.querySelector("#sa-de"); er.textContent = "";
+      const r = o.reason !== false ? root.querySelector("#sa-dr").value.trim() : "";
+      if (o.reason !== false && r.length < 3) { er.textContent = SA.t("kaReason"); return; }
+      if (o.typed && root.querySelector("#sa-dty").value.trim().replace(/^#/, "") !== String(o.typed)) { er.textContent = SA.t("aTypeIdBad"); return; }
+      if (o.validate) { const v = o.validate(root); if (v) { er.textContent = v; return; } }
+      if (!armed) { armed = true; ok.textContent = SA.t("kaSure"); setTimeout(() => { if (ok.isConnected) { armed = false; ok.textContent = o.ok || SA.t("kaConfirm"); } }, 4000); return; }
+      ok.disabled = true;
+      try { await o.run(r, root); close(true); SA.toast(SA.t("kaDone")); SA.reload(); }
+      catch (e2) { er.textContent = SA.errText(e2); ok.disabled = false; armed = !o.danger; ok.textContent = o.ok || SA.t("kaConfirm"); }
+    });
+  });
+  // run a non-destructive action directly
+  SA.run = async (p, btn) => { if (btn) btn.disabled = true; try { await p; SA.toast(SA.t("kaDone")); } catch (e) { SA.toast(SA.errText(e), true); } if (btn && btn.isConnected) btn.disabled = false; SA.reload(); };
+
+  // ---------------------------------------------------------------- small render helpers
+  const pill = (txt, cls) => `<span class="sa-pill${cls ? " " + cls : ""}">${esc(txt)}</span>`;
+  const btn = (a, label, cls, data, icon) => `<button type="button" class="sa-btn${cls ? " " + cls : ""}" data-a="${a}"${data ? Object.entries(data).map(([k, v]) => ` data-${k}="${esc(v)}"`).join("") : ""}>${icon ? IC(icon) : ""}<span>${label}</span></button>`;
+  const seg = (a, cur, opts) => `<div class="sa-seg" role="tablist">${opts.map(([v, l, n]) => `<button type="button" role="tab" class="${String(cur) === String(v) ? "on" : ""}" data-a="${a}" data-v="${esc(v)}">${esc(l)}${n ? ` <b class="sa-cnt" dir="ltr">${nf(n)}</b>` : ""}</button>`).join("")}</div>`;
+  const empty = (k) => `<div class="sa-empty">${IC("check")}<span>${T(k || "aNone")}</span></div>`;
+  const loading = () => `<div class="sa-load"><i></i><i></i><i></i></div>`;
+  const who = (name, pid, uid, extra) => `<button type="button" class="sa-who" data-a="pl:open" data-id="${esc(uid || "")}"><bdi>${esc(name || "?")}</bdi><small dir="ltr">#${esc(pid || "")}</small>${extra || ""}</button>`;
+  const kpi = (label, val, o) => `<${o && o.go ? `button type="button" data-a="nav" data-sgo="${o.go}"` : "div"} class="sa-kpi${o && o.cls ? " " + o.cls : ""}">${o && o.icon ? IC(o.icon) : ""}<b dir="ltr">${typeof val === "number" ? nf(val) : esc(val)}</b><small>${esc(label)}</small>${o && o.sub ? `<em>${esc(o.sub)}</em>` : ""}</${o && o.go ? "button" : "div"}>`;
+  SA.h = { pill, btn, seg, empty, loading, who, kpi };
+
+  // ---------------------------------------------------------------- module registry
+  SA.M = {};
+  SA.GROUPS = [
+    ["players", "aG_players", "users", ["players", "bans"]],
+    ["mod", "aG_mod", "shield", ["reports", "guard", "support", "cleaner"]],
+    ["eco", "aG_eco", "coin", ["offers", "mx", "rewards"]],
+    ["content", "aG_content", "mail", ["msgs", "ann"]],
+    ["game", "aG_game", "gear", ["game"]],
+    ["sys", "aG_sys", "pulse", ["ops", "fixes", "log"]],
+  ];
+  const mod = (id, o) => { SA.M[id] = Object.assign({ id, st: {} }, o); return SA.M[id]; };
+  SA.cur = null; // current module id rendered by the shell
+  SA.reloadHooks = [];
+  SA.reload = () => { SA.reloadHooks.forEach((f) => { try { f(); } catch (e) { console.warn(e); } }); };
+  SA.load = async (id) => { const m = SA.M[id]; if (!m || !m.load) return; try { await m.load(); m.err = null; } catch (e) { m.err = SA.errText(e); } };
+  SA.html = (id) => { const m = SA.M[id]; if (!m) return ""; if (m.err) return `<p class="sa-err">${esc(m.err)}</p>` + tv(() => m.html(), ""); return tv(() => m.html(), `<p class="sa-err">render</p>`); };
+  SA.title = (id) => SA.t(SA.M[id] ? SA.M[id].title : id);
+
+  // ======================= Overview / KPIs =======================
+  mod("dash", { title: "kaDash", icon: "home",
+    async load() {
+      const s = this.st;
+      const [d, g, sup, md, rooms, ops] = await Promise.all([
+        SA.rpc("adm2_dashboard"), SA.rpc("gd_admin_summary", { p_days: 14 }).catch(() => null), SA.rpc("adm2_support", { p_status: "open" }).catch(() => null),
+        SA.rpc("adm3_mod", { p_status: "open", p_kind: null, p_limit: 1 }).catch(() => null), SA.rooms().catch(() => null), SA.rpc("ops_status").catch(() => null)]);
+      Object.assign(s, { d, g, sup: sup ? sup.length : null, md: md && md.summary, rooms, ops, at: Date.now() });
+    },
+    counts() { const s = this.st; return { reports: tv(() => s.d.open_reports, 0), support: s.sup | 0, guard: tv(() => s.g.open_queue, 0), appeals: tv(() => s.g.open_appeals, 0), cleaner: tv(() => s.md.open, 0), err: tv(() => s.md.errors_24h, 0) }; },
+    needs() {
+      const c = this.counts();
+      return [["reports", "aOpenReports", c.reports, "flag"], ["support", "aSupOpen", c.support, "chat"], ["guard", "aGuardQ", c.guard, "shield"], ["guard", "aAppeals", c.appeals, "card"], ["cleaner", "aCleanOpen", c.cleaner, "broom"]];
+    },
+    kpis(compact) {
+      const s = this.st, d = s.d || {}, r = s.rooms, ops = s.ops || {};
+      const lv = ops.level || "?", lvC = lv === "ok" ? "ok" : lv === "warn" ? "warn" : "bad";
+      const out = [
+        kpi(SA.t("aLiveNow"), r ? r.humans : "—", { icon: "bolt", cls: "hot", sub: r ? SA.t("aLiveRooms", { n: r.rooms }) : "" }),
+        kpi(SA.t("kaDau"), d.dau, { icon: "users", sub: SA.t("kaWau") + " " + nf(d.wau) }),
+        kpi(SA.t("kaMatches"), d.matches_today, { icon: "trophy", sub: SA.t("a7d") + " " + nf(d.matches_7d) }),
+        kpi(SA.t("kaSignups"), d.signups_today, { icon: "star", sub: SA.t("a7d") + " " + nf(d.signups_7d) }),
+        kpi(SA.t("kaRevLive"), SA.money(d.revenue_live_cents), { icon: "coin", go: "mx", sub: SA.t("aStripeTest") + " " + SA.money(d.revenue_test_cents) }),
+        kpi(SA.t("kaPlayersN"), d.players, { icon: "id", go: "players" }),
+        kpi(SA.t("kaActBans"), d.active_bans, { icon: "ban", go: "bans", sub: SA.t("kaActMutes") + " " + nf(d.active_mutes) }),
+        kpi(SA.t("aOps"), lv.toUpperCase(), { icon: "pulse", go: "ops", cls: "lv-" + lvC, sub: SA.t("aErr24") + " " + nf(tv(() => s.md.errors_24h, 0)) }),
+      ];
+      return compact ? out.slice(0, compact) : out;
+    },
+    needsHTML() {
+      const L = this.needs().filter((x) => x[2] > 0);
+      return L.length ? `<div class="sa-needs">${L.map(([go, l, n, ic]) => `<button type="button" class="sa-need" data-a="nav" data-sgo="${go}">${IC(ic)}<span>${T(l)}</span><b dir="ltr">${nf(n)}</b></button>`).join("")}</div>` : empty("aAllClear");
+    },
+    html() { if (!this.st.d) return loading(); return `<div class="sa-kpis">${this.kpis().join("")}</div><h4 class="sa-h4">${T("aNeeds")}</h4>${this.needsHTML()}<p class="sa-note">${esc(SA.fmtD(this.st.d.as_of, 1))}</p>`; },
+  });
+
+  // ======================= Players =======================
+  const PRESETS = ["cheat", "abuse", "name", "spam", "imp", "bug", "other"];
+  const DURS = [["1", "1h"], ["24", "1d"], ["72", "3d"], ["168", "1w"], ["720", "30d"], ["c", "kaCustomH"], ["p", "kaLifetime"]];
+  const isActive = (iso) => iso && (String(iso).startsWith("infinity") || Date.parse(iso) > Date.now());
+  const PL = mod("players", { title: "kaPlayers", icon: "users", st: { q: "", users: null, user: null, gd: null, mu: null, recent: [] },
+    async load() {
+      const s = this.st;
+      if (s.user) {
+        const id = s.user.id;
+        const [u, gd, mu] = await Promise.all([SA.rpc("adm2_user", { p_user: id }), SA.rpc("gd_admin_player", { p_user: id }).catch(() => null), SA.rpc("adm4_mode_user", { p_user: id }).catch(() => null)]);
+        s.user = u; s.gd = gd; s.mu = mu;
+        if (u && u.id) { s.recent = [{ id: u.id, username: u.username, player_id: u.player_id, vip_id: u.vip_id }].concat(s.recent.filter((x) => x.id !== u.id)).slice(0, 6); }
+      } else s.users = await SA.rpc("adm2_users", { p_query: s.q, p_limit: 100 });
+    },
+    open(id) { this.st.user = { id }; this.st.gd = null; this.st.mu = null; },
+    searchHTML(o) {
+      o = o || {}; const s = this.st;
+      return `<form class="sa-search${o.big ? " big" : ""}" data-form="pl:search">${IC("search")}<input id="sa-q" name="q" type="search" autocomplete="off" dir="auto" placeholder="${T("aSearchPh")}" value="${esc(s.q)}"><button type="submit" class="sa-btn main">${T("aSearchGo")}</button></form>`;
+    },
+    rowHTML(u) {
+      const b = isActive(u.banned_until), m = isActive(u.muted_until);
+      return `<button type="button" class="sa-row sa-urow" data-a="pl:open" data-id="${esc(u.id)}"><span class="sa-av">${esc(String(u.username || "?").slice(0, 1).toUpperCase())}</span><span class="sa-rmain"><b><bdi>${esc(u.username)}</bdi></b><small dir="ltr">#${esc(u.vip_id || u.player_id)} · Lv ${u.level | 0} · ${nf(u.coins)} c · ${nf(u.gems)} g</small></span>` +
+        `<span class="sa-rtags">${u.role && u.role !== "user" ? pill(u.role, "gold") : ""}${b ? pill(SA.t("aBanned"), "red") : ""}${m ? pill(SA.t("aMuted"), "amber") : ""}${u.open_reports ? pill(SA.t("kaReports") + " " + u.open_reports, "amber") : ""}${u.deleted ? pill("deleted", "grey") : ""}</span></button>`;
+    },
+    listHTML() { const s = this.st; if (s.users === null) return loading(); if (!s.users.length) return empty("aNoMatch"); return `<p class="sa-note">${T("aResults", { n: nf(s.users.length) })}</p><div class="sa-list">${s.users.map((u) => this.rowHTML(u)).join("")}</div>`; },
+    html() { const s = this.st; return s.user && s.user.username ? SA.player.card(s.user, { gd: s.gd, mu: s.mu, back: true }) : s.user ? loading() : this.searchHTML() + this.listHTML(); },
+  });
+
+  // player card + actions (shared by every version; each version decides where it is shown and which sections are expanded)
+  SA.player = {
+    head(u, gd) {
+      const b = isActive(u.banned_until), m = isActive(u.muted_until), act = gd ? gd.active | 0 : 0;
+      const cards = gd ? `<span class="sa-cards" title="${T("aCardsN", { n: act })}">${[0, 1, 2].map((i) => `<i class="${i < act ? (gd.cards || []).some((c) => !c.removed && c.color === "red") && i === act - 1 ? "r" : "y" : ""}"></i>`).join("")}</span>` : "";
+      return `<div class="sa-phead"><span class="sa-av lg">${esc(String(u.username || "?").slice(0, 1).toUpperCase())}</span><div class="sa-pmeta"><div class="sa-pname"><b><bdi>${esc(u.username)}</bdi></b><span class="sa-idchip" dir="ltr">#${esc(u.vip_id || u.player_id)}</span>${u.vip_id ? `<small dir="ltr">ID ${esc(u.player_id)}</small>` : ""}${u.role && u.role !== "user" ? pill(u.role, "gold") : ""}${cards}</div>` +
+        `<small class="sa-psub"><span dir="ltr">${esc(u.email || "")}</span> · ${T("aJoined", { d: SA.fmtD(u.created_at) })}${u.last_seen ? " · " + T("aSeen", { d: SA.ago(u.last_seen) }) : ""}${u.country ? " · " + esc(u.country) : ""}</small>` +
+        `<div class="sa-ptags">${b ? pill(SA.t("aBanned") + " · " + (u.ban_reason || "") + " · " + (String(u.banned_until).startsWith("infinity") ? SA.t("kaPerm") : SA.fmtD(u.banned_until, 1)), "red") : ""}${m ? pill(SA.t("aMuted") + " · " + (u.mute_reason || ""), "amber") : ""}${!b && !m ? pill(SA.t("aClean"), "green") : ""}</div></div></div>`;
+    },
+    stats(u, mu) {
+      const w = u.wallet || {}, s = u.stats || {};
+      return `<div class="sa-pstats">${[["aLevel", s.level | 0, "star"], ["aCoins", nf(w.coins), "coin"], ["aGems", nf(w.gems), "gem"], ["aGames", nf(s.games), "trophy"], ["aKills", nf(s.kills), "bolt"]].map(([l, v, ic]) => `<span>${IC(ic)}<b dir="ltr">${v}</b><small>${T(l)}</small></span>`).join("")}</div>` +
+        (mu && mu.story_cp !== undefined ? `<p class="sa-note">${T("aModeProg")}: ${T("srwModeP", { c: mu.story_cp | 0, s: mu.story_stars | 0, w: nf(mu.words), l: mu.landmarks | 0, b: nf(mu.bonus_coins_7d), r: nf(mu.refused_7d) })}</p>` : "");
+    },
+    // action groups: [group label, [ [action, label, cls, icon] ]]
+    groups(u, gd) {
+      if (u.protected || u.role === "owner") return null;
+      return [
+        ["aActModerate", [["pl:mute", SA.t("kaMute"), "", "mute"], ["pl:ban", SA.t("kaBan"), "red", "ban"], ["pl:card", SA.t("aYellow"), "amber", "card"], ["pl:red", SA.t("aRedBan"), "red", "card"]].concat(gd && gd.banned ? [["pl:gunban", SA.t("aGuardUnban"), "", "undo"]] : [])],
+        ["aActEconomy", [["pl:grant", SA.t("kaGrant"), "main", "coin"], ["pl:vip", SA.t("kaVip") + (u.vip_id ? " #" + u.vip_id : ""), "", "id"]]],
+        ["aActProfile", [["pl:rename", SA.t("kaRename"), "", "edit"], ["pl:photo", SA.t("kaResetPh"), "", "photo"], ["pl:lgx", SA.t("srwLgx"), "", "trophy"]]],
+        ["aActDanger", [["pl:del", SA.t("srwDel"), "red ghost", "trash"]]],
+      ];
+    },
+    actions(u, gd, o) {
+      const G = this.groups(u, gd); if (!G) return `<p class="sa-note">${IC("lock")} ${T("kaProtected")}</p>`;
+      return `<div class="sa-pacts${o && o.bar ? " bar" : ""}">${G.map(([g, L]) => `<div class="sa-pag${g === "aActDanger" ? " danger" : ""}"><small>${T(g)}</small><div>${L.map(([a, l, c, ic]) => btn(a, esc(l), c, null, ic)).join("")}</div></div>`).join("")}</div>`;
+    },
+    banLine(b, acts, inCard) {
+      const st = b.lifted_at ? pill(SA.t("kaLifted"), "grey") : b.active ? pill(SA.t("kaActive"), "red") : pill(SA.t("kaExpired"), "grey");
+      return `<div class="sa-item"><div class="sa-ih"><b>${T(b.kind === "mute" ? "kaMute" : "kaBan")}</b>${st}${b.username && !inCard ? who(b.username, b.player_id, b.user_id) : ""}<small class="sa-at">${esc(SA.fmtD(b.created_at, 1))}</small></div>` +
+        `<p dir="auto">${esc(b.reason)}${b.note ? ` <i class="sa-note">· ${esc(b.note)}</i>` : ""}</p><small class="sa-note">${b.ends_at ? T("kaUntil", { d: SA.fmtD(b.ends_at, 1) }) : T("kaPerm")}${b.by ? " · " + T("kaBy", { x: b.by }) : ""}${b.lift_reason ? " · " + esc(b.lift_reason) : ""}</small>` +
+        (acts && b.active ? `<div class="sa-iacts">${btn("pl:lift", T("kaUnban"), "", { id: b.id }, "undo")}${btn("pl:editban", T("kaEditBan"), "", { id: b.id }, "edit")}</div>` : "") + `</div>`;
+    },
+    cardRow(c, uid) {
+      return `<div class="sa-item${c.removed ? " off" : ""}"><div class="sa-ih"><i class="sa-gcard ${c.color === "red" ? "r" : "y"}"></i><b>${T(c.color === "red" ? "gdR" : (c.n | 0) >= 2 ? "gdY2" : "gdY1")}</b><small dir="ltr">${esc(c.case || "")}</small>${c.removed ? pill(SA.t("gdRemoved"), "grey") : ""}<small class="sa-at">${esc(SA.fmtD(c.at, 1))}</small></div>` +
+        `<p dir="auto">${esc(c.reason || "")}</p>${c.appeal_note ? `<p class="sa-quote" dir="auto">${esc(c.appeal_note)}${c.reply ? " · " + esc(c.reply) : ""}</p>` : ""}` +
+        (!c.removed && uid ? `<div class="sa-iacts">${btn("pl:gremove", T("gdRemove"), "", { id: c.id, u: uid }, "undo")}</div>` : "") + `</div>`;
+    },
+    sections(u, gd) {
+      const prot = u.protected || u.role === "owner";
+      return {
+        moderation: `<h4 class="sa-h4">${T("kaHist")}</h4>${(u.bans || []).map((b) => this.banLine(b, !prot, true)).join("") || `<p class="sa-note">${T("kaNoBans")}</p>`}` +
+          `<h4 class="sa-h4">${T("gdHist")}</h4>${tv(() => gd.cards.map((c) => this.cardRow(c, prot ? null : u.id)).join(""), "") || `<p class="sa-note">${T("gdNone")}</p>`}` +
+          `<h4 class="sa-h4">${T("kaReports")}</h4>${(u.reports || []).map((r) => `<div class="sa-item"><div class="sa-ih"><b>${esc(r.reason)}</b>${pill(r.status)}<small class="sa-at">${esc(SA.fmtD(r.at, 1))}</small></div><p dir="auto">${esc(r.details || "")}</p><small class="sa-note">${esc(r.by || "")}</small></div>`).join("") || `<p class="sa-note">—</p>`}`,
+        economy: `<h4 class="sa-h4">${T("kaLedger")}</h4><div class="sa-mini">${(u.ledger || []).map((x) => `<div><span>${esc(x.reason)}<small>${esc(SA.fmtD(x.at, 1))}</small></span><b dir="ltr" class="${x.delta < 0 ? "neg" : "pos"}">${x.delta > 0 ? "+" : ""}${nf(x.delta)} ${x.currency === "gems" ? "g" : "c"}</b></div>`).join("") || "—"}</div>` +
+          `<h4 class="sa-h4">${T("kaPurch")}</h4><div class="sa-mini">${(u.purchases || []).map((x) => `<div><span dir="ltr">${esc(x.product)}<small>${esc(SA.fmtD(x.at, 1))} · ${esc(x.env || "")}</small></span><b dir="ltr">${SA.money(x.amount_cents)} · ${esc(x.status)}</b></div>`).join("") || "—"}</div>`,
+        timeline: this.timeline(u, gd),
+      };
+    },
+    timeline(u, gd) {
+      const ev = [];
+      (u.ledger || []).forEach((x) => ev.push([x.at, "coin", `${x.delta > 0 ? "+" : ""}${nf(x.delta)} ${x.currency === "gems" ? SA.t("aGems") : SA.t("aCoins")} · ${x.reason}`]));
+      (u.purchases || []).forEach((x) => ev.push([x.at, "cart", `${x.product} · ${SA.money(x.amount_cents)} · ${x.status}`]));
+      (u.bans || []).forEach((x) => ev.push([x.created_at, "ban", `${SA.t(x.kind === "mute" ? "kaMute" : "kaBan")} · ${x.reason}`]));
+      (u.reports || []).forEach((x) => ev.push([x.at, "flag", `${SA.t("kaReports")} · ${x.reason}`]));
+      tv(() => gd.cards, []).forEach((c) => ev.push([c.at, "card", `${SA.t(c.color === "red" ? "gdR" : "gdY1")} · ${c.reason}`]));
+      ev.sort((a, b) => Date.parse(b[0]) - Date.parse(a[0]));
+      return ev.length ? `<ol class="sa-tl">${ev.slice(0, 40).map(([at, ic, t]) => `<li>${IC(ic)}<span dir="auto">${esc(t)}</span><small>${esc(SA.fmtD(at, 1))}</small></li>`).join("")}</ol>` : `<p class="sa-note">—</p>`;
+    },
+    medals(u) { return (u.medals || []).length ? `<p class="sa-note">${T("kMedals")}: ${nf(u.medals.length)}</p>` : ""; },
+    // default card (A and D use it; B and C compose their own from the parts above)
+    card(u, o) {
+      o = o || {}; const S = this.sections(u, o.gd);
+      return `<div class="sa-pcard">${o.back ? btn("pl:back", T("kaBack"), "ghost sm", null, "back") : ""}${this.head(u, o.gd)}${this.stats(u, o.mu)}${this.actions(u, o.gd)}` +
+        `<div class="sa-cols"><section class="sa-sec">${S.moderation}</section><section class="sa-sec">${S.economy}${this.medals(u)}</section></div></div>`;
+    },
+  };
+
+  // player actions (same RPCs/params as live)
+  const curU = () => PL.st.user;
+  SA.banDialog = (kind, ban) => {
+    const u = curU() || { username: ban ? ban.username : "" }, edit = !!ban;
+    const presets = edit ? "" : `<div class="sa-chips" id="sa-bp">${PRESETS.map((r, i) => `<button type="button" data-r="${r}" class="${i === 0 ? "on" : ""}">${T("kaR_" + r)}</button>`).join("")}</div>`;
+    const durs = `<p class="sa-lab">${T("kaDur")}</p><div class="sa-chips" id="sa-bd">${DURS.map(([v, l], i) => `<button type="button" data-d="${v}" class="${(edit ? (ban.ends_at ? v === "c" : v === "p") : i === 1) ? "on" : ""}">${esc(I[l] ? SA.t(l) : l)}</button>`).join("")}</div>` +
+      `<input id="sa-bh" type="number" min="1" max="87600" dir="ltr" placeholder="${T("kaCustomH")}" class="${edit && ban.ends_at ? "" : "sa-hide"}" value="${edit && ban.ends_at ? Math.max(1, Math.round((Date.parse(ban.ends_at) - Date.now()) / 36e5)) : ""}">`;
+    const extra = `<label class="sa-lab">${T("kaNote")}<textarea id="sa-bn" rows="2" maxlength="1000" dir="auto">${edit ? esc(ban.note || "") : ""}</textarea></label>` +
+      (edit || kind === "mute" ? "" : `<label class="sa-chk"><input type="checkbox" id="sa-brn"> ${T("kaResetName")}</label><label class="sa-chk"><input type="checkbox" id="sa-brp"> ${T("kaResetPhoto")}</label>`);
+    return SA.dialog({ title: edit ? SA.t("kaEditBan") : SA.t(kind === "mute" ? "kaMuteT" : "kaBanT", { x: u.username }), icon: kind === "mute" ? "mute" : "ban", danger: kind !== "mute" || edit,
+      dangerNote: "kaConfirm", fields: presets, after: durs + extra,
+      mount: (root) => { root.querySelectorAll(".sa-chips").forEach((c) => c.addEventListener("click", (e) => { const x = e.target.closest("button"); if (!x) return; c.querySelectorAll("button").forEach((y) => y.classList.toggle("on", y === x)); if (c.id === "sa-bd") root.querySelector("#sa-bh").classList.toggle("sa-hide", x.dataset.d !== "c"); })); if (edit) root.querySelector("#sa-dr").value = ban.reason || ""; },
+      validate: (root) => { const d = root.querySelector("#sa-bd .on").dataset.d; if (d === "c" && !(+root.querySelector("#sa-bh").value > 0)) return SA.t("kaCustomH"); return ""; },
+      run: (txt, root) => {
+        const preset = tv(() => root.querySelector("#sa-bp .on").dataset.r, "other"), d = root.querySelector("#sa-bd .on").dataset.d;
+        const hours = d === "p" ? null : d === "c" ? +root.querySelector("#sa-bh").value : +d, note = root.querySelector("#sa-bn").value;
+        if (edit) return SA.rpc("adm2_edit_ban", { p_ban: ban.id, p_hours: hours, p_reason: txt, p_note: note });
+        const reason = SA.t("kaR_" + preset) + " — " + txt;
+        return SA.rpc("adm2_ban", { p_user: u.id, p_kind: kind, p_code: preset, p_reason: reason, p_hours: hours, p_note: note,
+          p_reset_name: !!tv(() => root.querySelector("#sa-brn").checked, false), p_reset_photo: !!tv(() => root.querySelector("#sa-brp").checked, false) });
+      } });
+  };
+  const findBan = (id) => (tv(() => curU().bans, null) || SA.M.bans.st.list || []).find((y) => String(y.id) === String(id));
+  SA.playerAct = async (a, el) => {
+    const u = curU(), d = el.dataset;
+    if (a === "open") { SA.openPlayer(d.id); return; }
+    if (a === "back") { PL.st.user = null; SA.reload(); return; }
+    if (a === "ban" || a === "mute") return SA.banDialog(a);
+    if (a === "editban") { const b = findBan(d.id); if (b) SA.banDialog(b.kind, b); return; }
+    if (a === "lift") return SA.dialog({ title: SA.t("kaLiftReason"), icon: "undo", run: (r) => SA.rpc("adm2_lift", { p_ban: +d.id, p_reason: r }) });
+    if (!u || !u.id) return;
+    const nm = `<p class="sa-dlgwho"><bdi>${esc(u.username)}</bdi> <span dir="ltr">#${esc(u.player_id)}</span></p>`;
+    if (a === "rename") return SA.dialog({ title: SA.t("kaRename"), icon: "edit", body: nm, fields: `<label class="sa-lab">${T("kaNewName")}<input id="sa-nn" maxlength="20" dir="auto"></label>`,
+      validate: (root) => (root.querySelector("#sa-nn").value.trim().length < 3 ? SA.t("kaNewName") : ""), run: (r, root) => SA.rpc("adm2_rename", { p_user: u.id, p_name: root.querySelector("#sa-nn").value.trim(), p_reason: r }) });
+    if (a === "photo") return SA.dialog({ title: SA.t("kaResetPh"), icon: "photo", body: nm, danger: true, dangerNote: "kaConfirm", run: (r) => SA.rpc("adm2_reset_photo", { p_user: u.id, p_reason: r }) });
+    if (a === "grant") {
+      const w = u.wallet || {};
+      return SA.dialog({ title: SA.t("kaGrant"), icon: "coin", body: nm, danger: true, dangerNote: "aGrantLimit", ok: SA.t("kaConfirm"),
+        fields: `<div class="sa-seg sa-gm" id="sa-gm"><button type="button" class="on" data-v="1">${T("aGrantAdd")}</button><button type="button" data-v="-1">${T("aGrantRemove")}</button></div>` +
+          `<div class="sa-grid2"><label class="sa-lab">${T("aCoins")}<input id="sa-gc" type="number" min="0" max="1000000" value="0" dir="ltr"></label><label class="sa-lab">${T("aGems")}<input id="sa-gg" type="number" min="0" max="10000" value="0" dir="ltr"></label></div><p class="sa-note" id="sa-gaf"></p>`,
+        mount: (root) => { const upd = () => { const sg = +root.querySelector("#sa-gm .on").dataset.v, c = sg * (+root.querySelector("#sa-gc").value || 0), g = sg * (+root.querySelector("#sa-gg").value || 0); root.querySelector("#sa-gaf").textContent = SA.t("aGrantAfter", { c: nf((w.coins | 0) + c), g: nf((w.gems | 0) + g) }); };
+          root.querySelector("#sa-gm").addEventListener("click", (e) => { const x = e.target.closest("button"); if (!x) return; root.querySelectorAll("#sa-gm button").forEach((y) => y.classList.toggle("on", y === x)); upd(); });
+          root.querySelectorAll("#sa-gc,#sa-gg").forEach((i) => i.addEventListener("input", upd)); upd(); },
+        validate: (root) => { const c = Math.abs(+root.querySelector("#sa-gc").value || 0), g = Math.abs(+root.querySelector("#sa-gg").value || 0); if (!c && !g) return SA.t("kaCoins") + " / " + SA.t("kaGems"); if (c > 1e6 || g > 1e4) return SA.t("aGrantLimit"); return ""; },
+        run: (r, root) => { const sg = +root.querySelector("#sa-gm .on").dataset.v; return SA.rpc("adm2_grant", { p_user: u.id, p_coins: sg * Math.abs(+root.querySelector("#sa-gc").value || 0) || 0, p_gems: sg * Math.abs(+root.querySelector("#sa-gg").value || 0) || 0, p_reason: r }); } });
+    }
+    if (a === "vip") return SA.dialog({ title: SA.t("kaVip"), icon: "id", body: nm, fields: `<label class="sa-lab">${T("kaVipSet")} (2–50) · ${T("kaVipRm")}: 0<input id="sa-vn" type="number" min="0" max="50" dir="ltr" value="${esc(u.vip_id || "")}"></label>`,
+      validate: (root) => { const n = +root.querySelector("#sa-vn").value || 0; return n === 0 || (n >= 2 && n <= 50) ? "" : "2–50"; },
+      run: (r, root) => { const n = +root.querySelector("#sa-vn").value || 0; return SA.rpc("adm2_vip", { p_user: u.id, p_num: n >= 2 ? n : null, p_reason: r }); } });
+    if (a === "lgx") return SA.dialog({ title: SA.t("srwLgx"), icon: "trophy", body: nm, fields: `<div class="sa-seg" id="sa-lx"><button type="button" class="on" data-v="1">${T("srwLgxEx")}</button><button type="button" data-v="0">${T("srwLgxIn")}</button></div>`,
+      mount: (root) => root.querySelector("#sa-lx").addEventListener("click", (e) => { const x = e.target.closest("button"); if (!x) return; root.querySelectorAll("#sa-lx button").forEach((y) => y.classList.toggle("on", y === x)); }),
+      run: (r, root) => SA.rpc("lgx_exclude", { p_player: +u.player_id, p_on: root.querySelector("#sa-lx .on").dataset.v !== "0", p_reason: r }) });
+    if (a === "del") return SA.dialog({ title: SA.t("srwDel"), icon: "trash", danger: true, typed: u.player_id, body: nm + `<p class="sa-note">${T("srwDelQ")}</p>`,
+      run: async (r) => { await SA.rpc("admin_delete_user", { p_user: u.id, p_reason: r }); PL.st.user = null; PL.st.users = null; } });
+    const gcard = (act, title, extra) => SA.dialog(Object.assign({ title, icon: "card", body: nm, run: (r) => SA.rpc("gd_admin_card", { p_user: d.u || u.id, p_action: act, p_reason: r, p_card: d.id ? +d.id : null, p_code: "other" }) }, extra || {}));
+    if (a === "card") return gcard("card", SA.t("gdGive"));
+    if (a === "red") return gcard("red", SA.t("gdBan"), { danger: true, dangerNote: "kaConfirm" });
+    if (a === "gunban") return gcard("unban", SA.t("gdUnban"));
+    if (a === "gremove") return gcard("remove", SA.t("gdRemove"));
+  };
+  SA.openPlayer = (id) => { PL.open(id); if (SA.onOpenPlayer) SA.onOpenPlayer(id); else SA.reload(); };
+
+  // ======================= Bans =======================
+  mod("bans", { title: "kaBans", icon: "ban", st: { all: false, list: null },
+    async load() { this.st.list = await SA.rpc("adm2_bans", { p_user: null, p_active: !this.st.all }); },
+    html() { const s = this.st; return seg("bans:f", s.all ? 1 : 0, [[0, SA.t("kaOnlyActive")], [1, SA.t("kaAll")]]) + (s.list === null ? loading() : s.list.length ? s.list.map((b) => SA.player.banLine(b, true)).join("") : empty("kaNoBans")); },
+    act(a, el) { if (a === "f") { this.st.all = el.dataset.v === "1"; this.st.list = null; SA.reload(); } },
+  });
+
+  // ======================= Reports =======================
+  mod("reports", { title: "kaReports", icon: "flag", st: { list: null },
+    async load() { this.st.list = await SA.rpc("adm2_reports", { p_status: "open" }); },
+    item(r) {
+      return `<div class="sa-item"><div class="sa-ih"><b>${esc(r.reason === "support" ? SA.t("kaSupport") : I["kaR_" + r.reason] ? SA.t("kaR_" + r.reason) : r.reason)}</b><small dir="auto">${esc(r.reporter || "?")} → </small>${r.reported_id ? who(r.reported, r.reported_pid, r.reported_id) : `<small>${esc(r.reported || "?")}</small>`}<small class="sa-at">${esc(SA.ago(r.at))}</small></div>` +
+        `<p dir="auto">${esc(r.details || "")}</p>${r.message ? `<p class="sa-quote" dir="auto">“${esc(r.message)}”</p>` : ""}` +
+        `<div class="sa-iacts">${btn("reports:res", "" + T("kaActioned"), "main", { id: r.id, st: "actioned" }, "check")}${btn("reports:res", T("kaDismiss"), "", { id: r.id, st: "dismissed" }, "close")}${r.reported_id && r.reason !== "support" ? btn("pl:open", T("aOpenPlayer"), "ghost", { id: r.reported_id }, "users") : ""}</div></div>`;
+    },
+    html() { const L = this.st.list; return L === null ? loading() : L.length ? L.map((r) => this.item(r)).join("") : empty("kaNoRep"); },
+    act(a, el) { if (a === "res") return SA.run(SA.rpc("adm2_resolve", { p_report: +el.dataset.id, p_status: el.dataset.st, p_resolution: "" }), el); },
+  });
+
+  // ======================= Guard (Reports & Cards) =======================
+  const RULE = { slur: "slur", swear: "swear word", repeat_swear: "repeated swearing", harass: "harassment", spam: "spam", mass_spam: "mass spam", bad_name: "offensive name", bad_bio: "offensive bio",
+    input_flood: "input flood", input_burst: "input bursts (lag)", bad_input: "malformed input", impossible_stats: "impossible stats", repeat_impossible: "repeated impossible stats", capped_stats: "capped stats",
+    repeated_caps: "repeated caps", identical_stats: "identical stats", stat_jump: "stat jump", farm: "reward farming", feeding: "feeding kills", boosting: "boosting", multi_account: "multi-account",
+    shared_network: "shared network", multi_reports: "many reports", privacy_slip: "privacy slip (masked)", server_jump: "server self-check" };
+  const ruleT = (r) => RULE[r] || (String(r).startsWith("report_") ? "report: " + String(r).slice(7) : r);
+  const pct = (v) => Math.round((+v || 0) * 100) + "%";
+  const metric = (m) => tv(() => Object.entries(m || {}).filter(([, v]) => v !== null && v !== "" && typeof v !== "object").slice(0, 5).map(([k, v]) => k + " " + v).join(" · "), "");
+  mod("guard", { title: "aGuardT", icon: "shield", st: { sec: "queue", live: null, queue: null, ap: null, cards: null, sum: null },
+    async load() {
+      const s = this.st, sum = SA.rpc("gd_admin_summary", { p_days: 14 }).then((x) => (s.sum = x)).catch(() => {});
+      if (s.sec === "live") s.live = await SA.rpc("gd_admin_feed", { p_view: "all", p_limit: 150 });
+      else if (s.sec === "queue") s.queue = await SA.rpc("gd_admin_feed", { p_view: "queue", p_limit: 200 });
+      else if (s.sec === "cards") s.cards = await SA.rpc("gd_admin_feed", { p_view: "cards", p_limit: 150 });
+      else if (s.sec === "ap") s.ap = await SA.rpc("gd_admin_appeals", { p_limit: 150 });
+      await sum;
+    },
+    ev(x, acts) {
+      return `<div class="sa-item c-${esc(x.cat)}"><div class="sa-ih">${pill(SA.t("gdCat_" + x.cat), "cat-" + x.cat)}<b>${esc(ruleT(x.rule))}</b>${pill(pct(x.conf), "grey")}${x.status ? pill(x.status, x.status === "carded" || x.status === "confirmed" ? (x.card_color === "red" ? "red" : "amber") : "grey") : ""}` +
+        (x.user_id ? who(x.username, x.player_id, x.user_id, x.banned ? pill(SA.t("aBanned"), "red") : x.active_cards ? `<span class="sa-cards sm">${"<i class='y'></i>".repeat(Math.min(2, x.active_cards))}</span>` : "") : "") + `<small class="sa-at">${esc(SA.ago(x.at))}</small></div>` +
+        (x.excerpt ? `<p class="sa-quote" dir="auto">“${esc(x.excerpt)}”</p>` : "") + `<small class="sa-det" dir="ltr">${esc(metric(x.metric))}${x.match ? " · match " + esc(String(x.match).slice(0, 8)) : ""}${x.note ? " · " + esc(x.note) : ""}</small>` +
+        (acts && x.user_id && (x.status === "queued" || x.status === "logged") ? `<div class="sa-iacts">${btn("guard:confirm", T("gdConfirm"), "amber", { id: x.id }, "card")}${btn("guard:dismiss", T("gdDismiss"), "", { id: x.id }, "close")}${btn("pl:open", T("aOpenPlayer"), "ghost", { id: x.user_id }, "users")}</div>` : "") + `</div>`;
+    },
+    appeal(c) {
+      return `<div class="sa-item"><div class="sa-ih"><i class="sa-gcard ${c.color === "red" ? "r" : "y"}"></i>${who(c.username, c.player_id, c.user_id)}<small dir="ltr">${esc(c.case)}</small>${pill(c.status, c.status === "open" ? "amber" : "grey")}<small class="sa-at">${esc(SA.ago(c.at))}</small></div>` +
+        `<p dir="auto"><b>${esc(c.reason)}</b>${c.excerpt ? ` · “${esc(c.excerpt)}”` : ""}</p><p class="sa-quote" dir="auto">${esc(c.note)}</p>` +
+        (c.status === "open" ? `<div class="sa-reply"><input id="sa-gr${c.id}" maxlength="500" dir="auto" placeholder="${T("gdReplyPh")}"><div class="sa-iacts">${btn("guard:ap", T("gdAccept"), "main", { id: c.id, v: 1 }, "check")}${btn("guard:ap", T("gdReject"), "", { id: c.id, v: 0 }, "close")}</div></div>` : c.reply ? `<p class="sa-note">↩ ${esc(c.reply)}</p>` : "") + `</div>`;
+    },
+    sumHTML() {
+      const s = this.st.sum; if (!s) return loading(); const cf = s.config || {};
+      return `<div class="sa-kpis sm">${[["gdOpenQ", s.open_queue], ["gdOpenAp", s.open_appeals], ["gdActY", s.active_yellow], ["gdActR", s.active_red]].map(([l, v]) => kpi(SA.t(l), v | 0)).join("")}</div>` +
+        `<div class="sa-table"><div class="sa-tr th"><span>${T("gdDay")}</span>${["gdCat_cheat", "gdCat_abuse", "gdCat_report", "gdSecQ", "gdY1", "gdR", "gdSecAp"].map((k) => `<span>${T(k)}</span>`).join("")}</div>${(s.days || []).map((d) => `<div class="sa-tr"><span>${esc(SA.fmtD(d.day + "T12:00:00"))}</span>${[d.cheat, d.abuse, d.report, d.queued, d.yellow, d.red, d.appeals].map((v) => `<b class="${v ? "" : "z"}" dir="ltr">${v | 0}</b>`).join("")}</div>`).join("")}</div>` +
+        `<section class="sa-sec"><h4 class="sa-h4">${T("gdAuto")}</h4>${seg("guard:auto", cf.auto ? 1 : 0, [[1, SA.t("gdOn")], [0, SA.t("gdOff")]])}<p class="sa-note">${T("gdAutoNote", { c: Math.round((+cf.auto_conf || 0.9) * 100), h: cf.cooldown_h | 0 })}</p></section>`;
+    },
+    tabs() { const s = this.st, sm = s.sum || {}; return seg("guard:sec", s.sec, [["queue", SA.t("gdSecQ"), sm.open_queue], ["ap", SA.t("gdSecAp"), sm.open_appeals], ["live", SA.t("gdSecLive")], ["cards", SA.t("gdSecCards")], ["sum", SA.t("gdSecSum")]]); },
+    body() {
+      const s = this.st; if (s.sec === "sum") return this.sumHTML();
+      const L = s[s.sec]; if (!L) return loading(); if (!L.length) return empty("gdNone");
+      if (s.sec === "ap") return L.map((c) => this.appeal(c)).join("");
+      if (s.sec === "cards") return L.map((c) => (c.color ? SA.player.cardRow(c, c.user_id) : this.ev(c, false))).join("");
+      return (s.sec === "live" ? `<p class="sa-note">${T("aLiveAuto")}</p>` : "") + L.map((x) => this.ev(x, true)).join("");
+    },
+    html() { return this.tabs() + this.body(); },
+    act(a, el) {
+      const d = el.dataset, s = this.st;
+      if (a === "sec") { s.sec = d.v; SA.reload(); return; }
+      if (a === "dismiss") return SA.run(SA.rpc("gd_admin_event", { p_event: +d.id, p_action: "dismiss", p_note: "" }), el);
+      if (a === "confirm") return SA.dialog({ title: SA.t("gdConfirm"), icon: "card", run: (r) => SA.rpc("gd_admin_event", { p_event: +d.id, p_action: "confirm", p_note: r }) });
+      if (a === "ap") { const inp = SA.$("sa-gr" + d.id); return SA.run(SA.rpc("gd_admin_appeal", { p_card: +d.id, p_accept: d.v === "1", p_reply: inp ? inp.value.trim() : "" }), el); }
+      if (a === "auto") return SA.dialog({ title: SA.t("gdAuto") + ": " + SA.t(d.v === "1" ? "gdOn" : "gdOff"), icon: "shield", reason: false, body: `<p>${T("aAutoCardsQ")}</p>`, run: () => SA.rpc("gd_admin_config", { p_patch: { auto: d.v === "1" } }) });
+    },
+  });
+
+  // ======================= Support =======================
+  mod("support", { title: "kaSupport", icon: "chat", st: { f: "open", list: null },
+    async load() { this.st.list = await SA.rpc("adm2_support", { p_status: this.st.f }); },
+    item(r) {
+      return `<div class="sa-item"><div class="sa-ih">${who(r.username, r.player_id, r.user_id)}${pill(SA.t(r.status === "open" ? "kaSup_open" : "kaSup_done"), r.status === "open" ? "amber" : "grey")}<small class="sa-at">${esc(SA.ago(r.at))}</small></div><p dir="auto">${esc(r.text || "")}</p>` +
+        (r.reply ? `<p class="sa-quote" dir="auto">↩ ${esc(r.reply)}</p>` : "") +
+        `<div class="sa-reply"><input id="sa-sr${r.id}" maxlength="1000" dir="auto" placeholder="${T("kaSupPh")}"><div class="sa-iacts">${btn("support:reply", T("kaSupSend"), "main", { id: r.id }, "mail")}${r.status === "open" ? btn("support:done", T("kaSupDone"), "", { id: r.id }, "check") : btn("support:open", T("kaSupReopen"), "", { id: r.id }, "undo")}</div></div></div>`;
+    },
+    html() { const s = this.st; return seg("support:f", s.f, [["open", SA.t("kaSup_open")], ["done", SA.t("kaSup_done")], ["all", SA.t("kaSup_all")]]) + (s.list == null ? loading() : s.list.length ? s.list.map((r) => this.item(r)).join("") : empty("kaSupNone")); },
+    act(a, el) {
+      const d = el.dataset;
+      if (a === "f") { this.st.f = d.v; this.st.list = null; SA.reload(); return; }
+      if (a === "reply") { const inp = SA.$("sa-sr" + d.id), txt = inp ? inp.value.trim() : ""; if (!txt) { if (inp) inp.focus(); return; } return SA.run(SA.rpc("adm2_support_reply", { p_id: +d.id, p_reply: txt, p_done: true }), el); }
+      if (a === "done") return SA.run(SA.rpc("adm2_support_reply", { p_id: +d.id, p_reply: null, p_done: true }), el);
+      if (a === "open") return SA.run(SA.rpc("adm2_support_reply", { p_id: +d.id, p_reply: null, p_done: false }), el);
+    },
+  });
+
+  // ======================= Cleaner (auto-moderation) =======================
+  const kindL = { name: "p13K_name", text: "p13K_text", score: "p13K_score", pattern: "p13K_pattern" };
+  mod("cleaner", { title: "p13TabMod", icon: "broom", st: { sec: "flags", data: null, err: null, top: null, test: null },
+    async load() {
+      const s = this.st;
+      if (s.sec === "errors") { s.err = await SA.rpc("adm3_errors", { p_limit: 150 }); s.top = await SA.rpc("adm3_top_errors", { p_days: 7 }).catch(() => null); }
+      s.data = await SA.rpc("adm3_mod", { p_status: s.sec === "done" ? "all" : "open", p_kind: null, p_limit: 150 });
+      if (s.sec === "done" && s.data) s.data.flags = (s.data.flags || []).filter((f) => f.status !== "open");
+    },
+    flag(f) {
+      const det = f.kind === "score" || f.kind === "pattern" ? `<small class="sa-det" dir="ltr">${esc(JSON.stringify(f.details || {}).slice(0, 220))}</small>` : `<p class="sa-quote" dir="auto">“${esc(f.original || "")}”</p>${f.cleaned ? `<p class="sa-note" dir="auto">→ ${esc(f.cleaned)}</p>` : ""}`;
+      const canUndo = f.status === "open" && (f.kind === "name" || f.kind === "text");
+      const acts = f.status === "open" ? `<div class="sa-iacts">${canUndo ? btn("cleaner:act", T("p13Undo"), "", { id: f.id, act: "undo" }, "undo") : ""}${btn("cleaner:act", T("p13Ban7"), "red", { id: f.id, act: "ban" }, "ban")}${f.kind === "text" ? btn("cleaner:act", T("p13Mute"), "", { id: f.id, act: "mute" }, "mute") : ""}${btn("cleaner:act", T("p13Ok"), "main", { id: f.id, act: "dismiss" }, "check")}${f.uid ? btn("pl:open", T("aOpenPlayer"), "ghost", { id: f.uid }, "users") : ""}</div>`
+        : `<div class="sa-iacts">${pill(SA.t("p13S_" + f.status), "grey")}${btn("cleaner:act", T("p13Reopen"), "", { id: f.id, act: "reopen" }, "undo")}</div>`;
+      return `<div class="sa-item"><div class="sa-ih">${pill(SA.t(kindL[f.kind] || f.kind), "gold")}${f.uid ? who(f.username, f.player_id, f.uid, f.banned ? pill(SA.t("aBanned"), "red") : "") : `<b>${esc(f.username || "?")}</b>`}<small>${esc(f.source || "")}</small><small class="sa-at">${esc(SA.ago(f.at))}</small></div>${det}${acts}</div>`;
+    },
+    errorsHTML() {
+      const s = this.st; let h = "";
+      if (s.top && s.top.length) h += `<h4 class="sa-h4">${T("nxTop")}</h4><div class="sa-mini">${s.top.slice(0, 6).map((x) => `<div><span dir="ltr">${esc(x.msg || x.message || "")}<small>${esc(x.build || "")}</small></span><b dir="ltr">×${nf(x.n)} · ${T("errUsers", { n: nf(x.users) })}</b></div>`).join("")}</div>`;
+      h += s.err === null ? loading() : s.err.length ? `<div class="sa-mini">${s.err.map((x) => `<div><span dir="ltr">${esc(x.msg)}<small>${esc((x.src || "") + (x.line ? ":" + x.line : ""))} · ${esc(x.build || "")}${x.username ? " · " + esc(x.username) + " #" + esc(x.player_id) : ""}</small></span><b dir="ltr">×${x.n | 0} · ${esc(SA.ago(x.last_at))}</b></div>`).join("")}</div>` : empty("p13NoErr");
+      return h;
+    },
+    tabs() { const s = this.st, sm = tv(() => s.data.summary, null); return `<div class="sa-bar">${seg("cleaner:sec", s.sec, [["flags", SA.t("p13Flags"), sm && sm.open], ["done", SA.t("p13Actions")], ["errors", SA.t("p13Errors")]])}${btn("cleaner:scan", T("p13Scan"), "", null, "search")}</div>`; },
+    body() {
+      const s = this.st, d = s.data, sm = d && d.summary;
+      let h = sm ? `<p class="sa-note">${T("p13Sum", { o: nf(sm.open), e: nf(sm.errors_24h), a: nf(sm.actions_7d) })}</p>` : "";
+      if (s.sec === "errors") return h + this.errorsHTML();
+      h += `<form class="sa-inline" data-form="cleaner:test"><input id="sa-ct" maxlength="200" dir="auto" placeholder="${T("p13TestPh")}"><button type="submit" class="sa-btn">${T("p13Test")}</button></form>` +
+        (s.test ? `<p class="sa-note" dir="auto">${s.test.hit ? esc(s.test.hit) + " → " + esc(s.test.masked) : T("p13Clean")}</p>` : "");
+      const fl = d ? d.flags || [] : null;
+      return h + (fl === null ? loading() : fl.length ? fl.map((f) => this.flag(f)).join("") : empty("p13NoFlags"));
+    },
+    html() { return this.tabs() + this.body(); },
+    async act(a, el) {
+      const d = el.dataset, s = this.st;
+      if (a === "sec") { s.sec = d.v; SA.reload(); return; }
+      if (a === "act") {
+        if (d.act === "ban") return SA.dialog({ title: SA.t("p13Ban7"), icon: "ban", reason: false, danger: true, dangerNote: "kaConfirm", body: `<p>${T("p13Ban7")}</p>`, run: () => SA.rpc("adm3_mod_act", { p_id: +d.id, p_action: "ban", p_hours: 168 }) });
+        return SA.run(SA.rpc("adm3_mod_act", { p_id: +d.id, p_action: d.act, p_hours: d.act === "mute" ? 24 : 168 }), el);
+      }
+      if (a === "scan") { el.disabled = true; try { const r = await SA.rpc("adm3_mod_scan"); SA.toast(SA.t("p13Scanned", { n: nf((r && r.renamed) || 0), b: nf((r && r.bios_masked) || 0) })); } catch (e) { SA.toast(SA.errText(e), true); } SA.reload(); return; }
+    },
+    async form(f) { const v = SA.$("sa-ct").value.trim(); if (!v) return; try { this.st.test = await SA.rpc("adm3_mod_test", { p_text: v }); } catch (e) { SA.toast(SA.errText(e), true); } SA.repaint(); },
+  });
+
+  // ======================= Offers =======================
+  mod("offers", { title: "p13TabOff", icon: "tag", st: { list: null },
+    async load() { this.st.list = await SA.rpc("adm3_offers", { p_month: null }); },
+    item(o) {
+      const now = Date.now(), fut = Date.parse(o.starts_at) > now, cur = o.currency === "coins" ? SA.t("aCoins") : o.currency === "gems" ? SA.t("aGems") : "USD";
+      const lo = Math.ceil(o.list_price * 0.65), hi = o.list_price;
+      return `<div class="sa-item sa-offer"><div class="sa-ih"><b dir="auto">${esc(SA.lang === "ar" ? o.title_ar || o.title_en : o.title_en)}</b><small dir="ltr">${esc(String(o.month).slice(0, 7))} · #${o.slot}</small>${pill(SA.t(o.live ? "p13Live" : fut ? "p13Next" : "p13Off"), o.live ? "green" : "grey")}${o.override ? pill("edited", "gold") : ""}<small class="sa-at">${T("p13Sold", { n: o.sold | 0 })}</small></div>` +
+        `<small class="sa-det" dir="ltr">${esc((o.items || []).join(", "))} · list ${esc(o.currency === "usd" ? "$" + (o.list_price / 100).toFixed(2) : nf(o.list_price) + " " + cur)} · -${o.discount_pct | 0}%</small>` +
+        `<div class="sa-iacts">${o.currency === "usd" ? `<span class="sa-note" dir="ltr">$${(o.price / 100).toFixed(2)} (USD fixed)</span>` : `<label class="sa-lab in">${esc(cur)}<input id="sa-op${o.id}" type="number" dir="ltr" min="${lo}" max="${hi}" value="${o.price}"></label><small class="sa-note">${T("aPriceRange", { a: nf(lo), b: nf(hi) })}</small>${btn("offers:price", T("p13Save"), "main", { id: o.id, lo, hi }, "check")}`}` +
+        `${btn("offers:tog", T(o.active ? "p13Hide" : "p13Show"), o.active ? "" : "main", { id: o.id, on: o.active ? 0 : 1 }, o.active ? "close" : "check")}</div></div>`;
+    },
+    html() { const L = this.st.list; return `<p class="sa-note">${T("p13OffNote")}</p>` + (L === null ? loading() : L.length ? L.map((o) => this.item(o)).join("") : empty()) + `<div class="sa-bar end">${btn("offers:regen", T("p13Regen"), "", null, "refresh")}</div>`; },
+    act(a, el) {
+      const d = el.dataset;
+      if (a === "price") { const v = +(SA.$("sa-op" + d.id) || {}).value || 0; if (v < +d.lo || v > +d.hi) { SA.toast(SA.t("aPriceRange", { a: nf(d.lo), b: nf(d.hi) }), true); return; } return SA.run(SA.rpc("adm3_offer_set", { p_id: +d.id, p_price: v, p_active: null }), el); }
+      if (a === "tog") { if (d.on === "0") return SA.dialog({ title: SA.t("p13Hide"), icon: "tag", reason: false, body: `<p>${T("aHideQ")}</p>`, run: () => SA.rpc("adm3_offer_set", { p_id: +d.id, p_price: null, p_active: false }) }); return SA.run(SA.rpc("adm3_offer_set", { p_id: +d.id, p_price: null, p_active: true }), el); }
+      if (a === "regen") { const dt = new Date(), nx = new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth() + 1, 1)).toISOString().slice(0, 10); return SA.dialog({ title: SA.t("p13Regen"), icon: "refresh", reason: false, danger: true, dangerNote: "kaConfirm", body: `<p>${T("aRegenQ")}</p><p class="sa-note" dir="ltr">${nx}</p>`, run: () => SA.rpc("adm3_offers_regen", { p_month: nx }) }); }
+    },
+  });
+
+  // ======================= Matches & buys =======================
+  mod("mx", { title: "srwTMx", icon: "cart", st: { sec: "mx", puf: false, mx: null, pu: null },
+    async load() { const s = this.st; if (s.sec === "pu") s.pu = await SA.rpc("admin_list_purchases", { p_flagged_only: !!s.puf, p_limit: 120 }); else s.mx = await SA.rpc("admin_flagged_matches", { p_limit: 120 }); },
+    match(m) { const a = m.accepted || {}; return `<div class="sa-item"><div class="sa-ih">${who(m.username, m.player_id || "", m.user_id)}${pill(m.mode, "gold")}<small class="sa-at">${esc(SA.ago(m.submitted_at))}</small></div><small class="sa-det" dir="ltr">${esc((m.flags || []).join(", "))} · len ${nf(a.length)} · kills ${nf(a.kills)} · ${nf(a.duration_s)} s</small><div class="sa-iacts">${btn("pl:open", T("aOpenPlayer"), "ghost", { id: m.user_id }, "users")}</div></div>`; },
+    buy(p) { return `<div class="sa-item"><div class="sa-ih"><b dir="ltr">${esc(p.product_id)}</b>${who(p.username, p.player_id, p.user_id)}${p.flagged ? pill(p.flag_reason || "flagged", "amber") : ""}<small class="sa-at"><b dir="ltr">$${((p.amount_cents | 0) / 100).toFixed(2)}</b> · ${esc(SA.ago(p.created_at))}</small></div><small class="sa-det" dir="ltr">${esc(p.provider)} · ${esc(p.environment || "")} · ${esc(p.status)}${p.refunded_cents ? " · refunded $" + (p.refunded_cents / 100).toFixed(2) : ""}</small></div>`; },
+    html() {
+      const s = this.st, L = s.sec === "pu" ? s.pu : s.mx;
+      return `<div class="sa-bar">${seg("mx:sec", s.sec, [["mx", SA.t("srwFlagged")], ["pu", SA.t("srwPurch")]])}${s.sec === "pu" ? btn("mx:puf", T("srwFlagOnly"), s.puf ? "main" : "", null, "flag") : ""}</div>` + (!L ? loading() : L.length ? L.map((x) => (s.sec === "pu" ? this.buy(x) : this.match(x))).join("") : empty("srwNone"));
+    },
+    act(a, el) { const s = this.st; if (a === "sec") { s.sec = el.dataset.v; SA.reload(); } if (a === "puf") { s.puf = !s.puf; s.pu = null; SA.reload(); } },
+  });
+
+  // ======================= Mode rewards log =======================
+  mod("rewards", { title: "srwTRew", icon: "gift", st: { r: null },
+    async load() { this.st.r = await SA.rpc("adm4_rewards", { p_limit: 150 }); },
+    html() {
+      const r = this.st.r; if (!r) return loading(); const t = r.today || {};
+      return `<div class="sa-kpis sm">${[["srwStage", "settled"], ["aCoins", "coins"], ["aGems", "gems"], ["kaPlayersN", "players"]].map(([l, k], i) => kpi(i === 0 ? (SA.lang === "ar" ? "تسويات اليوم" : "Settled today") : SA.t(l), t[k] | 0)).join("")}${kpi(SA.lang === "ar" ? "مرفوضة" : "Refused", t.refused | 0, { cls: t.refused ? "warn" : "" })}</div>` +
+        ((r.recent || []).length ? `<div class="sa-mini">${r.recent.map((x) => { const res = x.result || {}, parts = []; for (const k of ["story", "word", "myst", "lm"]) if (res[k]) parts.push(k + (res[k].refused ? " " + res[k].refused : k === "story" ? " " + ((res[k].stage | 0) + 1) + " " + "★".repeat(res[k].stars | 0) : k === "word" ? " " + (res[k].words | 0) + "/" + (res[k].reported | 0) : ""));
+          return `<div class="sa-clk" data-a="pl:open" data-id="${esc(x.user_id)}"><span><bdi>${esc(x.username || "?")}</bdi> <small dir="ltr">#${esc(x.player_id)} · ${esc(parts.join(" · "))}</small></span><b dir="ltr">${x.coins ? "+" + nf(x.coins) + " c" : ""}${x.gems ? " +" + nf(x.gems) + " g" : ""} · ${esc(SA.ago(x.at))}</b></div>`; }).join("")}</div>` : empty("srwNone"));
+    },
+  });
+
+  // ======================= Messages (official inbox) =======================
+  const L6 = ["ar", "en", "tr", "fr", "es", "hi"];
+  const TPLS = [["update", "update", "event", "events"], ["event", "event", "event", "events"], ["rankup", "rankup", "league", "league"], ["warning", "notice", "", ""], ["ban", "ban", "", ""], ["announce", "announce", "", ""], ["maint", "notice", "", ""], ["welcome", "announce", "arena", "play"]];
+  const KINDS = ["announce", "update", "event", "rankup", "card", "ban", "kick", "notice"];
+  const CTAS = ["play", "events", "story", "arenas", "league", "missions", "friends", "profile", "leaderboard", "medals", "settings"];
+  const AUTOK = ["rankup", "ban", "mute", "unban", "card", "appeal", "kick", "id_grant", "gift", "rename", "photo", "card_rm", "restore", "league", "support", "role", "other"];
+  const MONEY = /[$€£¥₹₺₽]|\b(usd|eur|gbp|dollars?|euros?)\b|دولار|يورو|ريال|دينار|https?:\/\/|www\./i;
+  const MS = mod("msgs", { title: "ibxTab", icon: "mail", st: { sec: "new", tpl: "", kind: "announce", aud: "all", ids: "", lv0: 1, lv1: 400, lg: [], cc: "", stf: "", lang: "en", t: {}, b: {}, banner: "", cta: "", when: "now", at: "", exp: 30, n: null, hist: null, hauto: false, auto: null },
+    async load() {
+      const s = this.st;
+      if (s.sec === "hist") s.hist = await SA.rpc("adm_ibx_hist", { p_limit: 80, p_auto: !!s.hauto });
+      else if (s.sec === "auto") s.auto = await SA.rpc("adm_ibx_auto", { p_patch: null });
+      else if (s.n == null) this.recount();
+    },
+    aud() {
+      const s = this.st;
+      if (s.aud === "ids") return { k: "ids", ids: (s.ids.match(/\d{1,9}/g) || []).slice(0, 200).map(Number) };
+      if (s.aud === "grp") { const o = { k: "grp", lv: [s.lv0 | 0 || 1, s.lv1 | 0 || 100] }; if (s.lg.length) o.lg = s.lg; const cc = s.cc.toUpperCase().match(/[A-Z]{2}/g) || []; if (cc.length) o.cc = cc; if (s.stf) o.st = s.stf; return o; }
+      return { k: "all" };
+    },
+    recount() { clearTimeout(this._rc); this._rc = setTimeout(async () => { const a = this.aud(); if (a.k === "ids" && !a.ids.length) { this.st.n = 0; } else { try { const r = await SA.rpc("adm_ibx_count", { p_aud: a }); this.st.n = r.n | 0; } catch (_) { this.st.n = null; } } const e = SA.$("sa-mcn"); if (e) e.textContent = this.st.n == null ? "—" : SA.t("ibxN", { n: nf(this.st.n) }); const sb = SA.$("sa-msend"); if (sb) sb.querySelector("span").textContent = SA.t("ibxSend", { n: nf(this.st.n || 0) }); }, 300); },
+    filled(l) { return !!((this.st.t[l] || "").trim() && (this.st.b[l] || "").trim()); },
+    composer() {
+      const s = this.st;
+      const sel = (id, opts, cur) => `<select id="${id}" data-in="msgs">${opts.map(([v, l]) => `<option value="${esc(v)}"${String(cur) === String(v) ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
+      return `<div class="sa-comp"><div class="sa-ccol">` +
+        `<h4 class="sa-h4">${T("ibxTpl")}</h4><div class="sa-chips wrap">${TPLS.map(([id]) => `<button type="button" class="${s.tpl === id ? "on" : ""}" data-a="msgs:tpl" data-v="${id}">${T("ibxT_" + id)}</button>`).join("")}</div>` +
+        `<h4 class="sa-h4">${T("ibxType")}</h4>${sel("sa-mk", KINDS.map((k) => [k, SA.t("ibxK_" + k)]), s.kind)}` +
+        `<h4 class="sa-h4">${T("ibxTo")}</h4>${seg("msgs:aud", s.aud, [["all", SA.t("ibxToAll")], ["ids", SA.t("ibxToId")], ["grp", SA.t("ibxToGrp")]])}` +
+        (s.aud === "ids" ? `<input id="sa-mids" data-in="msgs" dir="ltr" inputmode="numeric" maxlength="2000" placeholder="${T("ibxIdsPh")}" value="${esc(s.ids)}">` : "") +
+        (s.aud === "grp" ? `<p class="sa-lab">${T("ibxLg")}</p><div class="sa-chips wrap">${[0, 1, 2, 3, 4, 5, 6].map((t) => `<button type="button" class="${s.lg.includes(t) ? "on" : ""}" data-a="msgs:lg" data-v="${t}">${T("b13dT" + t)}</button>`).join("")}</div>` +
+          `<div class="sa-grid2"><label class="sa-lab">${T("ibxLv")}<span class="sa-rng"><input id="sa-mlv0" data-in="msgs" type="number" min="1" max="400" dir="ltr" value="${s.lv0}"> – <input id="sa-mlv1" data-in="msgs" type="number" min="1" max="400" dir="ltr" value="${s.lv1}"></span></label><label class="sa-lab">${T("ibxCc")}<input id="sa-mcc" data-in="msgs" dir="ltr" maxlength="60" placeholder="IQ, US, SA" value="${esc(s.cc)}"></label></div>` +
+          `<label class="sa-lab">${T("ibxSt")}${sel("sa-mst", ["", "active7", "new7", "carded", "muted", "banned"].map((v) => [v, SA.t("ibxSt_" + v)]), s.stf)}</label>` : "") +
+        `<p class="sa-count">${IC("users")}<span id="sa-mcn">${s.n == null ? "…" : T("ibxN", { n: nf(s.n) })}</span></p></div>` +
+        `<div class="sa-ccol"><div class="sa-ltabs">${L6.map((l) => `<button type="button" class="${s.lang === l ? "on" : ""}${this.filled(l) ? " ok" : ""}" data-a="msgs:lang" data-v="${l}">${l.toUpperCase()}</button>`).join("")}</div>` +
+        `<input id="sa-mt" data-in="msgs" maxlength="80" dir="${s.lang === "ar" ? "rtl" : "auto"}" lang="${s.lang}" placeholder="${T("ibxTitle")} · ${s.lang.toUpperCase()}" value="${esc(s.t[s.lang] || "")}">` +
+        `<textarea id="sa-mb" data-in="msgs" rows="5" maxlength="1500" dir="${s.lang === "ar" ? "rtl" : "auto"}" lang="${s.lang}" placeholder="${T("ibxBody")} · ${s.lang.toUpperCase()}">${esc(s.b[s.lang] || "")}</textarea><p class="sa-note">${T("ibxLangH")}</p>` +
+        `<div class="sa-grid2"><label class="sa-lab">${T("ibxBanner")}${sel("sa-mbn", ["", "event", "league", "missions", "story", "arena"].map((v) => [v, SA.t("ibxBn_" + v)]), s.banner)}</label><label class="sa-lab">${T("ibxCta")}${sel("sa-mcta", [["", SA.t("ibxCtaNone")]].concat(CTAS.map((k) => [k, SA.t("ibxC_" + k)])), s.cta)}</label>` +
+        `<label class="sa-lab">${T("ibxWhen")}${seg("msgs:when", s.when, [["now", SA.t("ibxNow")], ["later", SA.t("ibxLater")]])}${s.when === "later" ? `<input id="sa-mat" data-in="msgs" type="datetime-local" dir="ltr" value="${esc(s.at)}">` : ""}</label><label class="sa-lab">${T("ibxExpIn")}${sel("sa-mexp", [1, 3, 7, 14, 30, 60, 90].map((d) => [d, SA.t("ibxDays", { n: nf(d) })]), s.exp)}</label></div>` +
+        `<p class="sa-note">${T("ibxOneWay")}</p><p class="sa-err" id="sa-merr"></p><button type="button" class="sa-btn main wide" id="sa-msend" data-a="msgs:send">${IC("mail")}<span>${T("ibxSend", { n: nf(s.n || 0) })}</span></button></div></div>`;
+    },
+    histHTML() {
+      const s = this.st, L = s.hist;
+      const row = (m) => { const a = m.aud || {}, as = a.k === "all" ? SA.t("ibxToAll") : a.k === "ids" ? (a.ids || []).map((i) => "#" + i).join(", ") : a.k === "uid" ? `${a.name || ""} #${a.pid || ""}` : [a.lv ? SA.t("ibxLv") + " " + a.lv[0] + "–" + a.lv[1] : "", a.cc ? a.cc.join(",") : "", a.st ? SA.t("ibxSt_" + a.st) : ""].filter(Boolean).join(" · ");
+        const p = m.n ? Math.round((100 * (m.reads | 0)) / m.n) : 0, can = (m.st === "sent" || m.st === "scheduled") && !m.auto, title = tv(() => m.title[SA.lang] || m.title.en || Object.values(m.title)[0], "");
+        return `<div class="sa-item"><div class="sa-ih">${pill(SA.t("ibxK_" + m.kind), "gold")}${pill(SA.t("ibxSt_" + m.st), m.st === "scheduled" ? "amber" : m.st === "sent" ? "green" : "grey")}<b dir="auto">${esc(title)}</b><small class="sa-at">${esc(SA.fmtD(m.sent_at || m.send_at, 1))}</small></div><small class="sa-note">${esc(as)} · ${T("ibxStats", { n: nf(m.n), r: nf(m.reads), p: nf(p) })}</small>` +
+          (can ? `<div class="sa-iacts">${btn("msgs:cancel", T(m.st === "scheduled" ? "ibxCancelS" : "ibxWithdraw"), "red ghost", { id: m.id }, "undo")}</div>` : "") + `</div>`; };
+      return seg("msgs:hauto", s.hauto ? 1 : 0, [[0, SA.t("ibxManual")], [1, SA.t("ibxAutoL")]]) + (L === null ? loading() : L.length ? L.map(row).join("") : empty("ibxNone"));
+    },
+    autoHTML() { const a = this.st.auto; if (!a) return loading(); return `<p class="sa-note">${T("ibxAutoH")}</p><div class="sa-switches">${AUTOK.map((k) => `<button type="button" class="sa-sw${a[k] !== false ? " on" : ""}" data-a="msgs:auto" data-k="${k}" role="switch" aria-checked="${a[k] !== false}"><span>${T("ibxAu_" + k)}</span><i></i></button>`).join("")}</div>`; },
+    tabs() { return seg("msgs:sec", this.st.sec, [["new", SA.t("ibxS_new")], ["hist", SA.t("ibxS_hist")], ["auto", SA.t("ibxS_auto")]]); },
+    body() { const s = this.st; return s.sec === "hist" ? this.histHTML() : s.sec === "auto" ? this.autoHTML() : this.composer(); },
+    html() { return this.tabs() + this.body(); },
+    input(el) {
+      const s = this.st, id = el.id, v = el.value;
+      if (id === "sa-mt") s.t[s.lang] = v; else if (id === "sa-mb") s.b[s.lang] = v; else if (id === "sa-mids") { s.ids = v; this.recount(); }
+      else if (id === "sa-mlv0" || id === "sa-mlv1") { s[id === "sa-mlv0" ? "lv0" : "lv1"] = Math.max(1, Math.min(400, +v || 1)); this.recount(); }
+      else if (id === "sa-mcc") { s.cc = v; this.recount(); } else if (id === "sa-mst") { s.stf = v; this.recount(); } else if (id === "sa-mk") s.kind = v;
+      else if (id === "sa-mbn") s.banner = v; else if (id === "sa-mcta") s.cta = v; else if (id === "sa-mexp") s.exp = +v || 30; else if (id === "sa-mat") s.at = v;
+      const tab = document.querySelector(`.sa-ltabs [data-v="${s.lang}"]`); if (tab) tab.classList.toggle("ok", this.filled(s.lang));
+    },
+    async act(a, el) {
+      const s = this.st, d = el.dataset;
+      if (a === "sec") { s.sec = d.v; if (d.v === "hist") s.hist = null; if (d.v === "auto") s.auto = null; SA.reload(); return; }
+      if (a === "hauto") { s.hauto = d.v === "1"; s.hist = null; SA.reload(); return; }
+      if (a === "aud") { s.aud = d.v; s.n = null; SA.repaint(); this.recount(); return; }
+      if (a === "lg") { const t = +d.v; s.lg = s.lg.includes(t) ? s.lg.filter((x) => x !== t) : s.lg.concat([t]); SA.repaint(); this.recount(); return; }
+      if (a === "lang") { s.lang = d.v; SA.repaint(); return; }
+      if (a === "when") { s.when = d.v; if (d.v === "later" && !s.at) { const dt = new Date(Date.now() + 3600e3); dt.setMinutes(0, 0, 0); s.at = new Date(dt.getTime() - dt.getTimezoneOffset() * 6e4).toISOString().slice(0, 16); } SA.repaint(); return; }
+      if (a === "tpl") { const r = TPLS.find((x) => x[0] === d.v); if (!r) return; s.tpl = d.v; s.kind = r[1]; s.banner = r[2]; s.cta = r[3]; s.t = {}; s.b = {}; const G6 = SA.G6 && SA.G6["ibxTp_" + d.v + "T"] && SA.G6["ibxTp_" + d.v + "T"].length >= 6 ? SA.G6 : null; // in the game: all 6 languages; preview: AR + EN only
+        L6.forEach((l, i) => { const T0 = (G6 || I)["ibxTp_" + d.v + "T"], B0 = (G6 || I)["ibxTp_" + d.v + "B"]; if (!G6 && i > 1) return; if (T0 && T0[i]) s.t[l] = T0[i]; if (B0 && B0[i]) s.b[l] = B0[i]; }); SA.toast(SA.t("ibxTplLoaded")); SA.repaint(); return; }
+      if (a === "auto") { const k = d.k, v = !(s.auto && s.auto[k] !== false); el.disabled = true; try { s.auto = await SA.rpc("adm_ibx_auto", { p_patch: { [k]: v } }); SA.toast(SA.t("kaDone")); } catch (e) { SA.toast(SA.errText(e), true); } SA.repaint(); return; }
+      if (a === "cancel") return SA.dialog({ title: SA.t("ibxWithdraw"), icon: "undo", reason: false, danger: true, dangerNote: "kaConfirm", run: () => SA.rpc("adm_ibx_cancel", { p_id: +d.id }) });
+      if (a === "send") {
+        const er = SA.$("sa-merr"); er.textContent = "";
+        if (!L6.some((l) => this.filled(l))) { er.textContent = SA.t("ibxNeed"); return; }
+        if (L6.some((l) => MONEY.test((s.t[l] || "") + " " + (s.b[l] || "")))) { er.textContent = SA.t("ibxMoney"); return; }
+        const t = {}, bo = {}; L6.forEach((l) => { if (this.filled(l)) { t[l] = s.t[l].trim(); bo[l] = s.b[l].trim(); } });
+        const p = { kind: s.kind, title: t, body: bo, banner: s.banner, cta: s.cta, aud: this.aud(), exp_h: (s.exp | 0) * 24, tpl: s.tpl || "" };
+        if (s.when === "later" && s.at) p.send_at = new Date(s.at).toISOString();
+        return SA.dialog({ title: SA.t("ibxSend", { n: nf(s.n || 0) }), icon: "mail", reason: false, danger: true, dangerNote: "ibxOneWay", body: `<p dir="auto"><b>${esc(t[SA.lang] || t.en || Object.values(t)[0])}</b></p><p class="sa-note">${esc(Object.keys(t).map((x) => x.toUpperCase()).join(" · "))} · ${p.send_at ? esc(SA.fmtD(p.send_at, 1)) : T("ibxNow")}</p>`,
+          run: async () => { const r = await SA.rpc("adm_ibx_send", { p }); SA.toast(r && r.scheduled ? SA.t("ibxSched") : SA.t("ibxSent")); Object.assign(s, { tpl: "", t: {}, b: {}, banner: "", cta: "", when: "now", at: "", sec: "hist", hist: null, hauto: false }); } });
+      }
+    },
+  });
+
+  // ======================= Announcement =======================
+  mod("ann", { title: "kaAnn", icon: "horn", st: { a: undefined },
+    async load() { this.st.a = await SA.rpc("get_announcement"); },
+    html() {
+      const a = this.st.a; if (a === undefined) return loading();
+      return `<section class="sa-sec">${a && a.message ? `<p class="sa-cur">${IC("horn")}<span dir="auto">${esc(a.message)}</span></p>` : `<p class="sa-note">${T("aNone")}</p>`}<label class="sa-lab">${T("kaAnnPh")}<textarea id="sa-at" rows="2" maxlength="240" dir="auto">${esc((a && a.message) || "")}</textarea></label>` +
+        `<div class="sa-bar"><label class="sa-lab in">${T("kaHours")}<input id="sa-ah" type="number" min="1" max="720" value="24" dir="ltr"></label>${btn("ann:on", T("kaAnnOn"), "main", null, "horn")}${btn("ann:off", T("kaAnnOff"), "", null, "close")}</div></section>`;
+    },
+    act(a) {
+      const msg = SA.$("sa-at").value, hrs = +SA.$("sa-ah").value || 24;
+      if (a === "on") { if (msg.trim().length < 3) { SA.toast(SA.t("kaAnnPh"), true); return; } return SA.dialog({ title: SA.t("kaAnnOn"), icon: "horn", reason: false, body: `<p class="sa-cur" dir="auto">${esc(msg)}</p><p class="sa-note">${T("kaHours")}: ${hrs}</p>`, run: () => SA.rpc("adm2_announce", { p_message: msg, p_hours: hrs, p_on: true }) }); }
+      if (a === "off") return SA.dialog({ title: SA.t("kaAnnOff"), icon: "horn", reason: false, body: `<p>${T("aAnnOffQ")}</p>`, run: () => SA.rpc("adm2_announce", { p_message: msg, p_hours: hrs, p_on: false }) });
+    },
+  });
+
+  // ======================= Game settings =======================
+  const KEYS = ["story_first_base", "story_first_step", "word_coins", "word_daily_coins", "myst_coins", "myst_min_seconds", "lm_coins", "lm_map_gems"];
+  mod("game", { title: "srwTGame", icon: "gear", st: { cfg: null, rw: null },
+    async load() { const [c, r] = await Promise.all([SA.rpc("get_public_config"), SA.rpc("adm4_rewards", { p_limit: 1 })]); this.st.cfg = c; this.st.rw = r; },
+    maintHTML() { const c = this.st.cfg || {}, mt = c.maintenance || {}; return `<section class="sa-sec${mt.on ? " alert" : ""}"><h4 class="sa-h4">${IC("lock")}${T("srwMaint")} ${pill(SA.t(mt.on ? "srwOn" : "srwOff"), mt.on ? "red" : "green")}</h4><input id="sa-mm" maxlength="120" dir="auto" placeholder="${T("srwMaintPh")}" value="${esc(mt.message || "")}"><div class="sa-bar">${seg("game:mt", mt.on ? 1 : 0, [[1, SA.t("srwOn")], [0, SA.t("srwOff")]])}</div></section>`; },
+    multHTML() { const c = this.st.cfg || {}; return `<section class="sa-sec"><h4 class="sa-h4">${IC("star")}${T("srwXpM")}</h4>${seg("game:xm", +c.xp_multiplier || 1, [[1, "×1"], [1.5, "×1.5"], [2, "×2"], [3, "×3"]])}<h4 class="sa-h4">${IC("coin")}${T("srwCoM")}</h4>${seg("game:cm", +c.coin_multiplier || 1, [[1, "×1"], [1.5, "×1.5"], [2, "×2"], [3, "×3"]])}</section>`; },
+    rwHTML() { const rc = tv(() => this.st.rw.config, {}) || {}; return `<section class="sa-sec"><h4 class="sa-h4">${IC("gift")}${T("srwRwCfg")}</h4><div class="sa-bar">${seg("game:en", rc.enabled === false ? 0 : 1, [[1, SA.t("srwOn")], [0, SA.t("srwOff")]])}<small class="sa-note">${T("srwEnabled")}</small></div><div class="sa-grid2 keys">${KEYS.map((k) => `<label class="sa-lab">${T("srwK_" + k)}<input id="sa-k_${k}" type="number" min="0" dir="ltr" value="${esc(rc[k] == null ? "" : rc[k])}"></label>`).join("")}</div><div class="sa-bar end">${btn("game:save", T("srwSave"), "main", null, "check")}</div></section>`; },
+    html() { if (!this.st.cfg) return loading(); return `<div class="sa-cols">${this.maintHTML()}${this.multHTML()}</div>${this.rwHTML()}`; },
+    act(a, el) {
+      const v = el.dataset.v;
+      if (a === "mt") { const on = v === "1", msg = (SA.$("sa-mm").value || "").slice(0, 120); return SA.dialog({ title: SA.t("srwMaint") + ": " + SA.t(on ? "srwOn" : "srwOff"), icon: "lock", reason: false, danger: on, dangerNote: "kaConfirm", body: on ? `<p>${T("aMaintOnQ")}</p><p class="sa-cur" dir="auto">${esc(msg)}</p>` : "", run: () => SA.rpc("admin_set_config", { p_key: "maintenance", p_value: { on, message: msg } }) }); }
+      if (a === "xm" || a === "cm") { const k = a === "xm" ? "xp_multiplier" : "coin_multiplier"; return SA.dialog({ title: SA.t(a === "xm" ? "srwXpM" : "srwCoM"), icon: a === "xm" ? "star" : "coin", reason: false, body: `<p>${T("aMultQ", { k: SA.t(a === "xm" ? "srwXpM" : "srwCoM"), v: "×" + v })}</p>`, run: () => SA.rpc("admin_set_config", { p_key: k, p_value: +v }) }); }
+      if (a === "en") return SA.dialog({ title: SA.t("srwEnabled") + ": " + SA.t(v === "1" ? "srwOn" : "srwOff"), icon: "gift", reason: false, run: () => SA.rpc("adm4_rewards_cfg", { p_patch: { enabled: v === "1" } }) });
+      if (a === "save") { const rc = tv(() => this.st.rw.config, {}) || {}, patch = {}; for (const k of KEYS) { const e = SA.$("sa-k_" + k); if (!e || e.value === "") continue; const n = +e.value; if (Number.isFinite(n) && n !== +rc[k]) patch[k] = n; } if (!Object.keys(patch).length) { SA.toast(SA.t("kaDone")); return; }
+        return SA.dialog({ title: SA.t("srwRwCfg"), icon: "gift", reason: false, body: `<div class="sa-mini">${Object.entries(patch).map(([k, n]) => `<div><span>${T("srwK_" + k)}</span><b dir="ltr">${nf(rc[k])} → ${nf(n)}</b></div>`).join("")}</div>`, run: () => SA.rpc("adm4_rewards_cfg", { p_patch: patch }) }); }
+    },
+  });
+
+  // ======================= Ops =======================
+  mod("ops", { title: "opsTab", icon: "pulse", st: { d: null },
+    async load() { this.st.d = await SA.rpc("ops_status"); },
+    html() {
+      const d = this.st.d; if (!d) return loading();
+      const q = d.quota || {}, ch = d.checks || {}, lv = d.level || "?";
+      const bar = (p) => `<div class="sa-meter"><i style="width:${Math.min(100, Math.max(1, p))}%" class="${p > 95 ? "bad" : p > 80 ? "warn" : ""}"></i></div>`;
+      const row = (n, c) => `<div><span><i class="sa-dot ${c && c.ok ? "ok" : "bad"}"></i>${esc(n)}<small dir="ltr">${c ? esc((c.status || "-") + " · " + (c.ms == null ? "-" : c.ms + " ms") + " · " + SA.ago(c.at)) : "—"}</small></span><b dir="ltr">${c && c.uptime_24h != null ? esc(c.uptime_24h + "% / 24h") : "—"}</b></div>`;
+      const mauPct = (100 * (q.mau_30d || 0)) / (q.mau_limit || 50000);
+      return `<section class="sa-sec"><h4 class="sa-h4"><i class="sa-dot ${lv === "ok" ? "ok" : lv === "warn" ? "warn" : "bad"}"></i><span dir="ltr">${esc(lv.toUpperCase())}</span><small dir="ltr">${esc((d.problems || []).join(", ") || "no problems")}</small></h4><div class="sa-mini">${row("billke.com", ch.billke)}${row("Realtime worker", ch.worker)}</div><small class="sa-note" dir="ltr">checked every 5 min · last ${esc(SA.ago(d.tick_at))}</small></section>` +
+        `<div class="sa-cols"><section class="sa-sec"><h4 class="sa-h4">Supabase</h4><p dir="ltr" class="sa-note">Database ${((q.db_bytes || 0) / 1048576).toFixed(1)} MB / ${((q.db_limit_bytes || 524288000) / 1048576).toFixed(0)} MB (${esc(q.db_pct)}%)</p>${bar(+q.db_pct || 0)}<p dir="ltr" class="sa-note">Active users 30 d ${nf(q.mau_30d)} / ${nf(q.mau_limit)} · accounts ${nf(q.users)}</p>${bar(mauPct)}<p dir="ltr" class="sa-note">Realtime subscriptions ${esc(q.realtime_pg_subscriptions)} / ${esc(q.realtime_concurrent_limit)}</p>` +
+        ((d.cron_failed_24h || []).length ? `<p dir="ltr">${pill("Failed jobs 24 h: " + d.cron_failed_24h.join(", "), "red")}</p>` : `<p class="sa-note" dir="ltr">Scheduled jobs: no failures in 24 h</p>`) + `</section>` +
+        `<section class="sa-sec"><h4 class="sa-h4">Recent failures</h4><div class="sa-mini">${(d.history || []).map((h) => `<div><span dir="ltr"><i class="sa-dot bad"></i>${esc(h.target)}<small>${esc(h.detail || h.status || "")}</small></span><b dir="ltr">${esc(SA.fmtD(h.at, 1))}</b></div>`).join("") || "—"}</div>${(d.backups || {}).where ? `<p class="sa-note" dir="ltr">Backups: ${esc(d.backups.where)}</p>` : ""}</section></div>`;
+    },
+  });
+
+  // ======================= Auto-fixes & errors =======================
+  mod("fixes", { title: "nxTab", icon: "wrench", st: { d: null, top: null, days: 7, nosql: false },
+    async load() { const s = this.st; try { s.d = await SA.rpc("adm3_fix_summary", { p_days: s.days }); s.nosql = false; } catch (e) { if (/does not exist|PGRST202|404/i.test(String(e && (e.message || e.code)))) { s.nosql = true; s.d = null; } else throw e; } s.top = await SA.rpc("adm3_top_errors", { p_days: s.days }).catch(() => null); },
+    html() {
+      const s = this.st, d = s.d; if (s.nosql) return `<p class="sa-note">${T("nxNoSql")}</p>`; if (!d) return loading();
+      const days = d.daily || [], mx = Math.max(1, ...days.map((x) => Math.max(x.fixes | 0, x.errors | 0)));
+      const bt = (d.by_type || []).concat((d.err_kinds || []).map((x) => ({ type: "err:" + x.kind, n: x.n, users: x.users }))), bm = Math.max(1, ...bt.map((x) => x.n | 0));
+      return `<div class="sa-kpis sm">${kpi(SA.t("nxFixes"), d.fixes_total | 0, { icon: "wrench" })}${kpi(SA.t("nxErrs"), d.errors_total | 0, { icon: "flag" })}${kpi(SA.t("nxUsers"), d.users | 0, { icon: "users" })}</div>` +
+        `<div class="sa-cols"><section class="sa-sec"><h4 class="sa-h4">${T("nxTitle", { n: s.days })}</h4><div class="sa-bars" dir="ltr">${days.map((x) => `<span title="${esc(x.day)}"><i class="f" style="height:${Math.round((100 * (x.fixes | 0)) / mx)}%"></i><i class="e" style="height:${Math.round((100 * (x.errors | 0)) / mx)}%"></i><small>${esc(String(x.day).slice(8, 10))}</small></span>`).join("")}</div><p class="sa-note"><i class="sa-key f"></i>${T("nxLegF")} <i class="sa-key e"></i>${T("nxLegE")}</p></section>` +
+        `<section class="sa-sec"><h4 class="sa-h4">${T("nxByType")}</h4><div class="sa-mini">${bt.slice(0, 8).map((x) => `<div><span dir="ltr">${esc(String(x.type))}<i class="sa-hbar${String(x.type).startsWith("err:") ? " e" : ""}" style="width:${Math.max(4, Math.round((100 * (x.n | 0)) / bm))}%"></i></span><b dir="ltr">×${nf(x.n)}</b></div>`).join("") || T("nxNone")}</div></section></div>` +
+        (s.top && s.top.length ? `<section class="sa-sec"><h4 class="sa-h4">${T("nxTop")}</h4><div class="sa-mini">${s.top.slice(0, 8).map((x) => `<div><span dir="ltr">${esc(x.msg || "")}<small>${esc(x.build || "")}</small></span><b dir="ltr">×${nf(x.n)} · ${T("errUsers", { n: nf(x.users) })}</b></div>`).join("")}</div></section>` : "");
+    },
+  });
+
+  // ======================= Audit log =======================
+  mod("log", { title: "kaLog", icon: "scroll", st: { list: null, q: "", act: "" },
+    async load() { this.st.list = await SA.rpc("adm2_log", { p_limit: 150 }); },
+    html() {
+      const s = this.st, L = s.list; if (L === null) return loading();
+      const acts = [...new Set(L.map((l) => l.action))].sort(), q = s.q.toLowerCase();
+      const F = L.filter((l) => (!s.act || l.action === s.act) && (!q || (l.action + " " + (l.target || "") + " " + JSON.stringify(l.details || {})).toLowerCase().includes(q)));
+      return `<div class="sa-bar"><input id="sa-lq" data-in="log" type="search" dir="auto" placeholder="${T("aFilter")}" value="${esc(s.q)}"><select id="sa-la" data-in="log"><option value="">${T("aAllActions")}</option>${acts.map((a) => `<option${a === s.act ? " selected" : ""}>${esc(a)}</option>`).join("")}</select><small class="sa-note">${nf(F.length)}/${nf(L.length)}</small></div>` +
+        `<div class="sa-mini log">${F.map((l) => `<div><span><b dir="ltr">${esc(l.action)}</b> <small dir="auto">${esc(l.admin || "")} → ${esc(l.target || "—")}</small><small dir="ltr" class="sa-det">${esc(JSON.stringify(l.details || {}).slice(0, 160))}</small></span><b dir="ltr">${esc(SA.fmtD(l.at, 1))}</b></div>`).join("") || T("aNone")}</div>`;
+    },
+    input(el) { if (el.id === "sa-lq") this.st.q = el.value; else this.st.act = el.value; const pos = el.id === "sa-lq" ? el.selectionStart : null; SA.repaint(); if (pos != null) { const n = SA.$("sa-lq"); if (n) { n.focus(); n.setSelectionRange(pos, pos); } } },
+  });
+
+  // ---------------------------------------------------------------- queues (task-inbox view, also used for counts)
+  // each source: id, label, icon, module to load, items() -> [{key, title, sub, at, html}]
+  SA.Q = [
+    { id: "reports", l: "aQ_reports", icon: "flag", m: "reports", items: () => (SA.M.reports.st.list || []).map((r) => ({ key: "r" + r.id, title: I["kaR_" + r.reason] ? SA.t("kaR_" + r.reason) : r.reason, sub: (r.reporter || "?") + " → " + (r.reported || "?"), at: r.at, html: () => SA.M.reports.item(r), uid: r.reported_id })) },
+    { id: "support", l: "aQ_support", icon: "chat", m: "support", prep: () => { SA.M.support.st.f = "open"; }, items: () => (SA.M.support.st.list || []).filter((r) => r.status === "open").map((r) => ({ key: "s" + r.id, title: r.username || "?", sub: r.text, at: r.at, html: () => SA.M.support.item(r), uid: r.user_id })) },
+    { id: "guard", l: "aQ_guard", icon: "shield", m: "guard", prep: () => { SA.M.guard.st.sec = "queue"; }, items: () => (SA.M.guard.st.queue || []).map((x) => ({ key: "g" + x.id, title: ruleT(x.rule), sub: (x.username || "?") + " · " + pct(x.conf), at: x.at, html: () => SA.M.guard.ev(x, true), uid: x.user_id })) },
+    { id: "appeals", l: "aQ_appeals", icon: "card", m: "guard", prep: () => { SA.M.guard.st.sec = "ap"; }, items: () => (SA.M.guard.st.ap || []).filter((c) => c.status === "open").map((c) => ({ key: "a" + c.id, title: c.username || "?", sub: c.note, at: c.at, html: () => SA.M.guard.appeal(c), uid: c.user_id })) },
+    { id: "cleaner", l: "aQ_cleaner", icon: "broom", m: "cleaner", prep: () => { SA.M.cleaner.st.sec = "flags"; }, items: () => tv(() => SA.M.cleaner.st.data.flags, []).filter((f) => f.status === "open").map((f) => ({ key: "c" + f.id, title: f.original || f.kind, sub: (f.username || "?") + " · " + SA.t(kindL[f.kind] || f.kind), at: f.at, html: () => SA.M.cleaner.flag(f), uid: f.uid })) },
+    { id: "matches", l: "aQ_matches", icon: "trophy", m: "mx", prep: () => { SA.M.mx.st.sec = "mx"; }, items: () => (SA.M.mx.st.mx || []).map((m) => ({ key: "m" + m.id, title: (m.flags || []).join(", "), sub: (m.username || "?") + " · " + m.mode, at: m.submitted_at, html: () => SA.M.mx.match(m), uid: m.user_id })) },
+    { id: "buys", l: "aQ_buys", icon: "cart", m: "mx", prep: () => { SA.M.mx.st.sec = "pu"; SA.M.mx.st.puf = true; }, items: () => (SA.M.mx.st.pu || []).filter((p) => p.flagged).map((p) => ({ key: "p" + p.id, title: p.product_id, sub: (p.username || "?") + " · $" + ((p.amount_cents | 0) / 100).toFixed(2), at: p.created_at, html: () => SA.M.mx.buy(p), uid: p.user_id })) },
+  ];
+  // load one queue source (sets module sub-state then loads)
+  SA.loadQ = async (q) => { if (q.prep) q.prep(); await SA.load(q.m); return q.items(); };
+
+  // ---------------------------------------------------------------- command list (palette / search)
+  SA.commands = () => {
+    const C = [];
+    SA.GROUPS.forEach(([g, gl, gi, mods]) => mods.forEach((m) => C.push({ k: "sec", id: m, label: SA.title(m), group: SA.t(gl), icon: SA.M[m].icon })));
+    C.push({ k: "do", id: "game:maint", label: SA.t("srwMaint") + " · " + SA.t("srwOn") + "/" + SA.t("srwOff"), icon: "lock", go: "game" });
+    C.push({ k: "do", id: "msgs:new", label: SA.t("ibxS_new"), icon: "mail", go: "msgs" });
+    C.push({ k: "do", id: "ann:new", label: SA.t("kaAnnOn"), icon: "horn", go: "ann" });
+    C.push({ k: "do", id: "cleaner:scan", label: SA.t("p13Scan"), icon: "search", go: "cleaner" });
+    C.push({ k: "do", id: "guard:queue", label: SA.t("gdSecQ"), icon: "shield", go: "guard" });
+    C.push({ k: "do", id: "offers:regen", label: SA.t("p13Regen"), icon: "refresh", go: "offers" });
+    return C;
+  };
+
+  // ---------------------------------------------------------------- root event delegation (shell calls SA.bind(root))
+  SA.repaint = () => { if (SA.onRepaint) SA.onRepaint(); };
+  SA.bind = (root) => {
+    root.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-a]"); if (!el || !root.contains(el) || el.disabled) return;
+      const a = el.dataset.a;
+      if (a === "nav") { e.preventDefault(); if (SA.onNav) SA.onNav(el.dataset.sgo, el); return; }
+      const i = a.indexOf(":"); if (i < 0) { if (SA.onShell) SA.onShell(a, el, e); return; }
+      const m = a.slice(0, i), act = a.slice(i + 1);
+      e.preventDefault();
+      if (m === "pl") return SA.playerAct(act, el);
+      if (m === "shell") { if (SA.onShell) SA.onShell(act, el, e); return; }
+      const M = SA.M[m]; if (M && M.act) M.act(act, el);
+    });
+    root.addEventListener("submit", (e) => {
+      const f = e.target.closest("[data-form]"); if (!f) return; e.preventDefault();
+      const k = f.dataset.form;
+      if (k === "pl:search") { PL.st.q = (f.querySelector("input").value || "").trim(); PL.st.user = null; PL.st.users = null; if (SA.onSearch) SA.onSearch(PL.st.q); else SA.reload(); return; }
+      const [m] = k.split(":"); const M = SA.M[m]; if (M && M.form) M.form(f);
+    });
+    root.addEventListener("input", (e) => { const el = e.target; const m = el.dataset && el.dataset.in; if (m && SA.M[m] && SA.M[m].input && el.tagName !== "SELECT") SA.M[m].input(el); });
+    root.addEventListener("change", (e) => { const el = e.target; const m = el.dataset && el.dataset.in; if (m && SA.M[m] && SA.M[m].input && el.tagName === "SELECT") SA.M[m].input(el); });
+  };
+  SA.setLang = (l) => { SA.lang = l === "ar" ? "ar" : "en"; document.documentElement.lang = SA.lang; document.documentElement.dir = SA.lang === "ar" ? "rtl" : "ltr"; };
+  SA.ready = true;
+})();
+
+// New labels for the redesigned admin (EN / AR). Existing live strings come from i18n_base (extracted from the live build).
+SSAdmin.addI18n({
+  aGuardT: ["الحارس والبطاقات", "Guard & cards"],
+  aTitle: ["لوحة المالك", "Owner panel"],
+  aHome: ["الرئيسية", "Home"],
+  aG_players: ["اللاعبون", "Players"], aG_mod: ["الإشراف", "Moderation"], aG_eco: ["الاقتصاد", "Economy"],
+  aG_content: ["المحتوى والرسائل", "Content"], aG_game: ["اللعبة", "Game"], aG_sys: ["النظام والسجلات", "System & logs"],
+  aLiveNow: ["داخل المباريات الآن", "In matches now"], aLiveRooms: ["{n} غرفة عامة", "{n} public rooms"],
+  aNeeds: ["يحتاج انتباهك", "Needs attention"], aAllClear: ["كل شيء نظيف، ما في شي ينتظر", "All clear, nothing waiting"],
+  aSupOpen: ["رسائل دعم مفتوحة", "Open support"], aGuardQ: ["للمراجعة (الحارس)", "Guard review"], aAppeals: ["اعتراضات", "Appeals"],
+  aCleanOpen: ["المنظّف: مؤشَّر", "Cleaner flags"], aErr24: ["أخطاء آخر 24 ساعة", "Errors 24h"], aOps: ["حالة الخدمة", "Service status"],
+  aRevenue: ["الإيرادات (كل الوقت)", "Revenue (all time)"], aToday: ["اليوم", "Today"], a7d: ["7 أيام", "7 days"],
+  aSearchPh: ["الاسم أو #الرقم أو VIP أو البريد", "Name, #ID, VIP or email"],
+  aSearchGo: ["بحث", "Search"], aNoMatch: ["ما في لاعب بهذا البحث", "No player matches"], aResults: ["{n} نتيجة", "{n} results"],
+  aRecent: ["آخر من فتحتهم", "Recently opened"], aTypeToSearch: ["اكتب اسم أو رقم لاعب للبدء", "Type a name or ID to start"],
+  aOverview: ["نظرة عامة", "Overview"], aModeration: ["الإشراف", "Moderation"], aEconomy: ["الاقتصاد", "Economy"], aTimeline: ["السجل الزمني", "Timeline"],
+  aActModerate: ["إشراف", "Moderate"], aActEconomy: ["رصيد وهوية", "Economy & ID"], aActProfile: ["الملف", "Profile"], aActDanger: ["منطقة خطرة", "Danger zone"],
+  aYellow: ["بطاقة صفراء", "Yellow card"], aRedBan: ["حمراء (حظر)", "Red card (ban)"], aGuardUnban: ["فك حظر الحارس", "Guard unban"],
+  aCardsN: ["{n}/3 بطاقات", "{n}/3 cards"], aBanned: ["محظور", "Banned"], aMuted: ["مكتوم", "Muted"], aClean: ["سليم", "Clean"],
+  aJoined: ["انضم {d}", "Joined {d}"], aSeen: ["آخر ظهور {d}", "Seen {d}"], aLevel: ["المستوى", "Level"], aCoins: ["عملات", "Coins"], aGems: ["جواهر", "Gems"],
+  aGames: ["مباريات", "Games"], aKills: ["قتلى", "Kills"], aModeProg: ["تقدم الأوضاع", "Mode progress"],
+  aGrantAdd: ["إضافة", "Add"], aGrantRemove: ["خصم", "Remove"], aGrantAfter: ["بعد التنفيذ: {c} عملة · {g} جوهرة", "After: {c} coins · {g} gems"],
+  aGrantLimit: ["الحد: مليون عملة و 10 آلاف جوهرة", "Limit: 1,000,000 coins · 10,000 gems"],
+  aTypeId: ["للتأكيد اكتب رقم اللاعب {n}", "To confirm, type the player ID {n}"], aTypeIdBad: ["الرقم غير مطابق", "ID does not match"],
+  aDangerNote: ["إجراء نهائي ولا يمكن التراجع عنه", "Permanent. This cannot be undone."],
+  aCancel: ["إلغاء", "Cancel"], aClose: ["إغلاق", "Close"], aSave: ["حفظ", "Save"], aApply: ["تطبيق", "Apply"],
+  aPreviewRO: ["معاينة: التعديلات معطلة (قراءة فقط)", "Preview: changes are disabled (read-only)"],
+  aMockData: ["بيانات تجريبية", "Sample data"], aLiveData: ["بيانات حقيقية · قراءة فقط", "Live data · read-only"],
+  aSignIn: ["دخول المالك", "Owner sign-in"], aEmail: ["البريد", "Email"], aPass: ["كلمة السر", "Password"], aNotOwner: ["هذا الحساب ليس المالك", "This account is not the owner"],
+  aCmdPh: ["اكتب أمراً أو قسماً أو لاعباً…", "Type a command, section or player…"], aCmdHint: ["Ctrl K", "Ctrl K"],
+  aCmdSections: ["الأقسام", "Sections"], aCmdActions: ["إجراءات سريعة", "Quick actions"], aCmdPlayers: ["لاعبون", "Players"],
+  aQueues: ["قوائم الانتظار", "Queues"], aSettings: ["الإعدادات", "Settings"], aInboxZero: ["القائمة فارغة", "Queue is empty"],
+  aPickItem: ["اختر عنصراً من القائمة", "Pick an item from the list"], aNext: ["التالي", "Next"], aItemsN: ["{n} عنصر", "{n} items"],
+  aQ_reports: ["بلاغات اللاعبين", "Player reports"], aQ_support: ["الدعم", "Support"], aQ_guard: ["مراجعة الحارس", "Guard review"],
+  aQ_appeals: ["اعتراضات البطاقات", "Card appeals"], aQ_cleaner: ["المنظّف", "Cleaner"], aQ_matches: ["مباريات مُعلَّمة", "Flagged matches"],
+  aQ_buys: ["مشتريات مُعلَّمة", "Flagged purchases"],
+  aOpenPlayer: ["ملف اللاعب", "Player file"], aMarkReviewed: ["تمت المراجعة", "Mark reviewed"],
+  aFilter: ["تصفية…", "Filter…"], aAllActions: ["كل الإجراءات", "All actions"],
+  aMaintOnQ: ["تشغيل وضع الصيانة يمنع اللاعبين من بدء مباريات. متأكد؟", "Maintenance stops players from starting matches. Turn it on?"],
+  aMultQ: ["تغيير مضاعف {k} إلى {v} لكل اللاعبين؟", "Set {k} to {v} for every player?"],
+  aRegenQ: ["إعادة توليد عروض الشهر القادم؟ العروض الحالية للشهر القادم تُستبدل.", "Regenerate next month's offers? Next month's current offers are replaced."],
+  aHideQ: ["إخفاء هذا العرض من المتجر؟", "Hide this offer from the shop?"], aPriceRange: ["السعر بين {a} و {b}", "Price between {a} and {b}"],
+  aAutoCardsQ: ["تغيير البطاقات التلقائية للحارس؟", "Change Guard automatic cards?"],
+  aAnnOffQ: ["إيقاف الإعلان الظاهر للاعبين؟", "Turn off the announcement players see?"],
+  aCurrent: ["الحالي", "Current"], aStatus: ["الحالة", "Status"], aNone: ["لا شيء", "Nothing here"],
+  aLangAR: ["العربية", "العربية"], aLangEN: ["English", "English"],
+  aVersionA: ["A · لوحة وشريط جانبي", "A · Dashboard + sidebar"], aVersionB: ["B · اللاعب أولاً", "B · Player-first"],
+  aVersionC: ["C · صندوق المهام", "C · Task inbox"], aVersionD: ["D · مربعات وأوامر", "D · Tiles + commands"],
+  aTabPlayers: ["اللاعبون", "Players"], aTabQueues: ["الطوابير", "Queues"], aTabGameEco: ["اللعبة والاقتصاد", "Game & economy"],
+  aTabMsgs: ["الرسائل", "Messages"], aTabSystem: ["النظام", "System"],
+  aBanList: ["قائمة الإيقافات", "Ban list"], aSecMaint: ["الصيانة", "Maintenance"], aSecMult: ["المضاعفات", "Multipliers"],
+  aSecModeRw: ["مكافآت الأوضاع", "Mode rewards"], aDays: ["{n} أيام", "{n} days"],
+  aGoTo: ["افتح", "Open"], aRunning: ["يعمل", "Running"], aDisabled: ["متوقف", "Disabled"],
+  aLiveAuto: ["يتحدث كل 15 ثانية", "Auto-refresh 15 s"], aFrom: ["من", "From"], aAbout: ["عن", "About"],
+  aMsgTo: ["إلى", "To"], aLangs: ["اللغات", "Languages"], aCount: ["عدد المستلمين", "Recipients"],
+  aSend: ["إرسال", "Send"], aSchedule: ["جدولة", "Schedule"], aRecipients: ["المستلمون", "Recipients"],
+  aPlayersCount: ["لاعب", "players"], aPublicRooms: ["غرف عامة", "public rooms"],
+  aStripeLive: ["حقيقي", "Live"], aStripeTest: ["تجريبي", "Test"], aOpenReports: ["بلاغات مفتوحة", "Open reports"],
+  aWhatsWrong: ["ما الذي يحدث", "What's happening"], aShortcuts: ["اختصارات", "Shortcuts"],
+});
+
+
+/* ss13u-admin4 glue: game mode (no preview boot) */
+(function () {
+  const SA = window.SSAdmin; if (!SA) return;
+  const T = SA.T, IC = SA.icon, esc = SA.esc;
+  const baseT = SA.t;
+  // every label goes through the game's translation table first (6 languages); own table only as a last fallback
+  SA.t = (k, v) => { if (SA.gt) { const r = SA.gt(k, v); if (r != null) return r; } return baseT(k, v); };
+  SA.setLang = (l) => { SA.lang = l === "ar" ? "ar" : "en"; const h = SA.host; if (h) { h.setAttribute("lang", SA.lang); h.setAttribute("dir", SA.lang === "ar" ? "rtl" : "ltr"); } };
+  SA.fmtD = (iso, time) => { if (!iso) return "—"; try { return new Intl.DateTimeFormat(SA.loc ? SA.loc() : (SA.lang === "ar" ? "ar-u-nu-latn" : "en-GB"), time ? { dateStyle: "medium", timeStyle: "short" } : { dateStyle: "medium" }).format(new Date(iso)); } catch (_) { return String(iso).slice(0, 16); } };
+  SA.boot = (shell) => { SA.shell = shell; };   // the shell is mounted by K.openAdmin (owner only)
+  SA.topbar = (o) => { o = o || {};
+    return `<header class="sa-top">${o.lead || ""}<div class="sa-brand"><b>Super Snake</b><small>${T("aTitle")}</small></div>${o.mid || '<span class="sa-sp"></span>'}${o.tail || ""}` +
+      `<button type="button" class="sa-tbtn" data-a="shell:refresh" aria-label="${T("kaRefresh")}" title="${T("kaRefresh")}">${IC("refresh")}</button>${o.end || ""}` +
+      `<button type="button" class="sa-tbtn sa-exit" data-a="shell:exit" aria-label="${T("aExit")}" title="${T("aExit")}">${IC("close")}<span>${T("aExit")}</span></button></header>`; };
+  SA.onShellBase = async (a) => {
+    if (a === "refresh") { SA.reload(); return true; }
+    if (a === "exit") { if (SA.exit) SA.exit(); return true; }
+    return false;
+  };
+  // Guard "Live" feed: refresh every 15 s while it is on screen (no dialog open, not typing, tab visible)
+  SA.guardTimer = setInterval(() => { try {
+    const h = SA.host, ov = h && h.parentNode; if (!h || !ov || ov.classList.contains("x-hide") || document.hidden) return;
+    if (!h.querySelector('.a-it.on[data-sgo="guard"]') || !SA.M.guard || SA.M.guard.st.sec !== "live") return;
+    if (h.querySelector(".sa-dlgw") || (document.activeElement && h.contains(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName))) return;
+    SA.load("guard").then(() => { const mn = h.querySelector(".a-main"), st = mn ? mn.scrollTop : 0; SA.repaint(); const m2 = h.querySelector(".a-main"); if (m2) m2.scrollTop = st; });
+  } catch (_) {} }, 15000);
+})();
+
+// Version A — Dashboard + left sidebar. Home = KPIs + needs-attention + quick search; every section is one click away in a grouped sidebar.
+(function () {
+  const SA = window.SSAdmin, T = SA.T, IC = SA.icon, esc = SA.esc, nf = SA.nf;
+  const S = { cur: "home", root: null };
+  const countFor = (id) => { const c = SA.M.dash.st.d ? SA.M.dash.counts() : {}; return { reports: c.reports, guard: (c.guard | 0) + (c.appeals | 0), support: c.support, cleaner: c.cleaner }[id] | 0; };
+  const side = () => `<nav class="a-side sa-scroll" aria-label="Sections"><button type="button" class="a-it${S.cur === "home" ? " on" : ""}" data-a="nav" data-sgo="home">${IC("home")}<span>${T("aHome")}</span></button>` +
+    SA.GROUPS.map(([g, gl, gi, mods]) => `<div class="a-grp"><small>${T(gl)}</small>${mods.map((m) => { const n = countFor(m); return `<button type="button" class="a-it${S.cur === m ? " on" : ""}" data-a="nav" data-sgo="${m}" title="${esc(SA.title(m))}">${IC(SA.M[m].icon)}<span>${esc(SA.title(m))}</span>${n ? `<b class="sa-cnt" dir="ltr">${nf(n)}</b>` : ""}</button>`; }).join("")}</div>`).join("") + `</nav>`;
+  const homeHTML = () => {
+    const d = SA.M.dash;
+    if (!d.st.d) return d.err ? `<p class="sa-err">${esc(d.err)}</p>` : SA.h.loading();
+    const log = (SA.M.log.st.list || []).slice(0, 5);
+    return `<div class="sa-ptitle"><span class="sa-gt" style="font-size:22px">${T("kaDash")}</span><span class="sa-sp"></span><small class="sa-note">${esc(SA.fmtD(d.st.d.as_of, 1))}</small></div>` +
+      `<div class="sa-kpis">${d.kpis().join("")}</div>` +
+      `<div class="a-home2"><section class="sa-sec"><h4 class="sa-h4">${IC("bell")}${T("aNeeds")}</h4>${d.needsHTML()}</section>` +
+      `<section class="sa-sec"><h4 class="sa-h4">${IC("search")}${T("aG_players")}</h4>${SA.M.players.searchHTML()}<h4 class="sa-h4">${IC("scroll")}${T("kaLog")}</h4><div class="sa-mini">${log.map((l) => `<div><span><b dir="ltr">${esc(l.action)}</b><small dir="auto">${esc(l.target || "—")}</small></span><b dir="ltr">${esc(SA.ago(l.at))}</b></div>`).join("") || "—"}</div></section></div>`;
+  };
+  const mainHTML = () => {
+    if (S.cur === "home") return homeHTML();
+    const m = SA.M[S.cur];
+    const title = S.cur === "players" && SA.M.players.st.user && SA.M.players.st.user.username ? "" : `<div class="sa-ptitle">${IC(m.icon)}<h2 class="sa-gt">${esc(SA.title(S.cur))}</h2></div>`;
+    return title + SA.html(S.cur);
+  };
+  const paintMain = () => { const el = S.root.querySelector(".a-main"); if (el) { el.innerHTML = mainHTML(); } const sd = S.root.querySelector(".a-side"); if (sd) { const st = sd.scrollTop; sd.outerHTML = side(); S.root.querySelector(".a-side").scrollTop = st; } };
+  const loadCur = async () => {
+    if (S.cur === "home") { await Promise.all([SA.load("dash"), SA.load("log")]); }
+    else { await SA.load(S.cur); if (!SA.M.dash.st.d) SA.load("dash").then(paintMain); }
+    paintMain();
+  };
+  const render = () => {
+    S.root.innerHTML = `<div class="sa-app a-app">${SA.topbar({ ver: "A", lead: `<button type="button" class="sa-tbtn a-burger" data-a="shell:side" aria-label="Menu">${IC("menu")}</button>` })}<div class="a-body">${side()}<main class="a-main sa-scroll">${mainHTML()}</main></div></div>`;
+  };
+  const go = (id) => { S.cur = id; if (id === "players" && !SA.M.players.st.user && SA.M.players.st.users === null) {} S.root.querySelector(".a-app").classList.remove("side-open"); paintMain(); const mn = S.root.querySelector(".a-main"); if (mn) mn.scrollTop = 0; loadCur(); };
+  SA.onNav = (id) => go(id || "home");
+  SA.onRepaint = paintMain;
+  SA.reloadHooks.push(loadCur);
+  SA.onOpenPlayer = () => go("players");
+  SA.onSearch = () => go("players");
+  SA.onShell = async (a, el) => { if (await SA.onShellBase(a, el)) return; if (a === "side") S.root.querySelector(".a-app").classList.toggle("side-open"); };
+  SA.boot({ mount(root) { S.root = root; render(); loadCur(); }, render() { render(); loadCur(); } });
+})();
+
+</script>
 </body>
 </html>
