@@ -3154,9 +3154,9 @@
         let QL = 1, QC = QCFG.h;
         function resize() {
           QL = Math.max(0, QS.indexOf(Q)); QC = QCFG[QS[QL]];
-          dpr = Math.min(window.devicePixelRatio || 1, QC.dpr, window.__ssBsv ? 1.5 : 2); // 13s1: max 2 (1.5 in Battery saver)
+          dpr = Math.min(window.devicePixelRatio || 1, QL >= 1 && !window.__ssBsv ? 3 : QC.dpr, window.__ssBsv ? 1.5 : 3); // tahrir-sharp: Medium+ at the screen's own density up to 3x (was 1.5 / 2: a 3x iPhone upscaled the frame); 1.5 in Battery saver
           W = innerWidth; H = innerHeight; // landscape only: portrait is covered by the rotate screen, never rotated in software
-          dprU = dpr; { const budget = [1.6e6, 3.7e6, 5.0e6, 6.5e6, 8.3e6][QL] || 3.7e6; dpr = Math.max(0.5, Math.min(dpr, Math.sqrt(budget / Math.max(1, W * H)))); dpr = Math.max(0.5, dpr * DRS); }
+          dprU = dpr; { const budget = [1.6e6, 4.2e6, 5.4e6, 6.5e6, 8.3e6][QL] || 4.2e6; dpr = Math.max(0.5, Math.min(dpr, Math.sqrt(budget / Math.max(1, W * H)))); if (dpr < dprU && dpr > dprU * 0.92) dpr = dprU; /* tahrir-sharp: snap to the native ratio (no 1.01x resample) */ dpr = Math.max(0.5, dpr * DRS); }
           cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
           ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
           cv.style.width = W + "px"; cv.style.height = H + "px";
@@ -12543,7 +12543,7 @@
           // arena edge: dark rim outside the wall + glowing boundary line, brighter when you are close
           if (NFH.world) NFH.world.push(() => {
             try {
-              if (state !== "play" || !player) return; const h = player.seg[0], dm = Math.min(h.x, h.y, A - h.x, A - h.y), warn = clamp(1 - dm / 700, 0, 1), M = MAPS[mapI];
+              if (state !== "play" || !player || mapI === 29) return; /* tahrir-sharp: the T-wall fence is the edge */ const h = player.seg[0], dm = Math.min(h.x, h.y, A - h.x, A - h.y), warn = clamp(1 - dm / 700, 0, 1), M = MAPS[mapI];
               const q = (x0, y0, x1, y1, x2, y2, x3, y3) => { pr(x0, y0, 0); ctx.moveTo(PX, PY); pr(x1, y1, 0); ctx.lineTo(PX, PY); pr(x2, y2, 0); ctx.lineTo(PX, PY); pr(x3, y3, 0); ctx.lineTo(PX, PY); ctx.closePath(); };
               const W2 = 900, cx0 = clamp(cam.x - 2600, -W2, A + W2), cx1 = clamp(cam.x + 2600, -W2, A + W2), cy0 = clamp(cam.y - 1600, -W2, A + W2), cy1 = clamp(cam.y + 2200, -W2, A + W2);
               ctx.save(); ctx.fillStyle = "rgba(4,6,16,.82)"; ctx.beginPath();
@@ -20169,7 +20169,7 @@
             draw(f, T, r, z, fa) {
               if (fa <= 0.01) return;
               const k = this.kind(f, T), sz = (T ? r * 4.2 : (3.8 + (r - 3.8) * 0.65) * 6.6) * PK;
-              pr(f.x, f.y, z * 0.5); ctx.globalAlpha = fa; ctx.drawImage(AT, k * C, 0, C, C, PX - sz / 2, PY - sz / 2, sz, sz); ctx.globalAlpha = 1;
+              pr(f.x, f.y, z * 0.5); ctx.globalAlpha = fa; ctx.drawImage((mapI === 29 && window.__TAHFA && __TAHFA()) || AT, k * C, 0, C, C, PX - sz / 2, PY - sz / 2, sz, sz); ctx.globalAlpha = 1;
             },
             nm(f, T) { const k = this.kind(f, T), r = NM[k]; if (!r) return ""; const i = Math.max(0, I18N_L.indexOf(LANG)); return (r[i] || r[1]) + (T && T.tier ? " · " + _t(T.tier === 2 ? "rar3" : "rar1") : ""); },
           };
@@ -20697,11 +20697,14 @@
           try { NFH.home.push(() => { const m = window.__tahSel(); if (mapSel !== m) { mapSel = m; if (state !== "play") setMap(m); } }); } catch (_) {}
 
           // ---------- assets: photographic ground tiles (L1 7x7 whole map, L2 4x4 square core on High), sprites ----------
-          const IM = {}, IMT = {}, im = (k) => { let o = IM[k]; if (!o) { o = IM[k] = new Image(); o.decoding = "async"; o.src = "ui/tah/" + k + ".webp?v=2"; } IMT[k] = performance.now(); return o.complete && o.naturalWidth ? o : null; };
+          const IM = {}, IMT = {}, im = (k) => { let o = IM[k]; if (o && o._e && performance.now() - o._e > 4000) { delete IM[k]; o = null; } /* tahrir-sharp: a failed load retries */ if (!o) { o = IM[k] = new Image(); o.decoding = "async"; o.onerror = () => { o._e = performance.now(); }; o.src = "ui/tah/" + k + ".webp?v=3"; } IMT[k] = performance.now(); if (k[0] === "L" && !o._dq) { o._dq = 1; if (o.decode) o.decode().then(() => { o._d = 1; }, () => { o._d = 1; }); else o._d = 1; } // tahrir-sharp: ground tiles decode off-thread before their first draw (no hitch)
+            return o.complete && o.naturalWidth && (k[0] !== "L" || o._d) ? o : null; };
           const PERM = ["ground_lo", "cars", "signs", "relief", "tower", "trav", "palm0", "palm1", "palm2", "lamp0", "lamp1", "kiosk0", "kiosk1", "kiosk2", "mini"];
           const tahLoad = () => PERM.forEach(im);
           let evT = 0; const evict = () => { const n = performance.now(); if (n - evT < 2000) return; evT = n;
-            for (const k in IM) if (k[0] === "L" && n - IMT[k] > 6000) { IM[k].src = ""; delete IM[k]; delete IMT[k]; } };
+            for (const k in IM) if (k[0] === "L" && n - IMT[k] > 6000) { IM[k].src = ""; delete IM[k]; delete IMT[k]; }
+            // tahrir-sharp: LRU cap on resident ground tiles (1024 px = 4 MB decoded each)
+            const ks = Object.keys(IM).filter((k) => k[0] === "L"), cap = window.__TAHCAP || 40; if (ks.length > cap) { ks.sort((a, b) => IMT[a] - IMT[b]); for (const k of ks.slice(0, ks.length - cap)) if (n - IMT[k] > 400) { IM[k].src = ""; delete IM[k]; delete IMT[k]; } } };
           window.__TAHIM = () => Object.keys(IM).filter((k) => IM[k].complete && IM[k].naturalWidth).map((k) => k + ":" + IM[k].naturalWidth + "x" + IM[k].naturalHeight);
           const smT = setMap; setMap = function (i) { smT(i); if (mapI === TAH) tahLoad(); };
           if (mapSel === TAH && state === "menu") setMap(TAH);
@@ -20723,11 +20726,11 @@
             SIGNS.forEach((p) => Z.tall.push({ dk: "tah", tk: "sign", x: wx(p[0]), y: wy(p[1]), w: p[2] * s, v: p[3], r: p[2] * s / 2 + 20, z: 4.5 * s }));
             TL.kiosks.forEach((p) => Z.tall.push({ dk: "tah", tk: "kiosk", x: wx(p[0]), y: wy(p[1]), v: p[2], r: 40, z: 3 * s }));
             { const m = TL.mon.slab; Z.mon = { dk: "tah", tk: "mon", x: wx((m[0] + m[2]) / 2), y: wy(m[3]) + 0.01, r: (m[2] - m[0]) * s / 2 + 60, z: m[5] * s }; Z.tall.push(Z.mon); }
-            { const b = TL.tower.b; Z.tall.push({ dk: "tah", tk: "tower", x: wx((b[0] + b[2]) / 2), y: wy(b[3]), r: (b[2] - b[0]) * s / 2 + 80, z: TL.tower.h * s }); }
+            /* tahrir-sharp: the 55 m tower extrusion is gone (it stretched across half the screen near the camera); its roof stays flat in the ground tiles */ Z.tall = Z.tall.filter((o) => o.x > 4 && o.y > 4 && o.x < A - 4 && o.y < A - 4);
             Z.paths = TL.paths.map((p, j) => {
               const P = p.p.map((q) => [wx(q[0]), wy(q[1])]), L = [0];
               for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
-              const T = L[L.length - 1], n = p.n, cars = [];
+              const T = L[L.length - 1], n = Math.max(1, Math.round(p.n * 0.5)), cars = []; /* tahrir-sharp: half the traffic */
               let sd = (j * 9301 + 49297) % 233280;
               const rnd = () => (sd = (sd * 9301 + 49297) % 233280) / 233280;
               for (let c = 0; c < n; c++) { const r = rnd(); const ty = VPICK(r, rnd()); cars.push({ o: (c + rnd() * 0.5) / n * T, c: ty, sp: (0.8 + rnd() * 0.3) * (VS[ty][8] > 8 ? 0.8 : 1) }); }
@@ -20745,19 +20748,28 @@
             const lo = im("ground_lo"); if (!lo) return false;
             const z = tz(), E = z.E, hi = QL >= 1;
             const c0 = unpr(0, 0), c1 = unpr(W, 0), c2 = unpr(0, H), c3 = unpr(W, H);
-            const ex0 = Math.max(-E, Math.min(c0.x, c2.x) - 60), ex1 = Math.min(A + E, Math.max(c1.x, c3.x) + 60), ey0 = Math.max(-E, c0.y - 60), ey1 = Math.min(A + E, c2.y + 120);
+            const ex0 = Math.max(0, Math.min(c0.x, c2.x) - 60), ex1 = Math.min(A, Math.max(c1.x, c3.x) + 60), ey0 = Math.max(0, c0.y - 60), ey1 = Math.min(A, c2.y + 120); /* tahrir-sharp: no city beyond the fence */
             if (!(ex1 > ex0 && ey1 > ey0)) return false;
             pr(cam.x, ey0, 0); const ya = Math.max(0, PY); pr(cam.x, ey1, 0); const yb = Math.min(H, PY);
             if (!(yb > ya + 1)) return false;
             const sm0 = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; if (ctx.imageSmoothingQuality) ctx.imageSmoothingQuality = QL >= 2 ? "medium" : "low";
             const N = QL <= 0 ? 22 : QL === 1 ? 30 : 38, st = (yb - ya) / N, SW = A + 2 * E, fs = lo.naturalWidth / SW;
-            const T1 = SW / 7, T2 = SW / 14;
+            const T1 = SW / 7, T2 = SW / 14, T3 = SW / 28;
             // which tiles are on screen: request them (lazy), use the ones decoded
-            const L1 = [], L2 = [];
+            const L1 = [], L2 = [], L3 = [];
+            // tahrir-sharp: L3 (33.6 px/m) for the screen rows showing > 20 canvas px per metre (px/m grows toward the bottom); its L2 parent stands in while it loads
+            let y3 = 1e9; const need2 = {};
+            if (hi && window.__TAHL3 !== 0) { const wpm = A / SPAN, stp = (yb - ya) / 10; let pp = 0;
+              for (let sy = ya; sy <= yb + 0.5; sy += stp) { const p = unpr(CX, sy), q = unpr(CX + 40, sy), du = Math.hypot(q.x - p.x, q.y - p.y); pp = du > 0 ? (40 * dpr * wpm) / du : 0; if (pp > 20) { y3 = Math.max(ey0, p.y - T3 * 0.25); break; } }
+              window.__TAHPPM = +pp.toFixed(1);
+              if (y3 < ey1) for (let j = Math.max(0, Math.floor((y3 + E) / T3)); j <= Math.min(27, Math.floor((ey1 + E) / T3)); j++)
+                for (let i = Math.max(0, Math.floor((ex0 + E) / T3)); i <= Math.min(27, Math.floor((ex1 + E) / T3)); i++) {
+                  const g = i >= 2 && i <= 25 && j >= 2 && j <= 25 ? im("L3_" + i + "_" + j) : null; if (g) L3.push([g, -E + i * T3, -E + j * T3, T3]); else need2[(i >> 1) + "_" + (j >> 1)] = 1; } }
             // Medium+: L2 (16.8 px/m) tiles; an L2 tile still loading borrows its L1 parent. Low: L1 (8.4 px/m) only.
             const need1 = {};
-            if (hi) { for (let j = Math.max(0, Math.floor((ey0 + E) / T2)); j <= Math.min(13, Math.floor((ey1 + E) / T2)); j++)
-              for (let i = Math.max(0, Math.floor((ex0 + E) / T2)); i <= Math.min(13, Math.floor((ex1 + E) / T2)); i++) { const g = im("L2_" + i + "_" + j); if (g) L2.push([g, -E + i * T2, -E + j * T2, T2]); else need1[(i >> 1) + "_" + (j >> 1)] = 1; } }
+            if (hi) { const yl2 = Math.min(ey1, y3 + T3); for (const k in need2) { const ij = k.split("_"), g = im("L2_" + k); if (g) L2.push([g, -E + ij[0] * T2, -E + ij[1] * T2, T2]); else need1[(ij[0] >> 1) + "_" + (ij[1] >> 1)] = 1; }
+              for (let j = Math.max(0, Math.floor((ey0 + E) / T2)); j <= Math.min(13, Math.floor((yl2 + E) / T2)); j++)
+              for (let i = Math.max(0, Math.floor((ex0 + E) / T2)); i <= Math.min(13, Math.floor((ex1 + E) / T2)); i++) { if (need2[i + "_" + j]) continue; const g = im("L2_" + i + "_" + j); if (g) L2.push([g, -E + i * T2, -E + j * T2, T2]); else need1[(i >> 1) + "_" + (j >> 1)] = 1; } }
             else for (let j = Math.max(0, Math.floor((ey0 + E) / T1)); j <= Math.min(6, Math.floor((ey1 + E) / T1)); j++)
               for (let i = Math.max(0, Math.floor((ex0 + E) / T1)); i <= Math.min(6, Math.floor((ex1 + E) / T1)); i++) need1[i + "_" + j] = 1;
             for (const k in need1) { const g = im("L1_" + k), ij = k.split("_"); if (g) L1.push([g, -E + ij[0] * T1, -E + ij[1] * T1, T1]); }
@@ -20769,13 +20781,14 @@
               const cx = (P[0] + Q[0] + R[0]) / 3, cy = (P[1] + Q[1] + R[1]) / 3, g = (p) => [p[0] + (p[0] > cx ? 1 : -1), p[1] + (p[1] > cy ? 1.2 : -1.2)];
               const p = g(P), q = g(Q), r = g(R);
               ctx.save(); ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.lineTo(r[0], r[1]); ctx.closePath(); ctx.clip();
-              ctx.setTransform(dpr * a[0], dpr * a[1], dpr * c[0], dpr * c[1], dpr * ox, dpr * oy);
+              try { ctx.setTransform(dpr * a[0], dpr * a[1], dpr * c[0], dpr * c[1], dpr * ox, dpr * oy);
               { const py = (y1 - y0) * 0.6 + 2, px = 30; x0 = Math.max(-E, x0 - px); x1 = Math.min(A + E, x1 + px); y0 = Math.max(-E, y0 - py); y1 = Math.min(A + E, y1 + py); }
-              const f2 = L2.length && full(L2, x0, y0, x1, y1);
+              const f3 = L3.length && full(L3, x0, y0, x1, y1);
+              if (!f3) { const f2 = L2.length && full(L2, x0, y0, x1, y1);
               if (!f2) { if (!L1.length || !full(L1.concat(L2), x0, y0, x1, y1)) ctx.drawImage(lo, (x0 + E) * fs, (y0 + E) * fs, (x1 - x0) * fs, (y1 - y0) * fs, x0, y0, x1 - x0, y1 - y0);
                 if (L1.length) blit(L1, x0, y0, x1, y1); }
-              if (L2.length) blit(L2, x0, y0, x1, y1);
-              ctx.restore();
+              if (L2.length) blit(L2, x0, y0, x1, y1); }
+              if (L3.length) blit(L3, x0, y0, x1, y1); } catch (_) { window.__TAHERR = (window.__TAHERR | 0) + 1; } finally { ctx.restore(); } /* tahrir-sharp: a failed draw never leaks a clip/transform */
             };
             for (let i = 0; i < N; i++) {
               const s0 = ya + i * st, s1 = s0 + st;
@@ -20837,7 +20850,7 @@
             const ca = Math.cos(a), sa = Math.sin(a), L = v[8] * s, Wd = v[9] * s, k = L / v[2], pd = v[10] * k;
             const hz = (v[8] > 8 ? 3.2 : v[8] < 3.5 ? 1.8 : 1.5) * s * 0.5;
             ctx.globalAlpha = al * 0.85; quad(cars, v[4], v[5], v[6], v[7], x + SUNX * hz, y + SUNY * hz, ca, sa, L / 2 + pd, Wd / 2 + pd, 0);
-            ctx.globalAlpha = al; quad(cars, v[0], v[1], v[2], v[3], x, y, ca, sa, L / 2, Wd / 2, 0.25 * s);
+            ctx.globalAlpha = al * 0.9; quad(cars, v[0], v[1], v[2], v[3], x, y, ca, sa, L / 2, Wd / 2, 0.25 * s);
             ctx.globalAlpha = 1;
           };
           const mpF0 = mpFloor;
@@ -20848,9 +20861,9 @@
             ctx.lineCap = "round";
             for (const r of z.rails) {
               ctx.strokeStyle = "rgba(196,200,202,.9)"; ctx.lineWidth = Math.max(0.8, 0.06 * s * PK); ctx.beginPath(); let on = false;
-              for (let i = 0; i < r.length; i++) { const q = r[i]; if (!vis(q[0], q[1], 40)) { on = false; continue; } pr(q[0], q[1], 1.1 * s); if (on) ctx.lineTo(PX, PY); else ctx.moveTo(PX, PY); on = true; }
+              for (let i = 0; i < r.length; i++) { const q = r[i]; if ((!vis(q[0], q[1], 40) || q[0] < 0 || q[1] < 0 || q[0] > A || q[1] > A)) { on = false; continue; } pr(q[0], q[1], 1.1 * s); if (on) ctx.lineTo(PX, PY); else ctx.moveTo(PX, PY); on = true; }
               ctx.stroke();
-              if (QL > 0) { ctx.strokeStyle = "rgba(120,126,130,.85)"; ctx.beginPath(); for (let i = 0; i < r.length; i += 1) { const q = r[i]; if (!vis(q[0], q[1], 40)) continue; pr(q[0], q[1], 0); ctx.moveTo(PX, PY); pr(q[0], q[1], 1.1 * s); ctx.lineTo(PX, PY); } ctx.lineWidth = Math.max(0.6, 0.04 * s * PK); ctx.stroke(); }
+              if (QL > 0) { ctx.strokeStyle = "rgba(120,126,130,.85)"; ctx.beginPath(); for (let i = 0; i < r.length; i += 1) { const q = r[i]; if ((!vis(q[0], q[1], 40) || q[0] < 0 || q[1] < 0 || q[0] > A || q[1] > A)) continue; pr(q[0], q[1], 0); ctx.moveTo(PX, PY); pr(q[0], q[1], 1.1 * s); ctx.lineTo(PX, PY); } ctx.lineWidth = Math.max(0.6, 0.04 * s * PK); ctx.stroke(); }
             }
             if ((window.__TAHOFF | 0) & 1) return;
             const vx0 = fx0 - 200, vx1 = fx1 + 200, vy0 = fy0 - 200, vy1 = fy1 + 200, spd = 6.2 * s;
@@ -20862,7 +20875,7 @@
                 let al = 1; if (!p.loop) { const e = Math.min(d, T - d); if (e < 14 * s) al = Math.max(0, e / (14 * s)); if (al <= 0.02) continue; }
                 let i = 1; while (i < L.length - 1 && L[i] < d) i++;
                 const f = (d - L[i - 1]) / Math.max(1e-6, L[i] - L[i - 1]), x = P[i - 1][0] + (P[i][0] - P[i - 1][0]) * f, y = P[i - 1][1] + (P[i][1] - P[i - 1][1]) * f;
-                if (!vis(x, y, 60)) continue;
+                if (!vis(x, y, 60) || x < 0 || y < 0 || x > A || y > A) continue;
                 drawCar(x, y, Math.atan2(P[i][1] - P[i - 1][1], P[i][0] - P[i - 1][0]), c.c, s, al);
               }
             }
@@ -20954,6 +20967,136 @@
             g.beginPath(); g.moveTo(tx + ca * 3.2, ty + sa * 3.2); g.lineTo(tx - sa * 2.4 - ca * 1.6, ty + ca * 2.4 - sa * 1.6); g.lineTo(tx + sa * 2.4 - ca * 1.6, ty - ca * 2.4 - sa * 1.6); g.closePath();
             g.fillStyle = "#ff5a4a"; g.fill(); g.strokeStyle = "rgba(40,20,0,.8)"; g.lineWidth = 0.7; g.stroke();
           };
+          // ===== tahrir-sharp remodel: T-wall fence + police, food outline, camera self-heal (inserted inside the Tahrir module) =====
+          try {
+            MAPS[TAH].bg = "#2b2823"; // nothing beyond the fence: dark neutral void
+            // ---- camera self-heal (any map): a NaN in the camera never recovers on its own (|h - cam| > 900 is false for NaN), so the whole
+            //      world vanished and only the flat floor colour + HUD stayed (owner's blank-grey iPhone screenshot). Reset to the focus head.
+            //      LK (look-ahead) lives in the camera module's own scope, so a NaN there is cleared by the module's own far-jump reset: the frame after a
+            //      repair, the camera is put > 900 units off the head and the original code snaps back and zeroes LK.
+            try { const camT = B13C.cam; let pend = 0; B13C.cam = function (focus) {
+              if (pend) { pend = 0; const h0 = focus && focus.seg && focus.seg[0]; if (h0 && Number.isFinite(h0.x) && Number.isFinite(h0.y)) { cam.x = h0.x + 5000; cam.y = h0.y; } }
+              camT(focus);
+              if (!(Number.isFinite(cam.x) && Number.isFinite(cam.y) && Number.isFinite(cam.s) && Number.isFinite(cam.t) && Number.isFinite(cam.vx) && Number.isFinite(cam.vy))) {
+                const h = focus && focus.seg && focus.seg[0], ok = h && Number.isFinite(h.x) && Number.isFinite(h.y);
+                cam.x = ok ? h.x : A / 2; cam.y = ok ? h.y : A / 2; cam.vx = cam.vy = 0; cam.s = 1; cam.vs = 0; cam.t = 0.95; cam.vt = 0;
+                try { LK.x = LK.y = LK.vx = LK.vy = 0; } catch (_) {} pend = 1;
+                window.__TAHNAN = (window.__TAHNAN | 0) + 1;
+              } }; } catch (_) {}
+
+            // ---- concrete T-wall texture (4 slabs, procedural, muted) ----
+            let TWC = null; const twTex = () => {
+              if (TWC) return TWC; const SW = 128, SH = 288, c = document.createElement("canvas"); c.width = SW * 4; c.height = SH; const g = c.getContext("2d");
+              let sd = 7; const rn = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+              for (let k = 0; k < 4; k++) { const x0 = k * SW, tone = [0, 6, -5, 3][k];
+                const gr = g.createLinearGradient(0, 0, 0, SH); gr.addColorStop(0, `rgb(${168 + tone},${161 + tone},${148 + tone})`); gr.addColorStop(0.55, `rgb(${150 + tone},${143 + tone},${131 + tone})`); gr.addColorStop(0.86, `rgb(${128 + tone},${122 + tone},${112 + tone})`); gr.addColorStop(1, `rgb(${104 + tone},${99 + tone},${91 + tone})`);
+                g.fillStyle = gr; g.fillRect(x0, 0, SW, SH);
+                for (let i = 0; i < 900; i++) { const v = rn(); g.fillStyle = v < 0.5 ? `rgba(60,55,48,${0.05 + rn() * 0.08})` : `rgba(235,230,218,${0.04 + rn() * 0.07})`; g.fillRect(x0 + rn() * SW, rn() * SH, 1 + rn() * 2, 1 + rn() * 2); }
+                for (let i = 0; i < 5; i++) { const sx = x0 + 10 + rn() * (SW - 20), sl = 30 + rn() * 120; const st = g.createLinearGradient(0, 8, 0, 8 + sl); st.addColorStop(0, "rgba(70,62,52,.20)"); st.addColorStop(1, "rgba(70,62,52,0)"); g.fillStyle = st; g.fillRect(sx, 8, 2 + rn() * 5, sl); }
+                g.fillStyle = "rgba(255,250,238,.22)"; g.fillRect(x0 + 4, 0, SW - 8, 7);            // top lip catches the light
+                g.fillStyle = "rgba(40,36,30,.18)"; g.fillRect(x0, SH - 40, SW, 3);                  // footing joint
+                g.fillStyle = "rgba(30,27,22,.10)"; g.fillRect(x0, SH - 37, SW, 37);
+                g.fillStyle = "rgba(255,250,236,.16)"; g.fillRect(x0 + 3, 7, 3, SH - 47);           // chamfer highlight
+                g.fillStyle = "rgba(28,25,20,.55)"; g.fillRect(x0, 0, 3, SH); g.fillRect(x0 + SW - 2, 0, 2, SH); // seams between slabs
+                for (const hy of [52, 220]) { g.fillStyle = "rgba(40,36,30,.35)"; g.beginPath(); g.arc(x0 + SW / 2, hy, 4, 0, 6.283); g.fill(); } // lifting holes
+              }
+              return (TWC = c);
+            };
+            const HT = 3.4, SLAB = 1.5; // metres
+            const wallR2 = wall;
+            wall = function (x0, y0, x1, y1) {
+              if (mapI !== TAH) return wallR2.apply(this, arguments);
+              const s = tz().s, h = HT * s, G = 4 * SLAB * s, tx = twTex(), horiz = y0 === y1, a0 = horiz ? Math.min(x0, x1) : Math.min(y0, y1), a1 = horiz ? Math.max(x0, x1) : Math.max(y0, y1);
+              const b0 = Math.max(0, a0), b1 = Math.min(A, a1); if (b1 <= b0) return;
+              const pl = player && player.alive && state === "play" ? player.seg[0] : null;
+              const fade = horiz && y0 >= A && pl && pl.y > A - 260 ? 0.5 : 1; // the near (bottom) wall turns see-through when the snake is right behind it
+              const P = (t, z) => horiz ? mpP(t, y0, z) : mpP(x0, t, z);
+              // contact shadow on the arena side
+              const inw = 1.3 * s, sx = horiz ? 0 : (x0 <= 0 ? inw : -inw), sy = horiz ? (y0 <= 0 ? inw : -inw) : 0;
+              ctx.globalAlpha = 0.28; mpFace(P(b0, 0), P(b1, 0), horiz ? mpP(b1, y0 + sy, 0) : mpP(x0 + sx, b1, 0), horiz ? mpP(b0, y0 + sy, 0) : mpP(x0 + sx, b0, 0), "#1a1712");
+              ctx.globalAlpha = fade;
+              const SL = SLAB * s, sw = tx.width / 4; // one slab per affine map: the seams stay vertical in perspective
+              for (let t = Math.floor(b0 / SL) * SL; t < b1; t += SL) {
+                const u0 = Math.max(t, b0), u1 = Math.min(t + SL, b1); if (u1 <= u0) continue;
+                const k = ((Math.round(t / SL) % 4) + 4) % 4, f0 = (u0 - t) / SL, f1 = (u1 - t) / SL;
+                mpMap(tx, k * sw + f0 * sw, 0, (f1 - f0) * sw, tx.height, P(u0, h), P(u1, h), P(u0, 0));
+              }
+              ctx.strokeStyle = "rgba(226,220,206,.75)"; ctx.lineWidth = Math.max(1, 0.12 * s * PK); ctx.beginPath(); const q0 = P(b0, h), q1 = P(b1, h); ctx.moveTo(q0[0], q0[1]); ctx.lineTo(q1[0], q1[1]); ctx.stroke();
+              ctx.globalAlpha = 1;
+            };
+
+            // ---- Iraqi police along the fence (procedural sprites, 8 swing frames x 2 facings; cosmetic only) ----
+            const PF = [0.12, 2.75, 2.45, 1.95, 1.25, 0.7, 0.5, 1.4], PFC = [];
+            const polFrame = (ang, mir) => {
+              const c = document.createElement("canvas"); c.width = 120; c.height = 204; const g = c.getContext("2d");
+              if (mir) { g.translate(120, 0); g.scale(-1, 1); }
+              g.fillStyle = "rgba(0,0,0,.26)"; g.beginPath(); g.ellipse(60, 196, 28, 6, 0, 0, 6.283); g.fill();
+              const rr = (x, y, w, h, r, col) => { g.fillStyle = col; g.beginPath(); g.roundRect ? g.roundRect(x, y, w, h, r) : g.rect(x, y, w, h); g.fill(); };
+              rr(45, 122, 14, 66, 4, "#222a3b"); rr(61, 122, 14, 66, 4, "#1d2434");           // trousers
+              rr(42, 184, 19, 10, 3, "#121212"); rr(60, 184, 21, 10, 3, "#151515");          // boots
+              rr(48, 64, 10, 12, 3, "#8d6a52");                                                // (neck shadow)
+              rr(52, 62, 16, 12, 3, "#a87b5d");                                                // neck
+              rr(40, 70, 40, 56, 9, "#6c84a3");                                                // light-blue shirt
+              rr(43, 78, 34, 34, 6, "#2c364a");                                                // dark tactical vest
+              g.fillStyle = "#c9b27a"; g.fillRect(65, 84, 7, 5);                               // badge
+              rr(40, 116, 40, 8, 2, "#15181f");                                                // belt
+              rr(36, 74, 10, 44, 5, "#647b99"); g.fillStyle = "#a87b5d"; g.beginPath(); g.arc(41, 121, 5, 0, 6.283); g.fill(); // back arm
+              g.fillStyle = "#b08263"; g.beginPath(); g.ellipse(60, 50, 13, 15, 0, 0, 6.283); g.fill();                   // head
+              g.fillStyle = "#1c1a18"; g.fillRect(53, 57, 15, 3);                              // moustache
+              g.fillStyle = "#1a2440"; g.beginPath(); g.ellipse(59, 38, 16, 8, -0.15, 0, 6.283); g.fill(); g.fillRect(45, 36, 29, 6); // beret
+              g.fillStyle = "#c9b27a"; g.fillRect(66, 36, 4, 4);
+              g.save(); g.translate(74, 76); g.rotate(-ang);                                   // front arm + baton (0 = down, + = forward/up)
+              rr(-5, -2, 10, 42, 5, "#6c84a3"); g.fillStyle = "#a87b5d"; g.beginPath(); g.arc(0, 43, 5.5, 0, 6.283); g.fill();
+              rr(-2.6, 40, 5.2, 44, 2.6, "#141414"); rr(-4, 44, 8, 4, 2, "#2a2a2a");
+              g.restore();
+              return c;
+            };
+            const polImg = (f, m) => { const k = f * 2 + (m ? 1 : 0); return PFC[k] || (PFC[k] = polFrame(PF[f], m)); };
+            let POL = null, POLA = -1;
+            const pols = () => {
+              if (POL && POLA === A) return POL; const s = A / SPAN, inn = 1.5 * s, st = 34 * s; POL = []; POLA = A; let i = 0;
+              for (let t = 30 * s; t < A - 25 * s; t += st) { POL.push({ x: t, y: inn, e: 0, i: i++ }, { x: t + st / 2, y: A - inn, e: 1, i: i++ }, { x: inn, y: t + st / 3, e: 2, i: i++ }, { x: A - inn, y: t + st * 0.66, e: 3, i: i++ }); }
+              return POL;
+            };
+            window.__TAHPOL = () => ({ n: pols().length, near: pols().filter((p) => p.sw).length });
+            const mpTallS = mpTall;
+            mpTall = function (vis) {
+              const out = mpTallS.apply(this, arguments);
+              if (mapI !== TAH || ((window.__TAHOFF | 0) & 4)) return out;
+              const s = A / SPAN, pl = player && player.alive && state === "play" ? player.seg[0] : null; let add = false;
+              for (const p of pols()) { if (!vis(p.x, p.y, 40)) { p.sw = 0; continue; }
+                p.sw = pl ? Math.hypot(pl.x - p.x, pl.y - p.y) < 20 * s : false;
+                out.push({ dk: "tah", tk: "pol", x: p.x, y: p.y, r: 20, z: 2.5 * s, p }); add = true; }
+              if (add) out.sort((a, b) => a.y - b.y);
+              return out;
+            };
+            const mpObjS = mpObj;
+            mpObj = function (o) {
+              if (o.dk !== "tah" || o.tk !== "pol") return mpObjS.apply(this, arguments);
+              const p = o.p, s = A / SPAN, pl = player && player.seg ? player.seg[0] : null;
+              let face = p.e === 2 ? 1 : p.e === 3 ? 0 : p.i % 2; // 1 = facing +x
+              let f = 0;
+              if (p.sw && pl) { if (p.e < 2) face = pl.x >= p.x ? 1 : 0; const ph = (time * 1.9 + p.i * 0.37) % 1; f = 1 + Math.min(6, Math.floor(ph * 7)); }
+              const im_ = polImg(f, !face), hh = 2.5 * s * (204 / 180), ww = hh * 120 / 204;
+              mpBB(im_, o.x, o.y, ww, hh, 0);
+            };
+
+            // ---- food: crisp dark outline + soft drop shadow, no pale halo (reads clearly on the light ground and on cars) ----
+            let FAC = null;
+            window.__TAHFA = () => {
+              if (FAC) return FAC; const src = window.__BF13 && __BF13.atlas; if (!src) return null;
+              const w = src.width, h = src.height, b = document.createElement("canvas"); b.width = w; b.height = h; const bg = b.getContext("2d");
+              bg.drawImage(src, 0, 0); const d = bg.getImageData(0, 0, w, h), a = d.data;
+              for (let i = 3; i < a.length; i += 4) { const v = a[i] / 255; a[i] = Math.round(255 * Math.max(0, Math.min(1, (v - 0.5) / 0.42))); } // drop the soft light halo (alpha <= .42), keep the body
+              bg.putImageData(d, 0, 0);
+              const sl = document.createElement("canvas"); sl.width = w; sl.height = h; const sg = sl.getContext("2d"); sg.drawImage(b, 0, 0); sg.globalCompositeOperation = "source-in"; sg.fillStyle = "#120c06"; sg.fillRect(0, 0, w, h);
+              const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d");
+              g.globalAlpha = 0.30; for (const [dx, dy] of [[4, 6], [3, 5], [5, 7]]) g.drawImage(sl, dx, dy);
+              g.globalAlpha = 0.55; for (let k = 0; k < 12; k++) { const t = k / 12 * 6.283; g.drawImage(sl, Math.cos(t) * 2.6, Math.sin(t) * 2.6); }
+              g.globalAlpha = 1; g.drawImage(b, 0, 0);
+              return (FAC = c);
+            };
+          } catch (e) { try { console.warn("tahrir-sharp", e); } catch (_) {} }
         } catch (e) { try { console.warn("tahrir", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
@@ -26343,7 +26486,7 @@ html body.b13h-on #game .x-boost { width: 66px !important; height: 84px !importa
 html body.b13h-on #game .x-boost::after { display: none !important; }
 html body.b13h-on #game .x-boost::before { display: block !important; inset: auto !important; left: -3px !important; top: -3px !important; width: 72px !important; height: 72px !important; background: conic-gradient(#ffd76a var(--bf, 100%), rgba(255, 255, 255, .14) 0) !important; }
 html body.b13h-on #game .x-boost.on { background: radial-gradient(circle at 50% 33px, rgba(255, 214, 110, .55) 0, rgba(255, 190, 60, 0) 40px) center top / 100% 84px no-repeat, url(ui/bab/r3/boost.webp?v=1) center top / 66px 66px no-repeat !important; color: #fff6d0 !important; }
-:root { --p10-tx0: url("ui/bab/r3/floor.webp?v=1"); }
+:root { --p10-tx0: url("ui/bab/r3/floor2.webp?v=1"); }
 html body.b13h-on #b13hmp .h-chev, html body.b13h-on #b13hmp svg, html body.b13h-on #b13hmp .h-go { display: none !important; }
 </style>
 <style id="ss13u-bab-r5">
@@ -28493,5 +28636,6 @@ html body #b13hmp { pointer-events: auto !important; cursor: pointer; }
 html body.b13h-on #b13hmp span.h-chev { display: inline-flex !important; }
 html body #b13hart, html body #b13hrnd { display: none !important; }
 </style>
+<!-- tahrir-sharp -->
 </body>
 </html>
