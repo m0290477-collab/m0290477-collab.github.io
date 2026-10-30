@@ -4264,7 +4264,7 @@
         }
         function musTick() {
           const a = AC; if (!a) return;
-          const want = S.music && a.state === "running" ? (state === "play" ? "m" : window.__SM && __SM.on ? "" : "l") : "";
+          const want = S.music && a.state === "running" && !(window.__ssMus13 && __ssMus13()) ? (state === "play" ? "m" : window.__SM && __SM.on ? "" : "l") : "";
           if (!MUS.g) { MUS.g = a.createGain(); MUS.g.gain.value = 0.0001; MUS.g.connect(window.__ssMuBus ? __ssMuBus(a) : a.destination);
             const n = Math.ceil(a.sampleRate * 0.06), b = a.createBuffer(1, n, a.sampleRate), c = b.getChannelData(0); for (let i = 0; i < n; i++) c[i] = Math.random() * 2 - 1; MUS.nb = b; }
           const now = a.currentTime;
@@ -23136,7 +23136,7 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
   const gesture = () => { lastGesture = now(); lastAct = lastGesture; for (let i = 0; i < gestureListeners.length; i++) safe(gestureListeners[i])(); };
 
   // ------------------------------------------------------------------ audio manager
-  const MUSIC = { arena: { loop: 38.4, gain: 1.0 }, night: { loop: 25.2631579, gain: 0.55 } };
+  /*ss13u-music-v1*/ const MUSIC = { arena: { loop: 38.4, gain: 1.0 }, night: { loop: 25.2631579, gain: 0.55 }, lobby: { loop: 64.0, gain: 0.7, f: "bab_lobby" }, match: { loop: 64.0, gain: 0.62, f: "bab_match" }, victory: { gain: 0.8, f: "bab_victory" }, defeat: { gain: 0.8, f: "bab_defeat" } };
   const SFX_NAMES = ["tap", "open", "close", "coin", "reward", "levelup", "error", "whoosh", "pop", "chest"];
   const AU = { ctx: null, own: false, master: null, mus: null, fx: null, buf: {}, pend: {}, cur: null, curName: "", want: "", scene: "menu", lastPlay: {}, ext: "mp3" };
   const pickExt = () => {
@@ -23201,27 +23201,40 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
     if (b) go(b); else load("sfx_" + name).then((bb) => { if (now() - tn < 300) go(bb); }).catch(() => {});
   };
 
-  const trackFor = (tr) => {
-    if (tr && tr !== "auto") return tr;
-    const h = hourNow(); return h >= 19 || h < 6 ? "night" : "arena";
+  const trackFor = () => (AU.scene === "match" ? "match" : "lobby");
+  const gainFor = (name) => MUSIC[name].gain * (AU.scene === "gameover" ? 0.4 : 1);
+  const sting = (k) => { // Game Over sting: "defeat" by default, "victory" replaces it (win or new record). Returns true when it will sound.
+    if (AU.scene !== "gameover" || AU.stK === "victory" || AU.stK === k) return AU.stK === k && k === "victory";
+    clearTimeout(AU.stT); AU.stK = k;
+    if (!unlocked || +prefs.music <= 0 || +prefs.master <= 0) return false;
+    const c = ensureCtx(); if (!c) return false;
+    load(MUSIC[k].f).then((b) => {
+      if (AU.scene !== "gameover" || AU.stK !== k) return;
+      const o = AU.sting; if (o) { try { o.g.gain.setTargetAtTime(0.0001, c.currentTime, 0.08); o.s.stop(c.currentTime + 0.5); } catch (e) { /* ignore */ } }
+      const sn = c.createBufferSource(), g = c.createGain(); sn.buffer = b; g.gain.value = MUSIC[k].gain; sn.connect(g); g.connect(AU.mus); sn.start(0); AU.sting = { s: sn, g };
+      clearTimeout(AU.stT2); AU.stT2 = setTimeout(() => { if (AU.scene === "gameover") musicPlay(AU.want || "auto"); }, Math.max(0.5, b.duration - 0.8) * 1000);
+    }).catch(() => {});
+    return true;
   };
   const musicPlay = (tr) => {
     AU.want = tr || prefs.track || "auto";
-    if (!unlocked || AU.scene === "match") return;
+    if (!unlocked) return;
     const name = trackFor(AU.want); if (name === AU.curName && AU.cur) return;
     const c = ensureCtx(); if (!c) return;
-    load("music_" + name).then((b) => {
-      if (AU.scene === "match" || trackFor(AU.want) !== name) return;
+    load(MUSIC[name].f || "music_" + name).then((b) => {
+      if (trackFor(AU.want) !== name || (name === AU.curName && AU.cur)) return;
       musicStop(1.2);
       // MP3 decoders add a few ms of priming silence: find the first audible sample and loop from there.
       const ch = b.getChannelData(0); let off = 0; const lim = Math.min(ch.length, (b.sampleRate * 0.25) | 0);
       for (let i = 0; i < lim; i++) { if (Math.abs(ch[i]) > 0.0015) { off = i / b.sampleRate; break; } }
       const s = c.createBufferSource(), g = c.createGain(); s.buffer = b; s.loop = true;
       s.loopStart = off; s.loopEnd = Math.min(b.duration, off + MUSIC[name].loop);
-      g.gain.setValueAtTime(0.0001, c.currentTime); g.gain.exponentialRampToValueAtTime(MUSIC[name].gain, c.currentTime + 1.5);
+      g.gain.setValueAtTime(0.0001, c.currentTime); g.gain.exponentialRampToValueAtTime(gainFor(name), c.currentTime + (name === "match" ? 1.0 : 1.5));
       s.connect(g); g.connect(AU.mus); s.start(0, off);
       AU.cur = { s, g }; AU.curName = name;
-    }).catch(() => {});
+      { const oth = name === "lobby" ? "match" : name === "match" ? "lobby" : ""; if (oth) setTimeout(() => { const of = MUSIC[oth].f; if (AU.curName !== oth && AU.buf[of]) { delete AU.buf[of]; delete AU.pend[of]; } }, 2500); }
+      if (name === "lobby") setTimeout(() => { ["victory", "defeat"].forEach((k) => load(MUSIC[k].f).catch(() => {})); if (!AU.pf13) { AU.pf13 = 1; fetch(asset("audio/" + MUSIC.match.f + "." + AU.ext)).then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).catch(() => { AU.fail13 = 1; }); } }, 3000);
+    }).catch(() => { AU.fail13 = 1; });
   };
   const musicStop = (fade) => {
     const cur = AU.cur; if (!cur || !AU.ctx) return; AU.cur = null; AU.curName = "";
@@ -23229,11 +23242,12 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
     try { cur.g.gain.cancelScheduledValues(tt); cur.g.gain.setValueAtTime(cur.g.gain.value || 0.0001, tt); cur.g.gain.exponentialRampToValueAtTime(0.0001, tt + f); cur.s.stop(tt + f + 0.05); } catch (e) { /* ignore */ }
   };
   const musicScene = (s) => { // 'menu' | 'match' | 'gameover'
-    AU.scene = s;
-    if (s === "match") musicStop(0.8);
-    else if (s === "gameover") { if (AU.cur && AU.ctx) AU.cur.g.gain.setTargetAtTime(0.25, AU.ctx.currentTime, 0.4); else musicPlay(AU.want || "auto"); }
-    else { if (AU.cur && AU.ctx) AU.cur.g.gain.setTargetAtTime(MUSIC[AU.curName].gain, AU.ctx.currentTime, 0.4); musicPlay(AU.want || "auto"); }
+    const was = AU.scene; AU.scene = s; clearTimeout(AU.stT); clearTimeout(AU.stT2);
+    if (s === "match") { AU.stK = ""; musicPlay(AU.want || "auto"); }
+    else if (s === "gameover") { if (was !== "gameover") { AU.stK = ""; musicStop(0.7); AU.stT = setTimeout(() => sting("defeat"), 1500); } }
+    else { if (AU.cur && AU.ctx && AU.curName === "lobby") AU.cur.g.gain.setTargetAtTime(MUSIC.lobby.gain, AU.ctx.currentTime, 0.4); musicPlay(AU.want || "auto"); }
   };
+  W.__ssMus13 = () => !!(inited && !AU.fail13 && W.__SM && W.__SM.on);
 
   // ------------------------------------------------------------------ haptics
   const HAP = { tap: 8, light: 6, select: 10, success: [14, 50, 22], heavy: 28, error: [30, 40, 30], reward: [10, 30, 10, 30, 40] };
@@ -23565,7 +23579,7 @@ input[type="text"], input[type="password"], input[type="email"], input[type="sea
         sfx("levelup"); haptic("reward"); banner(t("levelup"), o.level != null ? t("level_n", { n: o.level }) : ""); mascotCelebrate();
         return rm ? Promise.resolve() : confetti(o);
       case "reward": case "victory": case "record":
-        sfx("reward"); haptic("reward"); banner(t(type === "record" ? "new_record" : type), o.sub || "");
+        if (!(type !== "reward" && sting("victory"))) sfx("reward"); haptic("reward"); banner(t(type === "record" ? "new_record" : type), o.sub || "");
         if (type === "victory") mascotCelebrate("win");
         if (rm) return Promise.resolve();
         return Promise.all([confetti({ n: 40 }), o.amount ? coins(o, false) : Promise.resolve()]);
