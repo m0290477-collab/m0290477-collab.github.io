@@ -50,3 +50,7 @@ The optional "Real weather & time" setting reads current conditions from the Ope
 Open-Meteo data is licensed under Creative Commons Attribution 4.0 International (https://creativecommons.org/licenses/by/4.0/).
 Attribution shown in the game since build 13u: "Weather data by Open-Meteo.com" with a link, in Settings › More › Credits,
 next to the weather line on the home screen, and under the Real weather setting. Only a coarse location (about 10 km) is sent; nothing is stored by the game.
+
+## flag-icons (MIT)
+Country flag pictures in `ui/flags/*.webp` (197 files, build 13u botprof) are rasterised from flag-icons 7.2.3 (https://github.com/lipis/flag-icons), 4x3 SVGs.
+MIT License. Copyright (c) 2013 Panayiotis Lipiridis. Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.

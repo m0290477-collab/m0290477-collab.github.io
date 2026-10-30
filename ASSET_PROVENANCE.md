@@ -52,6 +52,9 @@ stored as RGB 0,0,0, no IPTC/XMP/C2PA, model output size. Script: `work/ss13u_as
    `work/ss13s/own/*` — his iPhone screenshots, and his "Legendary Arena" mockups) were used only as style references and are
    not shipped. A side-by-side check of the medal set against `ref_profile/medals_ref.jpeg` shows no copied designs or text.
 
+## Country flags (build 13u botprof)
+- `ui/flags/*.webp` (197, 96x72): rasterised in headless Chromium from flag-icons 7.2.3 (MIT, see THIRD_PARTY_LICENSES.md); master PNGs in `work/ss13u_botprof/flags_png/`, script `work/ss13u_botprof/rast.py`.
+
 ## Notes
 - Keep the masters (`work/…` paths in the Hark workspace) as the record of origin.
 - No asset from another game, stock library or font foundry other than the OFL fonts was found.

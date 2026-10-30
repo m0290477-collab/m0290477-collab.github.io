@@ -20449,6 +20449,200 @@
             setTimeout(() => { if (playing()) return; tv(() => { ["ti", "fr", "mi"].forEach((a) => { const im = new Image(); im.decoding = "async"; im.src = `ui/gx/${a}.webp${V}`; }); }, 0); }, 8000);
           }
         }
+        // ===================== 13u botprof: every AI opponent gets a full public card /*ss13u-botprof-v1*/ =====================
+        // Owner 2026-10-30. A bot's profile is derived on the client from its name only (same name = same card in practice and
+        // online; the worker is unchanged). No server rows, no RPCs: nothing on a bot card can befriend, message, gift, invite or
+        // report it. Bot IDs live in the reserved range 70000-97999 (real player ids are a sequence far below it).
+        // Flag skins: real flag images (ui/flags/xx.webp, flag-icons MIT) replace the colour-band swatch, so the flag shown always
+        // matches the country name (Oman looked like Hungary).
+        {
+          const BPX = (window.__BP = window.__BP || {});
+          const bt = (f, d) => { try { const v = f(); return v === undefined ? d : v; } catch (_) { return d; } };
+          const E = (x) => String(x == null ? "" : x).replace(/[&<>"'`]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "`": "&#96;" })[c]);
+          const NF = (v) => bt(() => new Intl.NumberFormat(LANG === "ar" ? "ar-u-nu-latn" : LANG).format(v | 0), String(v | 0));
+          Object.assign(I18N, {
+            bpBusy: ["اللاعب في مباراة الآن", "Player is in a match", "Oyuncu şu an maçta", "Le joueur est en match", "El jugador está en una partida", "खिलाड़ी अभी मैच में है"],
+            bpMsg: ["رسالة", "Message", "Mesaj", "Message", "Mensaje", "संदेश"],
+            bpGift: ["هدية", "Gift", "Hediye", "Cadeau", "Regalo", "तोहफ़ा"],
+            bpInv: ["دعوة", "Invite", "Davet et", "Inviter", "Invitar", "न्योता"],
+            bpRecent: ["آخر المباريات", "Recent matches", "Son maçlar", "Derniers matchs", "Últimas partidas", "हाल के मैच"],
+            bpSkin: ["السكن", "Skin", "Görünüm", "Skin", "Aspecto", "स्किन"],
+          });
+          // ---------- 1) flag skins: real flag pictures everywhere a swatch is drawn ----------
+          const FLV = "?v=1";
+          const flagUrl = (c) => "ui/flags/" + String(c).toLowerCase() + ".webp" + FLV;
+          BPX.flagUrl = flagUrl;
+          bt(() => { for (const f of FLAGS) { const s = SKINS[f.id]; if (!s || s.t !== "fl" || s.bpf) continue; s.bpf = 1; s.sw0 = s.sw; s.sw = `url(${flagUrl(f.c)}) center / cover no-repeat, ${s.sw0}`; } });
+          bt(() => { const el = $("skins"); if (el) [...el.children].forEach((b, i) => { const s = SKINS[i]; if (s && s.t === "fl") { b.style.background = s.sw; b.classList.add("bp-flb"); } }); });
+          const flagImg = (c, cls) => `<img class="${cls || "bp-fl"}" src="${flagUrl(c)}" alt="" aria-hidden="true" draggable="false">`;
+          BPX.flagImg = flagImg;
+
+          // ---------- 2) the deterministic profile ----------
+          const strip = (n) => String(n || "").replace(/^[^\p{L}\p{N}]+/u, "").trim();
+          const RVN = bt(() => I18N.nfRivalN.map((x) => String(x)), ["Nemesis"]);
+          const keyOf = (n) => { const s = strip(n); return RVN.includes(s) ? "Nemesis" : s; };
+          const hs = (s) => { let h = 2166136261; for (const ch of String(s)) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; };
+          const hx = (k, salt) => hs(salt + "|" + k);
+          // name -> country (the names the game and the realtime worker use; anything else falls back by script)
+          const CN = {};
+          const cset = (cc, list) => list.split(",").forEach((n) => { CN[n.trim().toLowerCase()] = cc; });
+          cset("IQ", "ali.iq,abo_jasim,karrar,murtadha,sajjad99,haider,ruqaya,hamoudi,hussein_b,zainab_x,mustafa,yousif77,ahmed_k,omar_k,zaid,ali99,حمزة,فارس,زيد,ياسر");
+          cset("SA", "mohammed_a,abdullah,khalid_22,faisal,saad,nasser,reem,sarah_k,fatima.z,rayan,hamza,سارة,أحمد,بدر,جود,رهف");
+          cset("KW", "bader"); cset("AE", "noor,yara,tariq"); cset("QA", "faris"); cset("BH", "dana");
+          cset("EG", "tamer,mahmoud,yasmin,omar,samir,karim,سامي,مازن,هدى"); cset("JO", "rania,layla,yusuf,lina_x,ليلى,عمر");
+          cset("LB", "rami,jad,nour,hana,نور,ريم"); cset("MA", "malik,ines,inès,مريم"); cset("TN", "moe"); cset("DZ", "sami"); cset("OM", "يوسف");
+          cset("TR", "emre,mehmet_tr,elif,burak,zeynep,kerem,can,deniz,ayşe,mert");
+          cset("BR", "lucas,gabi,mateo_br"); cset("AR", "mateo,santi_10"); cset("MX", "sofia,diego,luis,sofia_v"); cset("CO", "valentina"); cset("CL", "camila");
+          cset("ES", "isa,pablo,lucía,javi,nacho,inés,álvaro");
+          cset("US", "jake,emma,liam,olivia,noah,ava,ethan,mia,mason,ryan_tx,tyler,brandon,ashley,kevin,nicole,josh,megan,dylan,kayla,maxpower,jayjay,ivy,aria,mia.rose");
+          cset("GB", "chloe,theo,ella,leo77,alex_r"); cset("CA", "riley,quinn"); cset("AU", "kai,jamie");
+          cset("FR", "léa,hugo,chloé,louis,manon"); cset("DE", "jonas,lena,felix,leon,hannah"); cset("IT", "marco,giulia,luca,chiara");
+          cset("IN", "arjun,priya,rohan,aditi,vikram,sneha,kabir,ananya,rahul_07,neha");
+          cset("JP", "kenji,yuki,haruto,sakura,kenzo"); cset("KR", "minho,jisoo,hyun"); cset("CN", "wei,mei,jun");
+          cset("RU", "ivan,dmitri,anya,nikita,olga,pavel"); cset("PL", "kasia,tomasz,bartek,ola");
+          cset("NG", "tunde,amara,chidi,ife,ade"); cset("GH", "kofi,kwame"); cset("ZA", "zola"); cset("KE", "musa,nia");
+          cset("SE", "nova,frosty"); cset("NL", "zara");
+          const POOL_AR = ["IQ", "IQ", "IQ", "SA", "SA", "AE", "KW", "QA", "BH", "OM", "JO", "EG", "EG", "MA", "DZ", "TN", "LB"];
+          const POOL_W = ["US", "US", "US", "GB", "GB", "CA", "AU", "DE", "FR", "BR", "BR", "MX", "ES", "IT", "NL", "SE", "TR", "IN", "PH", "ID", "IQ", "SA", "EG", "PL"];
+          const okCC = (c) => bt(() => FLAGS.some((f) => f.c === c), false);
+          const ccOf = (k) => {
+            if (k === "Nemesis") return "IQ";
+            const d = CN[k.toLowerCase()]; if (d && okCC(d)) return d;
+            const h = hx(k, "cc");
+            if (/[\u0600-\u06FF]/.test(k)) return POOL_AR[h % POOL_AR.length];
+            if (/[\u0900-\u097F]/.test(k)) return "IN";
+            const c = POOL_W[h % POOL_W.length]; return okCC(c) ? c : "US";
+          };
+          // level: same spread as the realtime worker's bots (55% 1-15, 35% 15-44, 10% 45-84); Nemesis is a veteran
+          const lvOfKey = (k) => {
+            if (k === "Nemesis") return 72 + (hx(k, "lv") % 19);
+            const h = hx(k, "lv"), r = (h % 1000) / 1000, u = (h >>> 10) % 1000 / 1000;
+            return r < 0.55 ? 1 + Math.floor(u * 15) : r < 0.9 ? 15 + Math.floor(u * 30) : 45 + Math.floor(u * 40);
+          };
+          const xpTo = (n) => { let t = 0; for (let k = 1; k < n; k++) t += k <= 10 ? Math.round(100 * Math.pow(k, 1.6)) : 4000 + 10 * (k - 10); return t; };
+          const AVS = bt(() => B13G.L, []);
+          const avOf = (k, lv) => {
+            const ok = AVS.filter((a) => a.id !== "robot" && (a.u === "f" || (a.u === "l" && a.q <= lv)));
+            const l = ok.length ? ok : [{ id: "viper" }]; return l[hx(k, "av") % l.length].id;
+          };
+          const TT = bt(() => ACH.filter((a) => a[6] && ["games", "kills", "best", "lvl", "wins"].includes(a[2])), []);
+          const RIDLO = 70000, RIDN = 28000;
+          BPX.range = [RIDLO, RIDLO + RIDN - 1];
+          const CACHE = new Map();
+          const prof = (name) => {
+            const k = keyOf(name) || "?"; if (CACHE.has(k)) return Object.assign({}, CACHE.get(k), { n: strip(name) || k });
+            const h = hx(k, "p"), lv = lvOfKey(k), cc = ccOf(k);
+            const sk = Math.min(1, (lv / 85) * 0.7 + ((hx(k, "sk") % 1000) / 1000) * 0.3 + (k === "Nemesis" ? 0.25 : 0)); // 0..1 skill
+            const xpm = 170 + Math.round(sk * 190); // xp per match
+            const games = Math.max(1, Math.round(xpTo(lv) / xpm * (0.9 + ((h >>> 3) % 40) / 100)) + (h % 4));
+            const kills = Math.round(games * (0.25 + sk * 2.1) * (0.85 + ((h >>> 7) % 30) / 100));
+            const best = Math.round(90 + sk * 950 + Math.min(lv, 90) * 7 + ((h >>> 11) % 60));
+            const wins = Math.min(games, Math.round(games * (0.01 + sk * 0.11)));
+            const trophies = wins * 2 + Math.floor(kills / 25);
+            const st = { games, kills, best, wins, lvl: lv };
+            const cand = TT.filter((a) => (st[a[2]] | 0) >= a[3]);
+            const title = cand.length && hx(k, "tt") % 10 < 7 ? cand[hx(k, "tt2") % cand.length][0] : "";
+            const fh = hx(k, "skin"), flag = bt(() => FLAGS.find((f) => f.c === cc), null);
+            const skin = flag && fh % 10 < 3 ? flag.id : fh % 8; // a free skin, or the flag of their own country
+            const id = RIDLO + (hx(k, "id") % RIDN);
+            const modes = ["mNormal", "mNormal", "mNormal", "mRanked", "mTeams"];
+            const rec = [];
+            for (let i = 0; i < 4; i++) {
+              const r = hx(k, "m" + i), of = 20 + (r % 16), rank = 1 + Math.min(of - 1, Math.floor(((r >>> 5) % 1000) / 1000 * of * (1.15 - sk)));
+              rec.push({ m: modes[(r >>> 9) % modes.length], rank, of, len: Math.max(20, Math.round(best * (0.25 + ((r >>> 13) % 70) / 100))), k: Math.round(((r >>> 17) % 10) / 10 * (1 + sk * 6)) });
+            }
+            const p = { key: k, n: strip(name) || k, id, lv, cc, av: avOf(k, lv), title, skin, st: { games, kills, best, wins, trophies }, rec, sk };
+            CACHE.set(k, p); return p;
+          };
+          BPX.prof = prof;
+          BPX.isBotId = (q) => { q = +String(q || "").replace(/[^0-9]/g, "") || 0; return q >= RIDLO && q < RIDLO + RIDN; };
+
+          // ---------- 3) the card: the real public card markup (J.cardHTML) + the same extras real cards get ----------
+          const J = () => window.__J || {};
+          const ridH = (id) => bt(() => J().rid(id), `<span class="jid n" dir="ltr"><b>#${id}</b></span>`);
+          const idTH = (id) => bt(() => { const t = __K.idTitle(id); return `<span class="k-idt t-${t}">${E(_t("kT_" + t))}</span>`; }, "");
+          const cNm = (c) => bt(() => { const f = FLAGS.find((x) => x.c === c); return f ? flagName(f) : c; }, c);
+          const skNm = (i) => bt(() => (SKINS[i].t === "fl" ? cNm(SKINS[i].fl) : _t(SKINS[i].n) || SKINS[i].n), "");
+          const skSw = (i) => { const s = SKINS[i]; if (!s) return ""; return s.t === "fl" ? flagImg(s.fl, "bp-sws bp-swf") : `<i class="bp-sws" style="background:${E(bt(() => swatch(s), "#3a4"))}"></i>`; };
+          const ttNm = (t) => bt(() => aName(ACH.find((a) => a[0] === t)), "");
+          const TCL = ["#cd7f32", "#c9d3e0", "#ffcc33", "#36e0ff", "#3d7bff", "#b45cff", "#ff3b3b", "#ffffff"];
+          const fake = (p) => ({ id: "bot-" + p.id, username: p.n, avatar: p.av, level: p.lv, player_id: p.id, shown_id: p.id, vip_id: null, role: null, in_match: true, online: true,
+            stats: { games: p.st.games, kills: p.st.kills, best: p.st.best, wins: p.st.wins, trophies: p.st.trophies }, is_self: false, blocked_by_me: false, is_friend: false, incoming: false, requested: false });
+          const actsH = () => `<span class="j-stc bp-busy" role="status">${E(_t("bpBusy"))}</span>` +
+            [["b13Add", "+ "], ["bpMsg", ""], ["bpGift", ""], ["bpInv", ""], ["onReport", ""]].map(([k, pre]) => `<button type="button" class="x-btn x-sub bp-na" aria-disabled="true" data-bpna="1">${pre}${E(_t(k))}</button>`).join("");
+          const extraH = (p, x) => {
+            const tn = p.title ? ttNm(p.title) : "";
+            const now = x && x.len ? `<span class="bp-now">${E(_t("ssbNow"))} · ${E(_t("kLen"))} <b dir="ltr">${NF(x.len)}</b></span>` : "";
+            return `<div class="k-cx bp-cx"><span class="k-cc">${flagImg(p.cc)} ${E(cNm(p.cc))}</span>` +
+              (tn ? `<span class="bp-tt">${E(tn)}</span>` : "") + `<span class="bp-sk">${skSw(p.skin)}<small>${E(_t("bpSkin"))}</small> <bdi>${E(skNm(p.skin))}</bdi></span>${now}</div>`;
+          };
+          const recH = (p) => `<div class="bp-rec"><small class="bp-rh">${E(_t("bpRecent"))}</small><div class="bp-rl">` + p.rec.map((r) =>
+            `<span class="bp-rr${r.rank === 1 ? " w" : ""}"><b>${E(_t(r.m))}</b><em dir="ltr">#${r.rank}/${r.of}</em><small><span dir="ltr">${NF(r.len)}</span> ${E(_t("kLen"))} · <span dir="ltr">${r.k}</span> ${E(_t("kills"))}</small></span>`).join("") + `</div></div>`;
+          const cardOf = (p, x) => {
+            const t = document.createElement("div"); t.innerHTML = bt(() => J().cardHTML(fake(p)), ""); const box = t.firstElementChild; if (!box) return "";
+            box.classList.add("bp-bot"); box.dataset.bp = p.key; box.removeAttribute("data-q"); box.removeAttribute("data-jid");
+            const row = box.querySelector(".j-prow"); if (row) row.insertAdjacentHTML("beforeend", idTH(p.id));
+            const av = box.querySelector(".j-pav"); if (av) { av.classList.add("k-fr", "k-fr-none", "bp-fr"); av.style.setProperty("--bpc", TCL[bt(() => B13.tier(p.lv), 0)] || TCL[0]); }
+            const hd = box.querySelector(".j-pch"); if (hd) hd.insertAdjacentHTML("afterend", extraH(p, x));
+            const sg = box.querySelector(".j-psg"); if (sg) sg.insertAdjacentHTML("afterend", recH(p));
+            const ba = box.querySelector(".j-pba"); if (ba) ba.innerHTML = actsH();
+            return `<div class="j-pcw bp-w">${box.outerHTML}<button type="button" class="x-btn x-sub j-pcx" data-b13x="1">${E(_t("back"))}</button></div>`;
+          };
+          const realOf = (x) => bt(() => (x.pid ? x.pid : (snakes.find((s) => s && s.pid && strip(s.name) === strip(x.n)) || {}).pid), 0);
+          BPX.open = (x) => {
+            if (!x) return; if (typeof x === "string") x = { n: x };
+            const pid = realOf(x); if (pid && J().card) return J().card(pid); // a real player (or a leaver's AI-held snake) keeps the real card
+            const p = x.rv ? Object.assign(prof("Nemesis"), { n: strip(x.n) || "Nemesis" }) : prof(x.n); BPX.last = p;
+            try { $("b13pop").classList.add("j-pp"); } catch (_) {}
+            B13.pop(cardOf(p, x)); try { $("b13pop").classList.add("j-pp"); } catch (_) {}
+          };
+          BPX.card = (n) => cardOf(prof(n), null);
+          // every button on a bot card is a neutral "in a match" state; nothing reaches the friend/chat/gift/party/report code or the ID shop
+          window.addEventListener("click", (e) => {
+            const t = e.target && e.target.closest ? e.target : null; if (!t) return;
+            const box = t.closest(".bp-bot"); if (!box) return;
+            if (t.closest("[data-b13x]")) return;
+            e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+            if (t.closest("[data-bpna]")) { const s = box.querySelector(".bp-busy"); if (s) { s.classList.remove("bp-pl"); void s.offsetWidth; s.classList.add("bp-pl"); } }
+          }, true);
+
+          // ---------- 4) every place that opens an opponent ----------
+          const SMo = window.__SM;
+          if (SMo && typeof SMo.openWho === "function") { const o = SMo.openWho; SMo.openWho = (x) => { if (x && x.bot && !x.pid && !x.ad) return BPX.open(x); return o(x); }; }
+          const Ko = window.__K;
+          if (Ko && typeof Ko.tapSnake === "function") { const o = Ko.tapSnake; Ko.tapSnake = (who) => {
+            if (who && who !== player && who.bot && !who.pid && !who.ad) { BPX.open({ n: String(who.name || ""), len: Math.round(who.len || 0), sk: who.skin, bot: 1, rv: !!who.rv }); return true; }
+            return o(who); }; }
+          const SSo = window.__SSB;
+          if (SSo) {
+            SSo.open = (n, x) => BPX.open(Object.assign({ n: String(n || "") }, x || {}));
+            SSo.isP = (n) => !!strip(n) && !bt(() => snakes.some((s) => s && s.pid && strip(s.name) === strip(n)), false);
+            SSo.persona = (n) => { const p = prof(n); return { n: p.n, av: p.av, lv: p.lv, m: p.st.games, best: p.st.best, cc: p.cc, mo: 1 }; };
+          }
+          // nameplates: a bot's level is its profile level (the worker's random lvl is ignored for display)
+          if (typeof B13C === "object" && typeof B13C.lvOf === "function") { const o = B13C.lvOf; B13C.lvOf = (sn) => (sn && sn !== player && sn.bot && !sn.pid && !sn.ad ? (sn.rv ? prof("Nemesis") : prof(sn.name)).lv : o(sn)); BPX.lvOf = (sn) => B13C.lvOf(sn); }
+          const lvB = (n) => bt(() => B13.lv(n), `<small dir="ltr">${n}</small>`);
+          // Recent players: portrait + ID + level for bots
+          const decoRecent = () => { const a = (SMo && SMo._rp) || [];
+            document.querySelectorAll("#b13pb .ss-rp [data-ssw]").forEach((row) => { const x = a[+row.dataset.ssw]; if (!x || !x.bot || x.pid || row.dataset.bpd) return; row.dataset.bpd = 1;
+              const p = prof(x.n), sw = row.querySelector(".ss-sw, .ssb-pt"); if (sw) sw.outerHTML = bt(() => B13G.h(p.av, "ssb-pt ssb-ps bp-pt"), "");
+              row.querySelectorAll(".ssb-lv, .ss-ai").forEach((c) => c.remove());
+              const nm = row.querySelector(".ss-rpn"); if (nm) nm.insertAdjacentHTML("beforeend", `<span class="bp-rid">${ridH(p.id)}${lvB(p.lv)}</span>`); }); };
+          if (SMo && typeof SMo.recent === "function") { const o = SMo.recent; SMo.recent = function () { const r = o.apply(this, arguments); bt(() => decoRecent()); return r; }; }
+          // Game Over "Killed by": portrait, ID and level like a real player; a flag skin is named next to its real flag
+          const decoKb = () => {
+            const kb = $("sskb"), k = SMo && SMo.killer; if (!kb || !k) return;
+            const meta = kb.querySelector(".ss-kbm");
+            if (meta && !meta.dataset.bpf) { meta.dataset.bpf = 1; const s = SKINS[k.sk];
+              if (s && s.t === "fl") { const tn = [...meta.childNodes].reverse().find((n) => n.nodeType === 3 && n.textContent.includes(skNm(k.sk))); if (tn) { const i = tn.textContent.lastIndexOf(skNm(k.sk)); const a = tn.textContent.slice(0, i), sp = document.createElement("span"); sp.className = "bp-kfl"; sp.innerHTML = flagImg(s.fl) + " " + E(skNm(k.sk)); tn.textContent = a; tn.after(sp); } } }
+            if (!k.bot || k.pid || kb.dataset.bpd) return; kb.dataset.bpd = 1;
+            const p = prof(k.n), sw = kb.querySelector(".ss-sw, .ssb-pt"); if (sw) sw.outerHTML = bt(() => B13G.h(p.av, "ssb-pt ssb-ps bp-pt ss-sw"), "");
+            kb.querySelectorAll(".ssb-lv, .ss-ai").forEach((c) => c.remove());
+            const t = kb.querySelector(".ss-kbt"); if (t) t.insertAdjacentHTML("beforeend", `<span class="bp-rid">${ridH(p.id)}${lvB(p.lv)}</span>`);
+          };
+          BPX.decoKb = decoKb;
+          { const _go = gameOver; gameOver = function () { const r = _go.apply(this, arguments); bt(() => decoKb()); setTimeout(() => bt(() => decoKb()), 60); return r; }; }
+        }
         requestAnimationFrame(loop);
       })();
     </script>
@@ -27937,6 +28131,49 @@ html body.b13h-on #game .x-evo.j-evo .j-evt em, #game .x-evo.j-evo .j-evt em { f
 @media (prefers-reduced-motion: reduce) { #dsg *, #dssh * { animation: none !important; transition: none !important; } }
 #dsg .gx-pr0.gx-pi { grid-template-rows: auto; min-width: 0; padding: 6px 12px; }
 #dsg .gx-pr0.gx-pi .gx-pn { grid-row: auto; }
+
+</style>
+<style id="ss13u-botprof">
+/* 13u botprof */
+.bp-fl { width: 20px; height: 15px; border-radius: 3px; object-fit: cover; vertical-align: -2px; box-shadow: 0 0 0 1px rgba(255,255,255,.35); display: inline-block; }
+.bp-kfl { white-space: nowrap; }
+#sskb .bp-kfl img.bp-fl, .ss-kbm img.bp-fl { position: static !important; display: inline-block !important; width: 16px !important; height: 12px !important; min-width: 0 !important; max-width: none !important; margin: 0 2px 0 0 !important; padding: 0 !important; border: 0 !important; border-radius: 2px !important; object-fit: cover !important; vertical-align: -1px !important; transform: none !important; opacity: 1 !important; inset: auto !important; }
+#sskb .bp-pt { width: 40px !important; height: 40px !important; }
+#skins > button.bp-flb > .x-fe, #skins > button.bp-flb > .x-cc { opacity: 0; }
+.bp-w .bp-bot { max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.bp-w .bp-bot::-webkit-scrollbar { display: none; }
+.bp-bot .j-pav.bp-fr { box-shadow: 0 0 0 3px var(--bpc, #cd7f32), 0 0 12px color-mix(in srgb, var(--bpc, #cd7f32) 55%, transparent); border-radius: 50%; }
+.bp-cx { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.bp-cx .k-cc { display: inline-flex; align-items: center; gap: 5px; }
+.bp-tt { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 10px; font: 800 11px/1 var(--disp, system-ui); color: #2a1a02; background: linear-gradient(90deg, #ffe08a, #e8a92a); white-space: nowrap; }
+.bp-sk { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: #d6defa; white-space: nowrap; min-width: 0; }
+.bp-sk small { color: #9fb0e6; font-size: 11px; }
+.bp-sws { display: inline-block; width: 18px; height: 18px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1.5px rgba(255,255,255,.6); }
+img.bp-sws.bp-swf { object-fit: cover; }
+.bp-now { font-size: 12px; color: #ffd27a; white-space: nowrap; }
+.bp-rec { display: flex; flex-direction: column; gap: 4px; }
+.bp-rh { font: 800 10.5px/1 var(--sans, system-ui); letter-spacing: .08em; text-transform: uppercase; color: #9fb0e6; }
+.bp-rl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.bp-rr { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 3px; border-radius: 10px; background: rgba(0,0,0,.25); min-width: 0; text-align: center; }
+.bp-rr b { font: 800 11px/1.1 var(--sans, system-ui); color: #c9d4ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.bp-rr em { font: 900 14px/1.1 var(--disp, system-ui); font-style: normal; color: #fff; }
+.bp-rr.w em { color: #ffd24a; }
+.bp-rr small { font-size: 10.5px; color: #aeb9e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.bp-bot .j-pba { gap: 5px; }
+.bp-bot .j-pba .bp-busy { flex: 1 1 100%; height: 30px !important; color: #ffd27a; background: rgba(255, 194, 58, .12); border-color: rgba(255, 194, 58, .35); }
+.bp-bot .j-pba .bp-busy.bp-pl { animation: bp-pl .5s ease; }
+@keyframes bp-pl { 30% { transform: scale(1.04); background: rgba(255, 194, 58, .28); } }
+.bp-bot .j-pba .bp-na { opacity: .45; filter: grayscale(.85); cursor: default; flex: 1 1 0; padding: 0 6px !important; font-size: 12.5px !important; height: 32px !important; }
+.bp-rid { display: inline-flex; align-items: center; gap: 4px; margin-inline-start: 4px; }
+.bp-rid .jid { transform: scale(.88); transform-origin: center; }
+@media (max-height: 400px) { .bp-rl { gap: 4px; } .bp-rr { padding: 3px 2px; } .bp-bot .j-pba .bp-na { height: 28px !important; } .bp-bot .j-pba .bp-busy { height: 26px !important; } }
+@media (prefers-reduced-motion: reduce) { .bp-bot .j-pba .bp-busy.bp-pl { animation: none; } }
+body #over #pxrank .j-dc .bp-pt img, #sskb .bp-pt img { width: 100% !important; height: 100% !important; border-radius: 50% !important; border: 0 !important; object-fit: cover !important; }
+/* Item guide flag tiles: fit the real flag picture to the cloth of the waving-flag mask (cell 160px: cloth ~x28-144, y12-104) */
+.gx-flag .gx-m.gx-fc { background-size: 74% 58% !important; background-position: 62% 15% !important; background-repeat: no-repeat !important; }
+#b13pop.j-pp .bp-bot .bp-cx { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; justify-content: center !important; align-items: center !important; gap: 4px 14px !important; }
+#b13pop.j-pp .bp-bot .bp-cx > * { width: auto !important; margin: 0 !important; }
+#b13pop.j-pp .bp-bot .j-pba .bp-busy { height: 28px !important; }
 
 </style>
 </body>
