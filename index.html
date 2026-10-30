@@ -19907,6 +19907,182 @@
             }, { capture: true });
           }
         } catch (e) { try { console.warn("swapfix", e); } catch (_) {} }
+        // ===== ss13u-ai: AI helper for owner #1 + moderators (Edge Function admin-ai, Gemini). SUGGESTIONS ONLY (ss13u_ai/src/ai_game.js) =====
+        // Nothing here performs a moderation action: the AI result is shown as a card ("AI suggestion — you decide"); the human then uses the
+        // existing buttons / confirm dialogs (mod_* / adm2_* RPCs). "Copy reason" only pre-fills the next reason box; "Use this reply" only fills
+        // the reply box. The key lives server-side (Supabase Vault); the server re-checks owner/moderator, scope and limits on every call.
+        // Inserted inside the main IIFE (uses ON, LANG, I18N, _t, esc, toast). No block-level function declarations.
+        try {
+          const AIK = {"aiPanel": ["مساعد الذكاء الاصطناعي", "AI Assist", "Yapay zekâ yardımı", "Assistant IA", "Asistente IA", "AI सहायक"], "aiTitle": ["اقتراح الذكاء الاصطناعي", "AI suggestion", "Yapay zekâ önerisi", "Suggestion de l'IA", "Sugerencia de la IA", "AI का सुझाव"], "aiYouDecide": ["اقتراح من الذكاء الاصطناعي — القرار لك", "AI suggestion — you decide", "Yapay zekâ önerisi — karar senin", "Suggestion de l'IA — c'est toi qui décides", "Sugerencia de la IA — tú decides", "AI का सुझाव — फ़ैसला आपका"], "aiSuggest": ["اقتراح", "Suggest", "Öner", "Suggérer", "Sugerir", "सुझाव"], "aiThinking": ["جاري التفكير…", "Thinking…", "Düşünüyor…", "Réflexion…", "Pensando…", "सोच रहा है…"], "aiSuggested": ["المقترح", "Suggested", "Önerilen", "Suggéré", "Sugerido", "सुझाया गया"], "aiA_none": ["بدون إجراء (رفض البلاغ)", "No action (dismiss)", "İşlem yok (reddet)", "Aucune action (rejeter)", "Sin acción (descartar)", "कोई कार्रवाई नहीं (ख़ारिज करें)"], "aiA_warn": ["بطاقة صفراء (تحذير)", "Yellow card (warning)", "Sarı kart (uyarı)", "Carton jaune (avertissement)", "Tarjeta amarilla (aviso)", "पीला कार्ड (चेतावनी)"], "aiA_mute": ["كتم {n} ساعة", "Mute {n} h", "{n} sa sustur", "Rendre muet {n} h", "Silenciar {n} h", "{n} घंटे म्यूट"], "aiA_ban": ["حظر {n} ساعة", "Ban {n} h", "{n} sa yasakla", "Bannir {n} h", "Bloquear {n} h", "{n} घंटे बैन"], "aiA_perm": ["حظر دائم", "Permanent ban", "Kalıcı yasak", "Bannissement définitif", "Bloqueo permanente", "स्थायी बैन"], "aiA_rename": ["تغيير الاسم إجبارياً", "Force rename", "Adı zorla değiştir", "Renommer de force", "Forzar cambio de nombre", "नाम ज़बरदस्ती बदलें"], "aiA_reset_photo": ["إعادة تعيين الصورة", "Reset photo", "Fotoğrafı sıfırla", "Réinitialiser la photo", "Restablecer foto", "फ़ोटो रीसेट करें"], "aiS_none": ["لا خطر", "No risk", "Risk yok", "Aucun risque", "Sin riesgo", "कोई जोखिम नहीं"], "aiS_low": ["منخفض", "Low", "Düşük", "Faible", "Bajo", "कम"], "aiS_medium": ["متوسط", "Medium", "Orta", "Moyen", "Medio", "मध्यम"], "aiS_high": ["عالٍ", "High", "Yüksek", "Élevé", "Alto", "ज़्यादा"], "aiConf": ["الثقة {n}%", "Confidence {n}%", "Güven %{n}", "Confiance {n} %", "Confianza {n} %", "भरोसा {n}%"], "aiReason": ["السبب المقترح", "Suggested reason", "Önerilen neden", "Raison suggérée", "Motivo sugerido", "सुझाया गया कारण"], "aiCopy": ["نسخ السبب", "Copy reason", "Nedeni kopyala", "Copier la raison", "Copiar motivo", "कारण कॉपी करें"], "aiCopied": ["تم نسخ السبب. راح ينكتب بأول خانة سبب تفتحها، راجعه قبل التأكيد.", "Reason copied. It fills the next reason box you open; check it before you confirm.", "Neden kopyalandı. Açtığın ilk neden kutusuna yazılır; onaylamadan önce kontrol et.", "Raison copiée. Elle remplit la prochaine case « raison » ; vérifie-la avant de confirmer.", "Motivo copiado. Se rellena en la próxima casilla de motivo; revísalo antes de confirmar.", "कारण कॉपी हो गया। अगला कारण बॉक्स इससे भर जाएगा; पुष्टि से पहले जाँच लें।"], "aiOpen": ["فتح اللاعب", "Open player", "Oyuncuyu aç", "Ouvrir le joueur", "Abrir jugador", "प्लेयर खोलें"], "aiUse": ["استخدم هذا الرد", "Use this reply", "Bu yanıtı kullan", "Utiliser cette réponse", "Usar esta respuesta", "यह जवाब इस्तेमाल करें"], "aiUsedR": ["انحط الرد بالخانة. راجعه وبعدين اضغط إرسال.", "Reply placed in the box. Check it, then tap Send.", "Yanıt kutuya yazıldı. Kontrol et, sonra Gönder'e dokun.", "Réponse placée dans la case. Vérifie-la puis touche Envoyer.", "Respuesta puesta en la casilla. Revísala y toca Enviar.", "जवाब बॉक्स में डाल दिया। जाँचें, फिर भेजें दबाएँ।"], "aiDraft": ["مسودة الرد ({x})", "Draft reply ({x})", "Yanıt taslağı ({x})", "Brouillon de réponse ({x})", "Borrador de respuesta ({x})", "जवाब का ड्राफ़्ट ({x})"], "aiEscalate": ["هذا يحتاج أكثر من صلاحية المشرف. خلّي المالك يراجعه.", "This needs more than a moderator can do. Let the owner review it.", "Bu, moderatörün yetkisini aşıyor. Sahip incelesin.", "Cela dépasse ce qu'un modérateur peut faire. Laisse le propriétaire l'examiner.", "Esto requiere más de lo que puede hacer un moderador. Que lo revise el propietario.", "यह मॉडरेटर के अधिकार से ज़्यादा है। मालिक को देखने दें।"], "aiNeedsOwner": ["الأفضل يتعامل وياه المالك.", "Better handled by the owner.", "Bunu sahibin ele alması daha iyi.", "Mieux vaut laisser le propriétaire s'en occuper.", "Mejor que lo gestione el propietario.", "बेहतर है कि मालिक इसे देखें।"], "aiRetry": ["حاول مرة ثانية", "Try again", "Tekrar dene", "Réessayer", "Reintentar", "फिर से कोशिश करें"], "aiPanelNote": ["الذكاء الاصطناعي يقترح فقط. ما يصير أي شي إلا إذا ضغطت إجراء بنفسك.", "The AI only suggests. Nothing happens until you click an action yourself.", "Yapay zekâ yalnızca önerir. Sen bir işleme tıklamadan hiçbir şey olmaz.", "L'IA ne fait que suggérer. Rien ne se passe tant que tu ne cliques pas toi-même sur une action.", "La IA solo sugiere. No pasa nada hasta que tú mismo pulses una acción.", "AI सिर्फ़ सुझाव देता है। जब तक आप ख़ुद कोई कार्रवाई न दबाएँ, कुछ नहीं होता।"], "aiQuota": ["استخدمت {n} من {m} اليوم", "Used {n} of {m} today", "Bugün {m} hakkın {n} tanesi kullanıldı", "{n} sur {m} utilisés aujourd'hui", "{n} de {m} usados hoy", "आज {m} में से {n} इस्तेमाल"], "aiTabScan": ["فحص الأسماء والدردشة", "Scan names & chat", "Adları ve sohbeti tara", "Analyser noms et chat", "Revisar nombres y chat", "नाम और चैट जाँचें"], "aiTabAsk": ["اسأل عن لاعب", "Ask about a player", "Bir oyuncu hakkında sor", "Questions sur un joueur", "Preguntar por un jugador", "किसी प्लेयर के बारे में पूछें"], "aiScanHint": ["يفحص أحدث أسماء اللاعبين والنبذات ورسائل الدردشة المبلّغ عنها بحثاً عن محتوى مسيء. النتائج لمراجعتك فقط.", "Checks the newest player names, bios and reported chat lines for offensive content. Results are for your review only.", "En yeni oyuncu adlarını, biyografileri ve şikâyet edilen sohbet satırlarını rahatsız edici içerik için tarar. Sonuçlar yalnızca senin incelemen için.", "Vérifie les noms, bios et messages signalés les plus récents à la recherche de contenu offensant. Les résultats sont seulement pour ta revue.", "Revisa los nombres, biografías y mensajes de chat denunciados más recientes en busca de contenido ofensivo. Los resultados son solo para tu revisión.", "नए प्लेयर नाम, बायो और रिपोर्ट की गई चैट में आपत्तिजनक सामग्री जाँचता है। नतीजे सिर्फ़ आपकी समीक्षा के लिए हैं।"], "aiScanBtn": ["افحص الآن", "Scan now", "Şimdi tara", "Analyser", "Revisar ahora", "अभी जाँचें"], "aiScanNone": ["ما لقينا شي مسيء من بين {n} عنصر.", "Nothing offensive found in {n} items.", "{n} öğede rahatsız edici bir şey bulunmadı.", "Rien d'offensant dans {n} éléments.", "Nada ofensivo en {n} elementos.", "{n} चीज़ों में कुछ आपत्तिजनक नहीं मिला।"], "aiScanN": ["{n} مؤشَّر من أصل {m}", "{n} flagged of {m} checked", "{m} öğeden {n} işaretlendi", "{n} signalés sur {m} vérifiés", "{n} marcados de {m} revisados", "{m} में से {n} चिह्नित"], "aiK_name": ["اسم", "Name", "Ad", "Nom", "Nombre", "नाम"], "aiK_chat": ["دردشة", "Chat", "Sohbet", "Chat", "Chat", "चैट"], "aiAskPid": ["رقم اللاعب", "Player ID", "Oyuncu kimliği", "ID du joueur", "ID del jugador", "प्लेयर ID"], "aiAskQ": ["سؤالك (اختياري)", "Your question (optional)", "Sorun (isteğe bağlı)", "Ta question (facultatif)", "Tu pregunta (opcional)", "आपका सवाल (वैकल्पिक)"], "aiAskBtn": ["اسأل", "Ask", "Sor", "Demander", "Preguntar", "पूछें"], "aiAskHint": ["الإجابة تعتمد فقط على بلاغات اللاعب وبطاقاته وحظوراته وإجراءات الفريق عليه.", "Answers use only this player's reports, cards, bans and staff actions.", "Yanıtlar yalnızca bu oyuncunun şikâyetlerine, kartlarına, yasaklarına ve ekip işlemlerine dayanır.", "Les réponses n'utilisent que les signalements, cartons, bannissements et actions de l'équipe sur ce joueur.", "Las respuestas solo usan las denuncias, tarjetas, bloqueos y acciones del equipo sobre este jugador.", "जवाब सिर्फ़ इस प्लेयर की रिपोर्ट, कार्ड, बैन और टीम की कार्रवाइयों पर आधारित हैं।"], "aiRisk": ["الخطورة: {x}", "Risk: {x}", "Risk: {x}", "Risque : {x}", "Riesgo: {x}", "जोखिम: {x}"], "aiInline": ["نصيحة: اضغط «اقتراح» على أي بلاغ أو طلب دعم.", "Tip: tap Suggest on any report or support request.", "İpucu: herhangi bir şikâyette veya destek talebinde Öner'e dokun.", "Astuce : touche Suggérer sur un signalement ou une demande d'assistance.", "Consejo: toca Sugerir en cualquier denuncia o solicitud de soporte.", "टिप: किसी भी रिपोर्ट या सपोर्ट अनुरोध पर सुझाव दबाएँ।"], "aiE_ai_busy": ["الذكاء الاصطناعي مشغول هسه (حد الاستخدام المجاني). جرّب بعد دقيقة.", "The AI is busy right now (free limit). Try again in a minute.", "Yapay zekâ şu an meşgul (ücretsiz limit). Bir dakika sonra tekrar dene.", "L'IA est occupée (limite gratuite). Réessaie dans une minute.", "La IA está ocupada ahora (límite gratuito). Inténtalo en un minuto.", "AI अभी व्यस्त है (मुफ़्त सीमा)। एक मिनट बाद कोशिश करें।"], "aiE_ai_cap": ["وصلت حد الذكاء الاصطناعي لليوم. يتجدد منتصف الليل (UTC).", "You reached today's AI limit. It resets at midnight UTC.", "Bugünkü yapay zekâ limitine ulaştın. UTC gece yarısı sıfırlanır.", "Tu as atteint la limite IA du jour. Elle se réinitialise à minuit UTC.", "Has alcanzado el límite de IA de hoy. Se reinicia a medianoche UTC.", "आज की AI सीमा पूरी हो गई। आधी रात UTC पर फिर शुरू होगी।"], "aiE_ai_slow": ["طلبات كثيرة. انتظر دقيقة وجرّب مرة ثانية.", "Too many requests. Wait a minute and try again.", "Çok fazla istek. Bir dakika bekleyip tekrar dene.", "Trop de demandes. Attends une minute et réessaie.", "Demasiadas solicitudes. Espera un minuto y vuelve a intentarlo.", "बहुत ज़्यादा अनुरोध। एक मिनट रुककर फिर कोशिश करें।"], "aiE_ai_off": ["مساعد الذكاء الاصطناعي متوقف.", "The AI helper is switched off.", "Yapay zekâ yardımcısı kapalı.", "L'assistant IA est désactivé.", "El asistente de IA está desactivado.", "AI सहायक बंद है।"], "aiE_ai_error": ["الذكاء الاصطناعي ما گدر يجاوب. جرّب مرة ثانية.", "The AI could not answer. Try again.", "Yapay zekâ yanıt veremedi. Tekrar dene.", "L'IA n'a pas pu répondre. Réessaie.", "La IA no pudo responder. Inténtalo de nuevo.", "AI जवाब नहीं दे सका। फिर से कोशिश करें।"], "aiE_not_allowed": ["هذا اللاعب يراجعه المالك فقط.", "Only the owner can review this player.", "Bu oyuncuyu yalnızca sahip inceleyebilir.", "Seul le propriétaire peut examiner ce joueur.", "Solo el propietario puede revisar a este jugador.", "इस प्लेयर की समीक्षा सिर्फ़ मालिक कर सकता है।"], "aiE_owner_protected": ["حساب المالك ما يتحلل أبداً.", "The owner account is never analysed.", "Sahip hesabı asla analiz edilmez.", "Le compte du propriétaire n'est jamais analysé.", "La cuenta del propietario nunca se analiza.", "मालिक के खाते का विश्लेषण कभी नहीं होता।"], "aiE_not_found": ["ما موجود (يمكن انحل).", "Not found (maybe already handled).", "Bulunamadı (zaten ele alınmış olabilir).", "Introuvable (peut-être déjà traité).", "No encontrado (quizá ya se gestionó).", "नहीं मिला (शायद पहले ही निपटाया गया)।"], "aiE_user_not_found": ["ماكو لاعب بهذا الرقم.", "No player with that ID.", "Bu kimlikle oyuncu yok.", "Aucun joueur avec cet ID.", "No hay ningún jugador con ese ID.", "इस ID का कोई प्लेयर नहीं।"], "aiE_net": ["مشكلة بالاتصال. جرّب مرة ثانية.", "Connection problem. Try again.", "Bağlantı sorunu. Tekrar dene.", "Problème de connexion. Réessaie.", "Problema de conexión. Inténtalo de nuevo.", "कनेक्शन की समस्या। फिर से कोशिश करें।"], "aiE_signed_out": ["سجّل دخولك مرة ثانية.", "Please sign in again.", "Lütfen tekrar giriş yap.", "Reconnecte-toi.", "Vuelve a iniciar sesión.", "कृपया फिर से साइन इन करें।"], "aiE_bad_input": ["اكتب رقم اللاعب.", "Enter a player ID.", "Bir oyuncu kimliği gir.", "Saisis un ID de joueur.", "Escribe un ID de jugador.", "प्लेयर ID डालें।"]};
+          for (const k in AIK) if (!I18N[k]) I18N[k] = AIK[k];
+          const AI = (window.__SSAI = window.__SSAI || {});
+          if (!AI.v1) {
+            AI.v1 = 1;
+            const tvA = (f, d) => { try { const v = f(); return v === undefined || v === null ? d : v; } catch (_) { return d; } };
+            const L = (k, v) => String(_t(k, v)), E = (k, v) => esc(L(k, v));
+            const prof = () => tvA(() => ON.st.profile, null);
+            AI.role = () => { const p = prof(); if (!ON || !ON.on || !p) return ""; if (p.role === "owner" && +p.player_id === 1) return "owner"; if (p.role === "moderator" && +p.player_id !== 1) return "moderator"; return ""; };
+            AI.cache = {}; AI.quota = null; AI.pend = null;
+            AI.P = { tab: "scan", pid: "", q: "" };
+            AI.call = async (task, args) => {
+              const r = await ON.call("/functions/v1/admin-ai", Object.assign({ task, lang: LANG }, args || {}), { timeout: 75000, ok: [400, 401, 403, 404, 405, 429, 500, 502, 503] });
+              const j = (r && r.j) || {};
+              if (j.used != null && j.cap != null) AI.quota = { used: +j.used, cap: +j.cap };
+              if (!j.ok) throw Object.assign(new Error(j.err || "ai_error"), { code: String(j.err || "ai_error") });
+              return j;
+            };
+            AI.errT = (e) => { const c = String((e && (e.code || e.message)) || ""); return I18N["aiE_" + c] ? L("aiE_" + c) : /net|abort|fetch/i.test(c) ? L("aiE_net") : L("aiE_ai_error"); };
+            AI.quotaLoad = async () => { try { await AI.call("quota"); } catch (_) {} AI.repaintPanel(); };
+            const IC = (n) => tvA(() => window.SSAdmin.icon(n), "");
+            const SPK = '<svg class="sa-ic ai-spk" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 2.5l1.9 5.4 5.4 1.9-5.4 1.9L11 17.1l-1.9-5.4-5.4-1.9 5.4-1.9zM18.5 13.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9zM5.5 15.5l.7 1.7 1.7.7-1.7.7-.7 1.7-.7-1.7-1.7-.7 1.7-.7z"/></svg>';
+            AI.SPK = SPK;
+            const pill = (t, c) => `<span class="sa-pill${c ? " " + c : ""}">${esc(t)}</span>`;
+            const btn = (a, label, cls, data, icon) => `<button type="button" class="sa-btn${cls ? " " + cls : ""}" data-ai="${a}"${Object.entries(data || {}).map(([k, v]) => ` data-${k}="${esc(v)}"`).join("")}>${icon || ""}<span>${label}</span></button>`;
+            const sev = (s) => pill(L("aiS_" + (I18N["aiS_" + s] ? s : "low")), s === "high" ? "red" : s === "medium" ? "amber" : "grey");
+            const act = (r) => r.action === "ban" ? (r.hours ? L("aiA_ban", { n: r.hours }) : L("aiA_perm")) : r.action === "mute" ? L("aiA_mute", { n: r.hours || 24 }) : L("aiA_" + (I18N["aiA_" + r.action] ? r.action : "none"));
+            AI.sugBtn = (kind, id) => btn(kind, E("aiSuggest"), "ghost sm ai-sb", { id }, SPK);
+            const bodyRep = (k, r) => {
+              const ev = (r.evidence || []).filter(Boolean).map((e) => `<p class="sa-quote" dir="auto">“${esc(e)}”</p>`).join("");
+              return `<p class="ai-sum" dir="auto">${esc(r.summary)}</p><div class="ai-row">${sev(r.severity)}${pill(L("aiConf", { n: Math.round((+r.confidence || 0) * 100) }), "grey")}</div>${ev}` +
+                `<div class="ai-sug"><small>${E("aiSuggested")}</small><b>${esc(act(r))}</b></div>` +
+                (r.reason ? `<small class="ai-lab">${E("aiReason")}</small><p class="ai-reason" dir="auto">${esc(r.reason)}</p>` : "") +
+                (r.escalate && AI.role() === "moderator" ? `<p class="sa-warn">${IC("lock")}${E("aiEscalate")}</p>` : "") +
+                (r.note ? `<small class="sa-note ai-note" dir="auto">${esc(r.note)}</small>` : "") +
+                `<div class="sa-iacts">${r.reason ? btn("copy", E("aiCopy"), "amber sm", { k }, IC("edit")) : ""}${r.player && r.player.uid ? btn("open", E("aiOpen"), "ghost sm", { uid: r.player.uid }, IC("users")) : ""}</div>`;
+            };
+            const bodySup = (k, r) => `<p class="ai-sum" dir="auto">${esc(r.summary)}</p><small class="ai-lab">${E("aiDraft", { x: String(r.lang || "").toUpperCase() })}</small>` +
+              `<textarea class="ai-ta" id="ai-ta-${esc(k.replace(":", "-"))}" rows="4" maxlength="1000" dir="auto">${esc(r.reply)}</textarea>` +
+              (r.needs_owner && AI.role() === "moderator" ? `<p class="sa-warn">${IC("lock")}${E("aiNeedsOwner")}</p>` : "") + (r.note ? `<small class="sa-note ai-note" dir="auto">${esc(r.note)}</small>` : "") +
+              `<div class="sa-iacts">${btn("use", E("aiUse"), "main sm", { k }, IC("mail"))}</div>`;
+            const bodyScan = (r) => {
+              const F = r.flags || [];
+              if (!F.length) return `<p class="ai-sum">${E("aiScanNone", { n: r.scanned | 0 })}</p>`;
+              return `<p class="sa-note">${E("aiScanN", { n: F.length, m: r.scanned | 0 })}</p>` + F.map((f) => `<div class="ai-flag"><div class="ai-row">${pill(L(f.kind === "chat" ? "aiK_chat" : "aiK_name"), "gold")}${sev(f.severity)}` +
+                (f.player && f.player.uid ? `<button type="button" class="sa-who" data-ai="open" data-uid="${esc(f.player.uid)}"><bdi>${esc(f.player.name || "?")}</bdi><small dir="ltr">#${esc(f.player.pid || "")}</small></button>` : "") + `</div>` +
+                `<p class="sa-quote" dir="auto">“${esc(f.text)}”</p><small class="sa-note" dir="auto">${esc(f.why)}${f.suggest && f.suggest !== "none" ? " · " + esc(act({ action: f.suggest, hours: 24 })) : ""}</small></div>`).join("");
+            };
+            const bodyAsk = (r) => `<div class="ai-row">${r.player ? `<button type="button" class="sa-who" data-ai="open" data-uid="${esc(r.player.uid || "")}"><bdi>${esc(r.player.name || "?")}</bdi><small dir="ltr">#${esc(r.player.pid || "")}</small></button>` : ""}${pill(L("aiRisk", { x: L("aiS_" + (I18N["aiS_" + r.risk] ? r.risk : "none")) }), r.risk === "high" ? "red" : r.risk === "medium" ? "amber" : "grey")}</div>` +
+              `<p class="ai-sum" dir="auto">${esc(r.answer)}</p>${(r.points || []).length ? `<ul class="ai-pts" dir="auto">${r.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}`;
+            AI.card = (k) => {
+              const c = AI.cache[k]; if (!c) return "";
+              const kind = k.split(":")[0];
+              let b = "";
+              if (c.st === "load") b = `<div class="ai-load"><div class="sa-load"><i></i><i></i><i></i></div><small>${E("aiThinking")}</small></div>`;
+              else if (c.st === "err") b = `<p class="sa-err">${esc(c.msg)}</p><div class="sa-iacts">${btn("retry", E("aiRetry"), "sm", { k }, IC("refresh"))}</div>`;
+              else b = kind === "rep" ? bodyRep(k, c.r) : kind === "sup" ? bodySup(k, c.r) : kind === "scan" ? bodyScan(c.r) : bodyAsk(c.r);
+              return `<div class="ai-card" data-aikey="${esc(k)}"><div class="ai-h">${SPK}<b>${E("aiYouDecide")}</b><span class="sa-sp"></span>` +
+                (kind === "rep" || kind === "sup" ? `<button type="button" class="sa-x ai-x" data-ai="x" data-k="${esc(k)}" aria-label="×">${IC("close")}</button>` : "") + `</div>${b}</div>`;
+            };
+            AI.panelHTML = () => {
+              const P = AI.P, q = AI.quota;
+              const seg = `<div class="sa-seg ai-seg" role="tablist">${[["scan", "aiTabScan"], ["ask", "aiTabAsk"]].map(([v, l]) => `<button type="button" role="tab" class="${P.tab === v ? "on" : ""}" data-ai="tab" data-v="${v}">${E(l)}</button>`).join("")}</div>`;
+              const busy = (k) => AI.cache[k] && AI.cache[k].st === "load";
+              const body = P.tab === "scan"
+                ? `<p class="sa-note">${E("aiScanHint")}</p><div class="sa-iacts">${btn("scan", E("aiScanBtn"), "main", {}, SPK).replace("<button ", busy("scan:0") ? "<button disabled " : "<button ")}</div>${AI.card("scan:0")}`
+                : `<p class="sa-note">${E("aiAskHint")}</p><form class="ai-ask" data-aiform="ask"><input id="ai-pid" type="text" inputmode="numeric" dir="ltr" maxlength="9" autocomplete="off" placeholder="${E("aiAskPid")}" value="${esc(P.pid)}">` +
+                  `<input id="ai-q" type="text" dir="auto" maxlength="300" autocomplete="off" placeholder="${E("aiAskQ")}" value="${esc(P.q)}"><button type="submit" class="sa-btn main"${busy("ask:0") ? " disabled" : ""}>${SPK}<span>${E("aiAskBtn")}</span></button></form>${AI.card("ask:0")}`;
+              return `<div class="ai-panel"><p class="ai-top">${SPK}<span>${E("aiPanelNote")}</span>${q ? `<small dir="auto">${E("aiQuota", { n: q.used, m: q.cap })}</small>` : ""}</p>${seg}${body}<p class="sa-note ai-tip">${E("aiInline")}</p></div>`;
+            };
+            AI.repaintPanel = () => { document.querySelectorAll(".ai-panel").forEach((p) => { const f = p.querySelector("#ai-q"), d = p.querySelector("#ai-pid"); if (f) AI.P.q = f.value; if (d) AI.P.pid = d.value; const h = document.createElement("div"); h.innerHTML = AI.panelHTML(); p.replaceWith(h.firstChild); }); };
+            AI.paintKey = (k, anchor) => {
+              const cur = document.querySelectorAll(`.ai-card[data-aikey="${k}"]`);
+              if (k.startsWith("scan:") || k.startsWith("ask:")) { AI.repaintPanel(); return; }
+              if (cur.length) { cur.forEach((el) => { if (!AI.cache[k]) { el.remove(); return; } const h = document.createElement("div"); h.innerHTML = AI.card(k); el.replaceWith(h.firstChild); }); return; }
+              if (anchor && AI.cache[k]) anchor.insertAdjacentHTML("beforeend", AI.card(k));
+            };
+            AI.run = async (k, task, args, anchor) => {
+              if (AI.cache[k] && AI.cache[k].st === "load") return;
+              AI.cache[k] = { st: "load", task, args }; AI.paintKey(k, anchor);
+              try { const j = await AI.call(task, args); AI.cache[k] = { st: "ok", r: j.result || {}, task, args }; }
+              catch (e) { AI.cache[k] = { st: "err", msg: AI.errT(e), task, args }; }
+              AI.paintKey(k); AI.repaintPanel();
+            };
+            const say = (host, m, bad) => { try { if (host && host.id === "kadm" && window.SSAdmin) { window.SSAdmin.toast(m, bad); return; } } catch (_) {} try { toast(m); } catch (_) {} };
+            // "Copy reason": clipboard + pre-fill the NEXT empty reason box that opens within 3 minutes (the human still confirms)
+            const prefill = (root) => {
+              if (!AI.pend || Date.now() - AI.pend.at > 180000) { AI.pend = null; return; }
+              const ta = root.querySelector("#md-dr, #sa-dr");
+              if (ta && !ta.value) { ta.value = AI.pend.t; AI.pend = null; try { ta.dispatchEvent(new Event("input", { bubbles: true })); } catch (_) {} }
+            };
+            const openPlayer = (host, uid) => {
+              if (!uid) return;
+              if (host.id === "kadm") { try { window.SSAdmin.openPlayer(uid); } catch (_) {} return; }
+              const sh = host.querySelector(".ai-w"); if (sh) sh.remove();
+              const mn = host.querySelector(".md-main"); if (!mn) return;
+              const b = document.createElement("button"); b.type = "button"; b.dataset.m = "pl"; b.dataset.id = uid; b.className = "x-hide"; mn.appendChild(b); b.click(); b.remove();
+            };
+            AI.click = (el, host) => {
+              const a = el.dataset.ai, d = el.dataset;
+              if (a === "rep" || a === "sup") { const k = a + ":" + d.id; return AI.run(k, a === "rep" ? "report" : "support", { id: +d.id }, el.closest(".sa-item")); }
+              if (a === "retry") { const c = AI.cache[d.k]; if (!c) return; return AI.run(d.k, c.task, c.args); }
+              if (a === "x") { delete AI.cache[d.k]; AI.paintKey(d.k); return; }
+              if (a === "copy") {
+                const c = AI.cache[d.k]; const t = tvA(() => c.r.reason, ""); if (!t) return;
+                AI.pend = { t, at: Date.now() };
+                try { navigator.clipboard && navigator.clipboard.writeText(t).catch(() => {}); } catch (_) {}
+                say(host, L("aiCopied")); return;
+              }
+              if (a === "use") {
+                const c = AI.cache[d.k], id = d.k.split(":")[1], ta = el.closest(".ai-card") && el.closest(".ai-card").querySelector(".ai-ta");
+                const txt = (ta ? ta.value : tvA(() => c.r.reply, "")).trim(); if (!txt) return;
+                const box = host.querySelector("#md-rp" + id) || host.querySelector("#sa-sr" + id);
+                if (box) { box.value = txt.slice(0, +box.maxLength > 0 ? +box.maxLength : 1000); box.focus({ preventScroll: true }); try { box.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_) {} say(host, L("aiUsedR")); }
+                else { try { navigator.clipboard && navigator.clipboard.writeText(txt).catch(() => {}); } catch (_) {} say(host, L("aiCopied")); }
+                return;
+              }
+              if (a === "open") return openPlayer(host, d.uid);
+              if (a === "tab") { AI.P.tab = d.v; AI.repaintPanel(); return; }
+              if (a === "scan") return AI.run("scan:0", "scan", {});
+              if (a === "sheet") return AI.sheet(host);
+              if (a === "sheetx") { const w = host.querySelector(".ai-w"); if (w) w.remove(); return; }
+            };
+            AI.ask = (form) => {
+              const pid = (form.querySelector("#ai-pid").value || "").trim().replace(/^#/, ""), q = (form.querySelector("#ai-q").value || "").trim();
+              AI.P.pid = pid; AI.P.q = q;
+              if (!/^\d{1,9}$/.test(pid)) { AI.cache["ask:0"] = { st: "err", msg: L("aiE_bad_input"), task: "player", args: {} }; AI.repaintPanel(); return; }
+              AI.run("ask:0", "player", { pid: +pid, question: q });
+            };
+            // moderator panel (#kmod): AI header button opens the AI sheet (styled like the panel's dialogs)
+            AI.sheet = (host) => {
+              let w = host.querySelector(".ai-w"); if (w) w.remove();
+              w = document.createElement("div"); w.className = "sa-dlgw ai-w"; w.setAttribute("dir", LANG === "ar" ? "rtl" : "ltr"); w.setAttribute("lang", LANG);
+              w.innerHTML = `<div class="sa-dlg ai-dlg" role="dialog" aria-modal="true" aria-label="${E("aiPanel")}"><div class="sa-dlgh">${SPK}<h3>${E("aiPanel")}</h3><button type="button" class="sa-x" data-ai="sheetx" aria-label="×">${IC("close")}</button></div><div class="sa-dlgb">${AI.panelHTML()}</div></div>`;
+              w.addEventListener("click", (e) => { if (e.target === w) w.remove(); });
+              host.appendChild(w); AI.quotaLoad();
+            };
+            const tbH = () => `<button type="button" class="sa-tbtn ai-tb" data-ai="sheet" aria-label="${E("aiPanel")}" title="${E("aiPanel")}">${SPK}</button>`;
+            const modInject = (root) => {
+              if (root.classList.contains("x-hide") || AI.role() !== "moderator") return;
+              const top = root.querySelector(".md-top");
+              if (top && !top.querySelector(".ai-tb")) { const rf = top.querySelector('[data-m="refresh"]'); if (rf) rf.insertAdjacentHTML("beforebegin", tbH()); }
+              root.querySelectorAll(".md-main > .sa-item").forEach((it) => {
+                if (it.querySelector(".ai-sb")) return;
+                const res = it.querySelector('[data-m="res"][data-id]'), rep = it.querySelector('[data-m="reply"][data-id]'), acts = it.querySelector(".sa-iacts");
+                if (!acts || (!res && !rep)) return;
+                const kind = res ? "rep" : "sup", id = (res || rep).dataset.id;
+                acts.insertAdjacentHTML("beforeend", AI.sugBtn(kind, id));
+                if (AI.cache[kind + ":" + id]) it.insertAdjacentHTML("beforeend", AI.card(kind + ":" + id));
+              });
+            };
+            const watch = (id, fn) => {
+              const el = document.getElementById(id); if (!el || el.__aiw) return;
+              el.__aiw = 1; let q = false;
+              new MutationObserver(() => { if (q) return; q = true; requestAnimationFrame(() => { q = false; try { fn(el); prefill(el); } catch (_) {} }); }).observe(el, { childList: true, subtree: true });
+              try { fn(el); } catch (_) {}
+            };
+            setInterval(() => { if (!AI.role()) return; watch("kmod", modInject); watch("kadm", () => {}); }, 1500);
+            document.addEventListener("click", (e) => {
+              const el = e.target && e.target.closest ? e.target.closest("[data-ai]") : null; if (!el || el.disabled) return;
+              const host = el.closest("#kmod, #kadm"); if (!host || !AI.role()) return;
+              e.preventDefault(); AI.click(el, host);
+            });
+            document.addEventListener("submit", (e) => {
+              const f = e.target && e.target.closest ? e.target.closest("[data-aiform]") : null; if (!f || !f.closest("#kmod, #kadm")) return;
+              e.preventDefault(); if (AI.role()) AI.ask(f);
+            }, true);
+            try { NFH.relang.push(() => { AI.repaintPanel(); document.querySelectorAll(".ai-card").forEach((c) => AI.paintKey(c.dataset.aikey)); }); } catch (_) {}
+          }
+        } catch (e) { try { console.warn("ss13u-ai", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
     </script>
@@ -27050,6 +27226,118 @@ try { window.SSAdmin && SSAdmin.addI18n({"mdShield": ["لوحة المشرف", "
   const refresh = () => { if (!visible()) return; SA.load("mods").then(() => { const mn = SA.host.querySelector(".a-main"), st = mn ? mn.scrollTop : 0; SA.repaint(); const m2 = SA.host.querySelector(".a-main"); if (m2) m2.scrollTop = st; }); };
   window.__MODS_O = { poke: refresh, M };
   setInterval(() => { try { refresh(); } catch (_) {} }, 15000);
+})();
+
+</script>
+<style id="ss13u-ai">
+#kmod .ai-spk { width: 16px; height: 16px; fill: #f2c860; flex: 0 0 auto; }
+#kmod .sa-btn.ai-sb { color: #fff3c4; }
+#kmod .sa-btn.ai-sb .ai-spk { width: 14px; height: 14px; }
+#kmod .ai-card { margin-top: 8px; padding: 8px 10px 9px; border-radius: 10px; background: linear-gradient(180deg, rgba(30, 22, 70, .72), rgba(8, 14, 52, .86)); box-shadow: 0 0 0 1px rgba(220, 176, 76, .55), inset 0 0 0 1px rgba(255, 228, 150, .08); overflow-wrap: anywhere; }
+#kmod .ai-h { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; min-width: 0; }
+#kmod .ai-h > b { font-size: 12px; font-weight: 800; color: #f2c860; letter-spacing: .2px; min-width: 0; }
+#kmod .ai-h .sa-sp { flex: 1; }
+#kmod .ai-h .ai-x { width: 26px; height: 26px; min-height: 0; padding: 0; display: inline-grid; place-items: center; }
+#kmod .ai-h .ai-x .sa-ic { width: 16px; height: 16px; }
+#kmod .ai-sum { margin: 4px 0; font-size: 13px; line-height: 1.4; white-space: pre-wrap; }
+#kmod .ai-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0; }
+#kmod .ai-sug { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin: 6px 0 2px; padding: 6px 9px; border-radius: 8px; background: rgba(242, 200, 96, .12); }
+#kmod .ai-sug small { color: var(--ink3); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+#kmod .ai-sug b { color: #fff3c4; font-size: 14px; }
+#kmod .ai-lab { display: block; margin-top: 6px; color: var(--ink3); font-size: 11px; }
+#kmod .ai-reason { margin: 2px 0 4px; font-size: 13px; color: var(--ink); }
+#kmod .ai-note { display: block; }
+#kmod .ai-ta { width: 100%; box-sizing: border-box; resize: vertical; min-height: 70px; margin-top: 3px; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line, rgba(220, 176, 76, .4)); background: rgba(3, 8, 34, .6); color: var(--ink); font: 13px/1.4 var(--sans, system-ui), sans-serif; }
+#kmod .ai-load { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+#kmod .ai-load .sa-load { margin: 0; padding: 0; }
+#kmod .ai-load small { color: var(--ink3); }
+#kmod .ai-flag { padding: 7px 0; border-top: 1px solid rgba(220, 176, 76, .18); }
+#kmod .ai-flag:first-of-type { border-top: 0; }
+#kmod .ai-pts { margin: 4px 0; padding-inline-start: 18px; font-size: 13px; line-height: 1.4; }
+#kmod .ai-panel { display: flex; flex-direction: column; gap: 8px; padding-bottom: 6px; }
+#kmod .ai-panel > * { margin-top: 0; margin-bottom: 0; }
+#kmod .ai-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 0; padding: 7px 10px; border-radius: 9px; background: rgba(242, 200, 96, .1); box-shadow: inset 0 0 0 1px rgba(242, 200, 96, .35); font-size: 12.5px; color: #fff3c4; }
+#kmod .ai-top > span { flex: 1 1 200px; min-width: 0; }
+#kmod .ai-top > small { color: var(--ink3); }
+#kmod .ai-seg { align-self: flex-start; max-width: 100%; overflow-x: auto; }
+#kmod .ai-ask { display: grid; grid-template-columns: minmax(90px, 130px) minmax(0, 1fr) auto; gap: 6px; align-items: stretch; }
+#kmod .ai-ask input { min-width: 0; min-height: 36px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--line, rgba(220, 176, 76, .4)); background: rgba(3, 8, 34, .6); color: var(--ink); font: 13px var(--sans, system-ui), sans-serif; }
+#kmod .ai-tip { opacity: .85; }
+#kmod .ai-tb { display: inline-grid; place-items: center; padding: 0; color: #fff3c4; }
+#kmod .ai-tb .ai-spk { width: 20px; height: 20px; }
+#kmod .ai-w .ai-dlg { width: min(640px, 100%); }
+#kmod .ai-w .sa-dlgb { padding-bottom: 12px; }
+@media (max-width: 560px) { #kmod .ai-ask { grid-template-columns: minmax(0, 1fr) auto; }
+#kmod .ai-ask #ai-q { grid-column: 1 / -1; grid-row: 2; } }
+#kadm #ssadm .ai-spk { width: 16px; height: 16px; fill: #f2c860; flex: 0 0 auto; }
+#kadm #ssadm .sa-btn.ai-sb { color: #fff3c4; }
+#kadm #ssadm .sa-btn.ai-sb .ai-spk { width: 14px; height: 14px; }
+#kadm #ssadm .ai-card { margin-top: 8px; padding: 8px 10px 9px; border-radius: 10px; background: linear-gradient(180deg, rgba(30, 22, 70, .72), rgba(8, 14, 52, .86)); box-shadow: 0 0 0 1px rgba(220, 176, 76, .55), inset 0 0 0 1px rgba(255, 228, 150, .08); overflow-wrap: anywhere; }
+#kadm #ssadm .ai-h { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; min-width: 0; }
+#kadm #ssadm .ai-h > b { font-size: 12px; font-weight: 800; color: #f2c860; letter-spacing: .2px; min-width: 0; }
+#kadm #ssadm .ai-h .sa-sp { flex: 1; }
+#kadm #ssadm .ai-h .ai-x { width: 26px; height: 26px; min-height: 0; padding: 0; display: inline-grid; place-items: center; }
+#kadm #ssadm .ai-h .ai-x .sa-ic { width: 16px; height: 16px; }
+#kadm #ssadm .ai-sum { margin: 4px 0; font-size: 13px; line-height: 1.4; white-space: pre-wrap; }
+#kadm #ssadm .ai-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0; }
+#kadm #ssadm .ai-sug { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin: 6px 0 2px; padding: 6px 9px; border-radius: 8px; background: rgba(242, 200, 96, .12); }
+#kadm #ssadm .ai-sug small { color: var(--ink3); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+#kadm #ssadm .ai-sug b { color: #fff3c4; font-size: 14px; }
+#kadm #ssadm .ai-lab { display: block; margin-top: 6px; color: var(--ink3); font-size: 11px; }
+#kadm #ssadm .ai-reason { margin: 2px 0 4px; font-size: 13px; color: var(--ink); }
+#kadm #ssadm .ai-note { display: block; }
+#kadm #ssadm .ai-ta { width: 100%; box-sizing: border-box; resize: vertical; min-height: 70px; margin-top: 3px; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line, rgba(220, 176, 76, .4)); background: rgba(3, 8, 34, .6); color: var(--ink); font: 13px/1.4 var(--sans, system-ui), sans-serif; }
+#kadm #ssadm .ai-load { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+#kadm #ssadm .ai-load .sa-load { margin: 0; padding: 0; }
+#kadm #ssadm .ai-load small { color: var(--ink3); }
+#kadm #ssadm .ai-flag { padding: 7px 0; border-top: 1px solid rgba(220, 176, 76, .18); }
+#kadm #ssadm .ai-flag:first-of-type { border-top: 0; }
+#kadm #ssadm .ai-pts { margin: 4px 0; padding-inline-start: 18px; font-size: 13px; line-height: 1.4; }
+#kadm #ssadm .ai-panel { display: flex; flex-direction: column; gap: 8px; padding-bottom: 6px; }
+#kadm #ssadm .ai-panel > * { margin-top: 0; margin-bottom: 0; }
+#kadm #ssadm .ai-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 0; padding: 7px 10px; border-radius: 9px; background: rgba(242, 200, 96, .1); box-shadow: inset 0 0 0 1px rgba(242, 200, 96, .35); font-size: 12.5px; color: #fff3c4; }
+#kadm #ssadm .ai-top > span { flex: 1 1 200px; min-width: 0; }
+#kadm #ssadm .ai-top > small { color: var(--ink3); }
+#kadm #ssadm .ai-seg { align-self: flex-start; max-width: 100%; overflow-x: auto; }
+#kadm #ssadm .ai-ask { display: grid; grid-template-columns: minmax(90px, 130px) minmax(0, 1fr) auto; gap: 6px; align-items: stretch; }
+#kadm #ssadm .ai-ask input { min-width: 0; min-height: 36px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--line, rgba(220, 176, 76, .4)); background: rgba(3, 8, 34, .6); color: var(--ink); font: 13px var(--sans, system-ui), sans-serif; }
+#kadm #ssadm .ai-tip { opacity: .85; }
+#kadm #ssadm .ai-tb { display: inline-grid; place-items: center; padding: 0; color: #fff3c4; }
+#kadm #ssadm .ai-tb .ai-spk { width: 20px; height: 20px; }
+#kadm #ssadm .ai-w .ai-dlg { width: min(640px, 100%); }
+#kadm #ssadm .ai-w .sa-dlgb { padding-bottom: 12px; }
+@media (max-width: 560px) { #kadm #ssadm .ai-ask { grid-template-columns: minmax(0, 1fr) auto; }
+#kadm #ssadm .ai-ask #ai-q { grid-column: 1 / -1; grid-row: 2; } }
+</style>
+<script id="ss13u-ai-js">
+try { window.SSAdmin && SSAdmin.addI18n && SSAdmin.addI18n({"aiPanel": ["مساعد الذكاء الاصطناعي", "AI Assist"], "aiTitle": ["اقتراح الذكاء الاصطناعي", "AI suggestion"], "aiYouDecide": ["اقتراح من الذكاء الاصطناعي — القرار لك", "AI suggestion — you decide"], "aiSuggest": ["اقتراح", "Suggest"], "aiThinking": ["جاري التفكير…", "Thinking…"], "aiSuggested": ["المقترح", "Suggested"], "aiA_none": ["بدون إجراء (رفض البلاغ)", "No action (dismiss)"], "aiA_warn": ["بطاقة صفراء (تحذير)", "Yellow card (warning)"], "aiA_mute": ["كتم {n} ساعة", "Mute {n} h"], "aiA_ban": ["حظر {n} ساعة", "Ban {n} h"], "aiA_perm": ["حظر دائم", "Permanent ban"], "aiA_rename": ["تغيير الاسم إجبارياً", "Force rename"], "aiA_reset_photo": ["إعادة تعيين الصورة", "Reset photo"], "aiS_none": ["لا خطر", "No risk"], "aiS_low": ["منخفض", "Low"], "aiS_medium": ["متوسط", "Medium"], "aiS_high": ["عالٍ", "High"], "aiConf": ["الثقة {n}%", "Confidence {n}%"], "aiReason": ["السبب المقترح", "Suggested reason"], "aiCopy": ["نسخ السبب", "Copy reason"], "aiCopied": ["تم نسخ السبب. راح ينكتب بأول خانة سبب تفتحها، راجعه قبل التأكيد.", "Reason copied. It fills the next reason box you open; check it before you confirm."], "aiOpen": ["فتح اللاعب", "Open player"], "aiUse": ["استخدم هذا الرد", "Use this reply"], "aiUsedR": ["انحط الرد بالخانة. راجعه وبعدين اضغط إرسال.", "Reply placed in the box. Check it, then tap Send."], "aiDraft": ["مسودة الرد ({x})", "Draft reply ({x})"], "aiEscalate": ["هذا يحتاج أكثر من صلاحية المشرف. خلّي المالك يراجعه.", "This needs more than a moderator can do. Let the owner review it."], "aiNeedsOwner": ["الأفضل يتعامل وياه المالك.", "Better handled by the owner."], "aiRetry": ["حاول مرة ثانية", "Try again"], "aiPanelNote": ["الذكاء الاصطناعي يقترح فقط. ما يصير أي شي إلا إذا ضغطت إجراء بنفسك.", "The AI only suggests. Nothing happens until you click an action yourself."], "aiQuota": ["استخدمت {n} من {m} اليوم", "Used {n} of {m} today"], "aiTabScan": ["فحص الأسماء والدردشة", "Scan names & chat"], "aiTabAsk": ["اسأل عن لاعب", "Ask about a player"], "aiScanHint": ["يفحص أحدث أسماء اللاعبين والنبذات ورسائل الدردشة المبلّغ عنها بحثاً عن محتوى مسيء. النتائج لمراجعتك فقط.", "Checks the newest player names, bios and reported chat lines for offensive content. Results are for your review only."], "aiScanBtn": ["افحص الآن", "Scan now"], "aiScanNone": ["ما لقينا شي مسيء من بين {n} عنصر.", "Nothing offensive found in {n} items."], "aiScanN": ["{n} مؤشَّر من أصل {m}", "{n} flagged of {m} checked"], "aiK_name": ["اسم", "Name"], "aiK_chat": ["دردشة", "Chat"], "aiAskPid": ["رقم اللاعب", "Player ID"], "aiAskQ": ["سؤالك (اختياري)", "Your question (optional)"], "aiAskBtn": ["اسأل", "Ask"], "aiAskHint": ["الإجابة تعتمد فقط على بلاغات اللاعب وبطاقاته وحظوراته وإجراءات الفريق عليه.", "Answers use only this player's reports, cards, bans and staff actions."], "aiRisk": ["الخطورة: {x}", "Risk: {x}"], "aiInline": ["نصيحة: اضغط «اقتراح» على أي بلاغ أو طلب دعم.", "Tip: tap Suggest on any report or support request."], "aiE_ai_busy": ["الذكاء الاصطناعي مشغول هسه (حد الاستخدام المجاني). جرّب بعد دقيقة.", "The AI is busy right now (free limit). Try again in a minute."], "aiE_ai_cap": ["وصلت حد الذكاء الاصطناعي لليوم. يتجدد منتصف الليل (UTC).", "You reached today's AI limit. It resets at midnight UTC."], "aiE_ai_slow": ["طلبات كثيرة. انتظر دقيقة وجرّب مرة ثانية.", "Too many requests. Wait a minute and try again."], "aiE_ai_off": ["مساعد الذكاء الاصطناعي متوقف.", "The AI helper is switched off."], "aiE_ai_error": ["الذكاء الاصطناعي ما گدر يجاوب. جرّب مرة ثانية.", "The AI could not answer. Try again."], "aiE_not_allowed": ["هذا اللاعب يراجعه المالك فقط.", "Only the owner can review this player."], "aiE_owner_protected": ["حساب المالك ما يتحلل أبداً.", "The owner account is never analysed."], "aiE_not_found": ["ما موجود (يمكن انحل).", "Not found (maybe already handled)."], "aiE_user_not_found": ["ماكو لاعب بهذا الرقم.", "No player with that ID."], "aiE_net": ["مشكلة بالاتصال. جرّب مرة ثانية.", "Connection problem. Try again."], "aiE_signed_out": ["سجّل دخولك مرة ثانية.", "Please sign in again."], "aiE_bad_input": ["اكتب رقم اللاعب.", "Enter a player ID."]}); } catch (_) {}
+/* ss13u-ai: owner admin (version A) — "AI Assist" section in the Moderation group + inline "Suggest" on Reports and Support items.
+   Uses window.__SSAI (game module, ai_game.js) which calls the Edge Function admin-ai. Suggestions only: nothing here runs an action. */
+(function () {
+  const SA = window.SSAdmin, AI = window.__SSAI; if (!SA || !SA.M || !AI || SA.M.ai) return;
+  const grp = (SA.GROUPS || []).find((g) => g[0] === "mod"); if (grp && grp[3].indexOf("ai") < 0) grp[3].push("ai");
+  SA.M.ai = { id: "ai", title: "aiPanel", icon: "star", st: {},
+    async load() { try { await AI.call("quota"); } catch (_) {} },
+    html() { return AI.panelHTML(); },
+    act() {} };
+  const wrap = (mid, kind) => {
+    const M = SA.M[mid]; if (!M || typeof M.item !== "function" || M.item.__ai) return;
+    const o = M.item;
+    M.item = function (r) {
+      let h = o.call(this, r);
+      try {
+        if (!r || r.id == null || (kind === "rep" && r.reason === "support")) return h;
+        const i = h.indexOf('<div class="sa-iacts">'); if (i < 0) return h;
+        const j = h.indexOf("</div>", i); if (j < 0) return h;
+        h = h.slice(0, j) + AI.sugBtn(kind, r.id) + h.slice(j);
+        const k = kind + ":" + r.id;
+        if (AI.cache[k]) { const z = h.lastIndexOf("</div>"); h = h.slice(0, z) + AI.card(k) + h.slice(z); }
+      } catch (_) {}
+      return h;
+    };
+    M.item.__ai = 1;
+  };
+  wrap("reports", "rep"); wrap("support", "sup");
 })();
 
 </script>
