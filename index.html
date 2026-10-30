@@ -19322,11 +19322,7 @@
               };
               NFG.nfs1ex.__r5 = 1;
             }
-            // ---- r5b: gem -> coin swap: check the balance before calling the server ----
-            addEventListener("click", (e) => {
-              const b = e.target && e.target.closest && e.target.closest("[data-sk4gx]"); if (!b) return;
-              try { if (WALLET.src === "server" && (WALLET.bal().g | 0) < 1) { e.preventDefault(); e.stopImmediatePropagation(); toast(_t("onE_funds")); } } catch (_) {}
-            }, true);
+            // ---- r5b gem -> coin balance check: superseded by 13u swapfix ----
 
             // ---- r5b: a poke can come from any client: never show a "moderators" toast from a poke alone (the guard check shows a real card itself) ----
             setTimeout(() => { try { const L5 = window.__LN; if (L5 && L5.show && !L5.show.__r5) { const sh = L5.show; L5.show = (n) => { if (n && n.k === "card") return; return sh(n); }; L5.show.__r5 = 1; } } catch (_) {} }, 0);
@@ -19867,6 +19863,50 @@
             }
           }
         } catch (e) { try { console.warn("mods", e); } catch (_) {} }
+        // ---------- 13u swapfix: Coins & Gems "Swap 💎1" (owner report IMG_7271, 2026-10-29) ----------
+        // The old handler worked server-side but gave almost no feedback on iPhone: no busy state, the balance only changed after a second
+        // round trip (ON.sync), the pack cards above re-ran their entrance animation (the screen flashed), and taps during the request
+        // + a 600 ms dead time were silently dropped. This handler (document capture, runs before the old bubble handler and stops it):
+        // one global in-flight lock (no double swap), instant busy state, balance painted straight from the RPC wallet, a clear toast,
+        // a clear message at 0 gems, and no card re-animation while the screen refreshes.
+        try {
+          const SFK = {"sfDone": ["تم التبديل ✓ ‎+100‎ عملة · جواهرك الباقية: {g}", "Swapped ✓ +100 coins · gems left: {g}", "Takas tamam ✓ +100 altın · kalan elmas: {g}", "Échange fait ✓ +100 pièces · gemmes restantes : {g}", "Cambio hecho ✓ +100 monedas · gemas restantes: {g}", "बदल गया ✓ +100 सिक्के · बचे जेम: {g}"], "sfNoGems": ["ما عندك جواهر — اشترِ جواهر من فوق", "You have no gems — get gems above", "Elmasın yok — yukarıdan elmas al", "Tu n'as pas de gemmes — achète-en ci-dessus", "No tienes gemas: consigue gemas arriba", "आपके पास जेम नहीं हैं — ऊपर से जेम लें"]};
+          for (const k in SFK) if (!I18N[k]) I18N[k] = SFK[k];
+          if (!window.__SWAPFIX) {
+            window.__SWAPFIX = { n: 0, busy: false, last: null };
+            const SF = window.__SWAPFIX;
+            const box = () => document.getElementById("ongems");
+            const calm = () => { const g = box(); if (!g) return; g.classList.add("sfx-np"); // cards keep still until the screen is closed (repaints after a sync no longer flash)
+              if (!SF.mo) { SF.mo = new MutationObserver(() => { if (g.classList.contains("x-hide")) g.classList.remove("sfx-np"); }); SF.mo.observe(g, { attributes: true, attributeFilter: ["class"] }); } };
+            const paintBal = () => { try { if (window.p10Chrome) window.p10Chrome("ongems"); } catch (_) {} }; // header counters straight from P (no second round trip)
+            const busy = (b, on) => { if (!b) return; b.classList.toggle("sfx-busy", on); b.setAttribute("aria-busy", on ? "true" : "false"); };
+            const btn = () => document.querySelector("#ongems [data-sk4gx]") || document.querySelector("[data-sk4gx]");
+            const noGems = (b) => { toast(_t("sfNoGems")); if (b) { b.classList.remove("sfx-shake"); void b.offsetWidth; b.classList.add("sfx-shake"); } try { const p = document.querySelector('#ongp'); if (p) p.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (_) {} };
+            document.addEventListener("click", async (e) => {
+              const b = e.target && e.target.closest && e.target.closest("[data-sk4gx]"); if (!b) return;
+              e.preventDefault(); e.stopImmediatePropagation(); // the old 13u-sk handler never runs
+              if (SF.busy || performance.now() - (SF.t0 || -1e9) < 700) { SF.drop = (SF.drop || 0) + 1; return; } // a fast second tap (in flight, or a double tap) never swaps twice
+              if ((P.gems | 0) < 1) { paintBal(); noGems(b); return; }
+              SF.busy = true; busy(b, true); calm(); const t0 = SF.t0 = performance.now();
+              try {
+                const r = await ON.rpc("buy_shop_item", { p_item_id: "gx" });
+                const w = r && r.wallet;
+                if (w && Number.isInteger(w.coins) && Number.isInteger(w.gems)) { P.coins = w.coins; P.gems = w.gems; try { if (typeof WALLET !== "undefined" && WALLET.apply) WALLET.apply(w); } catch (_) {} }
+                SF.n++; SF.last = { ok: true, ms: Math.round(performance.now() - t0), w };
+                toast(_t("sfDone", { g: (P.gems | 0).toLocaleString("en") }));
+                paintBal(); calm();
+                setTimeout(() => { try { ON.sync(); } catch (_) {} }, 0);
+              } catch (er) {
+                let k = ""; try { k = ON.ek ? ON.ek(er) : ""; } catch (_) {}
+                SF.last = { ok: false, err: String((er && (er.code || er.message)) || er).slice(0, 80) };
+                if (k === "onE_funds" || /insufficient/.test(SF.last.err)) { P.gems = 0; noGems(b); setTimeout(() => { try { ON.sync(); } catch (_) {} }, 0); }
+                else { let m = "…"; try { m = ON.err(er); } catch (_) {} toast(m); }
+              } finally {
+                SF.busy = false; const nb = btn(); busy(b, false); if (nb && nb !== b) busy(nb, false);
+              }
+            }, { capture: true });
+          }
+        } catch (e) { try { console.warn("swapfix", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
     </script>
@@ -27013,5 +27053,16 @@ try { window.SSAdmin && SSAdmin.addI18n({"mdShield": ["لوحة المشرف", "
 })();
 
 </script>
+<style id="ss13u-swapfix">
+#ongems.sfx-np .on-pack { animation: none !important; }
+.sk4-gx button[data-sk4gx].sfx-busy { filter: brightness(.9) saturate(.8); transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 0 #7a4f00; position: relative; }
+.sk4-gx button[data-sk4gx].sfx-busy::after { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(42,24,0,.35); border-top-color: #2a1800; animation: sfxSpin .7s linear infinite; margin-inline-start: 4px; }
+.sk4-gx button[data-sk4gx] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.sk4-gx button[data-sk4gx].sfx-shake { animation: sfxShake .38s ease !important; }
+#ongems .sk4-gx button[data-sk4gx].sfx-busy::after { animation: sfxSpin .7s linear infinite !important; }
+#ongems .sk4-gx button[data-sk4gx].sfx-shake { animation: sfxShake .38s ease !important; }
+@keyframes sfxSpin { to { transform: rotate(360deg); } }
+@keyframes sfxShake { 0%,100% { translate: 0; } 20% { translate: -5px; } 40% { translate: 5px; } 60% { translate: -3px; } 80% { translate: 3px; } }
+</style>
 </body>
 </html>
