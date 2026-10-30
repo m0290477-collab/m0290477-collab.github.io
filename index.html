@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en" dir="ltr">
-  <head><script>(function(){var Q=window.__ssEQ=window.__ssEQ||[];function p(k,m,s,l,c,st){if(Q.length<20)Q.push([k,String(m||"").slice(0,300),String(s||"").slice(0,200),l|0,c|0,String(st||"").slice(0,1500)]);}window.addEventListener("error",function(e){if(!(e instanceof ErrorEvent))return;p("error",e.message,e.filename,e.lineno,e.colno,e.error&&e.error.stack)},true);window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;p("rejection",r&&(r.message||r.code)||String(r),"",0,0,r&&r.stack)});})();</script>
+  <head><meta name="ss-build" content="1793400816" /><script>(function(){var Q=window.__ssEQ=window.__ssEQ||[];function p(k,m,s,l,c,st){if(Q.length<20)Q.push([k,String(m||"").slice(0,300),String(s||"").slice(0,200),l|0,c|0,String(st||"").slice(0,1500)]);}window.addEventListener("error",function(e){if(!(e instanceof ErrorEvent))return;p("error",e.message,e.filename,e.lineno,e.colno,e.error&&e.error.stack)},true);window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;p("rejection",r&&(r.message||r.code)||String(r),"",0,0,r&&r.stack)});})();</script>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co https://super-snake-realtime.molierk.workers.dev wss://super-snake-realtime.molierk.workers.dev; media-src 'none'; object-src 'none'; frame-src 'self'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
     <meta name="referrer" content="no-referrer" />
@@ -5117,8 +5117,8 @@
             ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
           }
           if (rainA > 0) {
-            ctx.strokeStyle = `rgba(190,215,255,${0.45 * rainA})`; ctx.lineWidth = 1.2; ctx.beginPath();
-            const n = Math.round(QC.rain * rainA); // drops capped by quality
+            ctx.strokeStyle = `rgba(190,215,255,${(mapI === 29 ? 0.22 : 0.45) * rainA})`; ctx.lineWidth = mapI === 29 ? 1 : 1.2; /* tahrir-flat: subtle rain on Tahrir */ ctx.beginPath();
+            const n = Math.round(QC.rain * rainA * (mapI === 29 ? 0.6 : 1)); // drops capped by quality
             for (let i = 0; i < n; i++) { const x = ((i * 97.13 + time * 120) % (W + 100)) - 50, y = ((i * 263.7 + time * (900 + (i % 5) * 80)) % (H + 60)) - 30; ctx.moveTo(x, y); ctx.lineTo(x - 6, y + 22); }
             ctx.stroke();
           }
@@ -11585,7 +11585,23 @@
             const r = await fetch(u, { cache: "no-store" }); if (!r.ok) return ""; const t = await r.text(); if (t.length < 50000) return "";
             let h = 0; for (let i = 0; i < t.length; i += 3) h = (Math.imul(h, 31) + t.charCodeAt(i)) | 0; return "h" + h + ":" + t.length;
           };
+          // tahrir-flat: stale-page check. Safari can keep an old copy of the page (tab restore / cache); compare our build stamp with the live one.
+          const BLD = "1793400816";
+          try { if (/[?&]_r=/.test(location.search) && history.replaceState) history.replaceState(null, "", location.pathname + location.search.replace(/[?&]_r=\d+/, "").replace(/^&/, "?") + location.hash); } catch (_) {}
+          B13C.stale = async () => {
+            if (!/^https?:$/.test(location.protocol) || B13.ios()) return false;
+            try {
+              const r = await fetch(location.pathname + "?b=" + Date.now(), { cache: "no-store", headers: { Range: "bytes=0-2047" } }); if (!r.ok && r.status !== 206) return false;
+              const t = (await r.text()).slice(0, 4096), m = t.match(/name="ss-build" content="(\d+)"/); if (!m || !(+m[1] > +BLD)) return false;
+              if (state === "menu" && !document.querySelector(".ss-modal")) {
+                let last = 0; try { last = +sessionStorage.getItem("ss-upd-r") || 0; } catch (_) {}
+                if (Date.now() - last > 600000) { try { sessionStorage.setItem("ss-upd-r", String(Date.now())); } catch (_) {} location.replace(location.pathname + (location.search ? location.search + "&" : "?") + "_r=" + Date.now() + location.hash); return true; }
+              }
+              UP.shown = true; $("b13cup").classList.remove("x-hide"); return true;
+            } catch (_) { return false; }
+          };
           B13C.updCheck = async () => {
+            if (!UP.shown && !document.hidden && await B13C.stale()) return;
             if (UP.shown || !/^https?:$/.test(location.protocol) || B13.ios() || document.hidden) return;
             try {
               const s = await sig(); if (!s) return;
@@ -11593,7 +11609,7 @@
               if (s !== UP.base) { UP.shown = true; $("b13cup").classList.remove("x-hide"); }
             } catch (_) {}
           };
-          $("b13cup").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; if (b.classList.contains("go")) { if (state !== "play") location.reload(); } else $("b13cup").classList.add("x-hide"); });
+          $("b13cup").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; if (b.classList.contains("go")) { if (state !== "play") location.replace(location.pathname + (location.search ? location.search + "&" : "?") + "_r=" + Date.now() + location.hash); } else $("b13cup").classList.add("x-hide"); });
           setTimeout(B13C.updCheck, 4000); setInterval(B13C.updCheck, 5 * 60 * 1000);
           document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - UP.t > 60000) { UP.t = Date.now(); B13C.updCheck(); } });
         }
@@ -20697,7 +20713,7 @@
           try { NFH.home.push(() => { const m = window.__tahSel(); if (mapSel !== m) { mapSel = m; if (state !== "play") setMap(m); } }); } catch (_) {}
 
           // ---------- assets: photographic ground tiles (L1 7x7 whole map, L2 4x4 square core on High), sprites ----------
-          const IM = {}, IMT = {}, im = (k) => { let o = IM[k]; if (o && o._e && performance.now() - o._e > 4000) { delete IM[k]; o = null; } /* tahrir-sharp: a failed load retries */ if (!o) { o = IM[k] = new Image(); o.decoding = "async"; o.onerror = () => { o._e = performance.now(); }; o.src = "ui/tah/" + k + ".webp?v=3"; } IMT[k] = performance.now(); if (k[0] === "L" && !o._dq) { o._dq = 1; if (o.decode) o.decode().then(() => { o._d = 1; }, () => { o._d = 1; }); else o._d = 1; } // tahrir-sharp: ground tiles decode off-thread before their first draw (no hitch)
+          const IM = {}, IMT = {}, im = (k) => { let o = IM[k]; if (o && o._e && performance.now() - o._e > 4000) { delete IM[k]; o = null; } /* tahrir-sharp: a failed load retries */ if (!o) { o = IM[k] = new Image(); o.decoding = "async"; o.onerror = () => { o._e = performance.now(); }; o.src = "ui/tah/" + k + ".webp?v=4"; } IMT[k] = performance.now(); if (k[0] === "L" && !o._dq) { o._dq = 1; if (o.decode) o.decode().then(() => { o._d = 1; }, () => { o._d = 1; }); else o._d = 1; } // tahrir-sharp: ground tiles decode off-thread before their first draw (no hitch)
             return o.complete && o.naturalWidth && (k[0] !== "L" || o._d) ? o : null; };
           const PERM = ["ground_lo", "cars", "signs", "relief", "tower", "trav", "palm0", "palm1", "palm2", "lamp0", "lamp1", "kiosk0", "kiosk1", "kiosk2", "mini"];
           const tahLoad = () => PERM.forEach(im);
@@ -21097,6 +21113,58 @@
               return (FAC = c);
             };
           } catch (e) { try { console.warn("tahrir-sharp", e); } catch (_) {} }
+          // ===== tahrir-flat: no vertical extrusions on Tahrir (owner 2026-10-30 15:2x). The Freedom Monument is baked flat into the ground tiles
+          //       (slab + piers as footprints, the relief laid as a plaque; its 15 m shadow removed), rooftop signs lie flat on their roofs,
+          //       the side + bottom T-wall fence is drawn top-down on the ground (a vertical wall at the left/right edge is seen edge-on and vanished on phones),
+          //       the far (top) T-wall stays as it was. Everything here is in the floor pass, under the snakes: nothing can cover a snake. =====
+          try {
+            const mpTallF = mpTall;
+            mpTall = function (vis) {
+              const out = mpTallF.apply(this, arguments);
+              if (mapI !== TAH) return out;
+              return out.filter((o) => !(o && o.dk === "tah" && (o.tk === "mon" || o.tk === "sign" || o.tk === "tower")));
+            };
+            // ---- top-down T-wall row along an edge (ground plane, z = 0) ----
+            const FW = 2.6, CAP = 0.55, SLB = 1.5; // metres: band width outside the arena, wall cap width, slab length
+            const band = (edge, t0, t1) => { // edge: 0 left (x = 0), 1 right (x = A), 2 bottom (y = A)
+              const s = A / SPAN, ex = edge === 2 ? FW * s : 0, b0 = Math.max(-ex, t0), b1 = Math.min(A + ex, t1); if (b1 <= b0) return; // the bottom row also closes the two bottom corners
+              const P = (t, d) => edge === 0 ? mpP(-d * s, t, 0) : edge === 1 ? mpP(A + d * s, t, 0) : mpP(t, A + d * s, 0); // d = metres outward from the edge
+              // footing (the T's foot) + soft shadow on the void side, then the slab caps with seams
+              ctx.globalAlpha = 1; mpFace(P(b0, 0), P(b1, 0), P(b1, FW), P(b0, FW), "#6f695f");
+              ctx.globalAlpha = 0.55; mpFace(P(b0, FW), P(b1, FW), P(b1, FW + 1.4), P(b0, FW + 1.4), "#16130f");
+              ctx.globalAlpha = 1; const c0 = (FW - CAP) / 2, c1 = c0 + CAP;
+              mpFace(P(b0, 0), P(b1, 0), P(b1, 0.35), P(b0, 0.35), "#8a8478");                       // inner kerb catching the light
+              mpFace(P(b0, c0 - 0.18), P(b1, c0 - 0.18), P(b1, c0), P(b0, c0), "#57524a");           // cap shadow line
+              mpFace(P(b0, c0), P(b1, c0), P(b1, c1), P(b0, c1), "#b3ad9f");                         // wall caps (pale concrete)
+              const SL = SLB * s; ctx.strokeStyle = "rgba(34,30,26,.7)"; ctx.lineWidth = Math.max(1, 0.08 * s * PK); ctx.beginPath();
+              for (let t = Math.ceil(b0 / SL) * SL; t <= b1; t += SL) { const a = P(t, 0.2), b = P(t, FW - 0.1); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
+              ctx.stroke();
+              ctx.strokeStyle = "rgba(240,234,220,.55)"; ctx.lineWidth = Math.max(1, 0.06 * s * PK); ctx.beginPath(); { const a = P(b0, c0 + 0.05), b = P(b1, c0 + 0.05); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); } ctx.stroke();
+            };
+            const wallF = wall;
+            wall = function (x0, y0, x1, y1) {
+              if (mapI !== TAH || y0 === y1) return wallF.apply(this, arguments); // the far (top) wall keeps the standing T-wall
+              band(x0 <= 0 ? 0 : 1, Math.min(y0, y1), Math.max(y0, y1));
+            };
+            const mpFloorF = mpFloor;
+            mpFloor = function (vis, fx0, fx1, fy0, fy1) {
+              const r = mpFloorF.apply(this, arguments);
+              if (mapI !== TAH) return r;
+              try {
+                const z = tz(), s = z.s, sg = im("signs");
+                if (sg) for (const o of z.tall) { // rooftop shop signs lying flat on their roofs (were standing boards on posts)
+                  if (o.tk !== "sign" || !vis(o.x, o.y, o.r)) continue;
+                  const x0 = o.x - o.w / 2, x1 = o.x + o.w / 2, d = o.w / 4;
+                  ctx.globalAlpha = 0.3; mpFace(mpP(x0 + 0.25 * s, o.y - d + 0.35 * s, 0), mpP(x1 + 0.25 * s, o.y - d + 0.35 * s, 0), mpP(x1 + 0.25 * s, o.y + 0.35 * s, 0), mpP(x0 + 0.25 * s, o.y + 0.35 * s, 0), "#14161e");
+                  ctx.globalAlpha = 0.92; mpMap(sg, 0, o.v * 128, 512, 128, mpP(x0, o.y - d, 0), mpP(x1, o.y - d, 0), mpP(x0, o.y, 0));
+                }
+                ctx.globalAlpha = 1;
+                if (fy1 >= A - 400) band(2, fx0 - 200, fx1 + 200); // bottom edge (the base game never draws a bottom wall)
+              } catch (_) { ctx.globalAlpha = 1; }
+              return r;
+            };
+            window.__TAHFLAT = 1;
+          } catch (e) { try { console.warn("tahrir-flat", e); } catch (_) {} }
         } catch (e) { try { console.warn("tahrir", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
@@ -28637,5 +28705,6 @@ html body.b13h-on #b13hmp span.h-chev { display: inline-flex !important; }
 html body #b13hart, html body #b13hrnd { display: none !important; }
 </style>
 <!-- tahrir-sharp -->
+<!-- tahrir-flat -->
 </body>
 </html>
