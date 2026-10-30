@@ -11227,13 +11227,21 @@
           B13C.hideCamRows = () => { for (const sel of ['.x-seg[data-k="cam"]', "#zoom"]) { const e = $("set").querySelector(sel), row = e && e.closest(".x-set"); if (row) { row.hidden = true; row.style.setProperty("display", "none", "important"); } } };
           B13C.hideCamRows(); setTimeout(B13C.hideCamRows, 0);
           const LK = { x: 0, y: 0, vx: 0, vy: 0 };
-          B13C.VIEW_H = 560; B13C.VIEW_H_M = 460; // Medium+ draws more per sprite: a slightly narrower view keeps its frame rate
+          B13C.ZF4 = 1.5; B13C.VIEW_H = Math.round(560 * B13C.ZF4); B13C.VIEW_H_M = Math.round(460 * B13C.ZF4); // r4: camera further out // Medium+ draws more per sprite: a slightly narrower view keeps its frame rate
+          B13C.SMK4 = ""; B13C.SM4 = 0.25;
+          B13C.sMin4 = () => { // r4: worker 13u-rt-5 interest-area cap (vw <= 4200, vh <= 3000 incl. +300) minus a 100 u margin
+            const k = W + "x" + H; if (k === B13C.SMK4) return B13C.SM4;
+            const t = 0.95, st = Math.sin(t), ct = Math.cos(t), cy = H * (0.5 + 0.12 * (1.45 - t) / 0.75), DD = 900;
+            const ext = (sc) => { const F0 = DD * sc; let w = 0, h = 0; for (const [sx, sy] of [[0, 0], [W, 0], [0, H], [W, H]]) { const u = (sx - W / 2) / F0, v = Math.max((-st / ct) * 0.85, (sy - cy) / F0), dy = (v * DD) / (st + v * ct); w = Math.max(w, Math.abs(u * (DD - dy * ct))); h = Math.max(h, Math.abs(dy)); } return w <= 3800 && h <= 2600; };
+            let lo = 0.25, hi = 2.6; if (ext(lo)) hi = lo; else for (let i = 0; i < 22; i++) { const md = (lo + hi) / 2; if (ext(md)) hi = md; else lo = md; }
+            B13C.SMK4 = k; B13C.SM4 = hi; return hi;
+          };
           B13C.zoomFor = (len, bo, dz) => {
             // 13r: every screen sees the same arena height (VIEW_H world units at the start length): fair across iPhone/iPad/desktop,
             // about 35 % more arena than 13q on a phone in landscape; grows gently with length so a big snake never fills the screen
             const sm = Math.min(W, H), base = clamp(sm / (QL >= 1 ? B13C.VIEW_H_M : B13C.VIEW_H), 0.35, 2.6);
-            const lf = Math.max(0.55, Math.pow(1 + Math.max(0, len - 20) / 260, -0.3));
-            return clamp(base * lf * (1 - 0.05 * bo) * (1 - 0.05 * dz), 0.25, 2.6);
+            const lf = Math.max(0.66, Math.pow(1 + Math.max(0, len - 20) / 260, -0.3)); // r4: floor 0.66 (view starts wider)
+            return clamp(Math.max(base * lf * (1 - 0.05 * bo) * (1 - 0.05 * dz), B13C.sMin4()), 0.25, 2.6);
           };
           B13C.cam = (focus) => {
             const h = focus.seg[0], dt = Math.min(0.1, Math.max(0.001, fdt)), bo = focus.boost && focus.len > 12 ? 1 : 0;
@@ -14229,10 +14237,10 @@
           };
           P13.ok = true;
         }
-        /*ss13s-pass-v1*/ // ===================== 13s: Royal Pass Season 1 (server-owned season, daily XP cap, 5 premium exclusives) =====================
+        /*ss13s-pass-v1*/ /*ss13u-bab-r4*/ // ===================== 13s: Royal Pass Season 1 (server-owned season, daily XP cap, 5 premium exclusives) =====================
         try {
           const S1 = (window.__S1P = { st: null, off: 0, at: 0, busy: null, lastLeft: -1 });
-          const S1V = "?v=13s1", S1EX = { de_s1nova: "ui/bab/s1/fx.webp", tr_s1dust: "ui/bab/s1/trail.webp", fr_s1crest: "ui/bab/s1/frame.webp", ar_s1throne: "ui/bab/ar/a28.webp?v=13s1", rs_s1legend: "ui/bab/s1/skin.webp" };
+          const S1V = "?v=13s1", S1EX = { de_s1nova: "ui/bab/s1/fx.webp", tr_s1dust: "ui/bab/s1/trail.webp", fr_s1crest: "ui/bab/s1/frame.webp", ar_s1throne: "ui/bab/s1/ishtar.webp", rs_s1legend: "ui/bab/s1/skin.webp" };
           const S1MAP = 28, s1Now = () => Date.now() + S1.off, s1On = () => !!(S1.st && S1.st.season);
           const s1Online = () => { try { return B13.online ? !!B13.online() : cur === "@on"; } catch (_) { return cur === "@on"; } };
           // ---- strings (ar, en, tr, fr, es, hi) ----
@@ -14266,7 +14274,7 @@
             nfI_de_s1nova: ["سوبرنوفا الموسم ١", "Season 1 Supernova", "Sezon 1 Süpernova", "Supernova saison 1", "Supernova temporada 1", "सीज़न 1 सुपरनोवा"],
             nfI_tr_s1dust: ["غبار النجوم الملكي", "Royal Stardust", "Kraliyet Yıldız Tozu", "Poussière d'étoiles royale", "Polvo estelar real", "शाही तारा-धूल"],
             nfI_fr_s1crest: ["شعار الموسم ١", "Season 1 Crest", "Sezon 1 Arması", "Blason saison 1", "Escudo temporada 1", "सीज़न 1 क्रेस्ट"],
-            nfI_ar_s1throne: ["ساحة العرش", "Throne Arena", "Taht Arenası", "Arène du Trône", "Arena del Trono", "सिंहासन एरीना"],
+            nfI_ar_s1throne: ["أفعى عشتار", "Ishtar Serpent", "İştar Yılanı", "Serpent d'Ishtar", "Serpiente de Ishtar", "इश्तार नाग"],
             nfI_rs_s1legend: ["أسطورة الموسم ١", "Season 1 Legend", "Sezon 1 Efsanesi", "Légende saison 1", "Leyenda temporada 1", "सीज़न 1 लीजेंड"],
             ["map" + S1MAP]: ["ساحة العرش · الموسم ١", "Throne Arena · Season 1", "Taht Arenası · Sezon 1", "Arène du Trône · Saison 1", "Arena del Trono · Temporada 1", "सिंहासन एरीना · सीज़न 1"],
             ["mapd" + S1MAP]: ["قاعة ملكية من رخام وذهب، حصرية لبريميوم الموسم ١", "Royal marble-and-gold hall, a Season 1 Premium exclusive", "Mermer ve altından kraliyet salonu, Sezon 1 Premium'a özel", "Salle royale de marbre et d'or, exclusivité Premium saison 1", "Salón real de mármol y oro, exclusivo Premium temporada 1", "संगमरमर-सोने का शाही हॉल, सीज़न 1 प्रीमियम एक्सक्लूसिव"],
@@ -14274,7 +14282,7 @@
           // ---- catalog: the 5 exclusives (never in the shop, never in crates: ex = "pass") ----
           Object.assign(ITEMS, {
             de_s1nova: { c: "de", e: "🌟", r: 3, ex: "pass", s1: 1 }, tr_s1dust: { c: "tr", e: "✨", r: 3, ex: "pass", s1: 1 }, fr_s1crest: { c: "fr", e: "🛡️", r: 3, ex: "pass", s1: 1 },
-            ar_s1throne: { c: "ar", e: "👑", r: 3, ex: "pass", s1: 1 }, rs_s1legend: { c: "sk", e: "🐍", r: 3, ex: "pass", s1: 1 },
+            ar_s1throne: { c: "sk", e: "🐍", r: 3, ex: "pass", s1: 1 }, rs_s1legend: { c: "sk", e: "🐍", r: 3, ex: "pass", s1: 1 },
           });
           const s1Img = {}; const s1I = (id) => { if (!s1Img[id]) { const im = new Image(); im.decoding = "async"; im.src = S1EX[id] + S1V; s1Img[id] = im; } return s1Img[id]; };
           const s1Ok = (im) => im && im.complete && im.naturalWidth > 0;
@@ -16295,7 +16303,7 @@
           MM13 = (c0, c1, c2, c3) => {
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             const m = Math.round(clamp(Math.min(W * 0.12, H * 0.24), 70, 92)), pad = Math.round(m * 0.17), inner = m - pad * 2, k = inner / A;
-            const SA = window.P10SA || {}, bL = document.body.classList.contains("x-l"), jy = S.ctrl === "joy", x = bL !== jy ? W - m - 12 - (SA.r || 0) : (SA.l || 0) + 12, y = H - m - 12 - (SA.b || 0) - (jy ? 96 : 0);
+            const SA = window.P10SA || {}, bL = document.body.classList.contains("x-l"), jy = S.ctrl === "joy", x0 = bL !== jy ? W - m - 12 - (SA.r || 0) : (SA.l || 0) + 12, y0 = H - m - 12 - (SA.b || 0) - (jy ? 96 : 0), P4 = window.__B4MM ? __B4MM(m, x0, y0) : [x0, y0], x = P4[0], y = P4[1];
             if (m !== MM13.m) { MM13.m = m; document.documentElement.style.setProperty("--mm13", m + "px"); } // only on change (a style write per frame forces a full style recalc)
             const key = m + "|" + dpr + "|" + mapI;
             if ((mT -= fdt) <= 0 || key !== mKey) {
@@ -19174,6 +19182,60 @@
           setInterval(() => { if (state !== "play" && !document.hidden) place(); }, 1500);
           setTimeout(place, 300);
         }
+        try { window.__B13C4 = B13C; } catch (_) {} // r4: QA handle (camera numbers)
+        // ===== ss13u-bab-r4: minimap placement clear of Top 5 / Boost / controls =====
+        {
+          let rc = null, rcT = 0, rcM = 0, out = null, key = "";
+          const SEL = "#lbx, #boost, #joy, #turn, .x-tl, #ban, #nfemb, .x-hud";
+          const rects = () => {
+            const a = [];
+            for (const e of document.querySelectorAll(SEL)) {
+              if (e.closest(".x-hide") || e.id === "mm") continue; const cs = getComputedStyle(e); if (cs.display === "none" || cs.visibility === "hidden" || +cs.opacity < 0.05) continue;
+              const b = e.getBoundingClientRect(); if (b.width < 8 || b.height < 8 || b.width > innerWidth * 0.8) continue;
+              if (e.id === "ban" && !String(e.textContent || "").trim()) continue;
+              a.push([b.left, b.top, b.right, b.bottom]);
+            }
+            return a;
+          };
+          const hit = (x, y, m, a) => { const g = 6; for (const r of a) if (x - g < r[2] && x + m + g > r[0] && y - g < r[3] && y + m + g > r[1]) return true; return false; };
+          window.__B4MM = (m, x0, y0) => {
+            const now = performance.now();
+            if (!rc || now - rcT > 400 || m !== rcM) { rc = rects(); rcT = now; rcM = m; key = ""; }
+            const k = m + "|" + Math.round(x0) + "|" + Math.round(y0) + "|" + W + "|" + H + "|" + rc.map((r) => r.map(Math.round).join(",")).join(";");
+            if (k === key && out) return out;
+            key = k;
+            const SA = window.P10SA || {}, L = (SA.l || 0) + 12, R = W - m - 12 - (SA.r || 0), B = H - m - 12 - (SA.b || 0), T = (SA.t || 0) + 8;
+            const by = (id) => { const e = document.getElementById(id); if (!e || e.closest(".x-hide")) return null; const b = e.getBoundingClientRect(); return b.width ? b : null; };
+            const bo = by("boost"), lb = by("lbx"), jy = by("joy");
+            const C = [[x0, y0]];
+            if (bo) { const rt = bo.left + bo.width / 2 > W / 2; C.push([rt ? bo.left - 12 - m : bo.right + 12, B]); C.push([rt ? R : L, bo.top - 12 - m]); }
+            if (jy) { const rt = jy.left + jy.width / 2 > W / 2; C.push([rt ? jy.left - 12 - m : jy.right + 12, B]); }
+            if (lb) { const rt = lb.left + lb.width / 2 > W / 2; C.push([rt ? lb.left - 12 - m : lb.right + 12, Math.max(T, lb.top)]); C.push([rt ? R : L, lb.bottom + 10]); }
+            C.push([R, B], [L, B]);
+            for (let dx = 0; dx <= W * 0.35; dx += 24) C.push([R - dx, B], [L + dx, B]);
+            out = null;
+            for (const c of C) { const x = Math.round(c[0]), y = Math.round(c[1]); if (x < L - 1 || x > R + 1 || y < T - 1 || y > B + 1) continue; if (!hit(x, y, m, rc)) { out = [x, y]; break; } }
+            if (!out) out = [Math.round(x0), Math.round(y0)];
+            window.__MMR = [out[0], out[1], out[0] + m, out[1] + m];
+            return out;
+          };
+        }
+        // ===== ss13u-bab-r4: Royal Pass S1 tier 40 = Ishtar Serpent skin (was the removed Throne Arena) =====
+        try {
+          const ID = "ar_s1throne", ART = "ui/bab/s1/ishtar.webp";
+          Object.assign(ITEMS[ID] || (ITEMS[ID] = {}), { c: "sk", e: "🐍", r: 3, ex: "pass", s1: 1 });
+          I18N["nfI_" + ID] = ["أفعى عشتار", "Ishtar Serpent", "İştar Yılanı", "Serpent d'Ishtar", "Serpiente de Ishtar", "इश्तार नाग"];
+          // lapis glazed-brick scales with gold seams, gold Babylonian rosettes, gold belly band (pattern laid over the body like the other Royal skins)
+          const mk = (fn) => { const c = document.createElement("canvas"); c.width = c.height = 48; const g = c.getContext("2d"); g.save(); g.beginPath(); g.arc(24, 24, 23, 0, 6.283); g.clip(); fn(g); g.restore();
+            const sh = g.createRadialGradient(17, 15, 3, 24, 24, 24); sh.addColorStop(0, "rgba(255,255,255,.5)"); sh.addColorStop(0.5, "rgba(255,255,255,0)"); sh.addColorStop(1, "rgba(0,0,0,.35)"); g.fillStyle = sh; g.beginPath(); g.arc(24, 24, 23, 0, 6.283); g.fill(); return c; };
+          const lapis = (g) => { const gr = g.createLinearGradient(0, 0, 48, 48); gr.addColorStop(0, "#3d6cff"); gr.addColorStop(0.55, "#1d3cc4"); gr.addColorStop(1, "#0b1a6e"); g.fillStyle = gr; g.fillRect(0, 0, 48, 48);
+            g.strokeStyle = "rgba(242,200,96,.55)"; g.lineWidth = 1; for (let r = 0; r < 4; r++) for (let q = -1; q < 4; q++) { const cx = q * 16 + (r % 2 ? 8 : 0), cy = r * 13; g.beginPath(); g.arc(cx, cy, 9, 0.15, 2.99); g.stroke(); } };
+          const ros = (g, x, y, R) => { g.fillStyle = "#f2c860"; for (let i = 0; i < 8; i++) { const a = i * 0.785; g.beginPath(); g.ellipse(x + Math.cos(a) * R * 0.55, y + Math.sin(a) * R * 0.55, R * 0.42, R * 0.2, a, 0, 6.283); g.fill(); }
+            g.fillStyle = "#fff3c4"; g.beginPath(); g.arc(x, y, R * 0.28, 0, 6.283); g.fill(); g.strokeStyle = "rgba(90,55,8,.8)"; g.lineWidth = 1; g.beginPath(); g.arc(x, y, R * 0.28, 0, 6.283); g.stroke(); };
+          const gold = (g) => { const gr = g.createLinearGradient(0, 0, 0, 48); gr.addColorStop(0, "#fff1b8"); gr.addColorStop(0.5, "#e7bd58"); gr.addColorStop(1, "#8a5a14"); g.fillStyle = gr; g.fillRect(0, 0, 48, 48); };
+          OVS[ID] = [mk((g) => { lapis(g); ros(g, 24, 24, 13); }), mk((g) => { lapis(g); }), mk((g) => { lapis(g); g.fillStyle = "rgba(242,200,96,.9)"; g.fillRect(0, 20, 48, 8); }), mk((g) => { gold(g); g.strokeStyle = "rgba(120,80,12,.6)"; g.lineWidth = 1.2; for (let y = 6; y < 48; y += 9) { g.beginPath(); g.moveTo(0, y); g.lineTo(48, y); g.stroke(); } })];
+          { const im = new Image(); im.decoding = "async"; im.src = ART + "?v=13s1"; }
+        } catch (e) { try { console.warn("bab r4 s1", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
     </script>
