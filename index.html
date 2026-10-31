@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en" dir="ltr">
-  <head><meta name="ss-build" content="1793400816" /><script>(function(){var Q=window.__ssEQ=window.__ssEQ||[];function p(k,m,s,l,c,st){if(Q.length<20)Q.push([k,String(m||"").slice(0,300),String(s||"").slice(0,200),l|0,c|0,String(st||"").slice(0,1500)]);}window.addEventListener("error",function(e){if(!(e instanceof ErrorEvent))return;p("error",e.message,e.filename,e.lineno,e.colno,e.error&&e.error.stack)},true);window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;p("rejection",r&&(r.message||r.code)||String(r),"",0,0,r&&r.stack)});})();</script>
+  <head><meta name="ss-build" content="1793405656" /><script>(function(){var Q=window.__ssEQ=window.__ssEQ||[];function p(k,m,s,l,c,st){if(Q.length<20)Q.push([k,String(m||"").slice(0,300),String(s||"").slice(0,200),l|0,c|0,String(st||"").slice(0,1500)]);}window.addEventListener("error",function(e){if(!(e instanceof ErrorEvent))return;p("error",e.message,e.filename,e.lineno,e.colno,e.error&&e.error.stack)},true);window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;p("rejection",r&&(r.message||r.code)||String(r),"",0,0,r&&r.stack)});})();</script>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co https://super-snake-realtime.molierk.workers.dev wss://super-snake-realtime.molierk.workers.dev; media-src 'none'; object-src 'none'; frame-src 'self'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
     <meta name="referrer" content="no-referrer" />
@@ -4858,7 +4858,7 @@
         function adMod() { Object.assign(AD, { spd: 1, sr: 1, fs: 1, fv: 1 }, AD_MODS[AD.mod] || {}); }
         function adStart() {
           snakes = snakes.filter((s) => !s.ad); Object.assign(AD, { fog: null, rain: 0, t: 30, last: "", t0: time, agg: 0.1 + AD.skill * 0.4, smart: 1, bAdd: 0, food: 1 });
-          const ks = Object.keys(AD_MODS).filter((k) => k !== AD.lastMod); AD.mod = AD.lastMod = ks[(R() * ks.length) | 0]; adMod();
+          const ks = Object.keys(AD_MODS).filter((k) => k !== AD.lastMod && !(k === "night" && (mapI === 0 || mapI === 29))); AD.mod = AD.lastMod = ks[(R() * ks.length) | 0]; adMod();
           setTimeout(() => { if (state === "play" && AD.mod) xBan(`${_t("adName")} · ${_t("modLbl")}: ${_t("mod" + cap(AD.mod))}`); }, 900);
         }
         function adUpdate(dt) {
@@ -4881,7 +4881,7 @@
           const was = AD.agg;
           Object.assign(AD, { agg: 0.1 + 0.55 * sk, smart: 0.8 + 0.9 * sk, bAdd: clamp(Math.round((sk - 0.35) * 10), -4, 6), food: 1.35 - 0.6 * sk });
           syncBots();
-          const ev = AD_EV.filter((e) => e !== AD.last && (e !== "mini" || !snakes.some((s) => s.boss && s.alive))), e = ev[(R() * ev.length) | 0];
+          const ev = AD_EV.filter((e) => e !== AD.last && !(e === "fog" && (mapI === 0 || mapI === 29)) && (e !== "mini" || !snakes.some((s) => s.boss && s.alive))), e = ev[(R() * ev.length) | 0];
           AD.last = e;
           if (e === "rain") AD.rain = 3.5;
           else if (e === "dna") for (let i = 0; i < 14; i++) { const a = R() * 6.28, d = rnd(120, 700); spawnDna(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d); }
@@ -4897,7 +4897,7 @@
           beep(520, 0.18, "triangle", 0.05, 880);
         }
         function adDraw() {
-          const f = AD.fog; if (!f || state !== "play") return;
+          const f = AD.fog; if (!f || state !== "play" || (mapI === 0 || mapI === 29)) return;
           const al = Math.min(1, f.l / 3, (25 - f.l) / 2);
           for (let i = 0; i < 9; i++) {
             const a = i * 0.7 + time * 0.15, d = i ? f.r * 0.55 : 0;
@@ -5044,8 +5044,8 @@
         function xUpdate(dt) {
           xN = AD.mod === "night" && state === "play" ? 1 : DN.xn;
           if (rainOn > 0) rainOn -= dt; else if ((rainNext -= dt) <= 0) { rainOn = 30; rainNext = rnd(120, 240); }
-          nfWx(dt);
-          rainA = clamp(rainA + (rainOn > 0 ? dt : -dt) * 0.5, 0, 1);
+          nfWx(dt); if ((mapI === 0 || mapI === 29) && !(NFS.my === "night" || (state === "play" && AD.mod === "night"))) xN = 0; /* tahrir-clear: no clock/weather night veil (Mystery night stays) */
+          rainA = clamp(rainA + (rainOn > 0 ? dt : -dt) * 0.5, 0, 1); if ((mapI === 0 || mapI === 29)) { rainA = 0; if (rips.length) rips.length = 0; } /* tahrir-clear: no rain streaks / ripples */
           if (rainA > 0 && QL > 1) for (let k = 0; k < 3; k++) if (R() < rainA) rips.push({ x: cam.x + rnd(-700, 700), y: cam.y + rnd(-500, 400), l: 0.8 });
           for (let i = rips.length - 1; i >= 0; i--) if ((rips[i].l -= dt) <= 0) rips.splice(i, 1);
           if (rips.length > QC.rain) rips.splice(0, rips.length - QC.rain); // ripples scale with quality
@@ -5519,7 +5519,7 @@
           const M = MAPS[mapI], ak0 = A / A0; ctx.fillStyle = M.bg; ctx.fillRect(0, 0, W, H);
           ST = Math.sin(cam.t); CT = Math.cos(cam.t);
           F = D * cam.s; CX = W / 2; CY = H * (0.5 + 0.12 * (1.45 - cam.t) / 0.75);
-          if (shk) { CX += (Math.random() * 2 - 1) * shk; CY += (Math.random() * 2 - 1) * shk; }
+          if (shk && !(mapI === 0 || mapI === 29)) { CX += (Math.random() * 2 - 1) * shk; CY += (Math.random() * 2 - 1) * shk; }
           const c0 = unpr(0, 0), c1 = unpr(W, 0), c2 = unpr(0, H), c3 = unpr(W, H);
           const vx0 = Math.min(c0.x, c2.x) - 60, vx1 = Math.max(c1.x, c3.x) + 60;
           const vy0 = c0.y - 60, vy1 = c2.y + 120;
@@ -5784,7 +5784,7 @@
           mpFront(vis);
           evoDraw1(vis); xDraw1(); adDraw();
 
-          ctx.drawImage(sky(M), 0, 0, W, CY); xDraw2(vis); nfDrawTop(vis);
+          if (!(mapI === 0 || mapI === 29)) ctx.drawImage(sky(M), 0, 0, W, CY); /* tahrir-clear: no sky haze */ xDraw2(vis); nfDrawTop(vis);
 
           if (S.map && (player || TMS.spec) && state === "play" && MM13) MM13(c0, c1, c2, c3); // 13t premium minimap
         }
@@ -8178,7 +8178,7 @@
             if (now - FP.ft >= 1000) { const fps = FP.fc * 1000 / (now - FP.ft), tgt = window.__ssCap ? Math.min(60, window.__ssCap) : Math.min(60, 1000 / (VS * FP.div)); FP.ft = now; FP.fc = 0;
               if (now <= (FP.drT || 0)) { /* settling after a resolution change */ }
               else if (FP.pf) { if (!(fps > FP.pf * 1.08)) { DRS = Math.min(1, DRS / 0.85); FP.lock = 1; resize(); FP.drT = now + 1500; } FP.pf = 0; } // a step that didn't help (display-limited, e.g. iPhone Low Power 30 Hz) is undone and DRS stops
-              else if (!FP.lock && fps < tgt * 0.8 && DRS > 0.56) { FP.pf = fps; DRS = Math.max(0.55, DRS * 0.85); FP.drT = now + 1500; FP.up = 0; resize(); }
+              else if (!FP.lock && fps < tgt * 0.8 && DRS > 0.86) { FP.pf = fps; DRS = Math.max(0.85, DRS * 0.85); /* tahrir-clear: floor 0.85 (was 0.55: a 3x phone fell to ~1.65x = soft) */ FP.drT = now + 1500; FP.up = 0; resize(); }
               else if (!FP.lock && fps > tgt * 0.95 && DRS < 1 && (FP.ups || 0) < 3) { if (++FP.up >= 5) { DRS = Math.min(1, DRS / 0.85); FP.up = 0; FP.ups = (FP.ups || 0) + 1; FP.drT = now + 1500; resize(); } }
               else FP.up = 0; } }
           else FP.ft = 0;
@@ -8541,7 +8541,7 @@
             ctx.lineWidth = 3;
             for (const r of vRing) { if (!vis(r.x, r.y, 300)) continue; pr(r.x, r.y, 0); const k = (30 + r.l * 260) * PK; ctx.strokeStyle = `rgba(${r.c},${0.6 * (1 - r.l)})`; ctx.beginPath(); ctx.ellipse(PX, PY, k, k * ST, 0, 0, 6.283); ctx.stroke(); }
           }
-          if (MFX === 0) { // classic: twinkling neon specks on the floor
+          if (MFX === 0 && !(mapI === 0 || mapI === 29)) { // classic: twinkling neon specks on the floor (tahrir-clear: not on Babylon/Tahrir)
             ctx.globalCompositeOperation = "lighter";
             for (const a of vAmb) { if (!vis(a.x, a.y)) continue; pr(a.x, a.y, 0); const tw = 0.5 + 0.5 * Math.sin(a.p * 3); ctx.globalAlpha = (0.25 + 0.35 * tw) * (0.4 + 0.6 * DN.n); const s = (10 + tw * 14) * PK; ctx.drawImage(orb(a.v > 0.7 ? "#ff3cc8" : "#3cf0ff"), PX - s / 2, PY - s / 2, s, s); }
             ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
@@ -8563,7 +8563,7 @@
         });
         // screen layer: light rays and leaves (forest), scanlines + glitch (cyber), bokeh + vignette (classic), weather-like drift on the other maps
         NFH.top.push(() => {
-          if (QL <= 0) return;
+          if (QL <= 0 || (mapI === 0 || mapI === 29)) return; /* tahrir-clear: no drifting screen specks / bokeh */
           const m = mapI;
           if (m === 5) {
             const day = 1 - xN;
@@ -9208,7 +9208,7 @@
             for (const s of WXS.snow) { s.y += dt * 0.07 * s.v; s.p += dt; s.x += Math.sin(s.p) * dt * 0.02; if (s.y > 1.03) { s.y = -0.03; s.x = R(); } } }
         });
         NFH.top.push(() => {
-          if (!NX.set.wx) return; const k = wxKind();
+          if (!NX.set.wx || (mapI === 0 || mapI === 29)) return; /* tahrir-clear: no weather wash */ const k = wxKind();
           if (k === "snow") { ctx.fillStyle = "#fff"; for (const s of WXS.snow) { ctx.globalAlpha = 0.5 + 0.4 * s.v; const d = 1.5 + 2.2 * s.v; ctx.fillRect(s.x * W, s.y * H, d, d); } }
           else if (k === "fog") { ctx.globalAlpha = 0.22; ctx.fillStyle = "#cfd8e3"; ctx.fillRect(0, 0, W, H); }
           else if (k === "cloud") { ctx.globalAlpha = 0.07; ctx.fillStyle = "#6b7380"; ctx.fillRect(0, 0, W, H); }
@@ -9751,7 +9751,7 @@
         // the blobs are composed at 1/8 resolution (15 Hz) and laid over the floor with ONE screen-sized additive blit per frame
         const pxNC = document.createElement("canvas"), pxNG = pxNC.getContext("2d"); let pxNT = 0;
         NFH.floor.push(() => {
-          if (QL < 1 || NFM.m === "custom") return;
+          if (QL < 1 || NFM.m === "custom" || (mapI === 0 || mapI === 29)) return; /* tahrir-clear: no additive nebula wash on Tahrir/Babylon */
           const w = Math.max(32, Math.round(W / 8)), h = Math.max(18, Math.round(H / 8));
           if (pxNC.width !== w || pxNC.height !== h) { pxNC.width = w; pxNC.height = h; pxNT = 0; }
           if ((pxNT -= fdt) <= 0) {
@@ -9802,7 +9802,7 @@
             const was = s.alive; _kill(s);
             if (!was || s.alive) return;
             const h = s.seg[0]; pxRing(h.x, h.y, segColor(s.skin, 0), s === player);
-            if (s === player) { pxRing(h.x, h.y, "#ffffff", true); pxFlash("d"); if (QL >= 1) { cv.classList.add("px-dead"); pxDead = true; } }
+            if (s === player) { pxRing(h.x, h.y, "#ffffff", true); pxFlash("d"); if (QL >= 1 && !(mapI === 0 || mapI === 29)) { cv.classList.add("px-dead"); pxDead = true; } }
           }; }
         NFH.home.push(() => { pxRings = []; pxDead = false; cv.classList.remove("px-dead"); const b = $("pxkf"); if (b) b.textContent = ""; });
         NFH.start.push(() => { pxRings = []; pxDead = false; cv.classList.remove("px-dead"); const b = $("pxkf"); if (b) b.textContent = ""; lbS = 1; lbH = ""; });
@@ -11586,7 +11586,7 @@
             let h = 0; for (let i = 0; i < t.length; i += 3) h = (Math.imul(h, 31) + t.charCodeAt(i)) | 0; return "h" + h + ":" + t.length;
           };
           // tahrir-flat: stale-page check. Safari can keep an old copy of the page (tab restore / cache); compare our build stamp with the live one.
-          const BLD = "1793400816";
+          const BLD = "1793405656";
           try { if (/[?&]_r=/.test(location.search) && history.replaceState) history.replaceState(null, "", location.pathname + location.search.replace(/[?&]_r=\d+/, "").replace(/^&/, "?") + location.hash); } catch (_) {}
           B13C.stale = async () => {
             if (!/^https?:$/.test(location.protocol) || B13.ios()) return false;
@@ -20769,7 +20769,7 @@
             pr(cam.x, ey0, 0); const ya = Math.max(0, PY); pr(cam.x, ey1, 0); const yb = Math.min(H, PY);
             if (!(yb > ya + 1)) return false;
             const sm0 = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; if (ctx.imageSmoothingQuality) ctx.imageSmoothingQuality = QL >= 2 ? "medium" : "low";
-            const N = QL <= 0 ? 22 : QL === 1 ? 30 : 38, st = (yb - ya) / N, SW = A + 2 * E, fs = lo.naturalWidth / SW;
+            const N = QL <= 0 ? 22 : QL === 1 ? 56 : 64, st = (yb - ya) / N, SW = A + 2 * E, fs = lo.naturalWidth / SW;
             const T1 = SW / 7, T2 = SW / 14, T3 = SW / 28;
             // which tiles are on screen: request them (lazy), use the ones decoded
             const L1 = [], L2 = [], L3 = [];
@@ -20813,7 +20813,7 @@
               const l0 = unpr(0, s0).x, l1 = unpr(0, s1).x, r0 = unpr(W, s0).x, r1 = unpr(W, s1).x;
               const x0 = Math.max(ex0, Math.min(l0, l1) - 4), x1 = Math.min(ex1, Math.max(r0, r1) + 4); if (x1 <= x0) continue;
               // r2 fix: each strip is cut into K columns before the two affine triangles, so straight lane lines / bridge parapets no longer kink into zigzags at the triangle diagonal
-              const K = QL <= 0 ? 2 : 3;
+              const K = QL <= 0 ? 2 : 4;
               for (let k = 0; k < K; k++) {
                 const cx0 = x0 + (x1 - x0) * k / K, cx1 = x0 + (x1 - x0) * (k + 1) / K;
                 const TL_ = mpP(cx0, y0, 0), TR = mpP(cx1, y0, 0), BL = mpP(cx0, y1, 0), BR = mpP(cx1, y1, 0), dx = cx1 - cx0, dy = y1 - y0;
@@ -21165,6 +21165,185 @@
             };
             window.__TAHFLAT = 1;
           } catch (e) { try { console.warn("tahrir-flat", e); } catch (_) {} }
+          // ===== tahrir-clear (owner 2026-10-30 ~16:50: "فيها تغويش الشاشة تحس انت دتلعب داخل المي" = blurry/wavy, like playing underwater).
+          //       Tahrir + Babylon: the ground is drawn by WebGL with true perspective (no piecewise-affine strips that made the texture swim),
+          //       mipmaps + anisotropic filtering (no crawling far rows), and a calm camera (no zoom breathing from nearby snakes / boost, slow look-ahead).
+          //       The full-screen soft layers (nebula, sky haze, rain, weather wash, clock-night veil, glow specks) are cut in p13u_clear.py. =====
+          try {
+            const CLRM = () => mapI === TAH || mapI === 0;
+            // ---------------- WebGL ground ----------------
+            const G = { cv: null, gl: null, ok: false, dead: false, slow: false, an: null, am: 1, U: {}, vb: null, up: 0, nt: 0, n: 0, ts: [], med: 0, lo: null, bab: null, babK: "" };
+            const glInit = () => {
+              if (G.ok) return true; if (G.dead || window.__CLRGL === 0) return false;
+              try {
+                const c = document.createElement("canvas"); c.width = c.height = 2;
+                const gl = c.getContext("webgl", { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, stencil: false, preserveDrawingBuffer: false, powerPreference: "high-performance" });
+                if (!gl) { G.dead = true; return false; }
+                c.addEventListener("webglcontextlost", (e) => { e.preventDefault(); G.dead = true; G.ok = false; }, false);
+                const hp = (() => { try { const f = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT); return f && f.precision > 0; } catch (_) { return false; } })();
+                const sh = (t, src) => { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error("glsl " + gl.getShaderInfoLog(s)); return s; };
+                // exact copy of pr(x, y, 0): k = F / (D - dy*CT); PX = CX + dx*k; PY = CY + dy*ST*k  ->  homogeneous clip coords (GPU does the perspective divide + perspective-correct UVs)
+                const vs = "attribute vec4 a; uniform vec4 uc; uniform vec4 up; uniform vec4 uv; varying vec2 t;\n" +
+                  "void main(){ float dx = a.x - uc.x, dy = a.y - uc.y; float w = uc.z - dy * up.y; float X = uv.x * w + up.z * dx; float Y = uv.y * w + up.z * up.x * dy;\n" +
+                  " gl_Position = vec4(2.0 * X / uv.z - w, w - 2.0 * Y / uv.w, 0.0, w); t = a.zw; }";
+                const fs = "precision " + (hp ? "highp" : "mediump") + " float; uniform sampler2D s; varying vec2 t; void main(){ gl_FragColor = texture2D(s, t); }";
+                const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
+                if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error("link");
+                gl.useProgram(p); G.U = { c: gl.getUniformLocation(p, "uc"), p: gl.getUniformLocation(p, "up"), v: gl.getUniformLocation(p, "uv"), s: gl.getUniformLocation(p, "s") };
+                G.vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, G.vb); const al = gl.getAttribLocation(p, "a"); gl.enableVertexAttribArray(al); gl.vertexAttribPointer(al, 4, gl.FLOAT, false, 16, 0);
+                gl.uniform1i(G.U.s, 0); gl.disable(gl.DEPTH_TEST); gl.disable(gl.BLEND);
+                G.an = gl.getExtension("EXT_texture_filter_anisotropic") || gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic");
+                if (G.an) G.am = Math.max(1, Math.min(8, gl.getParameter(G.an.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1));
+                G.cv = c; G.gl = gl; G.ok = true; window.__CLRGLON = { aniso: G.am, hp };
+                return true;
+              } catch (e) { G.dead = true; try { console.warn("tahrir-clear gl", e); } catch (_) {} return false; }
+            };
+            const pot = (n) => n > 0 && (n & (n - 1)) === 0;
+            const mkTex = (img, rep) => {
+              const gl = G.gl, t = gl.createTexture(), w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, p2 = pot(w) && pot(h);
+              gl.bindTexture(gl.TEXTURE_2D, t); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+              gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+              if (p2) gl.generateMipmap(gl.TEXTURE_2D);
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, p2 ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+              const wr = rep && p2 ? gl.REPEAT : gl.CLAMP_TO_EDGE; gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wr); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wr);
+              if (G.an && p2) gl.texParameterf(gl.TEXTURE_2D, G.an.TEXTURE_MAX_ANISOTROPY_EXT, G.am);
+              return t;
+            };
+            // ground tile textures: own loader (decoded image is dropped once it is on the GPU), LRU cap, idle eviction, at most 2 uploads per frame
+            const TX = new Map(), TCAP = () => window.__CLRCAP || 36;
+            const tex = (k) => {
+              const n = performance.now(); let e = TX.get(k);
+              if (e && e.err && n - e.err > 4000) { TX.delete(k); e = null; }
+              if (!e) { e = { t: null, u: n, d: 0, err: 0, img: new Image() }; TX.set(k, e); const o = e.img; o.decoding = "async"; o.onerror = () => { e.err = performance.now(); };
+                o.onload = () => { if (o.decode) o.decode().then(() => { e.d = 1; }, () => { e.d = 1; }); else e.d = 1; }; o.src = "ui/tah/" + k + ".webp?v=4"; }
+              e.u = n;
+              if (!e.t && e.d && e.img && e.img.naturalWidth && G.up < 2) { G.up++; try { e.t = mkTex(e.img, false); } catch (_) { e.err = n; } e.img.onload = e.img.onerror = null; e.img.src = ""; e.img = null; }
+              return e.t;
+            };
+            const txEvict = () => {
+              const n = performance.now(), gl = G.gl;
+              for (const [k, e] of TX) if (n - e.u > 8000) { if (e.t) gl.deleteTexture(e.t); if (e.img) e.img.src = ""; TX.delete(k); }
+              const ks = [...TX].filter(([, e]) => e.t), cap = TCAP();
+              if (ks.length > cap) { ks.sort((a, b) => a[1].u - b[1].u); for (const [k, e] of ks.slice(0, ks.length - cap)) if (n - e.u > 300) { gl.deleteTexture(e.t); TX.delete(k); } }
+            };
+            const glFree = () => { try { const gl = G.gl; for (const e of TX.values()) { if (e.t) gl.deleteTexture(e.t); if (e.img) e.img.src = ""; } TX.clear(); if (G.lo) gl.deleteTexture(G.lo); if (G.bab) gl.deleteTexture(G.bab); G.lo = G.bab = null; G.loA = null; G.babK = ""; G.cv.width = G.cv.height = 1; } catch (_) {} };
+            window.__CLRTX = () => ({ n: TX.size, gpu: [...TX.values()].filter((e) => e.t).length });
+            const VB = { a: new Float32Array(24 * 96), n: 0 };
+            const quad = (x0, y0, x1, y1, u0, v0, u1, v1) => { // world rect -> 2 triangles (x, y, u, v)
+              if (VB.n + 24 > VB.a.length) { const b = new Float32Array(VB.a.length * 2); b.set(VB.a); VB.a = b; }
+              const a = VB.a; let i = VB.n;
+              a[i++] = x0; a[i++] = y0; a[i++] = u0; a[i++] = v0; a[i++] = x1; a[i++] = y0; a[i++] = u1; a[i++] = v0; a[i++] = x0; a[i++] = y1; a[i++] = u0; a[i++] = v1;
+              a[i++] = x1; a[i++] = y0; a[i++] = u1; a[i++] = v0; a[i++] = x1; a[i++] = y1; a[i++] = u1; a[i++] = v1; a[i++] = x0; a[i++] = y1; a[i++] = u0; a[i++] = v1;
+              VB.n = i;
+            };
+            const glBegin = () => {
+              const gl = G.gl, c = G.cv; if (c.width !== cv.width || c.height !== cv.height) { c.width = cv.width; c.height = cv.height; }
+              gl.viewport(0, 0, c.width, c.height); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+              gl.uniform4f(G.U.c, cam.x, cam.y, D, 0); gl.uniform4f(G.U.p, ST, CT, F, 0); gl.uniform4f(G.U.v, CX, CY, W, H);
+              G.up = 0;
+            };
+            const glDraw = (t) => { if (!VB.n) return; const gl = G.gl; gl.bindTexture(gl.TEXTURE_2D, t); gl.bufferData(gl.ARRAY_BUFFER, VB.a.subarray(0, VB.n), gl.STREAM_DRAW); gl.drawArrays(gl.TRIANGLES, 0, VB.n / 4); VB.n = 0; };
+            const glEnd = () => { // composite onto the 2D canvas 1:1 in device pixels (the floor path / transform of the caller are kept)
+              ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"; ctx.imageSmoothingEnabled = false;
+              ctx.drawImage(G.cv, 0, 0); ctx.restore(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+            };
+            // Tahrir: ground_lo under everything, then L1 (Low) or L2 (Medium+; L1 parent while an L2 loads), L3 where the screen shows > 20 px per metre
+            const tahGL = () => {
+              if (!glInit()) return null;
+              const z = tz(), E = z.E, hi = QL >= 1, SW = A + 2 * E, T1 = SW / 7, T2 = SW / 14, T3 = SW / 28;
+              const lo = im("ground_lo"); if (!lo) return false;
+              const c0 = unpr(0, 0), c1 = unpr(W, 0), c2 = unpr(0, H), c3 = unpr(W, H);
+              const ex0 = Math.max(0, Math.min(c0.x, c2.x) - 60), ex1 = Math.min(A, Math.max(c1.x, c3.x) + 60), ey0 = Math.max(0, c0.y - 60), ey1 = Math.min(A, c2.y + 120);
+              if (!(ex1 > ex0 && ey1 > ey0)) return false;
+              glBegin();
+              if (!G.lo || G.loA !== lo) { try { if (G.lo) G.gl.deleteTexture(G.lo); G.lo = mkTex(lo, false); G.loA = lo; G.nt = 1; } catch (_) { G.lo = null; return null; } }
+              const uvq = (x0, y0, x1, y1, tx, ty, ts) => quad(x0, y0, x1, y1, (x0 - tx) / ts, (y0 - ty) / ts, (x1 - tx) / ts, (y1 - ty) / ts);
+              uvq(ex0, ey0, ex1, ey1, -E, -E, SW); glDraw(G.lo);
+              const cell = (L, T, i, j) => { const tx = -E + i * T, ty = -E + j * T, x0 = Math.max(ex0, tx), x1 = Math.min(ex1, tx + T), y0 = Math.max(ey0, ty), y1 = Math.min(ey1, ty + T); return x1 > x0 && y1 > y0 ? [x0, y0, x1, y1, tx, ty] : null; };
+              const rng = (T, n, a0, a1) => [Math.max(0, Math.floor((a0 + E) / T)), Math.min(n - 1, Math.floor((a1 + E) / T))];
+              // first world row where one metre spans > 20 device px (rows grow toward the bottom of the screen)
+              const wpm = A / SPAN, k20 = (F * dpr * wpm) / 20, y20 = cam.y + (D - k20) / CT;
+              window.__TAHPPM = +((F / Math.max(40, D - (Math.min(ey1, c2.y) - cam.y) * CT)) * dpr * wpm).toFixed(1);
+              const y3 = hi && window.__TAHL3 !== 0 ? Math.max(ey0, y20 - T3 * 0.25) : 1e9;
+              const L3 = [], have3 = {};
+              if (y3 < ey1) { const [i0, i1] = rng(T3, 28, ex0, ex1), [j0, j1] = rng(T3, 28, y3, ey1);
+                for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { if (i < 2 || i > 25 || j < 2 || j > 25) continue; const q = cell(T3, T3, i, j); if (!q) continue; const t = tex("L3_" + i + "_" + j); if (t) { L3.push([t, q]); have3[i + "_" + j] = 1; } } }
+              const L2 = [], L1 = {};
+              if (hi) { const [i0, i1] = rng(T2, 14, ex0, ex1), [j0, j1] = rng(T2, 14, ey0, ey1);
+                for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const q = cell(T2, T2, i, j); if (!q) continue;
+                  // all visible L3 children ready -> the L2 parent is not needed
+                  let all = y3 < ey1; for (let b = 0; b < 2 && all; b++) for (let a = 0; a < 2 && all; a++) { const ii = 2 * i + a, jj = 2 * j + b; if (cell(T3, T3, ii, jj) && !have3[ii + "_" + jj]) all = false; }
+                  if (all) continue;
+                  const t = tex("L2_" + i + "_" + j); if (t) L2.push([t, q]); else L1[(i >> 1) + "_" + (j >> 1)] = 1; } }
+              else { const [i0, i1] = rng(T1, 7, ex0, ex1), [j0, j1] = rng(T1, 7, ey0, ey1); for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) L1[i + "_" + j] = 1; }
+              for (const k in L1) { const ij = k.split("_"), q = cell(T1, T1, +ij[0], +ij[1]); if (!q) continue; const t = tex("L1_" + k); if (t) { uvq(q[0], q[1], q[2], q[3], q[4], q[5], T1); glDraw(t); } }
+              for (const [t, q] of L2) { uvq(q[0], q[1], q[2], q[3], q[4], q[5], T2); glDraw(t); }
+              for (const [t, q] of L3) { uvq(q[0], q[1], q[2], q[3], q[4], q[5], T3); glDraw(t); }
+              glEnd(); txEvict(); evict();
+              return true;
+            };
+            window.__TAHGLD = () => ({ tx: window.__CLRTX(), gl: G.ok, dead: G.dead, slow: G.slow, med: G.med });
+            // Babylon: the floor texture (same brightness lift as txPat) as one repeating, mipmapped quad
+            const babGL = (fx0, fx1, fy0, fy1) => {
+              if (window.P10NOTX || !glInit()) return null;
+              if (!txPat(0)) return false; const im0 = TXI[0]; if (!im0 || !im0.naturalWidth) return false;
+              const key = im0.src + "|" + im0.naturalWidth;
+              if (G.babK !== key) {
+                let src = im0, w = im0.naturalWidth;
+                try { w = Math.min(1024, im0.naturalWidth); const h = Math.round(im0.naturalHeight * w / im0.naturalWidth), c = document.createElement("canvas"); c.width = w; c.height = h;
+                  const g = c.getContext("2d", { willReadFrequently: true }); g.drawImage(im0, 0, 0, w, h); const d = g.getImageData(0, 0, w, h), a = d.data;
+                  let s = 0, n = 0; for (let k = 0; k < a.length; k += 64) { s += 0.2126 * a[k] + 0.7152 * a[k + 1] + 0.0722 * a[k + 2]; n++; }
+                  const mean = s / Math.max(1, n) / 255, gain = Math.max(1, Math.min(mean < 0.1 ? 2.6 : 1.9, 0.32 / Math.max(0.04, mean))), lift = mean < 0.2 ? 12 : 0, tm = Math.min(0.5, mean * gain + lift / 255);
+                  if (gain > 1.04) { const lut = new Uint8ClampedArray(256); for (let v = 0; v < 256; v++) { const x = (v * gain + lift) / 255; lut[v] = 255 * Math.min(1, tm + (x - tm) * 0.82); }
+                    for (let k = 0; k < a.length; k += 4) { a[k] = lut[a[k]]; a[k + 1] = lut[a[k + 1]]; a[k + 2] = lut[a[k + 2]]; } g.putImageData(d, 0, 0); src = c; } else { src = im0; w = im0.naturalWidth; }
+                } catch (_) { src = im0; w = im0.naturalWidth; }
+                try { if (G.bab) G.gl.deleteTexture(G.bab); G.bab = mkTex(src, true); G.babK = key; G.babS = src.height / src.width; G.nt = 1; } catch (_) { return null; }
+              }
+              glBegin();
+              const TW = TXW[0], TH = TW * (G.babS || 1), ox = Math.floor(fx0 / TW) * TW, oy = Math.floor(fy0 / TH) * TH;
+              quad(fx0, fy0, fx1, fy1, (fx0 - ox) / TW, (fy0 - oy) / TH, (fx1 - ox) / TW, (fy1 - oy) / TH); glDraw(G.bab);
+              glEnd();
+              return true;
+            };
+            const txFC = txFloor;
+            txFloor = function (fx0, fx1, fy0, fy1) {
+              if (window.__CLRGL !== 0 && !G.dead && !G.slow) {
+                try {
+                  const t0 = performance.now(), nt = G.nt; G.nt = 0;
+                  const r = mapI === TAH ? tahGL() : mapI === 0 ? babGL(fx0, fx1, fy0, fy1) : null;
+                  // self-check: the GL frame (incl. the copy onto the 2D canvas) must stay cheap on this device; a browser that reads the GL
+                  // buffer back through the CPU (software GL) falls back to the 2D path for the session. Frames that uploaded a texture don't count.
+                  if (r === true && state === "play" && !G.up && !G.nt && !nt) { const dt = performance.now() - t0; if (++G.n > 20) { G.ts.push(dt);
+                    if (G.ts.length >= 45) { const a = G.ts.slice().sort((x, y) => x - y); G.med = +a[22].toFixed(2); G.ts.length = 0; window.__CLRGLMED = G.med;
+                      if (G.med > (window.__CLRGLMAX || 8) && !window.__CLRGLFORCE) { G.slow = true; window.__CLRGLSLOW = G.med; glFree(); } } } }
+                  if (r !== null && !G.slow) return r;
+                } catch (e) { G.dead = true; try { console.warn("tahrir-clear floor", e); } catch (_) {} }
+              }
+              return txFC.apply(this, arguments);
+            };
+
+            // ---------------- calm camera (Tahrir + Babylon) ----------------
+            // zoom follows the snake's length only (no breathing when a snake comes near or on boost), eased slowly with a dead band;
+            // follow = plain exponential smoothing (no spring overshoot); look-ahead smaller and slower so turns don't swing the view.
+            const camC = B13C.cam, LKc = { x: 0, y: 0 };
+            B13C.cam = function (focus) {
+              const h = focus && focus.seg && focus.seg[0];
+              if (!CLRM() || window.__CLRCAM === 0 || !h || !Number.isFinite(h.x) || !Number.isFinite(h.y) || !B13C.zoomFor) return camC.apply(this, arguments);
+              const dt = Math.min(0.1, Math.max(0.001, fdt)), ex = (tau) => 1 - Math.exp(-dt / tau);
+              S.cam = "auto"; S.zoom = 1;
+              let zs = B13C.zoomFor(focus.len, 0, 0); if (!Number.isFinite(zs)) zs = 1;
+              if (cam.f13r !== focus || !Number.isFinite(cam.s) || !Number.isFinite(cam.x) || !Number.isFinite(cam.y)) { cam.f13r = focus; cam.s = zs; cam.x = h.x; cam.y = h.y; LKc.x = LKc.y = 0; cam._zm = 0; }
+              const s = Math.max(0.3, cam.s), lx = Math.cos(focus.a) * (W * 0.07 / s), ly = Math.sin(focus.a) * (H * 0.06 / s);
+              if (Number.isFinite(lx) && Number.isFinite(ly)) { const k = ex(0.7); LKc.x += (lx - LKc.x) * k; LKc.y += (ly - LKc.y) * k; }
+              if (!Number.isFinite(LKc.x) || !Number.isFinite(LKc.y)) LKc.x = LKc.y = 0;
+              const tx = h.x + LKc.x, ty = h.y + LKc.y;
+              if (!(Math.hypot(tx - cam.x, ty - cam.y) < 900)) { cam.x = tx; cam.y = ty; } else { const k = ex(0.14); cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k; }
+              const dz = Math.abs(zs - cam.s); if (dz > cam.s * 0.006) cam._zm = 1; else if (dz < cam.s * 0.0006) cam._zm = 0;
+              if (cam._zm) cam.s += (zs - cam.s) * ex(1.1);
+              cam.s = clamp(cam.s, 0.25, 2.6); cam.vx = cam.vy = cam.vs = 0; cam.t = 0.95; cam.vt = 0;
+            };
+            window.__TAHCLR = 1;
+          } catch (e) { try { console.warn("tahrir-clear", e); } catch (_) {} }
         } catch (e) { try { console.warn("tahrir", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
@@ -28706,5 +28885,6 @@ html body #b13hart, html body #b13hrnd { display: none !important; }
 </style>
 <!-- tahrir-sharp -->
 <!-- tahrir-flat -->
+<!-- tahrir-clear -->
 </body>
 </html>
