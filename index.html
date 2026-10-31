@@ -4424,6 +4424,7 @@
           const n = Math.ceil(AMX / OGC) + 1, cx = Math.min(n - 1, Math.max(0, (x / OGC) | 0)), cy = Math.min(n - 1, Math.max(0, (y / OGC) | 0));
           return OG[cy * n + cx] || OG0;
         }
+        window.__WZS = 250 / 170; window.__WZT = 1.45; window.__WZH = 1.15; /* ss13u-wz prelude */ window.__WZBL = () => { const q = R(); return q < 0.65 ? rnd(20, 50) : q < 0.92 ? rnd(50, 120) : q < 0.99 ? rnd(120, 250) : rnd(250, 400); };
         function addFood(x, y, v, c, k) {
           if (obsNear(x, y).some((o) => oD(o, x, y) < o.r + 8)) return;
           food.push({ x: clamp(x, 20, A - 20), y: clamp(y, 20, A - 20), v: k ? FT[k].v : v || rnd(0.3, 1), k, a: R() * 6.28,
@@ -4447,9 +4448,10 @@
             s.a = s.ta = Math.atan2(A / 2 - h.y, A / 2 - h.x); beep(300, 0.3, "square", 0.06, 900); if (s === player) { shake(5); vib(25); } return;
           }
           s.alive = false; evoDrop(s); if (s.boss) xBossDie(s);
-          for (let i = 0; i < s.seg.length; i += 6) { // build12b: fewer, larger remains (they decay, see F13)
-            const p = s.seg[i];
-            addFood(p.x + rnd(-10, 10), p.y + rnd(-10, 10), rnd(2.4, 4.4), segColor(s.skin, i));
+          for (let i = 0; i < s.seg.length; i += 5) { // ss13u-wz: remains = row of big orbs (value 0.9 r, the dead snake's colour)
+            const p = s.seg[i], j = s.r * 0.25, n0 = food.length;
+            addFood(p.x + rnd(-j, j), p.y + rnd(-j, j), s.r * 0.9, __WZCOL(s.skin));
+            if (food.length > n0) food[food.length - 1].orb = s.r;
           }
           if (s === player) { sDeath(); shake(11); nfDeath(s); if (TMS.die(s)) return; if (revOk()) revOpen(); else gameOver(); }
           else { s.respawn = 2; TMS.die(s); if (player && player.alive && Math.hypot(s.seg[0].x - player.seg[0].x, s.seg[0].y - player.seg[0].y) < 600) pendImp = true; }
@@ -4459,7 +4461,7 @@
           const bots = snakes.filter((s) => s.bot && !s.ad), nb = TN || nfBotN() || Math.min(window.__ARNMX ? __ARNMX() : 45, Math.max(2, (L.on ? Math.min(40, Math.round((8 + L.round * 4) * A / 4500)) : Math.min(window.__ARNMX ? __ARNMX() : 45, Math.round((MD === "p" ? PB * A / A0 * 1.18 : (window.__s13sOpp ? __s13sOpp(S.bots, S.q, A / A0, state === "play" ? AD.bAdd : 0) : S.bots * A / A0 * 1.18))))) + (state === "play" ? AD.bAdd : 0)));
           while (bots.length < nb) {
             const b = makeSnake(bn(bots.length), botSkin(), true);
-            b.ni = bots.length; b.len = rnd(20, 70); snakes.push(b); bots.push(b);
+            b.ni = bots.length; b.len = __WZBL(); snakes.push(b); bots.push(b);
           }
           while (bots.length > nb) snakes.splice(snakes.indexOf(bots.pop()), 1);
         }
@@ -4671,9 +4673,9 @@
         function moveSnake(s, dt) {
           if (s.frz > 0) return;
           const boosting = s.boost && s.len > 12;
-          const tr = (s === player ? ctlTr(boosting, s.r) : (boosting ? 3 : 4.2) * (14 / ((s.boss ? s.r / 3 : s.r) + 3))) * dt * S.speed * AD.spd * MAPS[mapI].turn;
+          const tr = (s === player ? ctlTr(boosting, s.r) : (boosting ? 3 : 4.2) * (14 / ((s.boss ? s.r / 3 : s.r) + 3))) * dt * S.speed * AD.spd * MAPS[mapI].turn * __WZT; /* ss13u-wz */
           s.a += clamp(angDiff(s.ta, s.a), -tr, tr);
-          const sp = BASE * S.speed * AD.spd * (boosting ? 2 : 1) * (s.slow > 0 ? 0.55 : 1) * (s.spd > 0 ? 1.6 : 1) * (s.boss ? 0.9 : 1) * dt;
+          const sp = BASE * __WZS * S.speed * AD.spd * (boosting ? 2 : 1) * (s.slow > 0 ? 0.55 : 1) * (s.spd > 0 ? 1.6 : 1) * (s.boss ? 0.9 : 1) * dt;
           const h = s.seg[0];
           h.x += Math.cos(s.a) * sp; h.y += Math.sin(s.a) * sp;
           if (boosting && !(s.spd > 0)) {
@@ -4750,7 +4752,7 @@
             let hit = false;
             gCells(SG, x, y, b.r + 26, (c) => { for (let j = 0; j < c.length; j += 2) {
               const o = c[j]; if (o === b || !o.alive || o.pg > 0 || (b.tm !== undefined && b.tm === o.tm) || (fire && !(o.psh > 0))) continue;
-              const p = c[j + 1], rr = (o.r + b.r) * 0.85 + 8, dx = p.x - x, dy = p.y - y; if (dx * dx + dy * dy < rr * rr) { hit = true; return false; }
+              const p = c[j + 1], rr = (o.r + b.r) * (__WZH + 0.2) + 10, dx = p.x - x, dy = p.y - y; if (dx * dx + dy * dy < rr * rr) { hit = true; return false; }
             } });
             if (hit) return d - st * 0.6;
           }
@@ -5144,7 +5146,7 @@
           if (RTX.on) { RTX.update(dt); return; } // 13t online match
           for (const s of snakes) {
             if (!s.alive) {
-              if (s.bot && !(MD === "s" && state === "play") && (s.respawn -= dt) <= 0) Object.assign(s, makeSnake(s.name, s.tm !== undefined ? s.skin : botSkin(), true));
+              if (s.bot && !(MD === "s" && state === "play") && (s.respawn -= dt) <= 0) { Object.assign(s, makeSnake(s.name, s.tm !== undefined ? s.skin : botSkin(), true)); if (s.tm === undefined) s.len = __WZBL(); }
               continue;
             }
             if (s.bot) { think(s, dt); if (s.rv) nfRival(s, dt); }
@@ -5161,7 +5163,7 @@
           let ate = false;
           for (const s of snakes) {
             if (!s.alive) continue;
-            const h = s.seg[0], er = s.r + 10, mg = s.mag || s.pm > 0, pull = s.r + (s.pm > 0 ? 340 : mg ? 230 : 45);
+            const h = s.seg[0], er = s.r * 1.6 + 14, mg = s.mag || s.pm > 0, pull = er + (s.pm > 0 ? 330 : mg ? 220 : 60);
             gCells(FG, h.x, h.y, pull, (c) => { for (const f of c) {
               if (f.dead) continue;
               const dx = h.x - f.x, dy = h.y - f.y, d = dx * dx + dy * dy;
@@ -5193,13 +5195,13 @@
             { const ob = obsNear(h.x, h.y).find((o) => oD(o, h.x, h.y) < o.r + s.r * 0.5); if (ob) obPush(s, h, ob); } // build10: obstacles never kill
             if (s.pg > 0) continue;
             let hit = null;
-            gCells(SG, h.x, h.y, (s.r + maxR) * 0.72, (c) => { for (let j = 0; j < c.length; j += 2) {
+            gCells(SG, h.x, h.y, (s.r + maxR) * __WZH, (c) => { for (let j = 0; j < c.length; j += 2) {
               const o = c[j], p = c[j + 1];
               if (o === s || !o.alive || o.pg > 0 || (s.boss && o !== player) || (s.tm !== undefined && s.tm === o.tm)) continue;
-              const cr = (s.r + o.r) * 0.72, dx = p.x - h.x, dy = p.y - h.y;
+              const cr = (s.r + o.r) * __WZH, dx = p.x - h.x, dy = p.y - h.y;
               if (dx * dx + dy * dy < cr * cr) { hit = o; DCP = p; return false; }
             } });
-            if (hit) { if (s.fire > 0 && !(hit.psh > 0)) { const k0 = s.kills; if (hit === player) DCX(hit, s, "fire"); credit(s, hit); if (s === player && s.kills > k0) player.fk13 = (player.fk13 || 0) + 1; } else { if (s === player) DCX(s, hit, DCP && hit.seg[0] === DCP ? "head" : "body"); credit(hit, s); } } // build12 fire. a kill counts only when the snake really dies (not on a shield or while invulnerable)
+            if (hit) { if (s.fire > 0 && !(hit.psh > 0)) { const k0 = s.kills; if (hit === player) DCX(hit, s, "fire"); credit(s, hit); if (s === player && s.kills > k0) player.fk13 = (player.fk13 || 0) + 1; } else if (!__WZHO(s, hit, h)) { if (s === player) DCX(s, hit, DCP && hit.seg[0] === DCP ? "head" : "body"); credit(hit, s); } } // build12 fire. a kill counts only when the snake really dies (not on a shield or while invulnerable)
           }
           evoUpdate(dt); xUpdate(dt); preyUpdate(dt); adUpdate(dt); modeTick(); nfUpdate(dt);
           if (pendImp) { pendImp = false; if (killT !== time) sImpact(0.45); }
@@ -15830,7 +15832,7 @@
         {
           const BT = { N: 0 };
           const pers = (b) => b.pp || (b.pp = { ag: R(), gr: 0.6 + R() * 0.8, ca: R(), wob: rnd(-1, 1), side: R() < 0.5 ? 1 : -1 });
-          const trR = (b) => (BASE * (b.spd > 0 ? 1.6 : 1)) / Math.max(0.6, 4.2 * (14 / ((b.boss ? b.r / 3 : b.r) + 3))); // turning radius (units)
+          const trR = (b) => (BASE * __WZS * (b.spd > 0 ? 1.6 : 1)) / Math.max(0.6, 4.2 * __WZT * (14 / ((b.boss ? b.r / 3 : b.r) + 3))); // turning radius (units)
           // best food CLUSTER ahead (sum of value / distance in 140-unit cells); food inside the turning circle is ignored (that is what made bots orbit)
           const foodGoal = (b, h, R0, tr) => {
             const cells = new Map(), ca = Math.cos(b.a), sa = Math.sin(b.a);
@@ -15862,13 +15864,14 @@
               take({ k: "flee", x: h.x - dx / d * 600, y: h.y - dy / d * 600, sc: 9 * (1 - d / 600) * (0.6 + P.ca), t: now + 1.2 });
             }
             // hunt / cut off a clearly smaller snake (the player too: the AI director's aggression)
-            if (b.len > 40 && !b.gd) for (const o of snakes) {
-              if (o === b || !o.alive || mate(o) || o.len * 1.4 > b.len || o.ghost > 0) continue;
-              const oh = o.seg[0], d = Math.hypot(oh.x - h.x, oh.y - h.y); if (d > 420) continue;
-              const want = o === pl ? Math.min(0.95, AD.agg * DF().a) : P.ag * 0.6 * Math.min(1.4, sm);
-              if (R() > want) continue;
-              const lead = 80 + o.r * 4;
-              take({ k: "hunt", o, x: oh.x + Math.cos(o.a) * lead, y: oh.y + Math.sin(o.a) * lead, sc: 4 + P.ag * 3, t: now + rnd(1.6, 2.6) });
+            if (!b.gd) for (const o of snakes) { // ss13u-wz: cut off in front of a head (any size), encircle when much bigger (worker 13u-rt-8 does the same)
+              if (o === b || !o.alive || mate(o) || o.ghost > 0 || o.inv > 0 || o.psh > 0) continue;
+              const oh = o.seg[0], d = Math.hypot(oh.x - h.x, oh.y - h.y); if (d > 620) continue;
+              const base = Math.min(0.8, 0.35 + 0.12 * Math.log2(Math.max(1, b.len / 20))) * (0.7 + P.ag * 0.6) * Math.min(1.4, sm);
+              const want = Math.min(0.95, o === pl ? base * Math.max(0.5, Math.min(1.8, DF().a)) * (0.7 + (AD.agg || 0.15) * 2) : base);
+              if (R() > want || !__WZ.atk(o, b)) continue;
+              if (b.len >= o.len * 2.2 && b.len * b.r * 0.55 > 6.2832 * (o.r * 3 + b.r * 2 + 60) && d < 420) { take(__WZ.ring(b, o, { k: "ring", o, dir: b.wzd || (b.wzd = R() < 0.5 ? 1 : -1), rad: Math.max(120, d * 0.9), sc: 6 + P.ag * 2, t: now + rnd(3, 6) })); continue; }
+              const cg = __WZ.cut(b, o); if (cg && (b.len >= o.len * 0.6 || cg.easy)) take(Object.assign(cg, { k: "cut", o, sc: 5 + P.ag * 3, t: now + rnd(1.4, 2.4) }));
             }
             if (b.gd && pl) { const p = pl.seg[0], d = Math.hypot(p.x - h.x, p.y - h.y); if (d < 520) take({ k: "flee", x: h.x - (p.x - h.x), y: h.y - (p.y - h.y), sc: 9, t: now + 1 }); }
             // power-ups, DNA, decoys (as before), then food clusters
@@ -15878,12 +15881,13 @@
             const fg = foodGoal(b, h, 560, tr); if (fg) take({ k: "food", x: fg.x, y: fg.y, sc: Math.min(2.6, fg.sc * 40 * P.gr), t: now + rnd(2.5, 4.5) });
             // ---- hysteresis: keep the current goal unless clearly better, reached or expired ----
             if (g && (Math.hypot(g.x - h.x, g.y - h.y) < b.r + 30 || (g.o && !g.o.alive))) g = null;
-            if (g && g.k === "hunt" && g.o) { const oh = g.o.seg[0], lead = 80 + g.o.r * 4; g.x = oh.x + Math.cos(g.o.a) * lead; g.y = oh.y + Math.sin(g.o.a) * lead; }
+            if (g && g.k === "cut" && g.o) { const cg = __WZ.cut(b, g.o); if (cg) { g.x = cg.x; g.y = cg.y; g.nb = cg.nb; } else g = null; }
+            if (g && g.k === "ring" && g.o) { const oh = g.o.seg[0]; if (Math.hypot(oh.x - h.x, oh.y - h.y) > 700) g = null; else __WZ.ring(b, g.o, g); }
             if (!g || (cand && cand.sc > g.sc * 1.35 && cand.k !== g.k)) g = cand;
             if (!g) { // calm wander: a far point ahead, drifting a little with the personality
               const a = b.a + P.wob * 0.35 + rnd(-0.3, 0.3); g = { k: "wander", x: h.x + Math.cos(a) * 700, y: h.y + Math.sin(a) * 700, sc: 0.5, t: now + rnd(2.5, 4) };
             }
-            b.g13t = g;
+            b.g13t = g; __WZ.mark(b, g);
             let wa = Math.atan2(g.y - h.y, g.x - h.x);
             // walls: start turning in early and smoothly (from 650 units)
             { const m = 650, cx = A / 2 - h.x, cy = A / 2 - h.y, e = Math.max(0, m - Math.min(h.x, h.y, A - h.x, A - h.y)) / m;
@@ -15895,9 +15899,9 @@
               if (Math.abs(da) < 1.4) { wa = b.a - Math.sign(da || 1) * 1.2; break; }
             }
             // ---- limited heading change (no snap turns), then the danger probe fan ----
-            const maxDev = g.k === "flee" ? 1.5 : g.k === "hunt" ? 1.2 : 0.9;
+            const maxDev = g.k === "flee" ? 1.5 : g.k === "cut" || g.k === "ring" ? 1.4 : 0.9;
             let want = b.a + clamp(angDiff(wa, b.a), -maxDev, maxDev);
-            const L = 160 + 100 * sm + (b.spd > 0 ? 120 : 0) + b.r * 2, RS = sm < 0.8 ? P12R_E : P12R_S;
+            const L = (160 + 100 * sm + (b.spd > 0 ? 120 : 0)) * 1.3 + b.r * 2.5, RS = sm < 0.8 ? P12R_E : P12R_S;
             let best = want, bs = -1, f0 = 0;
             for (const o of RS) {
               const a = want + o, f = p12Free(b, a, L); if (o === 0) f0 = f;
@@ -15913,12 +15917,13 @@
               for (let i = 0; i < N; i++) { const a = b.a + (i / N) * 6.2832, f = p12Free(b, a, L2); if (f < L * 0.6) blk++; const sc = f - Math.abs(angDiff(a, b.a)) * 18; if (sc > gf) { gf = sc; ga = a; } }
               if (blk >= N * 0.55) { b.ta = ga; b.esc = 1.2; b.boost = b.len > 26 && sm >= 0.8; }
             } else if (b.esc > 0) { b.esc -= 0.15; b.boost = b.len > 26 && fb > L * 0.6; }
-            else if (g.k === "hunt" && g.o && fb >= L && b.len > 50) { const oh = g.o.seg[0], d = Math.hypot(oh.x - h.x, oh.y - h.y); b.boost = d < 260 && R() < 0.35 + P.ag * 0.4; } // tactical cut-off sprint
+            else if (g.k === "cut" && g.o && fb >= L * 0.8 && b.len > 24) b.boost = !!g.nb || (Math.hypot(g.x - h.x, g.y - h.y) < 300 && R() < 0.3 + P.ag * 0.4); // cut-off sprint
+            else if (g.k === "ring" && fb >= L && b.len > 60) b.boost = g.rad < 200 && R() < 0.3;
             else if (g.k === "flee" && fb >= L * 0.8 && b.len > 35) b.boost = R() < 0.5;
             else if (g.k === "pu" && sm >= 1.1 && b.len > 40 && fb >= L && Math.abs(angDiff(wa, b.a)) < 0.4 && Math.hypot(g.x - h.x, g.y - h.y) < 260) b.boost = true;
             // anti-spin: a bot that keeps turning the same way without a reason straightens out for a moment
             const turn = angDiff(b.ta, b.a); b.spin = (b.spin || 0) * 0.82 + turn;
-            if (Math.abs(b.spin) > 3.2 && g.k !== "hunt" && g.k !== "flee" && fb >= L * 0.7) {
+            if (Math.abs(b.spin) > 3.2 && g.k !== "cut" && g.k !== "ring" && g.k !== "flee" && fb >= L * 0.7) {
               b.spin = 0; const a = b.a + Math.sign(-turn || 1) * 0.15; b.g13t = { k: "wander", x: h.x + Math.cos(a) * 800, y: h.y + Math.sin(a) * 800, sc: 1.5, t: now + 1.6 }; b.ta = a;
             }
             if (sm < 0.8) b.ta += rnd(-0.12, 0.12); // easy bots are a little sloppy, not twitchy
@@ -16135,7 +16140,7 @@
             if (d.fa) for (const e of d.fa) {
               const [id, x, y, v, k, c, dc] = e;
               if (k) { const p = { x, y, t: PW[(k - 1) & 3], ph: R() * 6.28, rid: id }; pups.push(p); X.pu.set(id, p); }
-              else { const f = { x, y, v, a: R() * 6.28, c: FOODC[c % 12], ph: R() * 6.28, d13: dc ? time : undefined, rid: id }; food.push(f); X.food.set(id, f); }
+              else { const f = { x, y, v, a: R() * 6.28, c: c >= 2000 && window.__WZCOL ? __WZCOL(mapSkin(c - 2000)) : FOODC[c % 12], ph: R() * 6.28, d13: dc ? time : undefined, rid: id, orb: c >= 2000 ? v / 0.9 : 0 }; food.push(f); X.food.set(id, f); }
             }
             if (d.fr) {
               const h = player && player.alive && !player.rtWait ? player.seg[0] : null, er = h ? player.r + (player.pm > 0 ? 320 : 60) : 0;
@@ -16213,9 +16218,9 @@
             // own snake: predicted locally from the joystick, pulled toward the server's position
             if (player && player.alive && !player.rtWait) {
               const boosting = player.boost && X.meLen > 12, h = player.seg[0];
-              const tr = ctlTr(boosting, player.r) * dt * (MAPS[mapI].turn || 1);
+              const tr = ctlTr(boosting, player.r) * dt * (MAPS[mapI].turn || 1) * (window.__WZRT || 1);
               player.a += clamp(angDiff(player.ta, player.a), -tr, tr);
-              const sp = 170 * (boosting ? 2 : 1) * (player.spd > 0 ? 1.6 : 1);
+              const sp = (window.__WZRB || 170) * (boosting ? 2 : 1) * (player.spd > 0 ? 1.6 : 1);
               h.x += Math.cos(player.a) * sp * dt; h.y += Math.sin(player.a) * sp * dt;
               const sv = X.srvMe;
               if (sv) __NETU.own(player, sv, dt, now); // 13u-net: replay of the sent inputs on the server state (was a straight-line lead)
@@ -18509,7 +18514,7 @@
           NU.endFrame = () => NC.stat(NU.c, NU.anyEx);
           // own snake: the local prediction ran this frame; correct it toward the replay of our sent inputs on the latest server state
           NU.sent = (s, now) => { NU.hist.push([now, Math.round(s.a * 1000) / 1000, s.b]); while (NU.hist.length > 2 && now - NU.hist[0][0] > 2500) NU.hist.shift(); };
-          const PP = { tr: (b, r) => ctlTr(b, r), turnK: 1, base: 170 };
+          const PP = { tr: (b, r) => ctlTr(b, r) * (window.__WZRT || 1), turnK: 1, get base() { return window.__WZRB || 170; } };
           NU.own = (pl, sv, dt, now) => {
             if (NU.c.off === null) return;
             PP.turnK = tv(() => MAPS[mapI].turn || 1, 1);
@@ -22309,6 +22314,177 @@
           setInterval(() => { const p = tq(() => state === "play", false); if (de.classList.contains("ssfx-play") !== p) de.classList.toggle("ssfx-play", p); }, 400);
           FX.on = 1;
         } catch (e) { try { console.warn("ss13u-fix", e); } catch (_) {} }
+        // ===== ss13u-wz (owner 2026-10-31): gameplay feel measured from his Worms Zone recording, done our way (own code + Babylon art).
+        // Speed 250 u/s (~8 body widths/s), turn x1.45, hits at visual contact (1.15 (r1+r2)), head-on = shorter dies, eat at the mouth edge,
+        // remains = row of big orbs in the dead snake's colour, bigger brighter food sized by value at WZ density, camera ~19.4 body widths tall
+        // at every length, cut-off / encircle bots, WZ HUD placement (board top-left, score + minimap top-right, joystick bottom-left, boost bottom-right),
+        // kill toast. Numbers: ss_wz/SPEC.md. Online authority = worker 13u-rt-8 (same constants; client reads base/turn_k from the welcome).
+        try {
+          window.__WZS = 250 / 170; window.__WZT = 1.45; window.__WZH = 1.15; window.__WZRB = 0; window.__WZRT = 1;
+          const WZ = (window.__WZ = { VH: 19.4, on: 1 });
+          const rad = (l) => 8 + Math.sqrt(Math.max(0, l)) * 0.4;
+          // ---------- practice food: WZ density on screen (~1 item per 55 body widths^2), same growth per area (value x4) ----------
+          try { F13.DENS = 0.25; } catch (_) {}
+          window.__BBFV = () => (typeof RTX === "object" && RTX && RTX.on ? 1 : 8);
+          // ---------- bot sizes (practice): most small, a few big ones ----------
+          window.__WZBL = () => { const q = R(); return q < 0.65 ? rnd(20, 50) : q < 0.92 ? rnd(50, 120) : q < 0.99 ? rnd(120, 250) : rnd(250, 400); };
+          // ---------- camera: the view is ~19.4 body widths tall at every length (the reference's camera zooms out exactly as the snake thickens) ----------
+          window.__ARNZ = (len) => { const z = innerHeight / (WZ.VH * 3.2 * rad(len)); return Math.min(2.6, Math.max(0.25, Number.isFinite(z) ? z : 1)); };
+          // ---------- online: physics constants from the worker's welcome (13u-rt-8 sends base 250 + turn_k 1.45; an older worker -> old values) ----------
+          try {
+            const m0 = RTX.msg;
+            RTX.msg = function (d) {
+              if (d && d.t === "welcome") { const c = d.consts || {}; window.__WZRB = +c.base || 170; window.__WZRT = +c.turn_k || 1; }
+              if (d && d.t === "s" && d.ev && typeof RTX.me === "number") for (const e of d.ev) if (e[0] === RTX.me && !String(e[4]).startsWith("pickup:") && e[1] !== RTX.me) WZ.lastV = e[3];
+              return m0.apply(this, arguments);
+            };
+          } catch (_) {}
+          // ---------- colour of a skin (remains orbs) ----------
+          window.__WZCOL = (k) => { try { const s = typeof k === "number" ? SKINS[k] : null; if (s && s.fl && s.fc && s.fc.length) return s.fc[0]; return segColor(k, 4); } catch (_) { return "#ffd34d"; } };
+          // ---------- head-on: the shorter snake dies (credit to the longer); within 10 % both die ----------
+          window.__WZHO = (s, hit, h) => {
+            const o = hit.seg && hit.seg[0]; if (!o || hit.psh > 0) return false;
+            if (Math.hypot(o.x - h.x, o.y - h.y) >= (s.r + hit.r) * __WZH) return false;
+            const ds = s.len - hit.len, tie = Math.max(s.len, hit.len) * 0.1;
+            if (ds > tie) { if (hit === player) DCX(hit, s, "head"); credit(s, hit); return true; }
+            if (Math.abs(ds) <= tie) { if (s === player) DCX(s, hit, "head"); else if (hit === player) DCX(hit, s, "head"); credit(hit, s); credit(s, hit); return true; }
+            return false;
+          };
+          // ---------- bots: cut off in front of a head / encircle (same maths as the worker) ----------
+          WZ.cut = (b, o) => {
+            const h = b.seg[0], oh = o.seg[0], oc = Math.cos(o.a), os = Math.sin(o.a), d = Math.hypot(oh.x - h.x, oh.y - h.y), B0 = BASE * __WZS, vo = B0 * (o.boost ? 2 : 1);
+            for (const f of [0.45, 0.7, 1]) {
+              const lead = Math.min(420, d * f) + o.r * 3, px = oh.x + oc * lead, py = oh.y + os * lead, ds = Math.hypot(px - h.x, py - h.y), to = lead / vo;
+              const sd = Math.sign((h.x - oh.x) * -os + (h.y - oh.y) * oc || 1);
+              if (ds / B0 < to * 0.9) return { x: px + os * sd * 60, y: py - oc * sd * 60, nb: false, easy: d < 200 };
+              if (b.len > 24 && ds / (B0 * 2) < to * 0.85) return { x: px + os * sd * 60, y: py - oc * sd * 60, nb: true, easy: false };
+            }
+            return null;
+          };
+          WZ.ring = (b, o, g) => {
+            const h = b.seg[0], oh = o.seg[0], minR = (o.r + b.r) * 2.2 + 24; g.rad = Math.max(minR, (g.rad || 200) * 0.93);
+            const pa = Math.atan2(h.y - oh.y, h.x - oh.x) + g.dir * 0.9; g.x = oh.x + Math.cos(pa) * g.rad; g.y = oh.y + Math.sin(pa) * g.rad; return g;
+          };
+          WZ.atk = (o, b) => { if (o.wzB === undefined || !o.alive) o.wzB = time; if (time - o.wzB < 6) return false; if (!o.wzA) return true; if (o.wzA.has(b)) return true; let n = 0; for (const [k, e] of o.wzA) { if (e > time && k.alive) n++; else o.wzA.delete(k); } return n < 2; };
+          WZ.mark = (b, g) => { if (g && g.o && (g.k === "cut" || g.k === "ring")) (g.o.wzA || (g.o.wzA = new Map())).set(b, g.t); };
+          // ---------- kill toast ("+1 · You defeated X!") ----------
+          try {
+            Object.assign(I18N, { wzKill: ["+1 · هزمت {x}!", "+1 · You defeated {x}!", "+1 · {x} yenildi!", "+1 · Tu as battu {x} !", "+1 · ¡Derrotaste a {x}!", "+1 · आपने {x} को हराया!"],
+              wzKill0: ["+1 · قضيت على ثعبان!", "+1 · You defeated a snake!", "+1 · Bir yılanı yendin!", "+1 · Tu as battu un serpent !", "+1 · ¡Derrotaste a una serpiente!", "+1 · आपने एक साँप को हराया!"] });
+            const css = document.createElement("style"); css.id = "wz13css";
+            css.textContent = `#wzk{position:fixed;left:50%;top:70%;transform:translate(-50%,-50%) scale(.9);z-index:30;pointer-events:none;opacity:0;transition:opacity .18s,transform .18s;
+              font:800 13px 'SSDisp','SSText',system-ui,sans-serif;color:#fff;background:rgba(6,12,40,.78);border:1px solid rgba(255,212,90,.85);border-radius:999px;padding:6px 14px;white-space:nowrap;max-width:80vw;overflow:hidden;text-overflow:ellipsis}
+              #wzk.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+              html:not(.wz0):not(.wz1):not(.wz2):not(.wz3) body:not(.x-l) div#game > div#lbx.x-lb{left:calc(12px + env(safe-area-inset-left,0px)) !important;right:auto !important}
+              html:not(.wz0):not(.wz1):not(.wz2):not(.wz3) body #pxkf .me{display:none !important}
+              html:not(.wz0):not(.wz1):not(.wz2):not(.wz3) body:not(.x-l) #pxkf{top:calc(var(--x-st,0px) + 182px) !important;left:calc(12px + env(safe-area-inset-left,0px)) !important;right:auto !important}
+              html:not(.wz0):not(.wz1):not(.wz2):not(.wz3) body:not(.x-l) div#game > div.x-tl{right:calc(12px + env(safe-area-inset-right,0px)) !important;left:auto !important}`;
+            document.head.appendChild(css);
+            let el = null, tk = 0;
+            WZ.toast = (nm) => {
+              if (state !== "play") return;
+              if (!el || !el.isConnected) { el = document.createElement("div"); el.id = "wzk"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+              el.textContent = nm ? _t("wzKill", { x: String(nm).slice(0, 18) }) : _t("wzKill0"); el.classList.add("on");
+              clearTimeout(tk); tk = setTimeout(() => el && el.classList.remove("on"), 1600);
+            };
+            const sk0 = sKill; sKill = function () { const r = sk0.apply(this, arguments); try { WZ.toast(WZ.lastV); WZ.lastV = ""; } catch (_) {} return r; };
+            const cr0 = credit; credit = function (o, s) { if (o === player && s && s.alive) WZ.lastV = s.name; return cr0.apply(this, arguments); };
+          } catch (_) {}
+          // ---------- HUD: minimap top-right under the score/kills pill (reference layout) ----------
+          try {
+            const mm0 = window.__B4MM;
+            if (typeof mm0 === "function") window.__B4MM = (m, x0, y0) => {
+              try {
+                if (document.body.classList.contains("x-l")) return mm0(m, x0, y0);
+                const tl = document.querySelector("#game .x-tl"), b = tl && tl.getBoundingClientRect(), SA = window.P10SA || {};
+                if (!b || !b.width) return mm0(m, x0, y0);
+                const x = Math.round(W - m - 12 - (SA.r || 0)), y = Math.round(b.bottom + 8);
+                if (y + m > H - 70) return mm0(m, x0, y0);
+                window.__MMR = [x, y, x + m, y + m]; return [x, y];
+              } catch (_) { return mm0(m, x0, y0); }
+            };
+          } catch (_) {}
+          // ---------- food art: our own bright Babylon set, bold outline + shadow; size by value (26-56 u ~ 0.8-1.8 body widths at the start) ----------
+          const FCx = new Map(), OC = new Map();
+          const OL = "rgba(28,12,2,.95)";
+          const art = (g, k, U) => {
+            const lw = Math.max(1, U * 0.12);
+            const shine = (x, y, rx, ry, a) => { g.save(); g.globalAlpha = a; g.fillStyle = "#fff"; g.beginPath(); g.ellipse(x, y, rx, ry, -0.6, 0, 6.2832); g.fill(); g.restore(); };
+            const out = () => { g.lineWidth = lw; g.strokeStyle = OL; g.stroke(); };
+            const rg = (x, y, r, a, b, c) => { const q = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.05, x, y, r); q.addColorStop(0, a); q.addColorStop(0.55, b); q.addColorStop(1, c); return q; };
+            switch (k) {
+              case 0: { g.rotate(-0.5); g.fillStyle = rg(0, 0, U * 0.95, "#ffe39a", "#e8962a", "#8a4208"); g.beginPath(); g.ellipse(0, 0, U * 0.9, U * 0.58, 0, 0, 6.2832); g.fill(); out(); shine(-U * 0.35, -U * 0.22, U * 0.32, U * 0.11, 0.6); return; } // golden date
+              case 1: case 2: { const c = k === 1 ? ["#f3c9ff", "#b24ae6", "#4b0f72"] : ["#f6ffc2", "#9be03a", "#2f6a08"], br = U * 0.34;
+                for (const [px, py] of [[-1, -0.95], [0, -0.95], [1, -0.95], [-0.5, -0.1], [0.5, -0.1], [0, 0.75]]) { const x = px * br * 1.45, y = py * br * 1.05 + U * 0.06; g.fillStyle = rg(x, y, br, c[0], c[1], c[2]); g.beginPath(); g.arc(x, y, br, 0, 6.2832); g.fill(); g.lineWidth = lw * 0.8; g.strokeStyle = OL; g.stroke(); }
+                g.strokeStyle = "#6a3c10"; g.lineWidth = lw; g.lineCap = "round"; g.beginPath(); g.moveTo(0, -U * 0.6); g.lineTo(U * 0.28, -U * 0.94); g.stroke();
+                g.fillStyle = "#4fbf3a"; g.beginPath(); g.ellipse(U * 0.42, -U * 0.86, U * 0.24, U * 0.11, -0.4, 0, 6.2832); g.fill(); out(); return; } // grapes
+              case 3: { g.beginPath(); g.moveTo(0, -U * 0.8); g.bezierCurveTo(-U * 0.2, -U * 0.4, -U * 0.9, -U * 0.2, -U * 0.86, U * 0.3); g.bezierCurveTo(-U * 0.8, U * 0.85, U * 0.8, U * 0.85, U * 0.86, U * 0.3); g.bezierCurveTo(U * 0.9, -U * 0.2, U * 0.2, -U * 0.4, 0, -U * 0.8); g.closePath();
+                g.fillStyle = rg(0, U * 0.2, U * 0.95, "#ff9ad8", "#c0267e", "#5a0838"); g.fill(); out(); g.fillStyle = "#5cc23a"; g.beginPath(); g.ellipse(0, -U * 0.82, U * 0.2, U * 0.1, 0, 0, 6.2832); g.fill(); shine(-U * 0.36, U * 0.05, U * 0.12, U * 0.24, 0.5); return; } // fig
+              case 4: { g.fillStyle = "#c81e2a"; g.beginPath(); g.moveTo(-U * 0.32, -U * 0.52); for (let i = 0; i <= 4; i++) { const x = -U * 0.32 + (i * U * 0.64) / 4; g.lineTo(x * 1.2, i % 2 ? -U * 0.74 : -U * 0.98); } g.lineTo(U * 0.32, -U * 0.52); g.closePath(); g.fill(); out();
+                g.fillStyle = rg(0, U * 0.12, U * 0.82, "#ffb0a0", "#ee2a36", "#6e0614"); g.beginPath(); g.arc(0, U * 0.12, U * 0.8, 0, 6.2832); g.fill(); out(); shine(-U * 0.32, -U * 0.12, U * 0.26, U * 0.13, 0.6); return; } // pomegranate
+              case 5: { g.fillStyle = rg(0, 0, U * 0.92, "#fff7c8", "#ffc93a", "#9a5c08"); g.beginPath(); g.arc(0, 0, U * 0.9, 0, 6.2832); g.fill(); out();
+                g.lineWidth = Math.max(1, lw * 0.6); g.strokeStyle = "rgba(130,78,6,.9)"; g.beginPath(); g.arc(0, 0, U * 0.62, 0, 6.2832); g.stroke();
+                g.fillStyle = "rgba(130,78,6,.85)"; g.fillRect(-U * 0.3, -U * 0.1, U * 0.6, U * 0.36); g.fillStyle = "#ffe48a"; g.beginPath(); g.arc(0, -U * 0.1, U * 0.18, Math.PI, 0); g.fill(); shine(-U * 0.34, -U * 0.4, U * 0.24, U * 0.1, 0.7); return; } // gold coin with a gate
+              case 6: { const P = []; for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + i * 1.0472; P.push([Math.cos(a) * U * 0.92, Math.sin(a) * U * 0.92]); }
+                const q = g.createLinearGradient(-U * 0.6, -U * 0.7, U * 0.6, U * 0.7); q.addColorStop(0, "#9cc0ff"); q.addColorStop(0.5, "#2f62ff"); q.addColorStop(1, "#0b2690");
+                g.fillStyle = q; g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fill(); g.lineWidth = lw * 1.4; g.strokeStyle = "#ffd25a"; g.stroke(); g.lineWidth = lw * 0.6; g.strokeStyle = OL; g.stroke();
+                shine(-U * 0.3, -U * 0.4, U * 0.22, U * 0.1, 0.7); return; } // lapis gem, gold rim
+              case 7: { g.fillStyle = rg(0, 0, U * 0.9, "#ffe2a8", "#ff9a2a", "#a3420a"); g.beginPath(); g.arc(0, U * 0.05, U * 0.82, 0, 6.2832); g.fill(); out();
+                g.strokeStyle = "rgba(150,60,10,.55)"; g.lineWidth = lw * 0.7; g.beginPath(); g.moveTo(0, -U * 0.7); g.quadraticCurveTo(U * 0.2, 0, 0, U * 0.8); g.stroke();
+                g.fillStyle = "#56c43c"; g.beginPath(); g.ellipse(U * 0.28, -U * 0.78, U * 0.28, U * 0.12, -0.5, 0, 6.2832); g.fill(); out(); shine(-U * 0.34, -U * 0.25, U * 0.22, U * 0.12, 0.6); return; } // apricot
+              case 8: { g.fillStyle = rg(0, 0, U * 0.95, "#ffe6b0", "#e0a050", "#7a4a14"); g.beginPath(); g.ellipse(0, 0, U * 0.92, U * 0.78, 0, 0, 6.2832); g.fill(); out();
+                g.fillStyle = "#fff4d6"; for (let i = 0; i < 9; i++) { const a = i * 2.4, rr = U * (0.15 + (i % 3) * 0.2); g.beginPath(); g.ellipse(Math.cos(a) * rr, Math.sin(a) * rr * 0.8, U * 0.07, U * 0.04, a, 0, 6.2832); g.fill(); }
+                shine(-U * 0.36, -U * 0.36, U * 0.26, U * 0.1, 0.45); return; } // sesame flatbread
+              default: { g.fillStyle = rg(0, 0, U * 0.95, "#fff6b8", "#ffcf2e", "#a26a04"); g.beginPath(); if (g.roundRect) g.roundRect(-U * 0.82, -U * 0.66, U * 1.64, U * 1.32, U * 0.3); else g.rect(-U * 0.82, -U * 0.66, U * 1.64, U * 1.32); g.fill(); out();
+                g.fillStyle = "#ffe98a"; g.beginPath(); g.moveTo(-U * 0.82, -U * 0.3); g.quadraticCurveTo(-U * 0.4, U * 0.1, 0, -U * 0.2); g.quadraticCurveTo(U * 0.4, U * 0.3, U * 0.82, -U * 0.3); g.lineTo(U * 0.82, -U * 0.66); g.lineTo(-U * 0.82, -U * 0.66); g.closePath(); g.fill();
+                shine(-U * 0.4, -U * 0.42, U * 0.26, U * 0.09, 0.6); return; } // honey cake
+            }
+          };
+          const fspr = (k, px) => {
+            const key = k * 4096 + px; let c = FCx.get(key); if (c) return c; if (FCx.size > 220) FCx.clear();
+            const pd = Math.ceil(px * 0.22) + 2; c = document.createElement("canvas"); c.width = c.height = px + pd * 2; const g = c.getContext("2d"); g.translate(c.width / 2, c.width / 2);
+            g.fillStyle = "rgba(2,6,30,.36)"; g.beginPath(); g.ellipse(px * 0.08, px * 0.4, px * 0.44, px * 0.16, 0, 0, 6.2832); g.fill();
+            try { art(g, k, px / 2 - 1); } catch (_) {}
+            FCx.set(key, c); return c;
+          };
+          const orb = (col, px, halo) => { // remains orb: dead snake's colour, glossy, soft halo; boost drops: plain small pellet
+            const key = col + "|" + px + "|" + (halo ? 1 : 0); let c = OC.get(key); if (c) return c; if (OC.size > 260) OC.clear();
+            const pad = halo ? Math.ceil(px * 0.3) + 2 : 2; c = document.createElement("canvas"); c.width = c.height = px + pad * 2; const g = c.getContext("2d"), m = c.width / 2, r = px / 2;
+            if (halo) { const q = g.createRadialGradient(m, m, r * 0.7, m, m, r * 1.6); q.addColorStop(0, "rgba(255,255,255,.0)"); q.addColorStop(0.25, col); q.addColorStop(1, "rgba(255,255,255,0)"); g.globalAlpha = 0.45; g.fillStyle = q; g.beginPath(); g.arc(m, m, r * 1.6, 0, 6.2832); g.fill(); g.globalAlpha = 1; }
+            g.fillStyle = col; g.beginPath(); g.arc(m, m, r, 0, 6.2832); g.fill();
+            const q2 = g.createRadialGradient(m - r * 0.35, m - r * 0.4, 0, m, m, r); q2.addColorStop(0, "rgba(255,255,255,.75)"); q2.addColorStop(0.42, "rgba(255,255,255,0)"); q2.addColorStop(1, "rgba(0,0,0,.3)");
+            g.fillStyle = q2; g.beginPath(); g.arc(m, m, r, 0, 6.2832); g.fill(); g.lineWidth = Math.max(1, r * 0.12); g.strokeStyle = "rgba(10,8,20,.7)"; g.stroke();
+            OC.set(key, c); return c;
+          };
+          const hsh = (f) => { if (f.wk !== undefined) return f.wk; const h = ((f.rid || 0) * 2654435761 + ((f.ph || 0) * 1e5) | 0) >>> 0; return (f.wk = h % 10); };
+          WZ.size = (f, T) => { // world diameter
+            if (T) return T.tier === 2 ? 64 : T.tier ? 58 : 52;
+            const u = Math.max(0, Math.min(1, ((+f.v || 0.5) - 0.3) / 0.7)); return 26 + 30 * u;
+          };
+          try {
+            if (window.__BF13) {
+              const B = window.__BF13;
+              B.draw = function (f, T, r, z, fa) {
+                if (fa <= 0.01) return;
+                pr(f.x, f.y, 0); let im;
+                if (f.d13 !== undefined && !T) {
+                  const od = f.orb > 0 ? f.orb : 0;
+                  if (od) { const css = Math.max(6, od * 3.2 * 0.95 * PK), px = Math.max(5, Math.round(css * dpr)); im = orb(String(f.c || "#ffd34d"), px, true); }
+                  else { const css = Math.max(4, 11 * PK), px = Math.max(3, Math.round(css * dpr)); im = orb(String(f.c || "#ffd34d"), px, false); }
+                } else {
+                  const k = T && T.tier === 2 ? 6 : T && T.tier === 1 ? 5 : hsh(f), css = Math.max(9, WZ.size(f, T) * PK * (AD.fs || 1)), px = Math.max(7, Math.round(css * dpr / 2) * 2);
+                  im = fspr(k, px);
+                }
+                const sc = 0.55 + 0.45 * Math.min(1, fa), w = im.width, d = w * sc;
+                ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = Math.min(1, fa);
+                if (sc > 0.999) ctx.drawImage(im, Math.round(PX * dpr - w / 2), Math.round(PY * dpr - w / 2));
+                else ctx.drawImage(im, PX * dpr - d / 2, PY * dpr - d / 2, d, d);
+                ctx.restore();
+              };
+            }
+          } catch (_) {}
+          window.__WZON = 1;
+        } catch (e) { try { console.warn("ss13u-wz", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
     </script>
