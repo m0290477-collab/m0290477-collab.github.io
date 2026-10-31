@@ -54,3 +54,8 @@ next to the weather line on the home screen, and under the Real weather setting.
 ## flag-icons (MIT)
 Country flag pictures in `ui/flags/*.webp` (197 files, build 13u botprof) are rasterised from flag-icons 7.2.3 (https://github.com/lipis/flag-icons), 4x3 SVGs.
 MIT License. Copyright (c) 2013 Panayiotis Lipiridis. Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+
+## Acknowledgement (idea only, no code used)
+The in-game snake body smoothing ("coiling test": each drawn segment is dragged by the one in front of it at a fixed spacing) is our own
+implementation of an idea described by Andrey Ugolnik (Worms Zone) at https://www.ugolnik.info/worms-zone and in his prototype
+https://github.com/reybits/wormaria (GPL-3.0). No source code from that project is included in Super Snake.
