@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en" dir="ltr">
-  <head><meta name="ss-build" content="1793405656" /><script>(function(){var Q=window.__ssEQ=window.__ssEQ||[];function p(k,m,s,l,c,st){if(Q.length<20)Q.push([k,String(m||"").slice(0,300),String(s||"").slice(0,200),l|0,c|0,String(st||"").slice(0,1500)]);}window.addEventListener("error",function(e){if(!(e instanceof ErrorEvent))return;p("error",e.message,e.filename,e.lineno,e.colno,e.error&&e.error.stack)},true);window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;p("rejection",r&&(r.message||r.code)||String(r),"",0,0,r&&r.stack)});})();</script>
+  <head><meta name="ss-build" content="1793409555" /><script>(function(){var Q=window.__ssEQ=window.__ssEQ||[];function p(k,m,s,l,c,st){if(Q.length<20)Q.push([k,String(m||"").slice(0,300),String(s||"").slice(0,200),l|0,c|0,String(st||"").slice(0,1500)]);}window.addEventListener("error",function(e){if(!(e instanceof ErrorEvent))return;p("error",e.message,e.filename,e.lineno,e.colno,e.error&&e.error.stack)},true);window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;p("rejection",r&&(r.message||r.code)||String(r),"",0,0,r&&r.stack)});})();</script>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.open-meteo.com https://btmvxfiwprkgqcgquozq.supabase.co wss://btmvxfiwprkgqcgquozq.supabase.co https://super-snake-realtime.molierk.workers.dev wss://super-snake-realtime.molierk.workers.dev; media-src 'none'; object-src 'none'; frame-src 'self'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com" />
     <meta name="referrer" content="no-referrer" />
@@ -4841,7 +4841,7 @@
           cN = time - cT < 1.2 && cN < 25 ? cN + 1 : 1; cT = time; // build12b: shorter window, chains end at 25
           if (cN < 2) return;
           player.len += Math.min(cN, 20) * 0.04 * w;
-          xBan(_t("combo") + cN + "!");
+          if (!window.__BBK) xBan(_t("combo") + cN + "!");
           if (cN === 5 || cN % 10 === 0) { shake(cN >= 10 ? 5 : 3); vib(15, 0.4); }
         }
         function xBan(m) { const b = $("ban"); b.textContent = m; b.classList.remove("on"); void b.offsetWidth; b.classList.add("on"); }
@@ -4858,7 +4858,7 @@
         function adMod() { Object.assign(AD, { spd: 1, sr: 1, fs: 1, fv: 1 }, AD_MODS[AD.mod] || {}); }
         function adStart() {
           snakes = snakes.filter((s) => !s.ad); Object.assign(AD, { fog: null, rain: 0, t: 30, last: "", t0: time, agg: 0.1 + AD.skill * 0.4, smart: 1, bAdd: 0, food: 1 });
-          const ks = Object.keys(AD_MODS).filter((k) => k !== AD.lastMod && !(k === "night" && (mapI === 0 || mapI === 29))); AD.mod = AD.lastMod = ks[(R() * ks.length) | 0]; adMod();
+          const ks = Object.keys(AD_MODS).filter((k) => k !== AD.lastMod && !(k === "night" && (mapI === 0 || mapI === 29))); AD.mod = AD.lastMod = window.__BBK ? "" : ks[(R() * ks.length) | 0]; adMod(); /* babylon-back: no random modifier (Daily sets its own after) */
           setTimeout(() => { if (state === "play" && AD.mod) xBan(`${_t("adName")} · ${_t("modLbl")}: ${_t("mod" + cap(AD.mod))}`); }, 900);
         }
         function adUpdate(dt) {
@@ -4881,7 +4881,7 @@
           const was = AD.agg;
           Object.assign(AD, { agg: 0.1 + 0.55 * sk, smart: 0.8 + 0.9 * sk, bAdd: clamp(Math.round((sk - 0.35) * 10), -4, 6), food: 1.35 - 0.6 * sk });
           syncBots();
-          const ev = AD_EV.filter((e) => e !== AD.last && !(e === "fog" && (mapI === 0 || mapI === 29)) && (e !== "mini" || !snakes.some((s) => s.boss && s.alive))), e = ev[(R() * ev.length) | 0];
+          const ev = AD_EV.filter((e) => e !== AD.last && !(e === "rain" && window.__BBK) && !(e === "fog" && (mapI === 0 || mapI === 29)) && (e !== "mini" || !snakes.some((s) => s.boss && s.alive))), e = ev[(R() * ev.length) | 0];
           AD.last = e;
           if (e === "rain") AD.rain = 3.5;
           else if (e === "dna") for (let i = 0; i < 14; i++) { const a = R() * 6.28, d = rnd(120, 700); spawnDna(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d); }
@@ -4893,7 +4893,7 @@
             for (const p of b.seg) { p.x += dx; p.y += dy; }
             Object.assign(b, e === "gold" ? { gd: 1, len: 70, ad: 1 } : { sw: 1, len: 14, spd: 25, ad: 1 }); snakes.push(b);
           }
-          xBan(`${_t("adName")}: ${_t("ad" + cap(e))}` + (Math.abs(AD.agg - was) > 0.08 ? ` · ${_t(AD.agg > was ? "adHard" : "adEasy")}` : ""));
+          if (!window.__BBK) xBan(`${_t("adName")}: ${_t("ad" + cap(e))}` + (Math.abs(AD.agg - was) > 0.08 ? ` · ${_t(AD.agg > was ? "adHard" : "adEasy")}` : ""));
           beep(520, 0.18, "triangle", 0.05, 880);
         }
         function adDraw() {
@@ -5166,8 +5166,8 @@
               if (f.dead) continue;
               const dx = h.x - f.x, dy = h.y - f.y, d = dx * dx + dy * dy;
               if (d < er * er) {
-                s.len += f.v * 0.15 * AD.fv; f.dead = 1; ate = true;
-                if (s === player) { M.eat++; if (f.d13 !== undefined || f.k || f.v >= 1) xCombo(1); nfEat(f); const T = f.k && FT[f.k]; if (T && T.tier) xBan(`${(window.__BF13 && __BF13.on() && __BF13.nm(f, T)) || fNm(T)} +${T.v}`); }
+                s.len += f.v * 0.15 * AD.fv * (f.d13 === undefined && window.__BBFV ? __BBFV() : 1); f.dead = 1; ate = true;
+                if (s === player) { M.eat += f.d13 === undefined && window.__BBFV ? __BBFV() : 1; if (f.d13 !== undefined || f.k || f.v >= 1) xCombo(1); nfEat(f); const T = f.k && FT[f.k]; if (T && T.tier && !window.__BBK) xBan(`${(window.__BF13 && __BF13.on() && __BF13.nm(f, T)) || fNm(T)} +${T.v}`); }
                 if (s === player && time - eatT > 0.08) { eatT = time; sEat(); eatFx(f); }
               }
               else if (d < pull * pull) { const k = mg ? Math.min(0.18, 900 / d + 0.04) : 0.18; f.x += dx * k; f.y += dy * k; }
@@ -5518,7 +5518,7 @@
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
           const M = MAPS[mapI], ak0 = A / A0; ctx.fillStyle = M.bg; ctx.fillRect(0, 0, W, H);
           ST = Math.sin(cam.t); CT = Math.cos(cam.t);
-          F = D * cam.s; CX = W / 2; CY = H * (0.5 + 0.12 * (1.45 - cam.t) / 0.75);
+          F = D * cam.s; CX = W / 2; CY = H * (cam.t > 1.5 ? 0.5 : 0.5 + 0.12 * (1.45 - cam.t) / 0.75); /* babylon-back: top-down = centred */
           if (shk && !(mapI === 0 || mapI === 29)) { CX += (Math.random() * 2 - 1) * shk; CY += (Math.random() * 2 - 1) * shk; }
           const c0 = unpr(0, 0), c1 = unpr(W, 0), c2 = unpr(0, H), c3 = unpr(W, H);
           const vx0 = Math.min(c0.x, c2.x) - 60, vx1 = Math.max(c1.x, c3.x) + 60;
@@ -5710,9 +5710,9 @@
               if (sn.ovs) { ctx.globalAlpha = ga * sn.ova; ctx.drawImage(sn.ovs[i % sn.ovs.length], -ln * 0.5, -wd * 0.5, ln, wd); ctx.globalAlpha = ga; }
             }
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            band(sn, 1, 0.4, 0.44, 0.55, "#000", 0.2 * ga); // darker belly edge, away from the light
-            band(sn, 1, -0.3, -0.34, 0.7, "#fff", 0.13 * ga); // broad sheen toward the light
-            band(sn, 1, -0.38, -0.42, 0.22, "#fff", 0.16 * ga); // narrow specular line
+            band(sn, 1, 0.4, 0.44, 0.55, "#000", (window.__BBK ? 0.26 : 0.2) * ga); // darker belly edge, away from the light
+            band(sn, 1, -0.3, -0.34, 0.7, "#fff", (window.__BBK ? 0.19 : 0.13) * ga); // broad sheen toward the light
+            band(sn, 1, -0.38, -0.42, window.__BBK ? 0.17 : 0.22, "#fff", (window.__BBK ? 0.4 : 0.16) * ga); // narrow specular line
             ctx.globalAlpha = ga;
             const h = sn.seg[0], r = sn.r, ca = Math.cos(sn.a), sa0 = Math.sin(sn.a);
             if (!vis(h.x, h.y)) continue;
@@ -9109,7 +9109,7 @@
         const TAUNT_CD = 12;
         function taunt(k, o) {
           if (!NFS.rv || state !== "play") return; if (NFS.tT && NFS.t - NFS.tT < TAUNT_CD && k !== "kill") return;
-          NFS.tT = NFS.t; xBan("" + _t("nfTa_" + k, Object.assign({ x: (player && player.name) || "" }, o || {})));
+          NFS.tT = NFS.t; if (!window.__BBK) xBan("" + _t("nfTa_" + k, Object.assign({ x: (player && player.name) || "" }, o || {})));
         }
         function habitKey() { const a = NX.ai; if (a.n < 1) return "new"; if (a.b > 0.35) return "boost"; if (a.w > 0.4) return "wall"; if (a.l > 0.58) return "left"; if (a.l < 0.42) return "right"; return "plain"; }
         NFH.start.push(() => {
@@ -11340,7 +11340,7 @@
             if (!sn.wx || sn.seg.length < 3) return;
             const me = sn === player && state === "play", lo = QL <= 0;
             ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
-            if (!lo) { ctx.strokeStyle = "rgba(0,0,0,1)"; ctx.globalAlpha = 0.16 * ga; tube(sn, segR, 0, 2, 4, 2.05, 0); } // soft contact shadow on the floor
+            if (window.__BBK) { ctx.strokeStyle = "rgba(4,6,24,1)"; if (!lo) { ctx.globalAlpha = 0.13 * ga; tube(sn, segR, 0, 5, 8, 2.35, 3); } ctx.globalAlpha = 0.24 * ga; tube(sn, segR, 0, 3, 5, 2.0, 0); } /* babylon-back: soft two-pass drop shadow */ else if (!lo) { ctx.strokeStyle = "rgba(0,0,0,1)"; ctx.globalAlpha = 0.16 * ga; tube(sn, segR, 0, 2, 4, 2.05, 0); } // soft contact shadow on the floor
             if (me) { // own snake: soft gold glow
               ctx.globalCompositeOperation = "lighter"; ctx.strokeStyle = "#ffd76a";
               ctx.globalAlpha = 0.09 * ga; tube(sn, segR, 1, 0, 0, 1.9, 8); // ss13u-ingame: faint glow only (was a cream haze)
@@ -11586,7 +11586,7 @@
             let h = 0; for (let i = 0; i < t.length; i += 3) h = (Math.imul(h, 31) + t.charCodeAt(i)) | 0; return "h" + h + ":" + t.length;
           };
           // tahrir-flat: stale-page check. Safari can keep an old copy of the page (tab restore / cache); compare our build stamp with the live one.
-          const BLD = "1793405656";
+          const BLD = "1793409555";
           try { if (/[?&]_r=/.test(location.search) && history.replaceState) history.replaceState(null, "", location.pathname + location.search.replace(/[?&]_r=\d+/, "").replace(/^&/, "?") + location.hash); } catch (_) {}
           B13C.stale = async () => {
             if (!/^https?:$/.test(location.protocol) || B13.ios()) return false;
@@ -21345,6 +21345,105 @@
             window.__TAHCLR = 1;
           } catch (e) { try { console.warn("tahrir-clear", e); } catch (_) {} }
         } catch (e) { try { console.warn("tahrir", e); } catch (_) {} }
+        // ===== ss13u-babback (owner 2026-10-30: the Tahrir map is "nauseating" -> Babylon everywhere, straight top-down, readable snakes, less food) =====
+        try {
+          window.__BBK = 1;
+          const BBTD = Math.PI / 2 - 0.01; // ~89.4 deg: straight down (cos ~0.01 keeps the projection maths finite)
+          const TDon = () => mapI === 0 && window.__BBTD !== 0;
+          // ---------- 1. Babylon is the only arena (Tahrir hidden, files kept) ----------
+          try { localStorage.setItem("ss-tah-sel", "0"); } catch (_) {}
+          window.__TAH2 = 0; window.__tahSel = () => 0; window.__tahU = () => 0;
+          { const smB = setMap; setMap = function () { return smB.call(this, 0); }; }
+          try { mapSel = 0; if (mapI !== 0) setMap(0); } catch (_) {}
+          // ---------- 6. food: half the natural density offline, natural pieces worth 2x; every sprite 0.72x ----------
+          try { F13.DENS = 1.0; } catch (_) {}
+          window.__BBFV = () => (typeof RTX === "object" && RTX && RTX.on ? 1 : 2);
+          const FKZ = 0.8;
+          try {
+            if (window.__BF13) {
+              const B = window.__BF13;
+              B.draw = function (f, T, r, z, fa) {
+                if (fa <= 0.01) return;
+                const k = this.kind(f, T), sz = (T ? r * 4.2 : (3.8 + (r - 3.8) * 0.65) * 6.6) * PK * FKZ;
+                pr(f.x, f.y, z * 0.5); ctx.globalAlpha = fa; ctx.drawImage(this.atlas, k * 96, 0, 96, 96, PX - sz / 2, PY - sz / 2, sz, sz); ctx.globalAlpha = 1;
+              };
+            }
+          } catch (_) {}
+          // ---------- 5. snakes drawn wider (visual only; collision radius is restored right after the frame) ----------
+          const VWK = 1.45; B13C.MW = 11;
+          { const draw0 = draw;
+            draw = function () {
+              if (mapI !== 0 || window.__BBVW === 0) return draw0.apply(this, arguments);
+              const L = [];
+              for (const sn of snakes) if (sn && sn.alive && Number.isFinite(sn.r)) { L.push(sn, sn.r); sn.r *= VWK; }
+              try { return draw0.apply(this, arguments); } finally { for (let i = 0; i < L.length; i += 2) L[i].r = L[i + 1]; }
+            }; }
+          // name plate clears the wider head when seen from straight above (the tilted view used to lift it)
+          try { if (B13C && typeof B13C.tag === "function") { const tg = B13C.tag; const f = function (sn, tx, y0) { if (TDon() && sn && Number.isFinite(sn.r)) y0 -= sn.r * 1.15 * PK; return tg.call(this, sn, tx, y0); }; f.ig13 = 1; f.s13s = 1; B13C.tag = f; } } catch (_) {}
+          // ---------- 2. camera: straight top-down, r4 far zoom (x0.82: the top-down view keeps about the arena height the tilted view showed), tahrir-clear smooth follow ----------
+          try {
+            const zf = B13C.zoomFor; if (typeof zf === "function") { const f = function (len, bo, dz) { const z = zf.apply(this, arguments); return TDon() ? Math.max(0.25, z * 0.82) : z; }; f.ig13 = 1; B13C.zoomFor = f; }
+            const camB = B13C.cam;
+            B13C.cam = function (focus) { const r = camB.apply(this, arguments); if (TDon()) { cam.t = BBTD; cam.vt = 0; } return r; };
+          } catch (_) {}
+          // ---------- 3. flat borders: Ishtar frieze on the ground outside every edge, darkened floor beyond (no void) ----------
+          const WI = new Image(); WI.decoding = "async"; WI.src = "ui/bab/r3/wall.webp?v=1";
+          const HB = 104, FW = HB * 0.95, TLN = (HB * 1024) / 254; // same frieze size as r3's near-edge band (it still draws there: identical pixels)
+          const piece = (im, sx, sw, P0x, P0y, P1x, P1y, P2x, P2y) => {
+            pr(P0x, P0y, 0); const ux = PX, uy = PY; pr(P1x, P1y, 0); const tx = PX, ty = PY; pr(P2x, P2y, 0); const ax = PX, ay = PY;
+            ctx.setTransform(dpr * (tx - ux), dpr * (ty - uy), dpr * (ax - ux), dpr * (ay - uy), dpr * ux, dpr * uy);
+            ctx.drawImage(im, sx, 0, sw, im.naturalHeight, 0, 0, 1, 1);
+          };
+          // half-image pieces by integer index (float modulo at large coordinates landed on the wrap edge -> a zero-width slice -> missing piece)
+          const run = (a0, a1, iw, f) => { const st = TLN / 2; for (let k = Math.floor(a0 / st); k * st < a1; k++) { const t = k * st, s0 = Math.max(a0, t), s1 = Math.min(a1, t + st); if (s1 - s0 < 0.5) continue; const u0 = Math.min(iw - 1, (((k % 2) + 2) % 2) * (iw / 2) + ((s0 - t) / TLN) * iw), uw = Math.max(1, Math.min(iw - u0, ((s1 - s0) / TLN) * iw)); f(s0, s1 + 0.6, u0, uw); } };
+          const EG = {};
+          const edgeGrad = (k, x0, y0, x1, y1) => { const g = ctx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, "rgba(4,6,26,.34)"); g.addColorStop(1, "rgba(4,6,26,0)"); return g; };
+          const borders = (vx0, vx1, vy0, vy1) => {
+            pr(0, 0, 0); const X0 = PX, Y0 = PY; pr(A, A, 0); const X1 = PX, Y1 = PY;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+            // ground beyond the arena: same floor, darkened
+            ctx.fillStyle = "rgba(6,7,28,.52)";
+            if (Y0 > 0) ctx.fillRect(0, 0, W, Y0);
+            if (Y1 < H) ctx.fillRect(0, Y1, W, H - Y1);
+            const ya = Math.max(0, Y0), yb = Math.min(H, Y1);
+            if (yb > ya) { if (X0 > 0) ctx.fillRect(0, ya, X0, yb - ya); if (X1 < W) ctx.fillRect(X1, ya, W - X1, yb - ya); }
+            // soft shade along the inside of each edge (the frieze reads as a low wall)
+            const sh = Math.max(6, 46 * PK);
+            if (Y0 > -sh && Y0 < H) { ctx.fillStyle = edgeGrad(0, 0, Y0, 0, Y0 + sh); ctx.fillRect(Math.max(0, X0), Y0, Math.min(W, X1) - Math.max(0, X0), sh); }
+            if (Y1 > 0 && Y1 < H + sh) { ctx.fillStyle = edgeGrad(1, 0, Y1, 0, Y1 - sh); ctx.fillRect(Math.max(0, X0), Y1 - sh, Math.min(W, X1) - Math.max(0, X0), sh); }
+            if (X0 > -sh && X0 < W) { ctx.fillStyle = edgeGrad(2, X0, 0, X0 + sh, 0); ctx.fillRect(X0, Math.max(0, Y0), sh, Math.min(H, Y1) - Math.max(0, Y0)); }
+            if (X1 > 0 && X1 < W + sh) { ctx.fillStyle = edgeGrad(3, X1, 0, X1 - sh, 0); ctx.fillRect(X1 - sh, Math.max(0, Y0), sh, Math.min(H, Y1) - Math.max(0, Y0)); }
+            const im = WI.complete && WI.naturalWidth ? WI : null;
+            if (im) {
+              const iw = im.naturalWidth;
+              if (vy0 < 0) run(Math.max(vx0, -FW), Math.min(vx1, A + FW), iw, (s0, s1, u0, uw) => piece(im, u0, uw, s0, -FW, s1, -FW, s0, 0));
+              if (vy1 > A) run(Math.max(vx0, -FW), Math.min(vx1, A + FW), iw, (s0, s1, u0, uw) => piece(im, u0, uw, s0, A, s1, A, s0, A + FW));
+              if (vx0 < 0) run(Math.max(vy0, 0), Math.min(vy1, A), iw, (s0, s1, u0, uw) => piece(im, u0, uw, -FW, s0, -FW, s1, 0, s0));
+              if (vx1 > A) run(Math.max(vy0, 0), Math.min(vy1, A), iw, (s0, s1, u0, uw) => piece(im, u0, uw, A + FW, s0, A + FW, s1, A, s0));
+              ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            } else { // frieze still loading: plain lapis band
+              ctx.fillStyle = "#1a3aa8"; pr(-FW, -FW, 0); const a = PX, b = PY; pr(A + FW, A + FW, 0); const c = PX, d = PY;
+              ctx.fillRect(a, b, c - a, Y0 - b); ctx.fillRect(a, Y1, c - a, d - Y1); ctx.fillRect(a, Y0, X0 - a, Y1 - Y0); ctx.fillRect(X1, Y0, c - X1, Y1 - Y0);
+            }
+            // gold trim: inner edge (with a dark keyline) and outer edge
+            pr(-FW, -FW, 0); const oa = PX, ob = PY; pr(A + FW, A + FW, 0); const oc = PX, od = PY;
+            ctx.lineJoin = "miter";
+            ctx.strokeStyle = "rgba(30,14,0,.7)"; ctx.lineWidth = Math.max(2.5, 9 * PK); ctx.strokeRect(X0, Y0, X1 - X0, Y1 - Y0);
+            ctx.strokeStyle = "#f2c860"; ctx.lineWidth = Math.max(1.6, 5 * PK); ctx.strokeRect(X0, Y0, X1 - X0, Y1 - Y0);
+            ctx.strokeStyle = "#e0b04a"; ctx.lineWidth = Math.max(1.2, 3.5 * PK); ctx.strokeRect(oa, ob, oc - oa, od - ob);
+          };
+          { const txB = txFloor;
+            txFloor = function (fx0, fx1, fy0, fy1) {
+              if (!TDon()) return txB.apply(this, arguments);
+              const a = unpr(0, 0), b = unpr(W, H), vx0 = Math.min(a.x, b.x) - 40, vx1 = Math.max(a.x, b.x) + 40, vy0 = Math.min(a.y, b.y) - 40, vy1 = Math.max(a.y, b.y) + 40;
+              const out = vx0 < 0 || vy0 < 0 || vx1 > A || vy1 > A;
+              const r = out ? txB.call(this, vx0, vx1, vy0, vy1) : txB.apply(this, arguments);
+              if (out) { try { borders(vx0, vx1, vy0, vy1); } catch (e) { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); } }
+              return r;
+            }; }
+          { const wallB = wall; wall = function () { if (TDon()) return; return wallB.apply(this, arguments); }; }
+          window.__BBACK = 1;
+        } catch (e) { try { console.warn("ss13u-babback", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
     </script>
@@ -26733,7 +26832,7 @@ html body.b13h-on #game .x-boost { width: 66px !important; height: 84px !importa
 html body.b13h-on #game .x-boost::after { display: none !important; }
 html body.b13h-on #game .x-boost::before { display: block !important; inset: auto !important; left: -3px !important; top: -3px !important; width: 72px !important; height: 72px !important; background: conic-gradient(#ffd76a var(--bf, 100%), rgba(255, 255, 255, .14) 0) !important; }
 html body.b13h-on #game .x-boost.on { background: radial-gradient(circle at 50% 33px, rgba(255, 214, 110, .55) 0, rgba(255, 190, 60, 0) 40px) center top / 100% 84px no-repeat, url(ui/bab/r3/boost.webp?v=1) center top / 66px 66px no-repeat !important; color: #fff6d0 !important; }
-:root { --p10-tx0: url("ui/bab/r3/floor2.webp?v=1"); }
+:root { --p10-tx0: url("ui/bab/r3/floor3.webp?v=1"); }
 html body.b13h-on #b13hmp .h-chev, html body.b13h-on #b13hmp svg, html body.b13h-on #b13hmp .h-go { display: none !important; }
 </style>
 <style id="ss13u-bab-r5">
@@ -28886,5 +28985,9 @@ html body #b13hart, html body #b13hrnd { display: none !important; }
 <!-- tahrir-sharp -->
 <!-- tahrir-flat -->
 <!-- tahrir-clear -->
+<style id="ss13u-babback">
+html body.b13h-on #b13hmp span.h-chev { display: none !important; }
+html body #b13hmp { cursor: default !important; }
+</style>
 </body>
 </html>
