@@ -58,3 +58,8 @@ stored as RGB 0,0,0, no IPTC/XMP/C2PA, model output size. Script: `work/ss13u_as
 ## Notes
 - Keep the masters (`work/…` paths in the Hark workspace) as the record of origin.
 - No asset from another game, stock library or font foundry other than the OFL fonts was found.
+
+## Redesign A "STRIKE" (added 2026-10-31, `ui/sa/**`)
+- `ui/sa/**/*.svg` (line icons, coin/gem marks, medals, product marks, wordmark `logo.svg`, backgrounds): drawn in code for this project (`work/ss_redesign/apply/make_assets.py`, `mklogo.py`). Original.
+- `ui/sa/hero.webp`, `ui/sa/hero_rtl.webp` (mirror): from master `work/ss_redesign/art/heroA.webp`, generated for this project with Hark's image tool (AI). `ui/sa/arena.webp`: thumbnail of `work/ss_redesign/art/prevA.jpg`, redesign mockup art made during the 2026-10-31 design pass (exact tool not re-traced; treat as AI-generated until checked).
+- `ui/sa/f/*.woff2`: subsets of Barlow, Barlow Condensed and Cairo (SIL OFL 1.1, see THIRD_PARTY_LICENSES.md).

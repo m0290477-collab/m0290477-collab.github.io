@@ -11,6 +11,9 @@ third-party JavaScript libraries. Third-party components:
 | Baloo Bhaijaan 2 (ExtraBold; Arabic subset) | 1.701 | SIL Open Font License 1.1 | `ui/fonts/bb2-ar-800.woff2` | Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2) |
 | Nunito | 3.602 | SIL Open Font License 1.1 | `ui/fonts/nunito.woff2` | Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito) |
 | Cairo (Arabic subset) | 3.130 | SIL Open Font License 1.1 | `ui/fonts/cairo-ar.woff2` | Copyright 2009 The Cairo Project Authors (https://github.com/Gue3bara/Cairo) |
+| Barlow (Medium, Bold; Latin subset) | 1.422 | SIL Open Font License 1.1 | `ui/sa/f/b500.woff2`, `ui/sa/f/b700.woff2` | Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow) |
+| Barlow Condensed (SemiBold, ExtraBold; Latin subset) | 1.422 | SIL Open Font License 1.1 | `ui/sa/f/bc600.woff2`, `ui/sa/f/bc800.woff2` | Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow) |
+| Cairo (variable; Arabic subset, redesign) | 3.130 | SIL Open Font License 1.1 | `ui/sa/f/cairo.woff2` | Copyright 2009 The Cairo Project Authors (https://github.com/Gue3bara/Cairo) |
 
 Full font license text: `ui/fonts/OFL.txt`.
 
