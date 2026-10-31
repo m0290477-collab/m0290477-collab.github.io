@@ -9724,7 +9724,7 @@
           const step = (ts) => {
             const vis = pxVis("nfshop");
             if (!vis) { if (++hid > 30) { pxPvRaf = 0; return; } }
-            else { hid = 0; if (ts - last > 33) { last = ts; if (!pxPvT0) pxPvT0 = ts; const tt = (ts - pxPvT0) / 1000; pxPvOn().forEach((c) => pxPv(c, tt)); if (pxRM) { pxPvRaf = 0; return; } } }
+            else { hid = 0; if (ts - last > 33) { last = ts; if (!pxPvT0) pxPvT0 = ts; const tt = (ts - pxPvT0) / 1000; pxPvOn().forEach((c) => pxPv(c, tt)); if (pxRM || (window.__SSFXST && (pxPvAll.fx = (pxPvAll.fx | 0) + 1) > 8)) { pxPvAll.fx = 0; pxPvRaf = 0; return; } } }
             pxPvRaf = requestAnimationFrame(step);
           };
           pxPvRaf = requestAnimationFrame(step);
@@ -12010,7 +12010,7 @@
           // build13j: premium living hero snake (equipped skin, shaded tube, breathing + S-sway, coil drift, blink, tongue flick,
           // skin-coloured rim light + pedestal reflection, flourish on tap / skin change). 60 fps rAF, pauses when hidden, static under reduced motion / Low quality.
           const RM = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
-          const still = () => RM.matches || QL <= 0;
+          const still = () => RM.matches || QL <= 0 || !!window.__SSFXST;
           const SPR = new Map();
           const hexA = (c, a) => { try { const x = document.createElement("canvas").getContext("2d"); x.fillStyle = c; const v = x.fillStyle; if (v[0] === "#") { const n = parseInt(v.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; } return v.replace(/rgba?\(([^)]+)\)/, (m, p) => `rgba(${p.split(",").slice(0, 3).join(",")},${a})`); } catch (_) { return `rgba(255,220,120,${a})`; } };
           const ball = (col, ov) => { // shaded scale "bead": base colour or royal overlay disc, specular, rim light, soft dark edge
@@ -14893,7 +14893,7 @@
             if (id === "ctry") return SSB.ctry();
             if (!SSB.keep) { SSB.cm = "c"; if (SF.cat === "f") SF.cat = "c"; if (SF.sel >= 0 && SKINS[SF.sel] && SKINS[SF.sel].fl) SF.sel = -1; }
             const r = o(id); if (id === "shop" && !SSB.keep) tv(() => paintShop(), 0); return r; }; }
-          const putCT = () => {
+          const putCT = (window.__FXH = window.__FXH || {}).putCT = () => {
             const shOn = !$("shop").classList.contains("x-hide");
             document.querySelectorAll(".k-shtabs").forEach((tb) => {
               const sk = tb.querySelector('[data-kshop="shop"]'); if (!sk) return;
@@ -18251,7 +18251,7 @@
           document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-dsguide]"); if (!b) return; e.preventDefault(); e.stopPropagation(); GD.open(b.dataset.dsguide); }, true);
           const HKEY = "ss-ds-hint1";
           const hint = () => { let seen = "1"; try { seen = localStorage.getItem(HKEY); } catch (_) {} if (seen) return; try { localStorage.setItem(HKEY, "1"); } catch (_) {} setTimeout(() => { if (!playing()) tv(() => toast(T("dsHint")), 0); }, 900); };
-          const scan = () => {
+          const scan = (window.__FXH = window.__FXH || {}).dsScan = () => {
             if (playing()) return;
             addHow();
             for (const id in IPANEL) { const ov = g$(id); if (ov && !ov.classList.contains("x-hide")) { addI(id); if (id !== "league" && id !== "b13dlg") hint(); } }
@@ -18846,7 +18846,7 @@
             const sh = ov.querySelector(".sk4-shade"); if (sh) { const c = $("sk4shc"); if (c) tv4(() => draw(c, sh.dataset.k, false, ph), 0); return; }
             const p = $("sk4pvc"); if (p && ST4.sel) tv4(() => draw(p, ST4.sel, true, ph), 0);
             const e = $("sk4emc"); if (e) tv4(() => draw(e, e.dataset.k, true, ph), 0); };
-          const kick = () => { if (!raf4 && !RM4) raf4 = requestAnimationFrame(anim); };
+          const kick = () => { if (!raf4 && !RM4 && !window.__SSFXST) raf4 = requestAnimationFrame(anim); };
           document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
           const money4 = (c) => tv4(() => B13.money(c), "$" + (c / 100).toFixed(2));
           const priceTag = (k) => { if (/^pm_/.test(k) && window.__PM13) return window.__PM13.tag(k, eqKey() === k); const kd = kind(k), own = owned(k), eq = eqKey() === k;
@@ -18858,9 +18858,10 @@
             return ""; };
           const rbd = (k) => { const kd = kind(k); if (kd === "legacy") return `<span class="sk4-rb" style="--rc:#9aa6bd">${E4(T4("lv4Leg"))}</span>`; if (kd === "pass") return `<span class="sk4-rb" style="--rc:#ffc229">${E4(T4("nfPass"))}</span>`;
             const r = rarOf(k); return `<span class="sk4-rb" style="--rc:var(--sk4r${r})">${E4(T4(RN4[r]))}</span>`; };
-          const PER = 8;
+          const PER = 999; /*ss13u-fix-v1: one scrolling page*/
+          const sgfx4 = () => tv4(() => [P.coins, P.gems, eqKey(), ENT.size, legacy().length, list().map((k) => (owned(k) ? 1 : 0)).join("")].join("|"), String(Math.random()));
           const paint = () => {
-            if (!ov) return; const b = ov.querySelector(".sk4-win"); const cat = ST4.cat, items = list(), pages = Math.max(1, Math.ceil(items.length / PER));
+            ST4.sgfx = sgfx4(); if (!ov) return; const b = ov.querySelector(".sk4-win"); const cat = ST4.cat, items = list(), pages = Math.max(1, Math.ceil(items.length / PER));
             if (ST4.pg >= pages) ST4.pg = pages - 1; if (ST4.pg < 0) ST4.pg = 0;
             if (!ST4.sel || !items.includes(ST4.sel)) ST4.sel = items.includes(eqKey()) ? eqKey() : items[0] || "";
             const pgItems = items.slice(ST4.pg * PER, ST4.pg * PER + PER), an = ST4.anim; ST4.anim = 0;
@@ -18891,8 +18892,8 @@
               const rc = kd === "legacy" ? "#9aa6bd" : kd === "pass" ? "#ffc229" : `var(--sk4r${rarOf(sel)})`;
               const pv = sel ? `<div class="sk4-pv r${rarOf(sel)}${eq ? " eq" : ""}${an ? " sk4-in" : ""}" style="--rc:${rc}"><div class="sk4-rays" aria-hidden="true"></div><div class="sk4-stage" aria-hidden="true"></div>${rbd(sel).replace('class="sk4-rb"', 'class="sk4-rb top"')}${eq ? `<span class="sk4-eqb">✓ ${E4(T4("equipped").replace(/\s*✓\s*/, ""))}</span>` : ""}<button type="button" class="sk4-arw l" data-sk4="prev" aria-label="‹">‹</button><button type="button" class="sk4-arw r" data-sk4="next" aria-label="›">›</button>` +
                 `<canvas id="sk4pvc" aria-hidden="true"></canvas><h3>${kd === "flag" ? tv4(() => __SNR.flagIco(sel, 1), "") : ""}${E4(nameOf(sel))}</h3><div class="sk4-sub">${E4(sub)}</div>${act}</div>` : `<div class="sk4-pv"></div>`;
-              const cards = pgItems.length ? pgItems.map((k, j) => { const eqd = eqKey() === k, kd2 = kind(k);
-                return `<button type="button" class="sk4-card r${rarOf(k)}${k === sel ? " sel" : ""}${eqd ? " eq" : ""}${kd2 === "legacy" || kd2 === "pass" ? " leg" : ""}${kd2 === "flag" && !owned(k) ? " fl" : ""}${kd2 === "prem" ? " pm" : ""}" style="--i:${j}" data-sk4k="${k}" aria-pressed="${k === sel}"><span class="top">${rbd(k)}${eqd ? '<span class="ck" aria-hidden="true">✓</span>' : ""}</span><canvas data-sk4cv="${k}" aria-hidden="true"></canvas>${kd2 === "flag" ? tv4(() => __SNR.flagIco(k), "") : ""}<span class="nm">${E4(nameOf(k))}</span>${priceTag(k)}</button>`; }).join("")
+              const cards = pgItems.length ? (ST4.fxCard = (k, j) => { const eqd = eqKey() === k, kd2 = kind(k);
+                return `<button type="button" class="sk4-card r${rarOf(k)}${k === sel ? " sel" : ""}${eqd ? " eq" : ""}${kd2 === "legacy" || kd2 === "pass" ? " leg" : ""}${kd2 === "flag" && !owned(k) ? " fl" : ""}${kd2 === "prem" ? " pm" : ""}" style="--i:${j}" data-sk4k="${k}" aria-pressed="${k === sel}"><span class="top">${rbd(k)}${eqd ? '<span class="ck" aria-hidden="true">✓</span>' : ""}</span><canvas data-sk4cv="${k}" aria-hidden="true"></canvas>${kd2 === "flag" ? tv4(() => __SNR.flagIco(k), "") : ""}<span class="nm">${E4(nameOf(k))}</span>${priceTag(k)}</button>`; }, ST4.fxRest = pgItems.slice(24), pgItems.slice(0, 24).map(ST4.fxCard)).join("")
                 : `<p class="sk4-none"><span aria-hidden="true">🔍</span>${E4(T4("sk4NoRes"))}</p>`;
               const legN = legacy().length;
               const chip = (on, attr, html) => `<button type="button" class="sk4-chip${on ? " on" : ""}" ${attr} aria-pressed="${on}">${html}</button>`;
@@ -18906,10 +18907,17 @@
             }
             const q0 = document.activeElement && document.activeElement.id === "sk4q" ? document.activeElement.selectionStart : -1;
             const csl = ov.querySelector(".sk4-chips.sc"), csx = csl ? csl.scrollLeft : 0;
+            const g0fx = ov.querySelector(".sk4-grid"), gkfx = cat + "|" + ST4.sf + "|" + ST4.rg + "|" + ST4.q, gsfx = g0fx && ST4.gkfx === gkfx ? g0fx.scrollTop : 0; ST4.gkfx = gkfx;
+            if (!pgItems.length) ST4.fxRest = [];
             b.innerHTML = head + `<div class="sk4-tabs" role="tablist">${tabs}</div>` + body;
+            { const g1fx = ov.querySelector(".sk4-grid"), rs = ST4.fxRest || [], fc = ST4.fxCard, tk = (ST4.fxTk = (ST4.fxTk | 0) + 1); ST4.fxRest = [];
+              if (g1fx && rs.length && fc) { let i = 0; const add = (n) => { const h = rs.slice(i, i + n).map((k, j) => fc(k, 24 + i + j)).join(""); i += n; g1fx.insertAdjacentHTML("beforeend", h);
+                  if (window.__SSFX && __SSFX.lazyAdd) __SSFX.lazyAdd(g1fx); };
+                if (gsfx) add(rs.length); else { const step = () => { if (ST4.fxTk !== tk || !g1fx.isConnected) return; add(40); if (i < rs.length) setTimeout(step, 30); }; setTimeout(step, 60); } }
+              if (gsfx && g1fx) g1fx.scrollTop = gsfx; }
             if (q0 >= 0) { const q = $("sk4q"); if (q) { q.focus(); try { q.setSelectionRange(q0, q0); } catch (_) {} } }
             const cs2 = ov.querySelector(".sk4-chips.sc"); if (cs2) { if (an === 2) { const o = cs2.querySelector(".sk4-chip.on"); if (o) tv4(() => o.scrollIntoView({ block: "nearest", inline: "nearest" }), 0); } else cs2.scrollLeft = csx; }
-            requestAnimationFrame(() => { if (!ov) return; ov.querySelectorAll("canvas[data-sk4cv]").forEach((c) => tv4(() => draw(c, c.dataset.sk4cv, false), 0)); const p = $("sk4pvc"); if (p && ST4.sel) tv4(() => draw(p, ST4.sel, true, RM4 ? undefined : last4 / 480), 0);
+            requestAnimationFrame(() => { if (!ov) return; if (window.__SSFX && __SSFX.lazy) { __SSFX.pph = RM4 ? undefined : last4 / 480; __SSFX.lazy(ov, draw, tv4); } else ov.querySelectorAll("canvas[data-sk4cv]").forEach((c) => tv4(() => draw(c, c.dataset.sk4cv, false), 0)); const p = $("sk4pvc"); if (p && ST4.sel) tv4(() => draw(p, ST4.sel, true, RM4 ? undefined : last4 / 480), 0);
               const e = $("sk4emc"); if (e) tv4(() => draw(e, e.dataset.k, true, RM4 ? undefined : last4 / 480), 0); kick(); });
           };
           const sheet = (k) => { // purchase sheet: forever only, $4.99, server-verified Stripe checkout (web only)
@@ -18947,7 +18955,7 @@
             else if (k === "pay") { const s = a.closest(".sk4-shade"), id = s && s.dataset.k; if (!id || !isFlag(+id.slice(1)) || owned(id)) return; if (s) s.remove(); tv4(() => B13.itemUsd(id), 0); }
           };
           document.addEventListener("change", (e) => { if (ov && e.target && e.target.closest && e.target.closest("#sk4") && e.target.classList.contains("nf-phin")) setTimeout(() => { if (ST4.open) { ST4.sel = "photo"; paint(); } }, 1500); });
-          setInterval(() => { if (ST4.open && !document.hidden && !document.querySelector(".sk4-shade")) { const q = $("sk4q"); if (!(q && document.activeElement === q)) paint(); } }, 6000);
+          setInterval(() => { if (ST4.open && !document.hidden && !document.querySelector(".sk4-shade")) { const q = $("sk4q"); if (!(q && document.activeElement === q) && sgfx4() !== ST4.sgfx) paint(); } }, 6000);
           if (typeof NFH === "object" && NFH && NFH.relang) NFH.relang.push(() => { if (ST4.open) paint(); });
           window.addEventListener("keydown", (e) => { if (e.key === "Escape" && ST4.open) { const s = document.querySelector(".sk4-shade"); if (s) s.remove(); else close(); } });
           // ---- routing: Locker, "All skins", old shop Skins/Countries tabs -> Skins section; Premium -> Offers; coin/gem chips -> Coins & Gems ----
@@ -18963,7 +18971,7 @@
           }, true);
           tv4(() => { const K = window.__K; if (K && K.openShop) { const _os = K.openShop; K.openShop = (id) => id === "shop" ? open() : id === "b13prem" ? _os("nfshop") : id === "ongems" ? SK4.bank() : _os(id); } }, 0);
           // ---- Royal Shop: tabs = Offers + VIP IDs; skin offers hidden (server switches them off in 102); a shortcut to the Skins section ----
-          const shopFix = () => {
+          const shopFix = (window.__FXH = window.__FXH || {}).shopFix = () => {
             document.querySelectorAll(".k-shtabs").forEach((tb) => { const f = tb.querySelector('[data-kshop="nfshop"]'); if (f && f.textContent !== T4("sk4Offers")) f.textContent = T4("sk4Offers");
               if (!tb.querySelector(".sk4-shc")) tb.insertAdjacentHTML("beforeend", `<button type="button" class="sk4-shc" data-hm="sk">${E4(T4("sk4Title"))} ›</button>`); else { const s = tb.querySelector(".sk4-shc"); const tx = `${T4("sk4Title")} ›`; if (s.textContent !== tx) s.textContent = tx; } });
             const sb = $("nfsb"); if (sb) { sb.querySelectorAll(".ofx-c").forEach((c) => { if (c.querySelector(".ofx-sw") && !c.classList.contains("sk4-off")) c.classList.add("sk4-off"); });
@@ -21062,8 +21070,8 @@
           SF.code = codeOf; SF.url = (id) => { const c = codeOf(id); return c ? urlOf(c) : ""; };
           // ---------- images (lazy, async) ----------
           const IM = new Map(); let ver = 0, rpT = 0;
-          const repaint = () => { clearTimeout(rpT); rpT = setTimeout(() => tvF(() => { if (window.__SK4 && __SK4.paint && document.body.classList.contains("sk4-on") && !document.querySelector(".sk4-shade")) __SK4.paint(); }), 180); };
-          const img = (c) => { let o = IM.get(c); if (!o) { o = new Image(); o.decoding = "async"; o.onload = () => { ver++; TL.forEach((t) => { if (t.code === c && !t.ready) paintTile(t); }); repaint(); }; o.src = urlOf(c); IM.set(c, o); } return o.complete && o.naturalWidth ? o : null; };
+          const repaint = (cfx) => { if (cfx && window.__SSFX) (__SSFX.dirty || (__SSFX.dirty = new Set())).add(cfx); else if (window.__SSFX) __SSFX.dirtyAll = 1; clearTimeout(rpT); rpT = setTimeout(() => tvF(() => { if (window.__SSFX && __SSFX.redraw) { __SSFX.redraw(); return; } if (window.__SK4 && __SK4.paint && document.body.classList.contains("sk4-on") && !document.querySelector(".sk4-shade")) __SK4.paint(); }), 180); };
+          const img = (c) => { let o = IM.get(c); if (!o) { o = new Image(); o.decoding = "async"; o.onload = () => { ver++; TL.forEach((t) => { if (t.code === c && !t.ready) paintTile(t); }); repaint(c); }; o.src = urlOf(c); IM.set(c, o); } return o.complete && o.naturalWidth ? o : null; };
           // ---------- tiles: one flag (or a strip of two) at a device-pixel height, cloth wave + seam baked in ----------
           const TL = new Map();
           const paintTile = (t) => {
@@ -21179,7 +21187,7 @@
           SF.sk4 = (cv, k, big, ph) => {
             if (window.__SNR && !window.__SNRNOFLAG) return false; const c = codeOf(k); if (!c) return false;
             const Wc = cv.clientWidth, Hc = cv.clientHeight; if (!Wc || !Hc) return true;
-            const D = Math.min(3, window.devicePixelRatio || 1), cw = Math.round(Wc * D), ch = Math.round(Hc * D);
+            const D = Math.min(2, window.devicePixelRatio || 1), cw = Math.round(Wc * D), ch = Math.round(Hc * D);
             if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
             const g = cv.getContext("2d"); g.setTransform(D, 0, 0, D, 0, 0); g.clearRect(0, 0, Wc, Hc);
             const rtl = document.documentElement.dir === "rtl", p0 = ph || 0, am = ph === undefined ? 1 : 0.88 + 0.12 * Math.sin(p0 * 0.6);
@@ -21268,7 +21276,7 @@
           I18N.sk4PremS = SNR_I18N.pmCol;
           // ---------------- images ----------------
           const IMG = new Map(); let imgT = 0;
-          const onImg = () => { clearTimeout(imgT); imgT = setTimeout(() => { tvS(() => { if (window.__SK4 && __SK4.st && __SK4.st.open && !document.querySelector(".sk4-shade")) __SK4.paint(); }); }, 160); };
+          const onImg = () => { clearTimeout(imgT); imgT = setTimeout(() => { tvS(() => { if (window.__SSFX && __SSFX.redraw) { if (window.__SK4 && __SK4.st && __SK4.st.open) __SSFX.redraw(); return; } if (window.__SK4 && __SK4.st && __SK4.st.open && !document.querySelector(".sk4-shade")) __SK4.paint(); }); }, 160); };
           const img = (u) => { let o = IMG.get(u); if (!o) { o = new Image(); o.decoding = "async"; o.onload = onImg; o.src = u; IMG.set(u, o); } return o.complete && o.naturalWidth ? o : null; };
           const flagOf = (i) => tvS(() => FLAGS[i - FLAG0], null);
           const isFl = (i) => tvS(() => i >= FLAG0 && i < FLAG0 + FLAGN, false);
@@ -21493,7 +21501,7 @@
             g.restore(); };
           SNR.drawSnake = drawSnake;
           // canvas helper: sizes the backing store at native DPR (cap 3) and draws a pose
-          const fit = (cv) => { const W = cv.clientWidth, H = cv.clientHeight; if (!W || !H) return null; const dpr = Math.min(3, window.devicePixelRatio || 1), cw = Math.round(W * dpr), ch = Math.round(H * dpr);
+          const fit = (cv) => { const W = cv.clientWidth, H = cv.clientHeight; if (!W || !H) return null; const dpr = Math.min(2, window.devicePixelRatio || 1), cw = Math.round(W * dpr), ch = Math.round(H * dpr);
             if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; } const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H); return [g, W, H, dpr]; };
           const pose = (W, H, big, ph, face, rtl) => { const p0 = ph || 0, am = ph === undefined ? 1 : 0.88 + 0.12 * Math.sin(p0 * 0.6), pts = [], x1 = face ? (big ? 0.7 : 0.66) : 0.78;
             for (let j = 0; j <= 160; j++) { const u = j / 160; let x, y;
@@ -21700,7 +21708,7 @@
             const b = document.querySelector("[data-hm=sk]"); if (b) b.click(); setTimeout(() => lockOn(true), 380); };
           FX.openFrames = openLocker;
           const FRI = '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="13" r="9.5" fill="#0b1747" stroke="#f4cd63" stroke-width="3"/><path d="M16 6.5l1.6 4.3 4.4.3-3.4 2.8 1.1 4.3-3.7-2.4-3.7 2.4 1.1-4.3-3.4-2.8 4.4-.3z" fill="#4fd1ff"/><path d="M4 24h24l-3 5H7z" fill="#2c1a05" stroke="#f4cd63" stroke-width="1.6" stroke-linejoin="round"/></svg>';
-          const lockTabs = () => {
+          const lockTabs = (window.__FXH = window.__FXH || {}).frTabs = () => {
             const s4 = $("sk4"); if (!s4) return; const tabs = s4.querySelector(".sk4-tabs"); if (!tabs) return;
             if (!tabs.querySelector(".ssfr-tab")) {
               const b = document.createElement("button"); b.type = "button"; b.className = "sk4-tab ssfr-tab"; b.setAttribute("role", "tab"); b.dataset.ssfrtab = "1";
@@ -21709,7 +21717,7 @@
             }
             if (s4.dataset.ssfr) { const h = s4.querySelector(".ssfr-fr"); if (!h || !h.firstChild || !s4.querySelector(".ssfr-tab.ssfr-on")) lockOn(true); }
           };
-          const shopFr = () => {
+          const shopFr = (window.__FXH = window.__FXH || {}).shopFr = () => {
             const sb = $("nfsb"); if (!sb) return;
             let on = false; try { on = SH2.cat === "fr"; } catch (_) {}
             const tb = sb.querySelector('.px-tabs2 [data-c="fr"]'); if (tb && tb.textContent !== T("frames")) tb.textContent = T("frames");
@@ -21859,8 +21867,8 @@
           let seen = new WeakSet(), visK = "";
           const floorT = (root) => {
             if (!root || playing()) return;
-            for (const e of root.querySelectorAll("small,span,b,i,em,bdi,p,div,li,button,u,strong,label,output,h4,a")) {
-              if (seen.has(e) || !e.offsetParent || e.closest("canvas,svg,.x-hud,#c")) continue;
+            for (const e of root.querySelectorAll("small:not(.sk4-grid *),span:not(.sk4-grid *),b:not(.sk4-grid *),i:not(.sk4-grid *),em:not(.sk4-grid *),bdi:not(.sk4-grid *),p:not(.sk4-grid *),div:not(.sk4-grid *),li:not(.sk4-grid *),button:not(.sk4-grid *),u:not(.sk4-grid *),strong:not(.sk4-grid *),label:not(.sk4-grid *),output:not(.sk4-grid *),h4:not(.sk4-grid *),a:not(.sk4-grid *)")) {
+              if (seen.has(e) || e.closest(".sk4-grid") || !e.offsetParent || e.closest("canvas,svg,.x-hud,#c")) continue;
               if (![...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 0)) continue;
               seen.add(e); const fs = parseFloat(getComputedStyle(e).fontSize); if (fs > 1 && fs < 11) { e.style.setProperty("font-size", "11px", "important"); e.dataset.mnf = "1"; }
             }
@@ -22121,6 +22129,186 @@
               const mb = document.querySelector(`#menu .x-mode button[data-v="${md}"]`); if (mb) mb.click(); }, 0), 30);
           }, true);
         })();
+        /*ss13u-fix-v1*/
+        // ===== ss13u-fix (owner 2026-10-31, iPhone Safari landscape after phase-2): real visible viewport, static menus, lighter practice,
+        //       Auto quality steps down fast on iPhone, flat minimal in-match HUD + minimap. Layout/visual only: no economy/price/SQL/collision change. =====
+        try {
+          const FX = (window.__SSFX = window.__SSFX || {});
+          window.__SSFXST = 1; // static menus: Skins pedestal, Home hero and Royal Shop previews draw once instead of running rAF loops
+          const de = document.documentElement; de.classList.add("ssfx");
+          const tq = (f, d) => { try { const v = f(); return v === undefined || v === null ? d : v; } catch (_) { return d; } };
+          // ---------- 1) the REAL visible viewport (iPhone Safari: CSS vh = large viewport, taller than what is visible with the toolbars) ----------
+          // every `Nvh` in the page's <style> blocks becomes calc(N * var(--ss1vh)), --ss1vh = visible height / 100 (visualViewport)
+          const VRX = /(^|[^\w.\-])(\d*\.?\d+)vh\b/g;
+          const fixStyle = (st) => { if (!st || st.__ssfx) return; const t = st.textContent || ""; st.__ssfx = 1; if (t.indexOf("vh") < 0) return;
+            const n = t.replace(VRX, (m, a, b) => a + "calc(" + b + " * var(--ss1vh, 1dvh))"); if (n !== t) st.textContent = n; };
+          const fixAll = () => { for (const st of document.querySelectorAll("style")) tq(() => fixStyle(st), 0); };
+          fixAll(); document.addEventListener("DOMContentLoaded", fixAll); window.addEventListener("load", fixAll);
+          tq(() => { const mo = new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeName === "STYLE") fixStyle(n); });
+            mo.observe(document.head, { childList: true }); if (document.body) mo.observe(document.body, { childList: true }); }, 0);
+          const vv = window.visualViewport; let vk = "";
+          const setVV = () => {
+            const ih = window.innerHeight || 0, h = Math.round(vv && vv.height > 50 ? Math.min(vv.height, ih || vv.height) : ih), t = Math.max(0, Math.round(vv ? vv.offsetTop : 0)), b = Math.max(0, ih - h - t);
+            const k = h + "|" + t + "|" + b; if (k === vk || !h) return; vk = k;
+            de.style.setProperty("--ss1vh", (h / 100).toFixed(2) + "px"); de.style.setProperty("--ssvh", h + "px"); de.style.setProperty("--ssvt", t + "px"); de.style.setProperty("--ssvb", b + "px");
+          };
+          setVV(); FX.vv = setVV;
+          if (vv) { vv.addEventListener("resize", setVV); vv.addEventListener("scroll", setVV); }
+          window.addEventListener("resize", setVV); window.addEventListener("orientationchange", () => { setVV(); setTimeout(setVV, 350); setTimeout(setVV, 900); });
+          // the page itself never scrolls (iOS can shift it under the toolbar): pin it back
+          window.addEventListener("scroll", () => { if (window.scrollY || window.scrollX) tq(() => window.scrollTo(0, 0), 0); }, { passive: true });
+          // ---------- 2) Skins: one scrolling grid, canvases drawn only when they scroll into view ----------
+          // each card canvas is drawn once per (skin, size, direction) and cached; re-renders (card taps, tab switches) copy the cached bitmap
+          FX.cc = new Map();
+          FX.dc = (c) => {
+            const k = c.dataset.sk4cv, W = c.clientWidth, H = c.clientHeight; if (!k || !FX.draw) return;
+            if (!W || !H) { delete c.dataset.fxd; if (FX.io) FX.io.observe(c); return; }
+            const D = Math.min(2, window.devicePixelRatio || 1), key = k + "|" + W + "x" + H + "|" + D + "|" + (de.dir || "ltr"), hit = FX.cc.get(key);
+            c.dataset.fxd = "1";
+            if (hit) { if (c.width !== hit.width || c.height !== hit.height) { c.width = hit.width; c.height = hit.height; } const g = c.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.drawImage(hit, 0, 0); return; }
+            FX.tv(() => FX.draw(c, k, false), 0);
+            if (c.width > 0 && c.height > 0) { const o = document.createElement("canvas"); o.width = c.width; o.height = c.height; tq(() => o.getContext("2d").drawImage(c, 0, 0), 0); FX.cc.set(key, o);
+              if (FX.cc.size > 260) FX.cc.delete(FX.cc.keys().next().value); }
+          };
+          FX.lazy = (ov, draw, tv) => {
+            FX.draw = draw; FX.tv = tv; FX.ov = ov;
+            const cs = ov.querySelectorAll("canvas[data-sk4cv]");
+            if (!("IntersectionObserver" in window)) { cs.forEach((c) => FX.dc(c)); return; }
+            if (FX.io) FX.io.disconnect();
+            const root = ov.querySelector(".sk4-grid");
+            // in view: drawn before the frame is shown; just outside the view (pre-draw margin): drawn a few per task afterwards, so a tab switch paints at once
+            const rr = root ? root.getBoundingClientRect() : { top: 0, bottom: innerHeight }, q = [];
+            let qt = 0; const pump = () => { qt = 0; const t0 = performance.now(); while (q.length && performance.now() - t0 < 8) { const c = q.shift(); if (c.isConnected && !c.dataset.fxd) FX.dc(c); } if (q.length) qt = setTimeout(pump, 16); };
+            FX.io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { const c = e.target; FX.io.unobserve(c); const b = e.boundingClientRect;
+                if (b.bottom > rr.top && b.top < rr.bottom) FX.dc(c); else { q.push(c); if (!qt) qt = setTimeout(pump, 30); } } }, { root, rootMargin: "300px 0px" });
+            cs.forEach((c) => { c.dataset.fxo = "1"; FX.io.observe(c); });
+          };
+          FX.lazyAdd = (gr) => { if (!FX.io) return; for (const c of gr.querySelectorAll("canvas[data-sk4cv]:not([data-fxo])")) { c.dataset.fxo = "1"; FX.io.observe(c); } };
+          // an image (flag / texture) finished loading: drop the cache and redraw only what is drawn and near the view (no full page re-render)
+          FX.redraw = () => {
+            // flag images say which flag finished: only the cards of that flag are redrawn; anything else (snake textures) redraws every drawn card
+            const dz = FX.dirtyAll ? null : FX.dirty, cof = (k) => tq(() => window.__SSFL.code(k), null), hitK = (k) => !dz || dz.has(cof(k)); FX.dirty = null; FX.dirtyAll = 0;
+            if (!dz) FX.cc.clear(); else for (const key of [...FX.cc.keys()]) if (hitK(key.split("|")[0])) FX.cc.delete(key);
+            const ov = FX.ov; if (!ov || !document.body.classList.contains("sk4-on") || !FX.draw) return;
+            const gr = ov.querySelector(".sk4-grid"), rr = gr ? gr.getBoundingClientRect() : null;
+            for (const c of ov.querySelectorAll("canvas[data-sk4cv][data-fxd]")) { if (!hitK(c.dataset.sk4cv)) continue;
+              const r = c.getBoundingClientRect();
+              if (rr && (r.bottom < rr.top - 300 || r.top > rr.bottom + 300)) { delete c.dataset.fxd; if (FX.io) FX.io.observe(c); continue; }
+              FX.dc(c);
+            }
+            const st = window.__SK4 && __SK4.st, p = document.getElementById("sk4pvc"); if (p && st && st.sel && hitK(st.sel)) FX.tv(() => FX.draw(p, st.sel, true, FX.pph), 0);
+            const e = document.getElementById("sk4emc"); if (e) FX.tv(() => FX.draw(e, e.dataset.k, true, FX.pph), 0);
+            const sh = ov.querySelector(".sk4-shade"), sc = document.getElementById("sk4shc"); if (sh && sc && sh.dataset.k && hitK(sh.dataset.k)) FX.tv(() => FX.draw(sc, sh.dataset.k, false), 0);
+          };
+          // the living menu background (24 fps canvas + parallax) is hidden behind the Skins window: pause it while Skins is open
+          tq(() => { let pz = 0; setInterval(() => { const so = window.SSoul; if (!so || !so.pause) return; const on = document.body.classList.contains("sk4-on") && tq(() => state !== "play", false);
+            if (on && !pz) { pz = 1; tq(so.pause, 0); } else if (!on && pz) { pz = 0; if (tq(() => state !== "play", false)) tq(so.resume, 0); } }, 300); }, 0);
+          // ---------- 3) practice: the old opponent count (~30 snakes in all, every Quality); online rooms keep the server's 130 ----------
+          tq(() => {
+            const AR = window.__ARN13; if (!AR) return;
+            AR.N = 30; AR.cap = { l: 30, m: 30, h: 30 }; AR.W = 12000; // 30 snakes in a 12000 arena (density close to the old 9000 practice)
+            MAPS[0].sz = AR.W / 3000;
+            if (mapI === 0 && !(typeof RTX === "object" && RTX && RTX.on) && state !== "play" && A !== AR.W) setMap(0);
+          }, 0);
+          // ---------- 4) Auto quality: iPhone starts at 2x canvas and drops to Low (1.5x) after ~1.5 s under 45 fps ----------
+          tq(() => {
+            const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+            const SK = "ss-fxlow"; FX.low = tq(() => sessionStorage.getItem(SK) === "1", false);
+            const d0 = window.__CLNDPR;
+            if (typeof d0 === "function" && !d0.ssfx) {
+              const f = function () { const v = d0.apply(this, arguments), q = tq(() => window.__CLNQ(), "a"); if (q !== "a") return v; return Math.min(v, FX.low ? 1.5 : IOS ? 2 : 3); };
+              f.ssfx = 1; window.__CLNDPR = f;
+            }
+            let raf = 0, sm = [], lt = 0, cd = 0;
+            const tick = (t) => {
+              raf = 0; if (state !== "play" || document.hidden || FX.low) { sm = []; lt = 0; return; }
+              if (lt) { const d = t - lt; if (d < 250) sm.push(d); } lt = t;
+              if (cd > 0) { cd--; sm = []; } else if (sm.length >= 45) {
+                const a = sm.slice().sort((x, y) => x - y), med = a[a.length >> 1];
+                if (med > 22 && tq(() => window.__CLNQ(), "a") === "a") { FX.low = true; tq(() => sessionStorage.setItem(SK, "1"), 0); tq(() => resize(), 0); }
+                sm = [];
+              }
+              raf = requestAnimationFrame(tick);
+            };
+            setInterval(() => { if (!raf && state === "play" && !FX.low && !document.hidden) { cd = 60; lt = 0; sm = []; raf = requestAnimationFrame(tick); } }, 1000);
+            if (IOS) tq(() => resize(), 0);
+          }, 0);
+          // ---------- 5) HUD: stage label only once a stage is reached ----------
+          tq(() => {
+            const n = document.getElementById("jevn"), ev = document.querySelector("#game .x-evo");
+            const up = () => { if (ev) ev.dataset.fxst = (n && n.textContent.trim()) || "0"; };
+            if (n) { new MutationObserver(up).observe(n, { childList: true, characterData: true, subtree: true }); up(); }
+          }, 0);
+          // ---------- 6) minimap: clean circle, thin gold rim, simple dots (same slot logic, ~8 Hz into an offscreen canvas) ----------
+          tq(() => {
+            if (typeof MM13 !== "function") return;
+            const MC = document.createElement("canvas"), mg = MC.getContext("2d"); let mT = 0, mKey = "";
+            const f = (c0, c1, c2, c3) => {
+              ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+              const m = Math.round(clamp(Math.min(W * 0.1, H * 0.2), 62, 82));
+              const SA = window.P10SA || {}, bL = document.body.classList.contains("x-l"), jy = S.ctrl === "joy";
+              const x0 = bL !== jy ? W - m - 12 - (SA.r || 0) : (SA.l || 0) + 12, y0 = H - m - 12 - (SA.b || 0) - (jy ? 96 : 0);
+              const P4 = window.__B4MM ? window.__B4MM(m, x0, y0) : [x0, y0], x = P4[0], y = P4[1];
+              if (m !== f.m) { f.m = m; de.style.setProperty("--mm13", m + "px"); }
+              const key = m + "|" + dpr + "|" + A;
+              if ((mT -= fdt) <= 0 || key !== mKey) {
+                mT = 0.12; mKey = key;
+                const pm = Math.round((m + 2) * dpr); if (MC.width !== pm) MC.width = MC.height = pm;
+                const g = mg; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, pm, pm); g.setTransform(dpr, 0, 0, dpr, dpr, dpr);
+                const r = m / 2, pad = Math.round(m * 0.15), inner = m - pad * 2, k = inner / A;
+                g.beginPath(); g.arc(r, r, r, 0, 6.2832); g.fillStyle = "rgba(7,15,46,.62)"; g.fill();
+                g.save(); g.beginPath(); g.arc(r, r, r - 1, 0, 6.2832); g.clip();
+                g.strokeStyle = "rgba(255,255,255,.16)"; g.lineWidth = 1; g.strokeRect(pad + 0.5, pad + 0.5, inner - 1, inner - 1);
+                g.beginPath(); [c0, c1, c3, c2].forEach((c, i) => g[i ? "lineTo" : "moveTo"](pad + clamp(c.x, -A * 0.1, A * 1.1) * k, pad + clamp(c.y, -A * 0.1, A * 1.1) * k)); g.closePath();
+                g.fillStyle = "rgba(255,255,255,.08)"; g.fill();
+                const live = snakes.filter((s) => s.alive && !s.ad && s.seg && s.seg[0]);
+                const top = live.slice().sort((a, b) => b.len - a.len).slice(0, 3);
+                const focus = player && player.alive ? player : tq(() => (TMS.spec && state === "play" ? TMS.watch() : null), null);
+                const team = tq(() => MD === "t", false);
+                g.fillStyle = "rgba(214,224,255,.62)"; g.beginPath();
+                for (const s of live) { if (s === focus || top.includes(s) || (team && s.tm !== undefined)) continue; const h = s.seg[0]; g.rect(pad + h.x * k - 1, pad + h.y * k - 1, 2, 2); }
+                g.fill();
+                if (team) for (const s of live) { if (s === focus || s.tm === undefined) continue; const h = s.seg[0]; g.fillStyle = tq(() => TC[s.tm][2], "#7fd8ff"); g.beginPath(); g.arc(pad + h.x * k, pad + h.y * k, s.tm === 0 ? 2.2 : 1.5, 0, 6.2832); g.fill(); }
+                for (const s of live) if (s.boss) { const h = s.seg[0]; g.fillStyle = "#ff6b6b"; g.beginPath(); g.arc(pad + h.x * k, pad + h.y * k, 2.6, 0, 6.2832); g.fill(); }
+                g.fillStyle = "#f3cf75"; top.forEach((s) => { if (s === focus) return; const h = s.seg[0]; g.beginPath(); g.arc(pad + h.x * k, pad + h.y * k, 2.3, 0, 6.2832); g.fill(); });
+                if (focus) { const h = focus.seg[0], a = focus.a || 0; g.save(); g.translate(pad + h.x * k, pad + h.y * k); g.rotate(a); g.beginPath(); g.moveTo(5, 0); g.lineTo(-3.2, 3.2); g.lineTo(-1.6, 0); g.lineTo(-3.2, -3.2); g.closePath(); g.fillStyle = focus === player ? "#ffffff" : "#9feaff"; g.fill(); g.restore(); }
+                g.restore();
+                g.beginPath(); g.arc(r, r, r - 0.5, 0, 6.2832); g.strokeStyle = "rgba(240,202,120,.7)"; g.lineWidth = 1; g.stroke();
+              }
+              ctx.globalAlpha = 1; ctx.drawImage(MC, x - 1, y - 1, m + 2, m + 2);
+            };
+            f.ssfx = 1; MM13 = f;
+          }, 0);
+          // ---------- 7) menus re-render: run the post-render patchers before the frame is painted (no old-shop flash / late icons) ----------
+          tq(() => {
+            const run = () => { const H = window.__FXH || {}; for (const k of ["shopFix", "putCT", "shopFr", "dsScan"]) if (typeof H[k] === "function") tq(H[k], 0); if (window.__MN && __MN.tick) tq(__MN.tick, 0); };
+            FX.runFix = run; let busy = 0;
+            const mo = new MutationObserver(() => { if (busy || tq(() => state === "play", false)) return; busy = 1; try { run(); } finally { busy = 0; mo.takeRecords(); } });
+            const mo4 = new MutationObserver(() => { const H = window.__FXH || {}; if (typeof H.frTabs === "function") tq(H.frTabs, 0); if (FX.avFill) tq(FX.avFill, 0); mo4.takeRecords(); });
+            const watch = () => { const w4 = document.querySelector("#sk4 .sk4-win"); if (w4 && !w4.__fxmo) { w4.__fxmo = 1; mo4.observe(w4, { childList: true }); }
+              for (const ov of document.querySelectorAll(".x-ov")) { if (ov.__fxmo || ov.id === "menu") continue; ov.__fxmo = 1; mo.observe(ov, { attributes: true, attributeFilter: ["class"] }); const bx = ov.querySelector(".x-box"); if (bx) mo.observe(bx, { childList: true }); } };
+            watch(); setInterval(watch, 700); document.addEventListener("click", () => setTimeout(watch, 0), true); document.addEventListener("DOMContentLoaded", watch);
+            // balances (+): drawn by CSS on the pill itself (no injected/duplicated "+"); a tap on a pill without its own + opens the gem bank
+            document.addEventListener("click", (e) => { const pl = e.target && e.target.closest && e.target.closest(".p10-hd .p10-pl"); if (!pl || pl.querySelector(".p10-plus") || tq(() => state === "play", false)) return;
+              e.preventDefault(); e.stopPropagation(); const ov = pl.closest(".x-ov"); tq(() => ON.openGems && ON.openGems(ov && ov.id ? ov.id : "menu"), 0); }, true);
+          }, 0);
+          // ---------- 8) Skins > Frames: the player's avatar inside every ring (same picture the Royal Shop shows) ----------
+          tq(() => {
+            const src = () => { const im = document.querySelector("#b13hpc img"); if (im) { const u = im.currentSrc || im.src || im.dataset.src; if (u) return u; }
+              const b = document.querySelector("#b13hpc [style*=background-image], #nfsb .ssfr-avi[style*=background-image]"); if (b) { const m = /url\(["']?([^"')]+)/.exec(b.getAttribute("style") || ""); if (m) return m[1]; }
+              const a = document.querySelector('img[src*="/avatars/"]'); return a ? a.src : ""; };
+            const fill = () => { const s4 = document.getElementById("sk4"); if (!s4 || s4.classList.contains("x-hide")) return; const em = s4.querySelectorAll(".ssfr-avi:not([style*=background-image])"); if (!em.length) return; const u = src(); if (!u) return;
+              for (const e of em) { e.style.backgroundImage = `url("${u}")`; e.textContent = ""; } };
+            FX.avFill = fill;
+            document.addEventListener("click", (e) => { if (e.target && e.target.closest && e.target.closest("#sk4")) { requestAnimationFrame(fill); setTimeout(fill, 120); } }, true);
+          }, 0);
+          // ---------- 9) Battery saver OFF once on this device (owner: 60 fps); the switch in Settings still works ----------
+          tq(() => { const K = "ss-fxbsv1"; const off = () => { tq(() => { if (localStorage.getItem(K) === "2") return; if (window.__ssBsv && window.__ssBsvSet) window.__ssBsvSet(false); }, 0); };
+            if (tq(() => localStorage.getItem(K), null) !== "2") { off(); setTimeout(off, 8000); setTimeout(() => tq(() => localStorage.setItem(K, "2"), 0), 8500); } }, 0);
+          // ---------- 10) in a match: toasts at the top edge (not over the play area) ----------
+          setInterval(() => { const p = tq(() => state === "play", false); if (de.classList.contains("ssfx-play") !== p) de.classList.toggle("ssfx-play", p); }, 400);
+          FX.on = 1;
+        } catch (e) { try { console.warn("ss13u-fix", e); } catch (_) {} }
         requestAnimationFrame(loop);
       })();
     </script>
@@ -30038,6 +30226,195 @@ html[dir="rtl"] #sk4 .ssfl-ico { transform: perspective(70px) rotateY(9deg); tra
 html[dir=rtl] .mn-sc.on::after { right: auto; left: 5px; }
 /* Locker detail lines: 11px floor (badges, notes, tags, tab subtitles) */
 #sk4.sk4-ov .sk4-win small, #sk4.sk4-ov .sk4-rb, #sk4.sk4-ov .sk4-note, #sk4.sk4-ov .sk4-tag, #sk4.sk4-ov .sk4-chip .n, #sk4.sk4-ov .sk4-sub { font-size: 11px !important; }
+</style>
+<style id="ss13u-fix">
+/* ss13u-fix (2026-10-31): real visible viewport + scrolling menus, decluttered Skins, flat minimal in-match HUD, no blur / heavy shadows / looping menu animations */
+html.ssfx { --fx-bg: rgba(7, 15, 46, .62); --fx-bd: rgba(240, 202, 120, .55); --fx-r: 12px; --fx-tx: #eef2ff; --fx-dim: #aab6df; --fx-gold: #f3cf75;
+  --fx-top: max(var(--x-st, 12px), var(--ssvt, 0px)); --fx-bot: max(var(--x-sb, 12px), var(--ssvb, 0px)); }
+
+/* ================= menus: lighter (no blur, no heavy shadows, no looping animations) ================= */
+html.ssfx #sk4, html.ssfx #sk4 *, html.ssfx .x-ov, html.ssfx .x-ov *, html.ssfx #game * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html.ssfx #sk4 .sk4-win, html.ssfx #sk4 .sk4-card, html.ssfx #sk4 .sk4-pv, html.ssfx #sk4 .sk4-card.sel, html.ssfx #sk4 .sk4-pv.eq, html.ssfx #sk4 .sk4-card.pm,
+html.ssfx .p10b > .p10-hd, html.ssfx #nfsb .px-card, html.ssfx #nfpb .px-rw, html.ssfx #mnpv { box-shadow: none !important; }
+html.ssfx #sk4 .sk4-rays, html.ssfx #sk4 .sk4-stage, html.ssfx #sk4 .sk4-card, html.ssfx #sk4 .sk4-card.pm::after, html.ssfx #mnpv *,
+html.ssfx .px-pv, html.ssfx .px-cta, html.ssfx .px-shn, html.ssfx .px-rw, html.ssfx .px-ph, html.ssfx [class*="px-"]::after, html.ssfx .ssfr-frw { animation: none !important; }
+html.ssfx #sk4 .sk4-grid.sk4-in > .sk4-card { animation: sk4pop .22s ease-out both !important; animation-delay: 0s !important; }
+html.ssfx #sk4 .sk4-grid.sk4-in > .sk4-card:nth-child(n+9) { animation: none !important; }
+html.ssfx body.sk4-on #b13h *, html.ssfx body.sk4-on #menu * { animation-play-state: paused !important; }
+html.ssfx .p10b > .p10-hd { background: linear-gradient(180deg, #1c3591, #0f2063) !important; border-bottom: 1px solid rgba(240, 202, 120, .6) !important; }
+html.ssfx .p10b > .p10-hd .p10-ht h2 { text-shadow: 0 1px 0 rgba(0, 0, 0, .55) !important; }
+
+/* ================= Skins / Locker: fits the visible viewport, grid scrolls, one action per card ================= */
+html.ssfx #sk4.sk4-ov { touch-action: pan-y; }
+html.ssfx #sk4 .sk4-win { height: calc(var(--ssvh, 100dvh) - 8px) !important; max-height: 900px; min-height: 0; overflow: hidden; gap: 6px !important; padding-top: 6px !important; padding-bottom: 6px !important; }
+html.ssfx #sk4 .sk4-hd { height: 36px !important; flex: none; }
+html.ssfx #sk4 .sk4-lock { display: none !important; }                                  /* "Private" badge */
+html.ssfx #sk4 .sk4-tab .tx small, html.ssfx #sk4 .sk4-tab .bell { display: none !important; }   /* tab subtitles ("10 free") */
+html.ssfx #sk4 .sk4-tab:not(.on) .tx { display: none !important; }
+html.ssfx #sk4 .sk4-tab.on { min-width: 128px !important; }
+html.ssfx #sk4 .sk4-tab.on .tx b { font-size: 14px !important; }
+html.ssfx #sk4 .sk4-tabs { height: 42px !important; flex: none; }
+html.ssfx #sk4 .sk4-bd { flex: 1 1 auto; min-height: 0; gap: 10px !important; }
+/* pedestal: name + one button (rarity chip, equipped badge, subtitle and note removed; the button says Equipped) */
+html.ssfx #sk4 .sk4-pv .sk4-rb.top, html.ssfx #sk4 .sk4-pv .sk4-eqb, html.ssfx #sk4 .sk4-pv .sk4-sub, html.ssfx #sk4 .sk4-pv .sk4-note, html.ssfx #sk4 .sk4-pv .sk4-opt small { display: none !important; }
+html.ssfx #sk4 .sk4-pv { border-width: 1px !important; min-height: 0; padding-bottom: 8px !important; }
+html.ssfx #sk4 .sk4-pv .sk4-big { min-height: 40px !important; flex: none; }
+/* filter chips: one slim horizontal row above the grid (was a left rail); a lone "Free" chip and the pager are hidden */
+html.ssfx #sk4 .sk4-gw { display: flex !important; flex-direction: column !important; gap: 8px !important; min-height: 0; }
+html.ssfx #sk4 .sk4-sort { display: flex !important; flex: none; height: 32px !important; align-items: center; gap: 6px; }
+html.ssfx #sk4 .sk4-chips { flex: 1 1 auto !important; display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 6px !important; overflow-x: auto !important; overflow-y: hidden !important;
+  align-self: auto !important; padding: 0 2px !important; background: none !important; border: 0 !important; border-radius: 0 !important; touch-action: pan-x; -webkit-overflow-scrolling: touch; -webkit-mask: none !important; mask: none !important; scrollbar-width: none; }
+html.ssfx #sk4 .sk4-chips::-webkit-scrollbar { display: none; }
+html.ssfx #sk4 .sk4-chips > * { width: auto !important; min-height: 32px !important; height: 32px !important; flex: none !important; white-space: nowrap !important; font-size: 12px !important; padding: 0 12px !important; box-shadow: none !important; }
+html.ssfx #sk4 .sk4-chips > button.sk4-chip:only-of-type { display: none !important; }
+html.ssfx #sk4 .sk4-chip.sk4-ph { font-size: 0 !important; width: 44px !important; padding: 0 !important; justify-content: center; margin-inline-start: auto; }
+html.ssfx #sk4 .sk4-chip.sk4-ph > span[aria-hidden] { font-size: 17px; }
+html.ssfx #sk4 .sk4-pg { display: none !important; }
+/* the grid: every item on one page, vertical scroll, larger gaps */
+html.ssfx #sk4 .sk4-grid { flex: 1 1 auto; min-height: 0 !important; grid-template-rows: none !important; grid-auto-rows: clamp(112px, calc(var(--ssvh, 100dvh) * .38), 150px) !important;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)) !important; gap: 10px !important; align-content: start !important;
+  overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; padding: 1px 2px 10px !important; scrollbar-width: thin; }
+html.ssfx #sk4 .sk4-grid > .sk4-card { touch-action: pan-y; }
+/* cards: rarity only as a thin border colour; name + one tag */
+html.ssfx #sk4 .sk4-card { --rc: var(--sk4r0); border: 1px solid color-mix(in srgb, var(--rc) 75%, transparent) !important; padding: 6px 7px 7px !important; gap: 2px; background: linear-gradient(180deg, rgba(30, 48, 108, .72), rgba(11, 19, 54, .92)) !important; }
+html.ssfx #sk4 .sk4-card.r1 { --rc: var(--sk4r1); } html.ssfx #sk4 .sk4-card.r2 { --rc: var(--sk4r2); } html.ssfx #sk4 .sk4-card.r3 { --rc: var(--sk4r3); } html.ssfx #sk4 .sk4-card.r4 { --rc: var(--sk4r4); }
+html.ssfx #sk4 .sk4-card.sel { border-color: var(--g, #f0c45a) !important; outline: 1px solid var(--g, #f0c45a); outline-offset: -2px; }
+html.ssfx #sk4 .sk4-card .top { height: 0 !important; position: static; }
+html.ssfx #sk4 .sk4-card .top .sk4-rb { display: none !important; }
+html.ssfx #sk4 .sk4-card .top .ck { position: absolute; top: 5px; inset-inline-end: 6px; z-index: 2; }
+html.ssfx #sk4 .sk4-card .nm { font-size: 12.5px !important; }
+html.ssfx #sk4 .sk4-card .sk4-tag { min-height: 26px !important; font-size: 11.5px !important; margin-top: 4px !important; }
+html.ssfx #sk4 .sk4-card .sk4-tag small { display: none !important; }
+html.ssfx #sk4 .sk4-card.eq .snr-fi { inset-inline-end: 30px; }
+/* Premium "soon" / empty pages and Frames: scroll inside the window when short */
+html.ssfx #sk4 .sk4-empty { min-height: 0 !important; overflow-y: auto !important; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
+html.ssfx #sk4[data-ssfr] .ssfr-fr { flex: 1 1 auto; min-height: 0 !important; }
+html.ssfx #sk4 .ssfr-grid { touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; gap: 10px !important; }
+html.ssfx #sk4 .ssfr-t small { font-size: 11px !important; }
+html.ssfx #sk4 .sk4-shade { touch-action: pan-y; }
+html.ssfx #sk4 .sk4-sheet { max-height: calc(var(--ssvh, 100dvh) - 16px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+
+/* ================= other overlays (Royal Shop, Pass, Settings, Frames shop): scroll inside the visible viewport ================= */
+html.ssfx .x-ov { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+html.ssfx .x-ov .ssfr-grid, html.ssfx .x-ov .k-sbody, html.ssfx .x-ov .px-grid { touch-action: pan-y; }
+/* fewer things per header: info chips stay, decorative subtitles go */
+html.ssfx #nfsb .px-card .px-r { display: none !important; }
+
+/* ================= in-match HUD: flat translucent lapis, 1px gold accent, one radius ================= */
+html.ssfx.ssfx body #game .x-tl { top: calc(var(--fx-top) + 6px) !important; left: calc(var(--x-sl, 12px) + 6px) !important; scale: 1 !important; transform: none !important; gap: 5px !important; opacity: 1 !important; }
+html.ssfx.ssfx body #game .x-tl > .x-hud.x-stat { height: 34px !important; min-height: 0 !important; width: auto !important; padding: 0 12px 0 2px !important; margin: 0 !important; gap: 0 !important;
+  display: flex !important; align-items: center !important; background: var(--fx-bg) !important; border: 1px solid var(--fx-bd) !important; border-radius: 999px !important; box-shadow: none !important; }
+html.ssfx.ssfx body #game .x-tl > .x-stat::before, html.ssfx.ssfx body #game .x-tl > .x-stat::after { display: none !important; }
+html.ssfx.ssfx body #game #exitb, html.ssfx.ssfx body #game #mute { width: 36px !important; height: 44px !important; margin: -5px 0 !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important;
+  display: grid !important; place-items: center !important; position: relative !important; inset: auto !important; }
+html.ssfx.ssfx body #game #exitb::before, html.ssfx.ssfx body #game #exitb::after, html.ssfx.ssfx body #game #mute::before, html.ssfx.ssfx body #game #mute::after { display: none !important; }
+html.ssfx.ssfx body #game #exitb svg, html.ssfx.ssfx body #game #mute svg { width: 17px !important; height: 17px !important; stroke: #e9eefc !important; stroke-width: 2.2 !important; fill: none !important; }
+html.ssfx.ssfx body #game .x-stat #len, html.ssfx.ssfx body #game .x-stat #kc { display: inline-flex !important; align-items: baseline !important; gap: 5px !important; width: auto !important; min-width: 0 !important; height: auto !important; padding: 0 0 0 10px !important; margin: 0 0 0 8px !important;
+  background: none !important; border: 0 !important; border-inline-start: 1px solid rgba(240, 202, 120, .32) !important; border-radius: 0 !important; box-shadow: none !important;
+  font: 800 15px/1 var(--sans, system-ui), sans-serif !important; color: #fff !important; text-shadow: none !important; font-variant-numeric: tabular-nums; }
+html.ssfx.ssfx body #game .x-stat #len::before, html.ssfx.ssfx body #game .x-stat #kc::before { content: attr(data-l) !important; position: static !important; display: inline !important; inset: auto !important; transform: none !important; width: auto !important; height: auto !important;
+  background: none !important; border: 0 !important; padding: 0 !important; margin: 0 !important; font: 700 10.5px/1 var(--sans, system-ui), sans-serif !important; color: var(--fx-dim) !important; letter-spacing: .04em; text-transform: uppercase; text-shadow: none !important; }
+html.ssfx.ssfx body #game .x-stat #len::after, html.ssfx.ssfx body #game .x-stat #kc::after { display: none !important; }
+html.ssfx.ssfx body #game #nq13:not(.x-hide) { margin-inline-start: 8px !important; background: none !important; border: 0 !important; box-shadow: none !important; }
+/* stage: a tiny progress bar under the pill; the "Stage N" label appears from stage 1 */
+html.ssfx.ssfx body #game .x-tl > .x-evo:not(.x-hide) { display: flex !important; align-items: center !important; gap: 6px !important; height: 14px !important; min-height: 0 !important; width: auto !important; max-width: none !important;
+  padding: 0 0 0 12px !important; margin: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+html.ssfx.ssfx body #game .x-evo::before, html.ssfx.ssfx body #game .x-evo::after { display: none !important; }
+html.ssfx.ssfx body #game .x-evo .j-eve, html.ssfx.ssfx body #game .x-evo #evc, html.ssfx.ssfx body #game .x-evo #evn { display: none !important; }
+html.ssfx.ssfx body #game .x-evo .x-evt { display: block !important; order: 1; position: relative !important; width: 70px !important; height: 4px !important; margin: 0 !important; padding: 0 !important; border-radius: 2px !important;
+  background: rgba(255, 255, 255, .18) !important; border: 0 !important; box-shadow: none !important; overflow: hidden !important; }
+html.ssfx.ssfx body #game .x-evo .x-evt #evb { display: block !important; height: 100% !important; background: var(--fx-gold) !important; border-radius: 2px !important; box-shadow: none !important; }
+html.ssfx.ssfx body #game .x-evo .j-evt { order: 2; display: flex !important; flex-direction: row !important; align-items: baseline !important; gap: 4px !important; background: none !important; padding: 0 !important; }
+html.ssfx.ssfx body #game .x-evo .j-evt small, html.ssfx.ssfx body #game .x-evo .j-evt em { font: 700 10.5px/1 var(--sans, system-ui), sans-serif !important; font-style: normal !important; color: var(--fx-dim) !important; text-shadow: none !important; letter-spacing: 0 !important; text-transform: none !important; }
+html.ssfx.ssfx body #game .x-evo[data-fxst="0"] .j-evt small { display: none !important; }
+html.ssfx.ssfx body #game .x-evo:not([data-fxst="0"]) .j-evt small { color: var(--fx-gold) !important; }
+/* leaderboard: compact translucent list, your row highlighted */
+html.ssfx.ssfx body #game #lbx.x-lb { top: calc(var(--fx-top) + 6px) !important; width: 148px !important; min-width: 0 !important; padding: 5px 7px 6px !important; scale: 1 !important;
+  background: rgba(7, 15, 46, .5) !important; border: 1px solid rgba(240, 202, 120, .42) !important; border-radius: var(--fx-r) !important; box-shadow: none !important; }
+html.ssfx.ssfx body #game #lbx::before, html.ssfx.ssfx body #game #lbx::after, html.ssfx.ssfx body #game #lbx h4::before, html.ssfx.ssfx body #game #lbx h4::after { display: none !important; }
+html.ssfx.ssfx body #game #lbx h4 { display: flex !important; justify-content: space-between !important; align-items: center !important; height: auto !important; margin: 0 0 3px !important; padding: 0 3px !important; background: none !important; border: 0 !important; box-shadow: none !important;
+  font: 800 10.5px/1.2 var(--sans, system-ui), sans-serif !important; color: var(--fx-gold) !important; letter-spacing: .08em; text-transform: uppercase; text-shadow: none !important; }
+html.ssfx.ssfx body #game #lbx h4 em { font: 700 10.5px/1 var(--sans, system-ui), sans-serif !important; font-style: normal !important; color: var(--fx-dim) !important; letter-spacing: 0; }
+html.ssfx.ssfx body #game #lbx ol { margin: 0 !important; padding: 0 !important; gap: 1px !important; display: flex !important; flex-direction: column !important; }
+html.ssfx.ssfx body #game #lbx ol li { display: flex !important; align-items: center !important; gap: 6px !important; height: 18px !important; min-height: 0 !important; padding: 0 4px !important; margin: 0 !important;
+  background: none !important; border: 0 !important; border-radius: 6px !important; box-shadow: none !important; font: 700 12px/18px var(--sans, system-ui), sans-serif !important; color: #e8edff !important; text-shadow: none !important; }
+html.ssfx.ssfx body #game #lbx ol li::before, html.ssfx.ssfx body #game #lbx ol li::after { display: none !important; }
+html.ssfx.ssfx body #game #lbx ol li i.b13f-rk { width: auto !important; min-width: 12px !important; height: auto !important; padding: 0 !important; margin: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important;
+  font: 700 10.5px/1 var(--sans, system-ui), sans-serif !important; font-style: normal !important; color: var(--fx-dim) !important; text-align: center; }
+html.ssfx.ssfx body #game #lbx ol li i.b13f-rk.r1 { color: var(--fx-gold) !important; }
+html.ssfx.ssfx body #game #lbx ol li em { flex: 1 1 auto !important; min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; font-style: normal !important; color: inherit !important; }
+html.ssfx.ssfx body #game #lbx ol li span { color: var(--fx-dim) !important; font-variant-numeric: tabular-nums; }
+html.ssfx.ssfx body #game #lbx ol li.me { background: rgba(240, 202, 120, .16) !important; color: var(--fx-gold) !important; margin-top: 1px !important; }
+html.ssfx.ssfx body #game #lbx ol li.me span, html.ssfx.ssfx body #game #lbx ol li.me i.b13f-rk { color: var(--fx-gold) !important; }
+html.ssfx.ssfx body #game #lbx ol li.sep { height: 9px !important; justify-content: center !important; font-size: 10px !important; line-height: 9px !important; color: var(--fx-dim) !important; }
+/* boost: clean circle, bolt icon, thin charge ring */
+html.ssfx.ssfx body #game #boost.x-boost { width: 60px !important; height: 60px !important; padding: 0 !important; border-radius: 50% !important; font-size: 0 !important; color: transparent !important; text-shadow: none !important; line-height: 0 !important;
+  background: rgba(7, 15, 46, .6) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13.2 2 4.5 13.6h6.1L9.7 22l8.8-11.8h-6.1z' fill='%23f3cf75'/%3E%3C/svg%3E") center / 26px 26px no-repeat !important;
+  border: 1px solid var(--fx-bd) !important; box-shadow: none !important; outline: none !important; opacity: 1 !important; transform: none !important; bottom: calc(var(--fx-bot) + 14px) !important; }
+html.ssfx.ssfx body #game #boost.x-boost::before { content: "" !important; display: block !important; position: absolute !important; inset: -4px !important; border-radius: 50% !important; opacity: 1 !important;
+  background: conic-gradient(var(--fx-gold) var(--bf, 100%), rgba(255, 255, 255, .14) 0) !important;
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)) !important; mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)) !important; box-shadow: none !important; }
+html.ssfx.ssfx body #game #boost.x-boost::after { display: none !important; }
+html.ssfx.ssfx body #game #boost.x-boost.on { background-color: rgba(240, 202, 120, .3) !important; border-color: var(--fx-gold) !important; }
+/* joystick: thin ring + small knob, faint until touched */
+html.ssfx.ssfx body #game #joy.x-joy { width: 104px !important; height: 104px !important; background: rgba(7, 15, 46, .16) !important; border: 1.5px solid rgba(240, 214, 150, .5) !important; box-shadow: none !important; opacity: .42 !important; }
+html.ssfx.ssfx body #game #joy.x-joy::before, html.ssfx.ssfx body #game #joy.x-joy::after { display: none !important; }
+html.ssfx.ssfx body #game #joy.x-joy.x-on { opacity: .85 !important; }
+html.ssfx.ssfx body #game #joy .x-knob { width: 34px !important; height: 34px !important; margin: -17px 0 0 -17px !important; background: rgba(243, 207, 117, .9) !important; border: 0 !important; box-shadow: none !important; }
+/* turn buttons + centre counters: same flat look */
+html.ssfx.ssfx body #game #turn button { background: var(--fx-bg) !important; border: 1px solid var(--fx-bd) !important; box-shadow: none !important; }
+html.ssfx.ssfx body #game #lbx h4 span, html.ssfx.ssfx body #game #lbx h4 em { -webkit-text-fill-color: currentColor !important; text-shadow: none !important; }
+html.ssfx.ssfx body #game #lbx h4 span { color: var(--fx-gold) !important; font: 800 10.5px/1.2 var(--sans, system-ui), sans-serif !important; letter-spacing: .08em !important; }
+html.ssfx.ssfx body #game #lbx h4 em { color: var(--fx-dim) !important; }
+
+/* ================= video bugs (owner recording 2026-10-30 23:33) ================= */
+html.ssfx, html.ssfx body { overscroll-behavior: none !important; }
+/* balances: one "+" drawn on the pill itself (never injected twice, never late) */
+html.ssfx .p10-hd .p10-pl .mn-plus { display: none !important; }
+html.ssfx .p10-hd .p10-pl:not(:has(.p10-plus)) { position: relative; padding-inline-end: 27px !important; cursor: pointer; }
+html.ssfx .p10-hd .p10-pl:not(:has(.p10-plus))::after { content: "+"; position: absolute; inset-inline-end: 3px; top: 50%; margin-top: -10.5px; width: 21px; height: 21px; border-radius: 50%;
+  display: grid; place-items: center; font: 900 16px/21px system-ui, sans-serif; text-align: center; color: #fff; background: linear-gradient(180deg, #7cf07f, #1e9a2a); border: 1px solid rgba(255, 255, 255, .5); box-sizing: border-box; }
+/* fixed headers / tabs / rails: only the panel body scrolls */
+html.ssfx .x-ov { overflow-x: hidden !important; }
+html.ssfx .p10b > .p10-hd { position: sticky !important; top: 0 !important; z-index: 20 !important; }
+html.ssfx #kset .mn-tabs { position: sticky; top: 47px; z-index: 19; background: #0f2063; margin-top: 0 !important; padding-top: 6px; }
+html.ssfx #kset .k-sbody > #mnpv { position: sticky !important; top: 108px !important; max-height: calc(var(--ssvh, 100dvh) - 116px); overflow: hidden; }
+html.ssfx #kset #mnpv svg.mn-ar { height: clamp(80px, calc(var(--ssvh, 100dvh) - 230px), 250px) !important; }
+html.ssfx #nfsb:has(> .px-tabs2) > .px-tabs2 { top: 54px !important; z-index: 15; }
+html.ssfx #nfsb, html.ssfx #nfsb > * { min-width: 0; }
+html.ssfx #nfsb .px-grid { overflow-x: clip; }
+/* Skins tabs: fixed equal widths (label only on the active one, in the same slot), no reflow when switching or when the Frames tab arrives */
+html.ssfx #sk4 .sk4-tabs { display: flex !important; gap: 6px !important; overflow-x: auto !important; overflow-y: hidden; scrollbar-width: none; }
+html.ssfx #sk4 .sk4-tabs > .sk4-tab, html.ssfx #sk4 .sk4-tabs > .sk4-tab.on { flex: 0 0 auto !important; width: clamp(64px, calc((100% - 42px) / 8), 112px) !important; min-width: 0 !important; max-width: none !important;
+  justify-content: center !important; padding: 0 6px !important; gap: 5px !important; }
+html.ssfx #sk4 .sk4-tab.on .tx { display: block !important; min-width: 0; overflow: hidden; }
+html.ssfx #sk4 .sk4-tab.on .tx b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px !important; }
+/* no size pulsing on cards / tabs (press "juice" scale, staggered pop-ins) */
+html.ssfx #sk4 .sk4-card, html.ssfx #sk4 .sk4-tab, html.ssfx #sk4 .ssfr-t, html.ssfx #nfsb .px-card, html.ssfx #ongems .on-pack { scale: 1 !important; animation: none !important; transition: none !important; }
+html.ssfx #sk4 .sk4-grid.sk4-in > .sk4-card { animation: none !important; }
+/* Coins & Gems: readable price buttons */
+html.ssfx #ongems .on-price { color: #fff !important; -webkit-text-fill-color: #fff !important; text-shadow: 0 1px 1px rgba(0, 0, 0, .6) !important; font-weight: 900 !important; background: linear-gradient(180deg, #2fbf45, #1a8a2c) !important; }
+/* lobby: the Teams Public/Private row keeps its space (PLAY never jumps) */
+html.ssfx #b13h #tml.x-hide { display: flex !important; visibility: hidden !important; pointer-events: none !important; }
+/* match toasts: top edge, compact */
+html.ssfx.ssfx-play #toast { top: calc(var(--fx-top) + 46px) !important; bottom: auto !important; padding: 6px 14px !important; font-size: 13px !important; max-width: min(420px, 60vw) !important; }
+/* horizontal carousels must not swallow vertical scrolling of their panel (pan-x only blocked the Royal Shop / Pass page scroll) */
+html.ssfx .px-car, html.ssfx .px-scr, html.ssfx .nf-track, html.ssfx #menu .x-glass .x-skins { touch-action: pan-x pan-y !important; }
+/* Settings: the live preview spans the rows without adding 29 row gaps of empty space */
+html.ssfx #kset .k-sbody { row-gap: 0 !important; }
+html.ssfx #kset .k-sbody > *:not(#mnpv) { margin-bottom: 10px !important; }
+html.ssfx #sk4[data-ssfr] .sk4-empty { display: none !important; }
+/* no open/re-open animation on the Skins window and its panels (owner: things must stay put) */
+html.ssfx #sk4 .sk4-win, html.ssfx #sk4 .sk4-pv, html.ssfx #sk4 .sk4-pv.sk4-in, html.ssfx #sk4 .sk4-empty, html.ssfx #sk4 .sk4-empty.sk4-in, html.ssfx #sk4 .ssfr-fr, html.ssfx #sk4 .ssfr-fr * { animation: none !important; }
+html.ssfx #sk4 .sk4-grid, html.ssfx #sk4 .ssfr-grid { scrollbar-gutter: stable; }
+html.ssfx #sk4 .sk4-card .ck { font-size: 11px !important; }
+html.ssfx #sk4 .sk4-grid > .sk4-card:nth-child(n+13) { content-visibility: auto; contain-intrinsic-size: auto 130px; }
+/* Skins: no looping sheen / pulse anywhere in the window; the home screen behind it is frozen while it is open */
+html.ssfx #sk4 *, html.ssfx #sk4 *::before, html.ssfx #sk4 *::after { animation: none !important; }
+html.ssfx body.sk4-on > :not(#sk4) *, html.ssfx body.sk4-on > :not(#sk4) *::before, html.ssfx body.sk4-on > :not(#sk4) *::after { animation-play-state: paused !important; }
+/* panels open with a short fade only (the slide-up + scale moved every header/tab for ~0.4 s) */
+@keyframes ssfx-fade { from { opacity: 0; } to { opacity: 1; } }
+html.ssfx .x-ov:not(.x-hide) > .x-box { animation: ssfx-fade .14s ease-out both !important; }
 </style>
 </body>
 </html>
