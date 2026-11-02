@@ -4,11 +4,11 @@ import {
 	NoBlending,
 	Vector2,
 	WebGLRenderTarget
-} from './three.module.min.js?v=m1a';
-import { CopyShader } from './CopyShader.js?v=m1a';
-import { ShaderPass } from './ShaderPass.js?v=m1a';
-import { MaskPass } from './MaskPass.js?v=m1a';
-import { ClearMaskPass } from './MaskPass.js?v=m1a';
+} from './three.module.min.js?v=m2a';
+import { CopyShader } from './CopyShader.js?v=m2a';
+import { ShaderPass } from './ShaderPass.js?v=m2a';
+import { MaskPass } from './MaskPass.js?v=m2a';
+import { ClearMaskPass } from './MaskPass.js?v=m2a';
 
 class EffectComposer {
 

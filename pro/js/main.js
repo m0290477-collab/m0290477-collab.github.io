@@ -1,17 +1,19 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=m1a";
-import { Store, KV } from "./store.js?v=m1a";
-import { setLang, applyI18n, t } from "./i18n.js?v=m1a";
-import { Audio, haptic } from "./audio.js?v=m1a";
-import { Input } from "./input.js?v=m1a";
-import { Game } from "./game.js?v=m1a";
-import { UI, Hud } from "./ui.js?v=m1a";
-import { Renderer2D } from "./render2d.js?v=m1a";
+import { guard } from "./guard.js?v=m2a";
+import { Store, KV } from "./store.js?v=m2a";
+import { setLang, applyI18n, t } from "./i18n.js?v=m2a";
+import { Audio, haptic } from "./audio.js?v=m2a";
+import { Input } from "./input.js?v=m2a";
+import { Game } from "./game.js?v=m2a";
+import { UI, Hud } from "./ui.js?v=m2a";
+import { Renderer2D } from "./render2d.js?v=m2a";
 
 guard();
+// ?room=code (shared room link): open the lobby on Online with that room filled in
+try { const q = new URLSearchParams(location.search).get("room"); if (q && /^[a-z0-9-]{1,24}$/i.test(q)) window.__ssRoom = q.toLowerCase(); if (q) history.replaceState(null, "", location.pathname); } catch (_) {}
 const $ = (id) => document.getElementById(id);
-const app = (window.SSP = {});
+const app = (window.SSP = {}); app.roomParam = window.__ssRoom || "";
 window.__bt = []; const bar = (p, msg) => { window.__bt.push([Math.round(performance.now()), p]); $("bootbar").style.width = p + "%"; $("bootpct").textContent = Math.round(p) + "%"; if (msg) $("bootmsg").textContent = msg; };
 let lastErr = 0;
 function oops(e) { console.error(e); const n = performance.now(); if (n - lastErr > 4000 && app.ui) { lastErr = n; app.ui.toast(t("oops"), "warn"); } }
@@ -43,7 +45,7 @@ async function makeRenderer(kind, quality) {
   const old = $("gl"), cv = document.createElement("canvas"); cv.id = "gl"; cv.setAttribute("aria-hidden", "true"); old.replaceWith(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=m1a");
+      const m = await import("./render3d.js?v=m2a");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 3500); }, onRestored: () => { clearTimeout(app._lostT); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }

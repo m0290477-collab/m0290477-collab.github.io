@@ -26,6 +26,7 @@ export const sampleSp = (r) => Math.max(0.3, r * 0.4); // collision sample spaci
 // power-ups: magnet, shield, speed, x2 score, ghost, freeze, mega-orb burst
 export const PU = { MAG: 0, SHIELD: 1, SPEED: 2, X2: 3, GHOST: 4, FREEZE: 5, MEGA: 6, N: 7 };
 export const PU_DUR = [10, 20, 6, 12, 5, 4, 0];
+export const PU_TIMED = [0, 1, 2, 3, 4, 5]; // kinds with a countdown (HUD chips)
 export const PU_ICON = ["🧲", "🛡", "⚡", "×2", "👻", "❄", "💎"];
 // 24x24 vector glyphs (no emoji-font dependency): used by the HUD chips (inline SVG) and the 3D badges (Path2D)
 export const PU_SVG = [
@@ -431,6 +432,7 @@ export function sanitizeSkin(d) {
   o.i = Math.max(0, Math.min(400, d.i | 0)); o.p = Math.max(0, Math.min(11, d.p | 0));
   if (Array.isArray(d.c)) o.c = d.c.slice(0, 3).map((h) => (typeof h === "string" && /^#[0-9a-fA-F]{6}$/.test(h) ? h : "#18c964"));
   o.e = Math.max(0, Math.min(6, d.e | 0)); o.t = Math.max(0, Math.min(6, d.t | 0)); o.n = Math.max(0, Math.min(9, d.n | 0));
+  if (typeof d.av === "string" && /^(p([0-9]|1[0-5])|f\d{1,3})$/.test(d.av)) o.av = d.av; o.fr = Math.max(0, Math.min(6, d.fr | 0)); // profile avatar + frame (HUD rows)
   return o;
 }
 export const cleanName = (n) => String(n || "").replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, 16) || "Guest";

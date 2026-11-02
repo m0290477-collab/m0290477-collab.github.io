@@ -2,7 +2,7 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR } from "./sim.js?v=m1a";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR } from "./sim.js?v=m2a";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
 function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && !(s.pu && s.pu[2] > 0)) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
 export const SERVER = (typeof window !== "undefined" && window.__SSP_SERVER) || "wss://super-snake-online.molierk.workers.dev/ws";
@@ -51,7 +51,7 @@ export class NetBackend {
     if (m.t === "welcome") { this.R = m.R; this.tick = m.tick; this.setClock(m.tick); for (const s of m.snakes) this.addMirror(s); this.cb.onState && this.cb.onState("welcome"); if (this.wantSpawn !== false) this.spawn(); }
     else if (m.t === "sn") { if (m.id !== this.myId) this.addMirror(m); }
     else if (m.t === "you") {
-      const s = new Snake(m.id); s.reset(m.x, m.y, m.a, m.m); s.name = this.o.name; s.skin = this.o.skin; this.me = s; this.myId = m.id; this.seq = m.seq; this.seq0 = m.seq; this.batch.length = 0; this.mirrors.delete(m.id);
+      const s = new Snake(m.id); s.reset(m.x, m.y, m.a, m.m); s.name = this.o.name; s.skin = this.o.skin; s.avt = this.o.skin && this.o.skin.av; s.fr = this.o.skin ? this.o.skin.fr | 0 : 0; this.me = s; this.myId = m.id; this.seq = m.seq; this.seq0 = m.seq; this.batch.length = 0; this.mirrors.delete(m.id);
       this.ta = m.a; this.dead = false; this.cb.onSpawnMe && this.cb.onSpawnMe(s);
     } else if (m.t === "dead") {
       if (m.id === this.myId) { if (!this.dead) { this.dead = true; this.stats.serverDeaths++; this.cb.onMyDeath(m.by, m.cause); } }
@@ -76,7 +76,7 @@ export class NetBackend {
     } else if (m.t === "sh") { const sn = m.id === this.myId ? this.me : this.mirrors.get(m.id)?.s; if (sn) { if (sn.pu[1] > 0 || sn !== this.me) { sn.pu[1] = 0; sn.inv = 1.2; this.cb.onShield && this.cb.onShield(sn); } } }
   }
   addMirror(m) {
-    const s = new Snake(m.id); s.n = 0; s.h = 0; s.alive = true; s.name = m.name; s.skin = m.skin; s.bot = !!m.bot; s.setMass(m.m); s.a = m.a || 0;
+    const s = new Snake(m.id); s.n = 0; s.h = 0; s.alive = true; s.name = m.name; s.skin = m.skin; s.bot = !!m.bot; s.avt = m.skin && m.skin.av; s.fr = m.skin ? m.skin.fr | 0 : 0; s.setMass(m.m); s.a = m.a || 0;
     for (let i = 0; i < m.path.length; i += 2) s.push(m.path[i], m.path[i + 1]);
     s.x = m.path[m.path.length - 2]; s.y = m.path[m.path.length - 1];
     const mr = { s, lastTick: m.tick, boost: 0, deadAt: 0 }; this.mirrors.set(m.id, mr); this.cb.onNewSnake && this.cb.onNewSnake(mr);

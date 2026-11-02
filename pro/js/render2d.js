@@ -2,9 +2,9 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=m1a";
-import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=m1a";
-import { EYES } from "./skins.js?v=m1a";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=m2a";
+import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=m2a";
+import { EYES } from "./skins.js?v=m2a";
 
 const TAU = Math.PI * 2;
 const CSS = new Array(32768); // 15-bit quantised rgb -> "rgb(...)" (no string building per segment)

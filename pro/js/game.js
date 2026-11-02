@@ -1,12 +1,13 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR } from "./sim.js?v=m1a";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=m1a";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=m1a";
-import { NetBackend } from "./net.js?v=m1a";
-import { t, fmtNum } from "./i18n.js?v=m1a";
-import { haptic } from "./audio.js?v=m1a";
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR } from "./sim.js?v=m2a";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=m2a";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=m2a";
+import { NetBackend } from "./net.js?v=m2a";
+import { t, fmtNum } from "./i18n.js?v=m2a";
+import { haptic } from "./audio.js?v=m2a";
+import { rankOf, rpDelta } from "./profile.js?v=m2a";
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
@@ -37,11 +38,12 @@ class LocalBackend {
     const legend = r() < 0.12; const pool = SKINS.map((s, k) => k).filter((k) => !!SKINS[k].fx === legend);
     const skin = r() < 0.3 ? { k: "flag", i: (r() * FLAGS.length) | 0 } : { k: "skin", i: pool[(r() * pool.length) | 0] };
     const s = this.sim.addSnake(pickBotName(this.sim.snakes, i * 7 + ((r() * 40) | 0)), { ...skin, e: (r() * 4) | 0, t: 0, n: 0 }, { bot: true, diff: d, m: C.START_M + r() * 60 });
+    s.avt = skin.k === "flag" && r() < 0.6 ? "f" + skin.i : "p" + ((r() * 16) | 0); s.fr = r() < 0.5 ? 0 : 1 + ((r() * 4) | 0);
     if (this.mode === "team") { s.team = team ?? (this.teamN[0] < Math.floor(this.M.bots / 2) ? 0 : 1); this.teamN[s.team]++; }
     return s;
   }
   spawn(name, skin) {
-    const s = this.sim.addSnake(name, skin, { god: this.mode === "zen" }); this.me = s; this.dead = false; this.myId = s.id; if (this.mode === "team") s.team = 0; this.cb.onSpawnMe && this.cb.onSpawnMe(s); return s;
+    const s = this.sim.addSnake(name, skin, { god: this.mode === "zen" }); this.me = s; s.avt = skin.av; s.fr = skin.fr; this.dead = false; this.myId = s.id; if (this.mode === "team") s.team = 0; this.cb.onSpawnMe && this.cb.onSpawnMe(s); return s;
   }
   setInput(ta, boost) { if (this.me) { this.me.ta = ta; this.me.boost = boost ? 1 : 0; } }
   update(dt) {
@@ -138,13 +140,14 @@ export class Game {
     this.hud.banner(t("bossAppears"), 2200); this.app.audio.play("roar"); this.r.shake && this.r.shake(1);
   }
   moveHill(first) { const R = this.backend.R, a = Math.random() * 6.283, d = first ? R * 0.15 : R * (0.2 + Math.random() * 0.4); this.hill.x = Math.cos(a) * d; this.hill.y = Math.sin(a) * d; this.hill.t = 0; if (this.backend.sim.attractPt) { this.backend.sim.attractPt.x = this.hill.x; this.backend.sim.attractPt.y = this.hill.y; } if (!first) { this.hud.banner(t("hillMoved"), 1400); this.app.audio.play("warn"); } }
-  mySkin() { const p = this.app.store.p; const sk = p.skin.k === "custom" ? { k: "custom", p: p.custom.p, c: p.custom.c } : { k: p.skin.k, i: p.skin.i }; return { ...sk, e: p.eye, t: p.trail, n: p.nc }; }
+  mySkin() { const p = this.app.store.p; const sk = p.skin.k === "custom" ? { k: "custom", p: p.custom.p, c: p.custom.c } : { k: p.skin.k, i: p.skin.i }; return { ...sk, e: p.eye, t: p.trail, n: p.nc, av: p.av, fr: p.frame }; }
   stopMatch() { if (this.backend && this.backend.close) this.backend.close(); this.backend = null; this.app.input && (this.app.input.enabled = false); this.app.audio.boost(false); this.killcam = null; this.victory = null; }
   pause(on) {
     if (!this.mode || this.mode === "attract" || this.mode === "show" || this.ended) return;
     this.paused = on; this.app.audio.boost(false); this.app.input.reset();
     if (on) this.app.ui.showPause(this.mode === "online"); else this.app.ui.hidePause();
   }
+  emote(i) {}
   restart() { const c = this.cfg; this.stopMatch(); this.start(c); }
   again() {
     const b = this.backend;
@@ -272,11 +275,14 @@ export class Game {
     const bestKey = this.mode; const pos = S.addBest(bestKey, { s: score, k: st.kills, d: Date.now(), w: this.world, m: Math.round(st.best) });
     const missions = S.missionProgress({ food: st.food, kills: st.kills, mass: st.best, life: st.life, boost: st.boost, online: this.mode === "online" });
     const mp = S.matchProgress({ food: st.food, kills: st.kills, mass: st.best, life: st.life, boost: st.boost, wave: st.wave, mode: this.mode, win: this.win || st.rankBest === 1 });
+    const rank = this.mode === "br" ? (this.win ? 1 : this.place || "—") : st.rankBest < 99 ? st.rankBest : "—";
+    // ranked points + history (last 10) + games per mode for the profile
+    const rk0 = rankOf(p.rp).i, rp = rpDelta({ mode: this.mode, rank: typeof rank === "number" ? rank : 99, win: this.win, kills: st.kills }); p.rp = Math.max(0, p.rp + rp); const rankUp = rankOf(p.rp).i > rk0;
+    S.pushHistory({ m: this.mode, s: score, k: st.kills, r: typeof rank === "number" ? rank : 0, w: this.win ? 1 : 0, ms: Math.round(st.best), t: Math.round(dur), d: Date.now(), rp });
     const ach = S.checkAch(); S.save();
     const title = this.win ? t("victory") : reason === "time" ? t("timeUp") : this.mode === "zen" ? t("zenDone") : t("gameOver");
     const sub = this.win ? t("vic_" + this.mode) : this.killer ? t("killedBy", { n: this.killer.name }) : this.selfHit ? t("selfDeath") : this.deathCause === 3 && this.mode === "br" ? t("stormDeath") : this.deathCause === 1 ? t("hitWall") : "";
-    const rank = this.mode === "br" ? (this.win ? 1 : this.place || "—") : st.rankBest < 99 ? st.rankBest : "—";
-    this.watching = false; A.ui.showResults({ killer: this.killer && this.killer.alive && !this.win ? this.killer : null, seasonXp: xp, pu: st.pu || 0, title, sub, score, mass: Math.round(st.best), kills: st.kills, rank, time: dur, xp, coins: coins + lv.coins, lv, newBest: pos === 0 && score > 0, missions, ach, mode: this.mode, wave: st.wave, win: this.win, tiers, mp });
+    this.watching = false; A.ui.showResults({ killer: this.killer && this.killer.alive && !this.win ? this.killer : null, seasonXp: xp, pu: st.pu || 0, title, sub, score, mass: Math.round(st.best), kills: st.kills, rank, time: dur, xp, coins: coins + lv.coins, lv, newBest: pos === 0 && score > 0, missions, ach, mode: this.mode, wave: st.wave, win: this.win, tiers, mp, rp, rankUp });
     if (lv.up) A.audio.play("level"); else if (ach.length) A.audio.play("ach");
     if (pos === 0 && score > 0 && this.r.confetti && me) this.r.confetti(me.x, me.y, 120);
   }

@@ -1,6 +1,6 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=m1a";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=m2a";
 export const SEASON = { id: "s1", tiers: 30, per: 400 };
 // free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
 export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
@@ -10,7 +10,7 @@ export const CHAINS = {
   survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
 };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=m1a";
+import { WORLDS } from "./worlds.js?v=m2a";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -42,6 +42,9 @@ export function newProfile(name) {
     bests: { classic: [], time: [], survival: [], zen: [], online: [], br: [], koth: [], boss: [], team: [] }, ach: {}, daily: { d: "", m: [] }, bonus: "",
     owned: [], season: { id: "s1", xp: 0, claimed: [] }, weekly: { w: "", m: [], done: 0 }, chains: {}, seen: [], introSeen: 0,
     last: { mode: "classic", world: 0, diff: 1, room: "" }, tut: 0,
+    // identity (M2): avatar "p0".."p15" or "f<flag>", frame/title/banner index, pinned achievements, last 10 matches,
+    // games per mode, ranked points, login calendar, free daily spin, cosmetics granted by rewards
+    av: "p0", frame: 0, title: 0, banner: 0, pins: [], hist: [], mg: {}, rp: 0, login: { d: "", n: 0 }, spin: "", cos: [],
   };
 }
 function fixProfile(p) { // fill any missing field from defaults (older or imported profiles)
@@ -55,6 +58,12 @@ function fixProfile(p) { // fill any missing field from defaults (older or impor
   for (const k in d.last) if (p.last[k] === undefined) p.last[k] = d.last[k];
   p.xp = Math.max(0, +p.xp || 0); p.coins = Math.max(0, +p.coins || 0); p.flags = p.flags.filter((i) => Number.isInteger(i) && FLAGS[i]);
   while (p.presets.length < 4) p.presets.push(null);
+  if (!/^(p([0-9]|1[0-5])|f\d{1,3})$/.test(p.av) || (p.av[0] === "f" && !FLAGS[+p.av.slice(1)])) p.av = "p0";
+  for (const k of ["frame", "title", "banner", "rp"]) p[k] = Math.max(0, Math.floor(+p[k] || 0)); if (p.frame > 6) p.frame = 0; if (p.title > 13) p.title = 0; if (p.banner > 7) p.banner = 0;
+  p.pins = p.pins.filter((x) => typeof x === "string" && Store.ACH.some((a) => a[0] === x)).slice(0, 3); p.cos = p.cos.filter((x) => typeof x === "string" && /^(av|fr|ti|bn):[a-z0-9]{1,4}$/.test(x));
+  p.hist = p.hist.filter((h) => h && typeof h === "object" && typeof h.m === "string").slice(0, 10); if (!p.mg || typeof p.mg !== "object" || Array.isArray(p.mg)) p.mg = {};
+  for (const k of Object.keys(p.mg)) if (typeof p.mg[k] !== "number" || !isFinite(p.mg[k])) delete p.mg[k];
+  if (!p.login || typeof p.login.d !== "string") p.login = { d: "", n: 0 }; p.login.n = Math.max(0, Math.min(6, p.login.n | 0));
   return p;
 }
 
@@ -155,6 +164,18 @@ export class Store {
     if (kind === "trail") return lv >= TRAILS[i].lv; if (kind === "world") return lv >= WORLDS[i].lv; if (kind === "diff") return i < 3 || lv >= 10; return true;
   }
   buyFlag(i) { if (this.p.flags.includes(i)) return "own"; if (this.p.coins < FLAG_PRICE) return "noCoins"; this.p.coins -= FLAG_PRICE; this.p.flags.push(i); this.save(); return "ok"; }
+  // 7-day login calendar: one claim per calendar day; a missed day restarts at day 1. Returns null when already claimed today.
+  loginState() { const d = today(), L = this.p.login; if (L.d === d) return { day: L.n, claimed: true }; const y = new Date(); y.setDate(y.getDate() - 1); const yd = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, "0")}-${String(y.getDate()).padStart(2, "0")}`;
+    const next = L.d === yd ? (L.n + 1) % 7 : 0; return { day: next, claimed: false, fresh: L.d !== yd }; }
+  claimLogin(LOGIN, pickCos) { const st = this.loginState(); if (st.claimed) return null; const n = st.day, coins = LOGIN[n]; this.p.login = { d: today(), n }; this.p.coins += coins; let cos = null; if (n === 6) { cos = pickCos(); if (cos) this.p.cos.push(cos); else this.p.coins += 500; } this.save(); return { day: n, coins, cos }; }
+  spinReady() { return this.p.spin !== today(); }
+  // one free spin per day: weighted segment, coins / XP / a random locked cosmetic (coins if everything is owned)
+  spin(SEG, pickCos) { if (!this.spinReady()) return null; let w = 0; for (const s of SEG) w += s.w; let r = Math.random() * w, i = 0; for (; i < SEG.length - 1; i++) { r -= SEG[i].w; if (r < 0) break; }
+    const s = SEG[i], out = { i, coins: 0, xp: 0, cos: null, lv: null }; this.p.spin = today();
+    if (s.c) { out.coins = s.c; this.p.coins += s.c; } else if (s.x) { out.xp = s.x; out.lv = this.addXp(s.x); } else if (s.cos) { out.cos = pickCos(); if (out.cos) this.p.cos.push(out.cos); else { out.coins = 300; this.p.coins += 300; } }
+    this.save(); return out; }
+  pushHistory(h) { this.p.hist.unshift(h); if (this.p.hist.length > 10) this.p.hist.length = 10; this.p.mg[h.m] = (this.p.mg[h.m] || 0) + 1; }
+  favMode() { let b = null, n = 0; for (const k in this.p.mg) if (this.p.mg[k] > n) { n = this.p.mg[k]; b = k; } return b; }
   claimDailyBonus() { const d = today(); if (this.p.bonus === d) return 0; this.p.bonus = d; const n = 50 + Math.min(10, this.level()) * 10; this.p.coins += n; this.save(); return n; }
 
   // ---------- daily missions (seeded by date, same 3 for everyone on a device that day) ----------
@@ -227,6 +248,8 @@ export class Store {
     for (const id in CHAINS) { const c = this.chain(id); c.s = Math.max(c.s, CHAINS[id].steps.length); c.p = 0; }
     p.weekly.done = Math.max(p.weekly.done || 0, 3);
     const now = Date.now(); for (const [id] of Store.ACH) if (!p.ach[id]) p.ach[id] = now;
+    for (let i = 0; i < 16; i++) if (!p.cos.includes("av:p" + i)) p.cos.push("av:p" + i);
+    for (let i = 1; i < 7; i++) if (!p.cos.includes("fr:" + i)) p.cos.push("fr:" + i); for (let i = 0; i < 14; i++) if (!p.cos.includes("ti:" + i)) p.cos.push("ti:" + i); for (let i = 0; i < 8; i++) if (!p.cos.includes("bn:" + i)) p.cos.push("bn:" + i);
     p.owner = 1; this.flush();
   }
   // ---------- achievements ----------

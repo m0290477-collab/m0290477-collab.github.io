@@ -1,12 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=m1a";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=m1a";
-import { WORLDS, worldAsset } from "./worlds.js?v=m1a";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=m1a";
-import { haptic } from "./audio.js?v=m1a";
-import { skinFn, MODES } from "./game.js?v=m1a";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG } from "./sim.js?v=m1a";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=m2a";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=m2a";
+import { WORLDS, worldAsset } from "./worlds.js?v=m2a";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=m2a";
+import { haptic } from "./audio.js?v=m2a";
+import { skinFn, MODES } from "./game.js?v=m2a";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=m2a";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=m2a";
+export const EMOTES = ["👋", "😂", "😡", "🔥", "👍", "GG"];
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
 const $ = (id) => document.getElementById(id);
@@ -45,9 +47,10 @@ export class Hud {
     if (d.timeLeft !== null && d.timeLeft !== undefined) { tm.textContent = "⏱ " + fmtTime(d.timeLeft); tm.classList.toggle("warn", d.timeLeft < 15); }
     else if (d.wave !== null) { tm.textContent = t("wave", { n: d.wave }); tm.classList.remove("warn"); }
     let h = "";
-    if (d.scoreList) { d.scoreList.forEach((x, i) => { h += `<div class="${x.s === d.me ? "me" : ""}"><b>${i === 0 ? IC.crown : i + 1}</b><i style="background:${this.dot(x.s)}"></i><span>${esc(x.s.name || "?")}</span><em>${x.v}/${d.target}</em></div>`; }); }
-    else { d.top.forEach((s, i) => { h += `<div class="${s === d.me ? "me" : ""}"><b>${i === 0 ? IC.crown : i + 1}</b><i style="background:${this.dot(s)}"></i><span>${esc(s.name || "?")}</span><em>${fmtNum(s.m)}</em></div>`; });
-      if (d.me && d.me.alive && d.rank > 5) h += `<div class="me"><b>${d.rank}</b><i style="background:${this.dot(d.me)}"></i><span>${esc(d.me.name)}</span><em>${fmtNum(d.me.m)}</em></div>`; }
+    const ic = (s) => (s.avt ? avatarHtml(s.avt, s.fr | 0, "s") : `<i style="background:${this.dot(s)}"></i>`);
+    if (d.scoreList) { d.scoreList.forEach((x, i) => { h += `<div class="${x.s === d.me ? "me" : ""}"><b>${i === 0 ? IC.crown : i + 1}</b>${ic(x.s)}<span>${esc(x.s.name || "?")}</span><em>${x.v}/${d.target}</em></div>`; }); }
+    else { d.top.forEach((s, i) => { h += `<div class="${s === d.me ? "me" : ""}"><b>${i === 0 ? IC.crown : i + 1}</b>${ic(s)}<span>${s.bounty ? "💰 " : ""}${esc(s.name || "?")}</span><em>${fmtNum(s.m)}</em></div>`; });
+      if (d.me && d.me.alive && d.rank > 5) h += `<div class="me"><b>${d.rank}</b>${ic(d.me)}<span>${esc(d.me.name)}</span><em>${fmtNum(d.me.m)}</em></div>`; }
     if (d.ping !== null) h += `<div><span>${t("online", { n: d.ping })}</span><em>${d.humans ? "👤" + d.humans : ""}</em></div>`;
     if (h !== this.lastLb) { const n = this.lastLb.length; $("h-lb").innerHTML = h; this.lastLb = h; if (!n || Math.abs(n - h.length) > 40) this.layout(); }
     if (d.alive !== null && d.alive !== undefined) this.modeLine(`<div class="mode-pill hot">${t("aliveN", { n: d.alive })}${d.zone ? " · " + t("zoneIn", { n: d.zone }) : ""}</div>`);
@@ -103,7 +106,7 @@ export class Hud {
   combo(mul, n) { const c = $("h-combo"); if (!mul || mul < 2) { c.classList.remove("on"); return; } const k = "×" + mul; if (c.dataset.k !== k) { c.dataset.k = k; c.classList.remove("pump"); void c.offsetWidth; c.classList.add("pump"); } c.innerHTML = `<b>${t("combo")} ${k}</b><small>${n}</small>`; c.classList.add("on"); c.dataset.m = mul; }
   pu(P, slow) {
     const box = $("h-pu"); if (!P) { if (box.innerHTML) box.innerHTML = ""; return; } let h = "";
-    for (let k = 0; k < 6; k++) if (P[k] > 0) { const f = Math.max(0, Math.min(1, P[k] / PU_DUR[k])); h += `<div class="pu-chip ${P[k] < 2 ? "end" : ""}" style="--c:${PU_COL[k]};--f:${f.toFixed(3)}"><i>${puSvg(k)}</i><span>${k === 1 ? "1×" : Math.ceil(P[k]) + "s"}</span></div>`; }
+    for (const k of PU_TIMED) if (P[k] > 0) { const f = Math.max(0, Math.min(1, P[k] / PU_DUR[k])); h += `<div class="pu-chip ${P[k] < 2 ? "end" : ""}" style="--c:${PU_COL[k]};--f:${f.toFixed(3)}"><i>${puSvg(k)}</i><span>${k === 1 ? "1×" : Math.ceil(P[k]) + "s"}</span></div>`; }
     if (slow > 0) h += `<div class="pu-chip bad" style="--c:#9ff3ff;--f:${(slow / PU_DUR[5]).toFixed(3)}"><i>${puSvg(5)}</i><span>${Math.ceil(slow)}s</span></div>`;
     if (box.dataset.k !== h) { box.innerHTML = h; box.dataset.k = h; }
   }
@@ -118,7 +121,7 @@ export class Hud {
 
 export class UI {
   constructor(app) {
-    this.app = app; this.cur = null; this.cTab = "legend"; this.pTab = "missions"; this.gTab = "graphics"; this.sTab = "track"; this.flagQ = ""; this.selMode = app.store.p.last.mode || "classic";
+    this.app = app; this.cur = null; this.cTab = "legend"; this.pTab = "missions"; this.prTab = "over"; this.gTab = "graphics"; this.sTab = "track"; this.flagQ = ""; this.selMode = app.store.p.last.mode || "classic";
     this.notes = []; this.revealQ = []; this.sel = null; this.bind();
   }
   get S() { return this.app.store; }
@@ -133,16 +136,16 @@ export class UI {
   async go(id, kind) { await this.wipe(kind || "go"); this.show(id); }
   show(id) {
     document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("on", s.id === "s-" + id)); this.cur = id; $("l-notif").classList.add("x-hide");
-    if (id === "lobby") this.renderLobby(); if (id === "custom") this.renderCustom(); if (id === "progress") this.renderProgress(); if (id === "settings") this.renderSettings(); if (id === "season") this.renderSeason();
+    if (id === "lobby") this.renderLobby(); if (id === "custom") this.renderCustom(); if (id === "profile") this.renderProfile(); if (id === "settings") this.renderSettings(); if (id === "season") this.renderSeason();
     this.updateShow();
   }
   hideScreens() { document.querySelectorAll(".screen").forEach((s) => s.classList.remove("on")); this.cur = null; }
   // studio showcase framing per screen
   updateShow() {
-    const G = this.app.game; if (!["lobby", "custom", "season", "progress", "settings"].includes(this.cur)) return;
+    const G = this.app.game; if (!["lobby", "custom", "season", "profile", "settings"].includes(this.cur)) return;
     if (G.mode !== "show") G.startShow();
     const d = this.cur === "custom" && this.sel ? this.sel : this.app.game.mySkin(); const fx = skinFx(d), L = LEGEND[fx];
-    const x = this.cur === "custom" ? -0.24 : this.cur === "lobby" ? 0.0 : 0.3;
+    const rtl = document.documentElement.dir === "rtl", x = (this.cur === "custom" ? 0.25 : this.cur === "lobby" ? 0.0 : 0.3) * (rtl ? -1 : 1); // pedestal on the side the panel leaves free
     G.show = { d: { s: { id: -1, r: 0.5, m: 50, len: 46, x: 0, y: 0 }, fn: skinFn(d), eye: d.e | 0, trail: d.t | 0, fx, name: "" }, idle: L ? L.idle : "sway", glow: L ? L.glow : "#ffc845", x, zoom: this.cur === "lobby" ? 1.2 : 1, orbit: Math.sin(performance.now() / 9000) * 0.25 };
     if (this.cur === "lobby") { const i = d.k === "skin" ? d.i : -1, rar = i >= 0 ? SKINS[i].rar : d.k === "flag" ? "rare" : "epic"; $("l-showtag").innerHTML = `<span class="rar ${rar}">${t("rar_" + rar)}</span><b>${esc(d.k === "flag" ? flagName(FLAGS[d.i], LANG) : d.k === "custom" ? t("custom") : skinName(d.i))}</b>`; }
   }
@@ -171,16 +174,24 @@ export class UI {
     this.click($("in-go"), doIn); this.click($("up-go"), doUp);
     $("f-in").addEventListener("submit", (e) => { e.preventDefault(); doIn(); }); $("f-up").addEventListener("submit", (e) => { e.preventDefault(); doUp(); });
     // lobby
-    for (const id of ["l-locker", "l-locker2"]) this.click($(id), () => { this.sel = null; this.go("custom"); });
-    this.click($("l-progress"), () => this.go("progress")); this.click($("l-settings"), () => this.go("settings"));
-    for (const id of ["l-season", "l-seasonbtn", "l-passcard"]) this.click($(id), () => { this.sTab = "track"; this.go("season"); });
-    this.click($("l-prof"), () => { this.gTab = "account"; this.go("settings"); });
+    this.click($("l-locker"), () => { this.sel = null; this.go("custom"); });
+    this.click($("l-settings"), () => this.go("settings"));
+    this.click($("l-season"), () => { this.sTab = "track"; this.go("season"); });
+    this.click($("l-prof"), () => { this.prTab = "over"; this.go("profile"); });
+    this.click($("l-login"), () => this.openLogin()); this.click($("l-spin"), () => this.openSpin());
+    this.click($("lg-claim"), () => this.claimLogin(), "reward"); this.click($("sp-go"), () => this.doSpin());
+    document.querySelectorAll("[data-close]").forEach((b) => this.click(b, () => b.closest(".modal").classList.add("x-hide"), "back"));
+    for (const id of ["m-login", "m-spin"]) $(id).addEventListener("click", (e) => { if (e.target.id === id && !this._spinning) $(id).classList.add("x-hide"); });
+    this.click($("l-share"), () => this.shareRoom()); this.click($("pz-share"), () => this.shareRoom(true));
+    const ml = $("l-modes"), mf = () => { const c = ml.parentElement; c.classList.toggle("can-up", ml.scrollTop > 4); c.classList.toggle("can-down", ml.scrollTop + ml.clientHeight < ml.scrollHeight - 4); };
+    ml.addEventListener("scroll", mf, { passive: true }); addEventListener("resize", () => setTimeout(mf, 80)); this._modesFade = mf;
+    this.click($("h-emo"), () => { const e = $("h-emos"); if (e.classList.toggle("x-hide")) return; e.innerHTML = EMOTES.map((x, i) => `<button data-e="${i}" class="${x.length > 2 ? "txt" : ""}">${x}</button>`).join(""); e.querySelectorAll("button").forEach((b) => this.click(b, () => { e.classList.add("x-hide"); A.game.emote(+b.dataset.e); }, "tab")); });
     this.click($("l-bell"), () => { const n = $("l-notif"); const open = n.classList.contains("x-hide"); n.classList.toggle("x-hide", !open); if (open) { n.innerHTML = this.notes.length ? this.notes.map((x) => `<div class="nt"><i>${x.ic}</i><div>${esc(x.msg)}<small>${new Date(x.t).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</small></div></div>`).join("") : `<div class="empty">${t("noNotif")}</div>`; this.notes.forEach((x) => (x.seen = true)); this.renderBell(); } });
     this.click($("l-play"), () => this.play(), "go");
     $("l-code").addEventListener("input", (e) => { e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24); this.p.last.room = e.target.value; this.S.save(); });
     document.querySelectorAll("[data-back]").forEach((b) => this.click(b, () => this.back(), "back"));
     const tabs = (id, key, fn) => $(id).querySelectorAll("button").forEach((b) => this.click(b, () => { this[key] = b.dataset.v; $(id).querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); fn.call(this); }, "tab"));
-    tabs("c-tabs", "cTab", this.renderCustom); tabs("p-tabs", "pTab", this.renderProgress); tabs("g-tabs", "gTab", this.renderSettings); tabs("s-tabs", "sTab", this.renderSeason);
+    tabs("c-tabs", "cTab", this.renderCustom); tabs("pr-tabs", "prTab", this.renderProfile); tabs("g-tabs", "gTab", this.renderSettings); tabs("s-tabs", "sTab", this.renderSeason);
     // showcase drag-to-rotate on empty lobby/locker space
     let dx = null; const cv = () => this.app.game.show; addEventListener("pointerdown", (e) => { if (this.cur && (e.target.classList.contains("col-c") || e.target.classList.contains("lk-show") || e.target.id === "gl")) dx = e.clientX; });
     addEventListener("pointermove", (e) => { if (dx !== null && cv()) { const s = this.app.renderer && this.app.renderer.studio; if (s) s.rot = (s.rot || 0) + (e.clientX - dx) * 0.012; dx = e.clientX; } }); addEventListener("pointerup", () => (dx = null));
@@ -201,7 +212,9 @@ export class UI {
     if (this.fromPause && this.cur === "settings") { this.fromPause = false; this.hideScreens(); $("m-pause").classList.remove("x-hide"); return; }
     this.go("lobby", "fade");
   }
-  afterLogin() { this.selMode = this.p.last.mode || "classic"; this.app.applyAll(); const bonus = this.S.claimDailyBonus(); this.goLobby(); setTimeout(() => this.toast(t("welcome", { n: this.p.name }), "good"), 700); if (bonus) setTimeout(() => { this.toast("◆ " + t("dailyBonus", { n: bonus }), "gold"); this.coins(this.p.coins); }, 1500); }
+  afterLogin() { this.selMode = this.p.last.mode || "classic"; this.app.applyAll(); this.goLobby(); setTimeout(() => this.toast(t("welcome", { n: this.p.name }), "good"), 700);
+    const q = this.app.roomParam; if (q) { this.app.roomParam = ""; this.selMode = "online"; this.p.last.mode = "online"; this.p.last.room = q; this.S.save(); setTimeout(() => { if (this.cur === "lobby") this.renderLobby(); this.toast(t("roomJoined", { n: q }), "good", 4000); }, 1200); }
+    else if (!this.S.loginState().claimed) setTimeout(() => { if (this.cur === "lobby" && $("m-reveal").classList.contains("x-hide")) this.openLogin(); }, 1500); }
   showAuth(tab = "in") {
     if (this.app.game.mode !== "attract") this.app.game.startAttract(this.p.last.world || 0, true); this.show("auth"); $("a-tabs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.v === tab)); $("f-in").classList.toggle("x-hide", tab !== "in"); $("f-up").classList.toggle("x-hide", tab !== "up"); $("in-u").value = this.S.remember; $("in-rem").checked = !!this.S.remember;
     $("auth-langs").innerHTML = LANGS.map(([c, n]) => `<button data-l="${c}" class="${c === LANG ? "on" : ""}">${n}</button>`).join("");
@@ -235,11 +248,15 @@ export class UI {
   // ---------- lobby ----------
   renderLobby() {
     const p = this.p, S = this.S, lv = lvInfo(p.xp);
-    $("l-name").textContent = p.name; $("l-av").firstChild.nodeValue = (p.name || "S").slice(0, 1).toUpperCase(); $("l-av").style.background = `linear-gradient(135deg, ${primaryColor(this.app.game.mySkin())}, #120a02)`;
-    $("l-lv").textContent = lv.n; $("l-xp").style.width = Math.round((lv.x / lv.need) * 100) + "%"; this.coins(p.coins);
+    // top bar: profile card (avatar + frame + name + title + level), ranked badge, compact season chip
+    $("l-av").innerHTML = avatarHtml(p.av, p.frame, "m"); $("l-name").textContent = p.name; $("l-title").textContent = t("ti_" + (TITLES[p.title] || TITLES[0]).id);
+    $("l-lv").textContent = lv.n; $("l-xp").style.width = (lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)) + "%"; this.coins(p.coins); $("l-rank").innerHTML = rankBadge(p.rp);
     const tier = S.seasonTier(), into = p.season.xp - tier * SEASON.per; $("l-tier").textContent = tier; $("l-sbar").style.width = (tier >= SEASON.tiers ? 100 : Math.round((into / SEASON.per) * 100)) + "%";
-    $("l-modes").innerHTML = MODE_LIST.map((m) => `<button class="mode ${m === this.selMode ? "on" : ""}" data-m="${m}" role="tab"><span class="mi">${IC[m]}</span><span><b>${t("m_" + m)}</b><small>${esc(t("m_" + m + "_d"))}</small></span>${NEW_MODES.has(m) ? `<i class="new">${t("new")}</i>` : ""}</button>`).join("");
-    $("l-modes").querySelectorAll(".mode").forEach((b) => this.click(b, () => { this.selMode = b.dataset.m; p.last.mode = this.selMode; S.save(); this.renderLobby(); }, "tab"));
+    const unclaimed = Array.from({ length: tier }, (_, i) => i + 1).some((k) => !p.season.claimed.includes(k)); $("l-sdot").classList.toggle("x-hide", !unclaimed);
+    // modes: short, fully readable descriptions; the column scrolls with a fade + chevron hint
+    $("l-modes").innerHTML = MODE_LIST.map((m) => `<button class="mode ${m === this.selMode ? "on" : ""}" data-m="${m}" role="tab"><span class="mi">${IC[m]}</span><span><b>${t("m_" + m)}</b><small>${esc(t("m_" + m + "_s"))}</small></span>${NEW_MODES.has(m) ? `<i class="new">${t("new")}</i>` : ""}</button>`).join("");
+    $("l-modes").querySelectorAll(".mode").forEach((b) => this.click(b, () => { this.selMode = b.dataset.m; p.last.mode = this.selMode; S.save(); const st = $("l-modes").scrollTop; this.renderLobby(); $("l-modes").scrollTop = st; }, "tab"));
+    requestAnimationFrame(() => this._modesFade && this._modesFade());
     const wb = $("l-worlds"); wb.innerHTML = "";
     WORLDS.forEach((w, i) => {
       const b = document.createElement("button"); const ok = S.unlocked("world", i); b.className = `world ${i === p.last.world ? "on" : ""} ${ok ? "" : "lock"}`; b.title = ok ? t("w_" + w.id) : t("unlockAt", { n: w.lv }); b.style.backgroundImage = `url(${worldAsset(w, "sky", true)})`;
@@ -252,18 +269,16 @@ export class UI {
     dd.querySelectorAll("button").forEach((b) => this.click(b, () => { const i = +b.dataset.v; if (!S.unlocked("diff", i)) { this.toast("🔒 " + t("unlockAt", { n: 10 })); return; } p.last.diff = i; S.save(); this.renderLobby(); }, "tab"));
     $("l-room").classList.toggle("x-hide", this.selMode !== "online"); $("l-code").value = p.last.room || "";
     $("l-playsub").textContent = `${t("m_" + this.selMode)} · ${t("w_" + WORLDS[p.last.world || 0].id)}`;
-    // season mini track
-    const start = Math.max(1, Math.min(SEASON.tiers - 5, tier)); let tr = ""; for (let k = start; k < start + 6; k++) { const r = seasonReward(k); tr += `<span class="tn ${k <= tier ? "got" : ""} ${r.skin ? "leg" : ""} ${k === tier + 1 ? "cur" : ""}">${r.skin ? "★" : k}</span>`; } $("l-pctrack").innerHTML = tr;
-    let nxt = 0; for (let k = tier + 1; k <= SEASON.tiers; k++) if (seasonReward(k).skin) { nxt = k; break; } $("l-pcnext").textContent = nxt ? t("legendAt", { n: nxt }) : "";
-    const unclaimed = Array.from({ length: tier }, (_, i) => i + 1).some((k) => !p.season.claimed.includes(k)); $("l-sdot").classList.toggle("x-hide", !unclaimed);
-    const ms = S.daily(); let anyClaim = false;
-    $("l-daily").innerHTML = ms.map((m, i) => { const done = m.p >= m.g; if (done && !m.c) anyClaim = true;
+    // daily missions: every line fully visible (wraps instead of clipping)
+    const ms = S.daily();
+    $("l-daily").innerHTML = ms.map((m, i) => { const done = m.p >= m.g;
       return `<div class="mis ${done ? "done" : ""}"><span>${t("mi_" + m.id, { n: m.g })}</span>${done ? (m.c ? `<span class="rw">✓</span>` : `<button class="btn gold claim" data-i2="${i}">${t("claim")} ◆${m.r}</button>`) : `<span class="rw">◆${m.r}</span>`}<div class="pb"><i style="width:${Math.round((m.p / m.g) * 100)}%"></i></div></div>`; }).join("");
     $("l-daily").querySelectorAll("[data-i2]").forEach((b) => this.click(b, () => this.claim(+b.dataset.i2), "reward"));
     const now = new Date(), mid = new Date(now); mid.setHours(24, 0, 0, 0); const hl = Math.ceil((mid - now) / 3600000); $("l-dreset").textContent = `⟳ ${hl}h`;
-    $("l-pdot").classList.toggle("x-hide", !anyClaim); this.renderBell(); this.updateShow();
+    const lg = !S.loginState().claimed, sp = S.spinReady(); $("l-ldot").classList.toggle("x-hide", !lg); $("l-login").classList.toggle("ready", lg); $("l-spdot").classList.toggle("x-hide", !sp); $("l-spin").classList.toggle("ready", sp);
+    this.renderBell(); this.updateShow();
   }
-  claim(i) { const r = this.S.claimMission(i); if (!r) return; this.toast(`◆ +${r.coins} · +${r.coins} XP`, "gold"); this.coins(this.p.coins); if (r.lv.up) { this.toast(t("levelUp", { n: r.lv.level }), "gold"); this.app.audio.play("level"); } this.checkAch(); if (this.cur === "lobby") this.renderLobby(); else this.renderProgress(); }
+  claim(i) { const r = this.S.claimMission(i); if (!r) return; this.toast(`◆ +${r.coins} · +${r.coins} XP`, "gold"); this.coins(this.p.coins); if (r.lv.up) { this.toast(t("levelUp", { n: r.lv.level }), "gold"); this.app.audio.play("level"); } this.checkAch(); if (this.cur === "lobby") this.renderLobby(); else if (this.cur === "season") this.renderSeason(); }
   checkAch() { for (const a of this.S.checkAch()) { this.toast(`${a.ic} ${t("achUnlocked", { n: t(a.id) })} · ◆${a.r}`, "gold", 3500); this.app.audio.play("ach"); } }
   play() {
     const p = this.p, mode = this.selMode; p.last.mode = mode; this.S.save();
@@ -320,7 +335,7 @@ export class UI {
         <button class="btn gold" id="c-useed">${p.skin.k === "custom" ? "✓ " + t("equipped") : t("equip")}</button></div>`;
     } else if (tab === "eyes") h = `<div class="grid">` + EYES.map((e, i) => { const ok = S.unlocked("eye", i), on = p.eye === i; return `<button class="item ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="eye" data-v="${i}"><div class="emo">${eyeIcon(e)}</div><b>${cap(e.id)}</b><small>${on ? t("equipped") : ok ? t("equip") : "🔒 " + t("lockedLv", { n: e.lv })}</small></button>`; }).join("") + `</div>`;
     else if (tab === "trails") h = `<div class="grid">` + TRAILS.map((tr, i) => { const ok = S.unlocked("trail", i), on = p.trail === i; return `<button class="item ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="trail" data-v="${i}"><div class="sw" style="background:${tr.c ? `radial-gradient(circle at 30% 50%, ${tr.c[0]} 0 3px, transparent 4px), radial-gradient(circle at 60% 40%, ${tr.c[1]} 0 2px, transparent 3px), radial-gradient(circle at 80% 60%, ${tr.c[0]} 0 2px, transparent 3px), #10131b` : "#10131b"}"></div><b>${cap(tr.id)}</b><small>${on ? t("equipped") : ok ? t("equip") : "🔒 " + t("lockedLv", { n: tr.lv })}</small></button>`; }).join("") + `</div>`;
-    else if (tab === "name") h = `<h4 class="sub">${t("displayName")}</h4><input type="text" id="c-name" maxlength="16" value="${esc(p.name)}" /><h4 class="sub">${t("nameColor")}</h4><div class="namecols">` + NAME_COLORS.map((c, i) => `<button data-k="nc" data-v="${i}" class="${p.nc === i ? "on" : ""}" style="background:${c}" aria-label="${c}"></button>`).join("") + `</div>`;
+    else if (tab === "name") h = `<h4 class="sub">${t("nameColor")}</h4><div class="namecols">` + NAME_COLORS.map((c, i) => `<button data-k="nc" data-v="${i}" class="${p.nc === i ? "on" : ""}" style="background:${c}" aria-label="${c}"></button>`).join("") + `</div>`;
     el.innerHTML = h;
     el.querySelectorAll("[data-k]").forEach((b) => this.click(b, () => this.pick(b.dataset.k, +b.dataset.v), "tab"));
     const fq = $("c-fq"); if (fq) fq.addEventListener("input", (e) => { this.flagQ = e.target.value; const pos = e.target.selectionStart; this.renderCustom(); const n = $("c-fq"); n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} });
@@ -391,27 +406,95 @@ export class UI {
     const trk = $("trk"); if (trk) { const tier = S.seasonTier(); requestAnimationFrame(() => { const c = trk.children[Math.max(0, tier - 1)]; if (c) trk.scrollLeft = c.offsetLeft - trk.clientWidth / 2 + 48; }); }
   }
 
-  // ---------- progress ----------
-  renderProgress() {
-    const p = this.p, S = this.S, el = $("p-content"), tab = this.pTab; this.coins(p.coins); let h = "";
-    if (tab === "missions") {
-      const lv = lvInfo(p.xp); h = `<div class="stat" style="margin-bottom:10px"><small>${t("level")}</small><b>${lv.n} <span class="fine">${fmtNum(lv.x)} / ${fmtNum(lv.need)} XP</span></b><div class="xpbar big" style="margin-top:8px"><i style="width:${Math.round((lv.x / lv.need) * 100)}%"></i></div></div><h4 class="sub">${t("daily")}</h4>`;
-      h += S.daily().map((m, i) => { const done = m.p >= m.g; return `<div class="mis ${done ? "done" : ""}"><span>${t("mi_" + m.id, { n: m.g })} · ${fmtNum(m.p)}/${fmtNum(m.g)}</span>${done ? (m.c ? `<span class="rw">✓ ${t("claimed")}</span>` : `<button class="btn gold claim" data-i2="${i}">${t("claim")} ◆${m.r}</button>`) : `<span class="rw">◆${m.r} · ${m.r} XP</span>`}<div class="pb"><i style="width:${Math.round((m.p / m.g) * 100)}%"></i></div></div>`; }).join("");
+  // ---------- profile: identity, cosmetics, stats, pinned achievements, history + leaderboard ----------
+  reqText(req) { if (!req) return ""; if (req.lv) return t("unlockAt", { n: req.lv }); if (req.ach) return t("reqAch", { n: t(req.ach) }); if (req.stat) return req.stat[0] === "wins" ? t("reqWins", { n: req.stat[1] }) : t("reqBoss"); if (req.season) return t("reqSeason", { n: req.season }); return t("reqOwner"); }
+  cosName(key) { const [k, v] = key.split(":"); if (k === "av") return t("avatar") + " #" + (+v.slice(1) + 1); if (k === "fr") return t("fr_" + FRAMES[+v].id); if (k === "ti") return t("ti_" + TITLES[+v].id); return this.bannerName(+v); }
+  bannerName(i) { const B = BANNERS[i]; return B && B.w ? t("w_" + B.w.id) : t("bn_" + (i === 7 ? 7 : 0)); }
+  renderProfile() {
+    const p = this.p, S = this.S, el = $("pr-content"), tab = this.prTab, lv = lvInfo(p.xp); this.coins(p.coins); let h = "";
+    $("pr-tabs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.v === tab));
+    const achCard = (id, ic, r, pin) => `<div class="ach ${p.ach[id] ? "got" : ""} ${pin ? "pin" : ""}" data-ach="${id}"><div class="ic">${ic}</div><div><b>${t(id)}</b><small>${esc(achDesc(id))}</small></div><span class="rw">${p.ach[id] ? "✓" : "◆" + r}</span><span class="pn">📌</span></div>`;
+    if (tab === "over") {
+      const R = rankOf(p.rp), st = p.stats, kd = st.deaths ? (st.kills / st.deaths).toFixed(2) : String(st.kills), dur = (x) => (x >= 3600 ? (x / 3600).toFixed(1) + " h" : x >= 60 ? t("min", { n: Math.round(x / 60) }) : t("sec", { n: x })), fav = S.favMode();
+      h = `<div class="pr-hero" style="background:${bannerCss(p.banner)}">${avatarHtml(p.av, p.frame, "l")}<div class="pr-id"><div class="nm">${esc(p.name)}</div><div class="tt">${t("ti_" + (TITLES[p.title] || TITLES[0]).id)}</div><small>${t("level")} ${lv.n} · ${lv.n >= 100 ? "MAX" : `${fmtNum(lv.x)} / ${fmtNum(lv.need)} XP`}</small><div class="xpbar"><i style="width:${lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)}%"></i></div></div>
+        <div class="pr-rank">${rankBadge(p.rp)}<b>${t("rk_" + R.id)}</b><span>${t("rpN", { n: fmtNum(p.rp) })}</span>${R.span ? `<div class="xpbar" style="width:70px"><i style="width:${Math.round((R.into / R.span) * 100)}%;background:linear-gradient(90deg,${R.c[1]},${R.c[0]})"></i></div>` : ""}</div></div>
+        <div class="pr-name"><label for="pr-nm">${t("editName")}</label><input type="text" id="pr-nm" maxlength="16" value="${esc(p.name)}" autocomplete="off" spellcheck="false" enterkeyhint="done"><button class="btn primary" id="pr-nmsave">${t("saveName")}</button></div>
+        <div class="stats">` + [["bestLen", fmtNum(st.best)], ["st_kills", fmtNum(st.kills)], ["st_wins", fmtNum(st.wins || 0)], ["st_games", fmtNum(st.games)], ["st_time", dur(st.time)], ["favMode", fav ? t("m_" + fav) : "—"], ["st_kd", kd]].map(([k, v]) => `<div class="stat"><small>${t(k)}</small><b>${v}</b></div>`).join("") + `</div>
+        <h4 class="sub">${t("pinned")}</h4><div class="pr-pins">` + [0, 1, 2].map((i) => { const id = p.pins[i], A = id && Store.ACH.find((a) => a[0] === id); return A ? achCard(A[0], A[1], A[3], true) : `<div class="empty">${i === 0 ? t("noPins") : "📌"}</div>`; }).join("") + `</div>`;
+    } else if (tab === "avatar") {
+      h = `<h4 class="sub">${t("portraits")}</h4><div class="avgrid">` + AVATARS.map((req, i) => { const id = "p" + i, ok = avOk(S, id), on = p.av === id; return `<button class="avc ${on ? "on" : ""} ${ok ? "" : "lock"}" data-av="${id}">${avatarHtml(id, p.frame, "xl")}${ok ? "" : `<span class="lki">${IC.lock}</span>`}<span>${on ? t("equipped") : ok ? t("equip") : esc(this.reqText(req))}</span></button>`; }).join("") + `</div>
+        <h4 class="sub">${t("flags")}</h4><div class="searchbar"><input type="search" id="pr-fq" placeholder="${t("search")}" value="${esc(this.avQ || "")}"></div><div class="avgrid" id="pr-flags"></div>`;
+    } else if (tab === "frame") {
+      h = `<div class="avgrid">` + FRAMES.map((F, i) => { const ok = frameOk(S, i), on = p.frame === i; return `<button class="avc ${on ? "on" : ""} ${ok ? "" : "lockf"}" data-fr="${i}">${avatarHtml(p.av, i, "xl")}${ok ? "" : `<span class="lki">${IC.lock}</span>`}<b>${t("fr_" + F.id)}</b><span>${on ? t("equipped") : ok ? t("equip") : esc(this.reqText(F.req))}</span></button>`; }).join("") + `</div>`;
+    } else if (tab === "title") {
+      h = TITLES.map((T, i) => { const ok = titleOk(S, i), on = p.title === i; if (T.req && T.req.owner && !ok) return ""; return `<button class="ttl ${on ? "on" : ""} ${ok ? "" : "lock"}" data-ti="${i}"><b>${t("ti_" + T.id)}</b><small>${on ? "✓ " + t("equipped") : ok ? t("equip") : IC.lock + " " + esc(this.reqText(T.req))}</small></button>`; }).join("");
+    } else if (tab === "banner") {
+      h = `<div class="bngrid">` + BANNERS.map((B, i) => { const ok = bannerOk(S, i), on = p.banner === i; return `<button class="bnc ${on ? "on" : ""} ${ok ? "" : "lock"}" data-bn="${i}" style="background:${bannerCss(i)}"><span>${esc(this.bannerName(i))}<small>${on ? "✓ " + t("equipped") : ok ? t("equip") : esc(this.reqText(B.req))}</small></span></button>`; }).join("") + `</div>`;
     } else if (tab === "ach") {
-      const got = Object.keys(p.ach).length; h = `<p class="fine" style="margin-bottom:8px">${got}/${Store.ACH.length}</p><div class="achs">` + Store.ACH.map(([id, ic, , r]) => `<div class="ach ${p.ach[id] ? "got" : ""}"><div class="ic">${ic}</div><div><b>${t(id)}</b><small>${esc(achDesc(id))}</small></div><span class="rw">${p.ach[id] ? "✓" : "◆" + r}</span></div>`).join("") + `</div>`;
-    } else if (tab === "stats") {
-      const s = p.stats, kd = s.deaths ? (s.kills / s.deaths).toFixed(2) : s.kills, dur = (x) => (x >= 3600 ? (x / 3600).toFixed(1) + " h" : x >= 60 ? t("min", { n: Math.round(x / 60) }) : t("sec", { n: x }));
-      const rows = [["st_games", fmtNum(s.games)], ["st_wins", fmtNum(s.wins || 0)], ["st_kills", fmtNum(s.kills)], ["st_deaths", fmtNum(s.deaths)], ["st_kd", kd], ["st_food", fmtNum(s.food)], ["st_best", fmtNum(s.best)], ["st_top", fmtNum(s.top)], ["st_life", dur(s.life)], ["st_time", dur(s.time)], ["st_boost", dur(s.boost)], ["st_online", fmtNum(s.online)], ["st_boss", fmtNum(s.bossKills || 0)]];
-      h = `<div class="stats">` + rows.map(([k, v]) => `<div class="stat"><small>${t(k)}</small><b>${v}</b></div>`).join("") + `</div>`;
-    } else if (tab === "bests") {
+      const got = Object.keys(p.ach).length; h = `<p class="fine" style="margin-bottom:8px">${got}/${Store.ACH.length} · ${t("pinHint")}</p><div class="achs">` + Store.ACH.map(([id, ic, , r]) => achCard(id, ic, r, p.pins.includes(id))).join("") + `</div>`;
+    } else if (tab === "hist") {
+      const H = p.hist; h = `<h4 class="sub">${t("history")}</h4>` + (H.length ? `<table class="lb hist"><tr><th></th><th>${t("mode")}</th><th>${t("bests")}</th><th>${t("r_rank")}</th><th>${t("r_kills")}</th><th>${t("r_mass")}</th><th>${t("r_time")}</th><th>RP</th><th></th></tr>` + H.map((e) => `<tr><td class="${e.w ? "w" : "l"}">${e.w ? t("hWin") : t("hLoss")}</td><td>${t("m_" + e.m)}</td><td>${fmtNum(e.s)}</td><td>${e.r ? "#" + e.r : "—"}</td><td>${e.k}</td><td>${fmtNum(e.ms || 0)}</td><td>${fmtTime(e.t || 0)}</td><td class="${(e.rp || 0) >= 0 ? "w" : "l"}">${(e.rp || 0) >= 0 ? "+" : ""}${e.rp || 0}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<p class="fine">${t("noHistory")}</p>`);
       const modes = ["classic", "br", "koth", "boss", "team", "time", "survival", "online", "zen"]; this.bMode = this.bMode || "classic";
-      h = `<div class="seg small" id="b-modes" style="margin-bottom:10px">` + modes.map((m) => `<button data-v="${m}" class="${m === this.bMode ? "on" : ""}">${t("m_" + m)}</button>`).join("") + `</div>`;
+      h += `<h4 class="sub">${t("bests")}</h4><div class="seg small" id="b-modes" style="margin-bottom:8px">` + modes.map((m) => `<button data-v="${m}" class="${m === this.bMode ? "on" : ""}">${t("m_" + m)}</button>`).join("") + `</div>`;
       const L = p.bests[this.bMode] || [];
       h += L.length ? `<table class="lb"><tr><th>#</th><th>${t("bests")}</th><th>${t("r_mass")}</th><th>${t("r_kills")}</th><th>${t("world")}</th><th></th></tr>` + L.map((e, i) => `<tr><td>${i + 1}</td><td>${fmtNum(e.s)}</td><td>${fmtNum(e.m || 0)}</td><td>${e.k}</td><td>${t("w_" + (WORLDS[e.w] || WORLDS[0]).id)}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<p class="fine">${t("noBests")}</p>`;
     }
     el.innerHTML = h;
-    el.querySelectorAll("[data-i2]").forEach((b) => this.click(b, () => this.claim(+b.dataset.i2), "reward"));
-    const bm = $("b-modes"); if (bm) bm.querySelectorAll("button").forEach((b) => this.click(b, () => { this.bMode = b.dataset.v; this.renderProgress(); }, "tab"));
+    const done = (msg) => { S.save(); this.renderProfile(); if (msg) this.toast("✓ " + msg, "good", 1600); };
+    el.querySelectorAll("[data-av]").forEach((b) => this.click(b, () => this.pickAv(b.dataset.av), "tab"));
+    el.querySelectorAll("[data-fr]").forEach((b) => this.click(b, () => { const i = +b.dataset.fr; if (!frameOk(S, i)) { this.toast("🔒 " + this.reqText(FRAMES[i].req)); this.app.audio.play("error"); return; } p.frame = i; done(t("equipped")); }, "tab"));
+    el.querySelectorAll("[data-ti]").forEach((b) => this.click(b, () => { const i = +b.dataset.ti; if (!titleOk(S, i)) { this.toast("🔒 " + this.reqText(TITLES[i].req)); this.app.audio.play("error"); return; } p.title = i; done(t("equipped")); }, "tab"));
+    el.querySelectorAll("[data-bn]").forEach((b) => this.click(b, () => { const i = +b.dataset.bn; if (!bannerOk(S, i)) { this.toast("🔒 " + this.reqText(BANNERS[i].req)); this.app.audio.play("error"); return; } p.banner = i; done(t("equipped")); }, "tab"));
+    el.querySelectorAll("[data-ach]").forEach((b) => this.click(b, () => { const id = b.dataset.ach; if (p.pins.includes(id)) p.pins = p.pins.filter((x) => x !== id); else if (!p.ach[id]) { this.toast(t("pinLocked")); return; } else if (p.pins.length >= 3) { this.toast(t("pinFull"), "warn"); return; } else p.pins.push(id); done(); }, "tab"));
+    const bm = $("b-modes"); if (bm) bm.querySelectorAll("button").forEach((b) => this.click(b, () => { this.bMode = b.dataset.v; this.renderProfile(); }, "tab"));
+    const sv = $("pr-nmsave"); if (sv) { const save = () => { const v = $("pr-nm").value.replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, 16); if (v.length < 2) { this.toast(t("nameBad"), "warn"); this.app.audio.play("error"); return; } p.name = v; done(t("nameSaved")); }; this.click(sv, save); $("pr-nm").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); save(); } }); }
+    const fq = $("pr-fq"); if (fq) { const drawFlags = () => { const q = (this.avQ || "").toLowerCase(); const list = FLAGS.filter((f) => !q || flagName(f, LANG).toLowerCase().includes(q) || f.en.toLowerCase().includes(q) || f.c.toLowerCase() === q);
+        $("pr-flags").innerHTML = list.map((f) => { const id = "f" + f.i, on = p.av === id; return `<button class="avc ${on ? "on" : ""}" data-av="${id}">${avatarHtml(id, p.frame, "xl")}<span>${esc(flagName(f, LANG))}</span></button>`; }).join("");
+        $("pr-flags").querySelectorAll("[data-av]").forEach((b) => this.click(b, () => this.pickAv(b.dataset.av), "tab")); };
+      drawFlags(); fq.addEventListener("input", (e) => { this.avQ = e.target.value; drawFlags(); }); }
+  }
+  pickAv(id) { if (!avOk(this.S, id)) { const i = +id.slice(1); this.toast("🔒 " + this.reqText(AVATARS[i])); this.app.audio.play("error"); return; } const sc = $("pr-content").scrollTop; this.p.av = id; this.S.save(); this.renderProfile(); $("pr-content").scrollTop = sc; this.toast("✓ " + t("equipped"), "good", 1400); }
+
+  // ---------- daily login calendar + free lucky spin (coins / XP / cosmetics only) ----------
+  renderLogin() {
+    const st = this.S.loginState(), got = st.claimed ? st.day : st.day - 1;
+    $("lg-days").innerHTML = LOGIN.map((c, i) => `<div class="cd ${i <= got ? "got" : ""} ${!st.claimed && i === st.day ? "today" : ""} ${i === 6 ? "d7" : ""}"><span>${t("dayN", { n: i + 1 })}</span>${i === 6 ? `<span class="gift">🎁</span>` : `<span class="coin"></span>`}<b>${fmtNum(c)}</b>${i === 6 ? `<small>${t("plusCos")}</small>` : ""}</div>`).join("");
+    const b = $("lg-claim"); b.disabled = st.claimed; b.textContent = st.claimed ? t("comeBack") : `${t("claim")} · ◆ ${fmtNum(LOGIN[st.day])}`;
+  }
+  openLogin() { this.renderLogin(); $("m-login").classList.remove("x-hide"); }
+  claimLogin() {
+    const r = this.S.claimLogin(LOGIN, () => this.pickCos()); if (!r) return; this.app.audio.play("reward"); haptic.pattern([15, 30, 15]); this.coins(this.p.coins);
+    this.toast(`◆ +${fmtNum(r.coins)} · ${t("dayN", { n: r.day + 1 })}`, "gold"); if (r.cos) this.toast("🎁 " + t("newCos", { n: this.cosName(r.cos) }), "gold", 3500);
+    this.renderLogin(); if (this.cur === "lobby") this.renderLobby(); setTimeout(() => $("m-login").classList.add("x-hide"), 900);
+  }
+  pickCos() { const L = lockedCosmetics(this.S); return L.length ? L[(Math.random() * L.length) | 0] : null; }
+  segLabel(sg) { return sg.c ? `◆ ${fmtNum(sg.c)}` : sg.x ? t("xpN", { n: sg.x }) : "🎁"; }
+  openSpin() {
+    const w = $("sp-wheel"), n = SPIN.length, cols = ["#3a2a7a", "#1d4f8a", "#7a2a5a", "#1f6b52", "#8a5a12", "#25307a", "#7a1f2f", "#9a7a10"];
+    w.style.background = `conic-gradient(${SPIN.map((_, i) => `${cols[i % cols.length]} ${(i / n) * 360}deg ${((i + 1) / n) * 360}deg`).join(",")})`;
+    w.innerHTML = SPIN.map((sg, i) => `<div class="sg" style="transform:rotate(${(i + 0.5) / n * 360 - 90}deg)"><span>${this.segLabel(sg)}</span></div>`).join("");
+    if (!this._spinning) { w.style.transition = "none"; w.style.transform = `rotate(${this._spinRot || 0}deg)`; void w.offsetWidth; w.style.transition = ""; }
+    const ready = this.S.spinReady(); $("sp-go").disabled = !ready || !!this._spinning; $("sp-go").textContent = ready ? t("spinGo") : t("spinDone"); $("sp-res").textContent = ready ? t("spinFree") : t("spinDone");
+    $("m-spin").classList.remove("x-hide");
+  }
+  doSpin() {
+    if (this._spinning) return; const r = this.S.spin(SPIN, () => this.pickCos()); if (!r) return; this._spinning = true; $("sp-go").disabled = true; $("sp-res").textContent = "…";
+    const n = SPIN.length, seg = 360 / n, target = 360 - (r.i + 0.5) * seg + (Math.random() - 0.5) * seg * 0.6, base = Math.ceil((this._spinRot || 0) / 360) * 360 + 360 * 5; this._spinRot = base + target;
+    const w = $("sp-wheel"); w.style.transform = `rotate(${this._spinRot}deg)`; this.app.audio.play("whoosh"); haptic.tap(10);
+    let ticks = 0; const tk = setInterval(() => { if (++ticks > 16) clearInterval(tk); this.app.audio.play("tab"); }, 220);
+    setTimeout(() => { this._spinning = false; clearInterval(tk); this.app.audio.play("reward"); haptic.pattern([20, 40, 20]); this.coins(this.p.coins);
+      const msg = r.cos ? t("newCos", { n: this.cosName(r.cos) }) : r.xp ? t("wonN", { n: t("xpN", { n: r.xp }) }) : t("wonN", { n: t("coinsN", { n: fmtNum(r.coins) }) }); $("sp-res").textContent = msg; this.toast((r.cos ? "🎁 " : "◆ ") + msg, "gold", 3200);
+      if (r.lv && r.lv.up) { this.toast(t("levelUp", { n: r.lv.level }), "gold"); this.app.audio.play("level"); }
+      $("sp-go").textContent = t("spinDone"); if (this.cur === "lobby") this.renderLobby(); }, this.S.settings.reduceMotion ? 400 : 4300);
+  }
+  // ---------- share an online room: native share sheet, else copy the link ----------
+  async shareRoom(fromPause) {
+    const p = this.p; let code = fromPause && this.app.game.backend && this.app.game.backend.room ? this.app.game.backend.room : (p.last.room || "");
+    if (!code || /^pub-/.test(code)) { if (fromPause) code = this.app.game.backend && this.app.game.backend.room || "pub-1"; else { code = "r-" + Math.random().toString(36).slice(2, 7); p.last.room = code; this.S.save(); $("l-code").value = code; } }
+    const url = location.origin + location.pathname + "?room=" + encodeURIComponent(code), txt = t("roomShareTxt", { n: code });
+    try { if (navigator.share) { await navigator.share({ title: "Super Snake Pro", text: txt, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(url); this.toast("🔗 " + t("roomCopied", { n: code }), "good", 3500); }
+    catch (_) { this.toast(url, "", 6000); }
   }
 
   // ---------- settings ----------
@@ -470,11 +553,13 @@ export class UI {
   hidePause() { $("m-pause").classList.add("x-hide"); }
   showResults(r) {
     const m = $("m-results"); m.classList.remove("x-hide"); this.app.hud.hide(); m.querySelector(".results").classList.toggle("win", !!r.win);
+    const p = this.p, R = rankOf(p.rp), d = r.rp | 0; $("r-who").innerHTML = `${avatarHtml(p.av, p.frame, "m")}<div class="who"><b>${esc(p.name)}</b><small>${t("ti_" + (TITLES[p.title] || TITLES[0]).id)}</small></div><div class="rp ${d >= 0 ? "up" : "dn"}">${rankBadge(p.rp)}<span>${t("rk_" + R.id)} · ${fmtNum(p.rp)}<br>${r.mode === "zen" ? "" : (d >= 0 ? "+" : "") + d + " RP"}</span></div>`;
+    if (r.rankUp) setTimeout(() => { this.toast("🏅 " + t("rankUpT", { n: t("rk_" + R.id) }), "gold", 3500); this.app.audio.play("level"); }, 900);
     $("r-title").textContent = r.title; $("r-sub").textContent = r.sub || ""; $("r-best").classList.toggle("x-hide", !r.newBest);
     const sc = $("r-score"), target = r.score, t0 = performance.now(); const step = () => { const k = Math.min(1, (performance.now() - t0) / 900); sc.textContent = fmtNum(k >= 1 ? target : target * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); }; step();
     const cells = [["r_mass", fmtNum(r.mass)], ["r_kills", r.kills], ["r_rank", r.rank === "—" ? "—" : "#" + r.rank], ["r_time", fmtTime(r.time)]]; if (r.mode === "survival") cells[2] = ["wave", r.wave];
     $("r-grid").innerHTML = cells.map(([a, b]) => `<div><small>${a === "wave" ? t("wave", { n: "" }).trim() : t(a)}</small><b>${b}</b></div>`).join("");
-    const lv = lvInfo(this.p.xp); $("r-lv").textContent = lv.n; $("r-xpbar").style.width = "0"; setTimeout(() => ($("r-xpbar").style.width = Math.round((lv.x / lv.need) * 100) + "%"), 60);
+    const lv = lvInfo(this.p.xp); $("r-lv").textContent = lv.n; $("r-xpbar").style.width = "0"; setTimeout(() => ($("r-xpbar").style.width = (lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)) + "%"), 60);
     this.lastResults = r; $("r-watch").classList.toggle("x-hide", !r.killer); $("r-season").textContent = "✦ " + t("seasonXp", { n: r.seasonXp || r.xp }) + (r.pu ? " · " + t("puUsed", { n: r.pu }) : "");
     $("r-xp").textContent = t("xpGain", { n: r.xp }); $("r-coins").textContent = "◆ " + t("coinGain", { n: r.coins });
     const ex = []; if (r.lv.up) ex.push("⭐ " + t("levelUp", { n: r.lv.level })); if (r.tiers) ex.push("✦ " + t("tierUp", { n: this.S.seasonTier() }));
