@@ -1,13 +1,13 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=m2b";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=m2b";
-import { WORLDS, worldAsset } from "./worlds.js?v=m2b";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=m2b";
-import { haptic } from "./audio.js?v=m2b";
-import { skinFn, MODES, EMOTES } from "./game.js?v=m2b";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=m2b";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=m2b";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=m2clean";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=m2clean";
+import { WORLDS, worldAsset } from "./worlds.js?v=m2clean";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=m2clean";
+import { haptic } from "./audio.js?v=m2clean";
+import { skinFn, MODES, EMOTES } from "./game.js?v=m2clean";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=m2clean";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=m2clean";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -38,7 +38,7 @@ export class Hud {
     $("hud").classList.remove("cine"); clearTimeout(this._cineT);
     $("hud").classList.remove("x-hide"); $("h-timer").classList.toggle("x-hide", !(mode === "time" || mode === "survival" || (MODES[mode] && MODES[mode].dur))); $("h-feed").innerHTML = ""; $("h-pop").innerHTML = ""; $("h-mode").innerHTML = "";
     $("h-mini").classList.toggle("x-hide", !this.app.store.settings.minimap); $("h-fps").classList.toggle("x-hide", !this.app.store.settings.showFps); this.storm(false); this.mode = mode; this.lastLb = "";
-    for (const id of ["h-cine", "h-kill", "h-count", "h-combo", "h-mission", "h-hint"]) $(id).classList.remove("on"); this.puClear(); this.spectate(null); requestAnimationFrame(() => this.layout());
+    for (const id of ["h-cine", "h-kill", "h-count", "h-mission", "h-hint"]) $(id).classList.remove("on"); this.bannerClear(); this.combo(0); this.puClear(); this.spectate(null); requestAnimationFrame(() => this.layout());
   }
   hide() { $("hud").classList.add("x-hide"); $("h-emos").classList.add("x-hide"); this.storm(false); }
   update(d) {
@@ -69,8 +69,8 @@ export class Hud {
   dot(s) { if (s.team === 0) return "#4da3ff"; if (s.team === 1) return "#ff4d5e"; const k = s.skin ? JSON.stringify(s.skin) : ""; this._dots = this._dots || new Map(); let c = this._dots.get(k); if (!c) { c = s.skin ? primaryColor(s.skin) : "#888"; this._dots.set(k, c); } return c; }
   minimap(all, me, R, pal, zone, hill, boss, pus) {
     const g = this.mini, S = 180; g.clearRect(0, 0, S, S); const k = (S / 2 - 6) / R;
-    const gr = g.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S / 2); gr.addColorStop(0, "rgba(255,255,255,0.02)"); gr.addColorStop(1, "rgba(255,200,69,0.12)"); g.fillStyle = gr; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); g.fill();
-    g.strokeStyle = "rgba(255,200,69,0.6)"; g.lineWidth = 2.5; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); g.stroke();
+    const gr = g.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S / 2); gr.addColorStop(0, "rgba(255,255,255,0.02)"); gr.addColorStop(1, "rgba(255,255,255,0.05)"); g.fillStyle = gr; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); g.fill();
+    g.strokeStyle = "rgba(255,255,255,0.22)"; g.lineWidth = 2; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); g.stroke();
     if (zone) { g.strokeStyle = "rgba(190,110,255,0.95)"; g.lineWidth = 3; g.beginPath(); g.arc(S / 2 + zone.x * k, S / 2 + zone.y * k, Math.max(2, zone.r * k), 0, 6.283); g.stroke(); }
     if (hill) { g.fillStyle = "rgba(255,200,69,0.35)"; g.beginPath(); g.arc(S / 2 + hill.x * k, S / 2 + hill.y * k, Math.max(4, hill.r * k), 0, 6.283); g.fill(); }
     if (me && me.alive) { const mx = S / 2 + me.x * k, my = S / 2 + me.y * k; g.fillStyle = "rgba(255,231,163,0.12)"; g.beginPath(); g.moveTo(mx, my); g.arc(mx, my, 34, me.a - 0.7, me.a + 0.7); g.closePath(); g.fill(); }
@@ -88,28 +88,40 @@ export class Hud {
   fps(n) { $("h-fps").textContent = n + " FPS"; }
   // keeps the kill feed under the top-centre mode/timer strip, pushes the centre banners below it, and stops the
   // leaderboard short of the boost button, so nothing overlaps a touch control (safe-area insets come in via the rects)
+  // left column: score cluster -> power-up chips -> kill feed (max 3); the centre banner sits under the top-centre pill
   layout() {
     const hud = $("hud"); if (!hud || hud.classList.contains("x-hide")) return;
     let top = 0; for (const id of ["h-mode", "h-net"]) { const el = $(id); if (el && !el.classList.contains("x-hide") && el.offsetHeight) top = Math.max(top, el.getBoundingClientRect().bottom); }
-    const tl = document.querySelector(".h-tl"); top = Math.max(top, tl ? tl.getBoundingClientRect().top : 8);
-    hud.style.setProperty("--feedT", Math.round(top + 4) + "px");
-    const fe = $("h-feed"); hud.style.setProperty("--feedB", fe.childElementCount ? Math.round(fe.getBoundingClientRect().bottom) + "px" : "0px");
-    const lb = $("h-lb"), bo = $("boost"); lb.style.maxHeight = "";
-    if (lb && bo && bo.offsetParent && !document.documentElement.classList.contains("lefty")) { const lr = lb.getBoundingClientRect(), br = bo.getBoundingClientRect(); if (lr.left < br.right && lr.right > br.left) lb.style.maxHeight = Math.max(60, br.top - lr.top - 8) + "px"; }
+    hud.style.setProperty("--bannerT", Math.round(Math.max(top + 10, innerHeight * 0.2)) + "px");
+    const tl = document.querySelector(".h-tl"), pu = $("h-pu"); let fy = tl ? tl.getBoundingClientRect().bottom : 50; if (pu && pu.childElementCount) fy = Math.max(fy, pu.getBoundingClientRect().bottom);
+    hud.style.setProperty("--feedT", Math.round(fy + 6) + "px");
+    const lb = $("h-lb"), mm = $("h-mini"); if (lb && mm) hud.style.setProperty("--miniT", Math.round(lb.getBoundingClientRect().bottom + 8) + "px");
   }
-  feed(list) { $("h-feed").innerHTML = list.slice(0, 4).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how === "bounty" ? `<b>💰</b> ${esc(f.b)}` : f.how ? `<b>${f.how === "storm" ? "🌀" : f.how === "self" ? "🔄" : f.how === "meteor" ? "☄" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); this.layout(); clearTimeout(this.ft); this.ft = setTimeout(() => { $("h-feed").innerHTML = ""; this.layout(); }, 6500); }
-  banner(txt, ms) { const b = $("h-banner"); b.textContent = txt; b.classList.add("on"); clearTimeout(this.bt); this.bt = setTimeout(() => b.classList.remove("on"), ms || 1400); }
+  feed(list) { $("h-feed").innerHTML = list.slice(0, 3).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how === "bounty" ? `<b>💰</b> ${esc(f.b)}` : f.how ? `<b>${f.how === "storm" ? "🌀" : f.how === "self" ? "🔄" : f.how === "meteor" ? "☄" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); this.layout(); clearTimeout(this.ft); this.ft = setTimeout(() => { $("h-feed").innerHTML = ""; this.layout(); }, 6500); }
+  // ONE centre message channel: a short queue, one message at a time, small, in the upper third (never over the snake)
+  banner(txt, ms, kind) {
+    const q = this.bq || (this.bq = []); if (this.bCur === txt || q.some((x) => x.txt === txt)) return; q.push({ txt, ms: Math.min(ms || 1300, 1800), kind: kind || "" }); if (q.length > 3) q.splice(0, q.length - 3);
+    if (!this.bBusy) this.nextBanner();
+  }
+  nextBanner() {
+    const b = $("h-banner"), m = this.bq && this.bq.shift(); if (!m) { this.bBusy = false; this.bCur = ""; return; }
+    this.bBusy = true; this.bCur = m.txt; b.textContent = m.txt; b.className = "h-banner on " + m.kind; clearTimeout(this.bt);
+    this.bt = setTimeout(() => { b.classList.remove("on"); this.bt = setTimeout(() => this.nextBanner(), 220); }, m.ms);
+  }
+  bannerClear() { clearTimeout(this.bt); this.bq = []; this.bBusy = false; this.bCur = ""; $("h-banner").className = "h-banner"; }
   count(txt) { const c = $("h-count"); c.textContent = txt; c.classList.remove("on"); void c.offsetWidth; c.classList.add("on"); }
-  killBanner(a, b) { const k = $("h-kill"); k.querySelector("b").textContent = a; k.querySelector("small").textContent = b; k.classList.remove("on"); void k.offsetWidth; k.classList.add("on"); }
+  killBanner(a, b) { this.banner(b ? `⚔ ${a} · ${b}` : "⚔ " + a, 1300, "kill"); }
   cinematic(a, b, lose) { const hud = $("hud"); if (hud) { hud.classList.add("cine"); clearTimeout(this._cineT); this._cineT = setTimeout(() => hud.classList.remove("cine"), 3800); } const k = $("h-cine"); k.querySelector("b").textContent = a; k.querySelector("small").textContent = b || ""; k.classList.toggle("lose", !!lose); k.classList.remove("on"); void k.offsetWidth; k.classList.add("on"); }
   storm(on) { $("storm-vig").classList.toggle("on", !!on); if (on && !this._stormMsg) { this._stormMsg = 1; this.banner(t("outZone"), 1200); } if (!on) this._stormMsg = 0; }
-  popup(txt, kind, pos, col) { const p = document.createElement("div"); p.className = "pop " + (kind || ""); p.textContent = txt; if (col) p.style.color = col; if (pos && pos[2]) { p.style.left = pos[0] + "px"; p.style.top = pos[1] + "px"; } const box = $("h-pop"); box.appendChild(p); while (box.children.length > 6) box.firstChild.remove(); setTimeout(() => p.remove(), 1000); }
-  combo(mul, n) { const c = $("h-combo"); if (!mul || mul < 2) { c.classList.remove("on"); return; } const k = "×" + mul; if (c.dataset.k !== k) { c.dataset.k = k; c.classList.remove("pump"); void c.offsetWidth; c.classList.add("pump"); } c.innerHTML = `<b>${t("combo")} ${k}</b><small>${n}</small>`; c.classList.add("on"); c.dataset.m = mul; }
+  // floating text over the world is gone (it piled up on the head); milestones go through the single banner channel
+  popup(txt, kind) { if (kind === "rank" || kind === "kill") this.banner(txt, 1200, "sub"); }
+  popupOld(txt, kind, pos, col) { const p = document.createElement("div"); p.className = "pop " + (kind || ""); p.textContent = txt; if (col) p.style.color = col; if (pos && pos[2]) { p.style.left = pos[0] + "px"; p.style.top = pos[1] + "px"; } const box = $("h-pop"); box.appendChild(p); while (box.children.length > 6) box.firstChild.remove(); setTimeout(() => p.remove(), 1000); }
+  combo(mul) { const c = $("h-combo"); if (!mul || mul < 2) { if (c.dataset.k) { c.classList.add("x-hide"); c.dataset.k = ""; } return; } const k = "×" + mul; if (c.dataset.k !== k) { c.dataset.k = k; c.textContent = `${t("combo")} ${k}`; c.classList.remove("x-hide", "pump"); void c.offsetWidth; c.classList.add("pump"); } }
   pu(P, slow) {
     const box = $("h-pu"); if (!P) { if (box.innerHTML) box.innerHTML = ""; return; } let h = "";
     for (const k of PU_TIMED) if (P[k] > 0) { const f = Math.max(0, Math.min(1, P[k] / PU_DUR[k])); h += `<div class="pu-chip ${P[k] < 2 ? "end" : ""}" style="--c:${PU_COL[k]};--f:${f.toFixed(3)}"><i>${puSvg(k)}</i><span>${k === 1 ? "1×" : Math.ceil(P[k]) + "s"}</span></div>`; }
     if (slow > 0) h += `<div class="pu-chip bad" style="--c:#9ff3ff;--f:${(slow / PU_DUR[5]).toFixed(3)}"><i>${puSvg(5)}</i><span>${Math.ceil(slow)}s</span></div>`;
-    if (box.dataset.k !== h) { box.innerHTML = h; box.dataset.k = h; }
+    if (box.dataset.k !== h) { const n0 = box.childElementCount; box.innerHTML = h; box.dataset.k = h; if (n0 !== box.childElementCount) this.layout(); }
   }
   puClear() { $("h-pu").innerHTML = ""; $("h-pu").dataset.k = ""; }
   puFlash(k) { const f = $("pu-flash"); f.style.setProperty("--c", PU_COL[k]); f.classList.remove("on"); void f.offsetWidth; f.classList.add("on"); }
@@ -277,7 +289,15 @@ export class UI {
     $("l-daily").querySelectorAll("[data-i2]").forEach((b) => this.click(b, () => this.claim(+b.dataset.i2), "reward"));
     const now = new Date(), mid = new Date(now); mid.setHours(24, 0, 0, 0); const hl = Math.ceil((mid - now) / 3600000); $("l-dreset").textContent = `⟳ ${hl}h`;
     const lg = !S.loginState().claimed, sp = S.spinReady(); $("l-ldot").classList.toggle("x-hide", !lg); $("l-login").classList.toggle("ready", lg); $("l-spdot").classList.toggle("x-hide", !sp); $("l-spin").classList.toggle("ready", sp);
-    this.renderBell(); this.updateShow();
+    this.a2hs(); this.renderBell(); this.updateShow();
+  }
+  // iPhone Safari has no Fullscreen API: suggest Add to Home Screen once (dismissible), only in Safari, never when already installed
+  a2hs() {
+    const el = $("l-a2hs"), ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
+    const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches;
+    const show = ios && !standalone && !/CriOS|FxiOS|EdgiOS/.test(ua) && (!this.S.settings.a2hs || this._a2shown) && !this._a2off; el.classList.toggle("x-hide", !show); if (!show) return;
+    if (!this._a2shown) { this._a2shown = 1; this.S.settings.a2hs = 1; this.S.save(); } // one-time: shown this session only
+    $("l-a2hs-t").textContent = t("a2hs"); if (!this._a2b) { this._a2b = 1; this.click($("l-a2hs-x"), () => { this._a2off = 1; el.classList.add("x-hide"); }, "back"); }
   }
   claim(i) { const r = this.S.claimMission(i); if (!r) return; this.toast(`◆ +${r.coins} · +${r.coins} XP`, "gold"); this.coins(this.p.coins); if (r.lv.up) { this.toast(t("levelUp", { n: r.lv.level }), "gold"); this.app.audio.play("level"); } this.checkAch(); if (this.cur === "lobby") this.renderLobby(); else if (this.cur === "season") this.renderSeason(); }
   checkAch() { for (const a of this.S.checkAch()) { this.toast(`${a.ic} ${t("achUnlocked", { n: t(a.id) })} · ◆${a.r}`, "gold", 3500); this.app.audio.play("ach"); } }
@@ -505,7 +525,7 @@ export class UI {
     const seg = (k, opts, label, sub) => ({ k, type: "seg", opts, label, sub }), tog = (k, label, sub) => ({ k, type: "tog", label, sub }), rng = (k, label, min, max, step, fmt) => ({ k, type: "rng", label, min, max, step, fmt });
     const R = this.app.renderer;
     if (tab === "graphics") rows = [seg("quality", [["auto", t("q_auto")], ["low", t("q_low")], ["medium", t("q_medium")], ["high", t("q_high")], ["ultra", t("q_ultra")]], "quality", R ? (s.quality === "auto" ? "→ " + t("q_" + R.qName) : "") + (R.dyn && R.dyn < 0.99 ? ` · ${t("dynRes")} ${Math.round(R.dyn * 100)}%` : "") : ""),
-      { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), tog("showFps", "showFps"), tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
+      { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), { ...tog("showFps", "showFps"), sub: "debug" }, tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
     if (tab === "controls") rows = [seg("ctrl", [["joy", t("c_joy")], ["follow", t("c_follow")], ["swipe", t("c_swipe")]], "ctrlType"), rng("sens", "sens", 0.5, 2, 0.05, (v) => v.toFixed(2) + "×"), tog("left", "leftHand"),
       rng("boostSize", "boostSize", 0.7, 1.4, 0.05, (v) => Math.round(v * 100) + "%"), rng("boostPos", "boostPos", 0, 1, 0.05, (v) => Math.round(v * 100) + "%"), { ...tog("haptics", "haptics"), sub: navigator.vibrate ? "" : t("hapticsNo") }];
     if (tab === "audio") rows = [rng("vMaster", "vMaster", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vSfx", "vSfx", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vMusic", "vMusic", 0, 1, 0.01, (v) => Math.round(v * 100) + "%")];

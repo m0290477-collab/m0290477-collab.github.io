@@ -635,3 +635,40 @@ html.lefty .h-emos { inset-inline-end: auto; inset-inline-start: calc(118px + 12
 #s-profile.panel { background: linear-gradient(90deg, rgba(4, 6, 12, 0.94), rgba(4, 6, 12, 0.86)); }
 .avc.lockf { color: var(--tx3); } .avc.lockf .ava img, .avc.lockf .ava .avf { filter: brightness(0.55); } .avc.lockf .lki { color: #fff; filter: drop-shadow(0 1px 3px #000); }
 #s-settings.panel, #s-season.panel { background: linear-gradient(90deg, rgba(4, 6, 12, 0.94), rgba(4, 6, 12, 0.84)); }
+
+/* =====================================================================================================
+   M2-clean in-game HUD: one top-left cluster (score+rank, kills, combo) -> small power-up timers -> kill feed (3 lines);
+   tiny top-centre pill; top-5 leaderboard + minimap on the right; one small centre banner in the upper third.
+   ===================================================================================================== */
+#hud { --hg: rgba(8, 12, 22, 0.46); --hl: rgba(255, 255, 255, 0.09); }
+.h-tl { gap: 6px; }
+.hbtn { width: 34px; height: 34px; border-radius: 11px; background: var(--hg); border-color: var(--hl); } .hbtn svg { width: 17px; height: 17px; }
+.h-score { padding: 3px 10px; border-radius: 11px; background: var(--hg); border-color: var(--hl); } .h-score b { font-size: 17px; } .h-score small { font-size: 9.5px; }
+.h-chip { height: 28px; padding: 0 9px; border-radius: 10px; background: var(--hg); border-color: var(--hl); font-size: 12px; }
+.h-chip.combo { color: var(--gold1); border-color: rgba(255, 200, 69, 0.45); letter-spacing: 0.04em; } .h-chip.combo.pump { animation: pump .35s var(--spring); }
+.h-combo, #h-kill, .pop { display: none !important; }
+.h-pu { top: max(48px, calc(46px + var(--st))); inset-inline-start: calc(10px + var(--sl)); max-width: 40vw; gap: 4px; }
+html.lefty .h-pu { inset-inline-start: calc(10px + var(--sl)); }
+.pu-chip { height: 22px; padding: 0 7px 0 3px; gap: 3px; font-size: 10.5px; border-width: 1px; background: var(--hg); box-shadow: 0 0 8px color-mix(in srgb, var(--c) 30%, transparent); animation: puIn .3s var(--spring); }
+.pu-chip i { width: 16px; height: 16px; } .pu-chip svg { width: 11px; height: 11px; } .pu-chip::after { height: 2px; }
+.h-feed { top: var(--feedT, calc(80px + var(--st))); left: auto; right: auto; inset-inline-start: calc(10px + var(--sl)); inset-inline-end: auto; transform: none; align-items: flex-start; max-width: min(38vw, 300px); gap: 2px; font-size: 10.5px; }
+.h-feed div { padding: 2px 8px; border-radius: 7px; background: var(--hg); border: 1px solid transparent; animation: feedIn .3s var(--ease); }
+.h-feed div:nth-child(2) { opacity: 0.72; } .h-feed div:nth-child(3) { opacity: 0.45; }
+@keyframes feedIn { from { opacity: 0; transform: translateX(-8px); } }
+html[dir="rtl"] .h-feed div { animation-name: feedInR; } @keyframes feedInR { from { opacity: 0; transform: translateX(8px); } }
+.h-mode { gap: 3px; } .mode-pill { padding: 2px 10px; font-size: 11px; background: var(--hg); border-color: var(--hl); } .mode-pill.hot { box-shadow: none; }
+.h-banner { top: var(--bannerT, 22%) !important; transform: translate(-50%, 0) scale(0.92); padding: 5px 14px; border-radius: 11px; font-size: 14px; font-weight: 700; letter-spacing: 0.03em; background: var(--hg); border-color: var(--hl); max-width: 60vw; overflow: hidden; text-overflow: ellipsis; }
+.h-banner.on { transform: translate(-50%, 0) scale(1); } .h-banner.kill { color: #ffd0d5; border-color: rgba(255, 77, 94, 0.4); } .h-banner.sub { font-size: 13px; color: var(--gold1); }
+.h-lb { background: var(--hg); border-color: var(--hl); border-radius: 11px; }
+#h-mini, html.lefty #h-mini { top: var(--miniT, calc(130px + var(--st))); inset-inline-start: auto; inset-inline-end: calc(10px + var(--sr)); bottom: auto; width: 70px; height: 70px; background: rgba(8, 12, 22, 0.32); border-color: var(--hl); opacity: 0.85; }
+#joy.on { opacity: 0.6; }
+#joy .base { width: 92px; height: 92px; left: -46px; top: -46px; background: radial-gradient(circle, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 70%); border: 1px solid rgba(255, 255, 255, 0.14); }
+#joy .knob { width: 38px; height: 38px; left: -19px; top: -19px; background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12)); box-shadow: none; }
+#boost { opacity: 0.85; }
+#h-emo { width: 34px; height: 34px; opacity: 0.8; }
+.h-mission { min-width: 180px; padding: 5px 12px 7px; background: var(--hg); } .h-mission b { font-size: 12px; }
+@media (max-height: 500px) { .h-lb { min-width: 120px; } .h-feed { font-size: 10px; } }
+/* PWA / Safari: fill exactly what is visible; Add-to-Home-Screen hint */
+html, body { height: 100%; height: 100dvh; }
+.a2hs { position: absolute; z-index: 6; top: calc(56px + var(--st)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; max-width: min(380px, 44vw); font-size: 11px; line-height: 1.2; border-color: rgba(255, 200, 69, 0.5); animation: scin .4s var(--ease); }
+.a2hs > svg { width: 18px; height: 18px; color: var(--gold2); flex: none; } .a2hs .icon-btn { width: 28px; height: 28px; flex: none; } .a2hs .icon-btn svg { width: 14px; height: 14px; }

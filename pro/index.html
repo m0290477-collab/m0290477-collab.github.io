@@ -2,11 +2,14 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' wss://super-snake-online.molierk.workers.dev https://super-snake-online.molierk.workers.dev; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; manifest-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' wss://super-snake-online.molierk.workers.dev https://super-snake-online.molierk.workers.dev; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'" />
 <meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#05070d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Snake Pro" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="assets/icon-180.png" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="description" content="Super Snake Pro — a premium 3D snake arena: six living worlds, legendary skins, Battle Royale, King of the Hill, Boss Events, Team Battles, a free season pass and online rooms." />
@@ -14,7 +17,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2305070d'/%3E%3Cpath d='M14 40c6-14 14 4 20-10s12-6 16-2' stroke='%23ffc845' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="preload" href="assets/fonts/oxanium.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/keyart_lo.webp" as="image" />
-<link rel="stylesheet" href="css/app.css?v=m2b" />
+<link rel="stylesheet" href="css/app.css?v=m2clean" />
 <link rel="modulepreload" href="js/vendor/three.module.min.js" />
 </head>
 <body>
@@ -92,6 +95,7 @@
       <button class="icon-btn" id="l-settings" data-ia="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></button>
     </header>
     <div class="notif glass x-hide" id="l-notif"></div>
+    <div class="a2hs glass x-hide" id="l-a2hs"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span id="l-a2hs-t"></span><button class="icon-btn" id="l-a2hs-x" data-ia="back"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="lobby-body">
       <div class="col-l glass"><div class="modes" id="l-modes" role="tablist"></div><i class="mfade top"></i><i class="mfade bot"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></i></div>
       <div class="col-c">
@@ -154,6 +158,7 @@
     <div class="h-score"><b id="h-mass">0</b><small><span data-i="rank"></span> <span id="h-rank">–</span></small></div>
     <div class="h-chip x-hide" id="h-timer"></div>
     <div class="h-chip kills"><svg viewBox="0 0 24 24"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span id="h-kills">0</span></div>
+    <div class="h-chip combo x-hide" id="h-combo"></div>
   </div>
   <div class="h-mode" id="h-mode"></div>
   <canvas id="h-mini" width="180" height="180"></canvas>
@@ -167,7 +172,6 @@
   <div class="h-cine" id="h-cine"><b></b><small></small></div>
   <div id="h-pop"></div>
   <div class="h-pu" id="h-pu"></div>
-  <div class="h-combo" id="h-combo"></div>
   <div class="h-mission" id="h-mission"></div>
   <div class="h-hint" id="h-hint"></div>
   <div class="h-spec x-hide" id="h-spec"><span></span><button class="btn gold" id="h-spec-back" data-i="results"></button></div>
@@ -217,6 +221,6 @@
 
 <div id="wipe" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="toasts" aria-live="polite"></div>
-<script type="module" src="js/main.js?v=m2b"></script>
+<script type="module" src="js/main.js?v=m2clean"></script>
 </body>
 </html>

@@ -38,7 +38,7 @@ export class Audio {
         this.delay = c.createDelay(1); this.delay.delayTime.value = 0.36; this.fb = c.createGain(); this.fb.gain.value = 0.3; const dl = c.createBiquadFilter(); dl.type = "lowpass"; dl.frequency.value = 2400; this.delay.connect(dl); dl.connect(this.fb); this.fb.connect(this.delay); dl.connect(this.musLP);
         this.listener = c.listener; this.applyVol(); this._layers(true);
       }
-      if (this.ctx.state === "suspended") this.ctx.resume();
+      if (this.ctx.state !== "running") { const r = this.ctx.resume(); if (r && r.catch) r.catch(() => {}); } // "suspended" or iOS "interrupted"
     } catch (_) { this.ok = false; }
   }
   _impulse(sec, decay) { const c = this.ctx, n = Math.floor(c.sampleRate * sec), b = c.createBuffer(2, n, c.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++) { const w = Math.random() * 2 - 1; lp = lp * 0.82 + w * 0.18; const e = Math.pow(1 - i / n, decay); d[i] = (i < c.sampleRate * 0.012 ? w * 0.5 : lp * 1.6) * e; } } return b; }

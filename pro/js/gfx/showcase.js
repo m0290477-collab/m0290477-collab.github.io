@@ -1,6 +1,6 @@
 // Studio showcase: the player's snake coiled on a lit pedestal (lobby, locker, rarity reveals).
-import * as THREE from "../vendor/three.module.min.js?v=m2b";
-import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=m2b";
+import * as THREE from "../vendor/three.module.min.js?v=m2clean";
+import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=m2clean";
 
 export class Studio {
   constructor(r3) {

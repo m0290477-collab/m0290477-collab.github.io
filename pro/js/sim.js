@@ -167,7 +167,8 @@ export class Sim {
     this.netMode = !!opt.netMode;
     // power-ups on the field: {id,k,x,y,b(born tick)}. evPu = (pu, takerId|0 for expiry, frozenIds) triples; evShield = (snakeId, hitById) pairs
     this.powerups = opt.powerups !== false; this.pus = []; this.puSeq = 1; this.evPu = []; this.evPuNew = []; this.evShield = [];
-    this.puTarget = opt.puTarget ?? Math.max(4, Math.round(9 * (this.R / 130) ** 2)); this.puNext = 60; this.puNear = opt.puNear ?? 9; this.puCap = 160;
+    this.puTarget = opt.puTarget ?? Math.max(3, Math.round(3.2 * (this.R / 130) ** 2)); this.puNext = 60; this.puNear = opt.puNear ?? 3; this.puCap = 60; // calm field: ~3 pickups in view
+    this.PU_GAP = 11; // minimum spacing between pickups
     if (this.powerups) for (let i = 0; i < Math.ceil(this.puTarget * 0.6); i++) this.spawnPu();
     // arena events (opt.events = list of allowed kinds). evEvt = {k, ph, ...} announcements, evMet = new meteors, evImpact = impacts
     this.events = Array.isArray(opt.events) ? opt.events.filter((k) => EVENTS.includes(k)) : opt.events === true ? EVENTS.slice() : [];
@@ -202,9 +203,10 @@ export class Sim {
   }
   spawnPu(k, x, y) {
     if (k === undefined) { let w = 0; for (const x of PU_W) w += x; let r = this.rand() * w; k = 0; while (k < PU_W.length - 1 && (r -= PU_W[k]) >= 0) k++; }
-    if (x === undefined) [x, y] = this.randPos(this.R * 0.85);
+    if (x === undefined) { for (let tr = 0; tr < 8; tr++) { [x, y] = this.randPos(this.R * 0.85); if (this.puFree(x, y)) break; } }
     const p = { id: this.puSeq = (this.puSeq % 60000) + 1, k, x, y, b: this.tick }; this.pus.push(p); this.evPuNew.push(p); return p;
   }
+  puFree(x, y) { const g2 = this.PU_GAP * this.PU_GAP; for (const p of this.pus) { const dx = p.x - x, dy = p.y - y; if (dx * dx + dy * dy < g2) return false; } return true; }
   // apply a picked power-up to snake s; returns ids of snakes it froze
   applyPu(s, k) {
     const hit = [];
@@ -365,11 +367,13 @@ export class Sim {
   }
   puStep() {
     if (this.pus.length < this.puTarget && --this.puNext <= 0) { this.spawnPu(); this.puNext = Math.round((4 + this.rand() * 4) / this.dt); }
-    // keep the field around every human player lively: ~puNear pickups within view (r 26), topped up twice a second
-    if (this.puNear > 0 && this.tick % Math.max(1, Math.round(0.5 / this.dt)) === 0 && this.pus.length < this.puCap) {
+    // keep a few pickups around every human player: ~puNear within view, one at a time every 2 s, spaced out, never on top of the head
+    if (this.puNear > 0 && this.tick % Math.max(1, Math.round(2 / this.dt)) === 0 && this.pus.length < this.puCap) {
       for (const s of this.snakes) {
-        if (!s.alive || s.bot) continue; let n = 0; for (const p of this.pus) { const dx = p.x - s.x, dy = (p.y - s.y) / 0.55; if (dx * dx + dy * dy < 26 * 26) n++; } // landscape-shaped view
-        for (let add = Math.min(2, this.puNear - n); add > 0; add--) { const a = this.rand() * TAU, d = 8 + this.rand() * 16; let x = s.x + Math.cos(a) * d, y = s.y + Math.sin(a) * d * 0.5; const L = Math.hypot(x, y), lim = this.R * 0.92; if (L > lim) { x *= lim / L; y *= lim / L; } const p = this.spawnPu(undefined, x, y); p.life = 35; }
+        if (!s.alive || s.bot) continue; let n = 0; for (const p of this.pus) { const dx = p.x - s.x, dy = (p.y - s.y) / 0.6; if (dx * dx + dy * dy < 30 * 30) n++; } // landscape-shaped view
+        if (n >= this.puNear) continue;
+        for (let tr = 0; tr < 6; tr++) { const a = s.a + (this.rand() - 0.5) * 3.6, d = 13 + this.rand() * 15; let x = s.x + Math.cos(a) * d, y = s.y + Math.sin(a) * d * 0.6; const L = Math.hypot(x, y), lim = this.R * 0.92; if (L > lim) { x *= lim / L; y *= lim / L; }
+          if (!this.puFree(x, y)) continue; const p = this.spawnPu(undefined, x, y); p.life = 35; break; }
       }
     }
     for (let i = this.pus.length - 1; i >= 0; i--) {

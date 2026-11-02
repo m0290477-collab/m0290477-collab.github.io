@@ -1,13 +1,13 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=m2b";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=m2b";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=m2b";
-import { NetBackend } from "./net.js?v=m2b";
-import { t, fmtNum } from "./i18n.js?v=m2b";
-import { haptic } from "./audio.js?v=m2b";
-import { rankOf, rpDelta } from "./profile.js?v=m2b";
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=m2clean";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=m2clean";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=m2clean";
+import { NetBackend } from "./net.js?v=m2clean";
+import { t, fmtNum } from "./i18n.js?v=m2clean";
+import { haptic } from "./audio.js?v=m2clean";
+import { rankOf, rpDelta } from "./profile.js?v=m2clean";
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
@@ -19,6 +19,7 @@ export const MODES = {
   classic: { bots: 30, R: 240 }, time: { bots: 26, R: 205, dur: 180 }, survival: { bots: 14, R: 200 }, zen: { bots: 16, R: 200 },
   br: { bots: 34, R: 300, noRespawn: true }, koth: { bots: 20, R: 190, dur: 180, target: 100 }, boss: { bots: 8, R: 190, lives: 3 }, team: { bots: 25, R: 220, dur: 180, target: 25 },
 };
+const FOOD_CALM = ["#ffd56b", "#7fe6ff", "#ff92bd", "#a6ff7c", "#ffd56b", "#7fe6ff", "#ff92bd", "#a6ff7c", "#ffd56b", "#7fe6ff", "#ff92bd", "#a6ff7c", "#ffc93a"];
 const TEAM_COL = [[0.2, 0.55, 1.0], [1.0, 0.25, 0.3]], TEAM_CSS = ["#4da3ff", "#ff4d5e"];
 const skinCache = new Map();
 export function skinFn(d) { const k = JSON.stringify(d); let f = skinCache.get(k); if (!f) { f = compileSkin(d); skinCache.set(k, f); if (skinCache.size > 300) skinCache.delete(skinCache.keys().next().value); } return f; }
@@ -93,7 +94,8 @@ export class Game {
     this.hud = app.hud; this._loop = (ts) => this.loop(ts); this.raf = 0; this.goodWins = 0; this.autoToasted = false; this.camX = 0; this.camY = 0; this.show = null;
   }
   setRenderer(r) { this.r = r; }
-  palettes() { const P = this.app.store.settings.cb ? FOOD_COLORS_CB : FOOD_COLORS; this.view.foodPal = P.map(hexLin); this.view.foodPalCss = P; }
+  // calm food palette: four soft hues (less colour noise) + gold for event orbs; colour-blind mode keeps its own set
+  palettes() { const P = this.app.store.settings.cb ? FOOD_COLORS_CB : FOOD_CALM; this.view.foodPal = P.map(hexLin); this.view.foodPalCss = P; }
   startLoop() { if (!this.raf) this.raf = requestAnimationFrame(this._loop); }
 
   // ---------- attract (title flyover) and studio showcase (menus) ----------
@@ -110,7 +112,7 @@ export class Game {
     const A = this.app, S = A.store, p = S.p; this.palettes();
     this.cfg = cfg; this.mode = cfg.mode; this.world = cfg.world; this.attract = null; this.M = MODES[cfg.mode] || {};
     this.stats = { kills: 0, food: 0, boost: 0, life: 0, best: 0, rankBest: 99, t0: performance.now(), lifeT0: performance.now(), deaths: 0, score: 0, timeLeft: 0, wave: 1 };
-    this.combo = 0; this.comboT = 0; this.gainAcc = 0; this.gainT = 0; this.rankShown = 99; this.massMile = 0; this.liveMs = new Set(); this.puLast = null; this.hintI = 0; this.hintT = 4; this.stats.bonus = 0; this.stats.pu = 0; this.stats.bounty = 0; this.watching = false; this.emoT = 0; this.rainFx = null; this.evNow = null;
+    this.combo = 0; this.comboT = 0; this.gainAcc = 0; this.gainT = 0; this.rankShown = 99; this.massMile = 0; this.liveMs = new Set(); this.puLast = null; this.hintI = 0; this.hintT = 4; this.stats.bonus = 0; this.stats.pu = 0; this.stats.bounty = 0; this.watching = false; this.killer = null; this.selfHit = false; this.deathCause = 0; this.emoT = 0; this.rainFx = null; this.evNow = null; // no stale killer from the last match
     this.matchT0 = performance.now(); this.slowWins = 0; this.goodWins = 0; this.ft.fill(1000 / (this.app.store.settings.fpsCap || 60)); this.ended = false; this.paused = false; this.deathT = 0; this.spectate = null; this.feed = []; this.lastLb = 0; this.killcam = null; this.victory = null; this.streak = 0; this.streakT = 0; this.endAt = 0; this.respawnAt = 0;
     this.zone = null; this.hill = null; this.boss = null; this.teamScore = [0, 0]; this.kothPts = new Map(); this.lives = this.M.lives || 0; this.win = false; this.place = 0;
     const skin = this.mySkin();
@@ -188,14 +190,14 @@ export class Game {
   onPu(s, k, hit, p) {
     const A = this.app, me = this.backend && this.backend.me, mine = !!(s && me && s.id === me.id), col = hexLin(PU_COL[k]);
     const near = me ? Math.hypot(p.x - me.x, p.y - me.y) < 60 : true;
-    if (near) { this.r.ring(p.x, p.y, col, mine ? 11 : 6); this.r.burst(p.x, p.y, col, mine ? 40 : 14, mine ? 9 : 5, 0.9, 0.6, 5); }
+    if (near) { if (mine) this.r.ring(p.x, p.y, col, 4); this.r.burst(p.x, p.y, col, mine ? 22 : 8, mine ? 6 : 4, 0.7, 0.45, 4); }
     if (mine) {
       this.stats.pu++; A.audio.play("pu", { k }); haptic.pattern([12, 30, 18]); this.r.kick && this.r.kick(0.5, col, 0.12); this.r.light && this.r.light(p.x, p.y, [col[0] * 3, col[1] * 3, col[2] * 3], 1.2);
-      this.hud.popup(t("pu_" + k) + "!", "pu", this.r.project(me.x, me.y, 3), PU_COL[k]); this.hud.puFlash(k);
-      if (k === PU.FREEZE) { for (const id of hit) { const o = this.findSnake(id); if (o) this.r.ring(o.x, o.y, [0.6, 0.95, 1], 6); } this.hud.banner(hit.length ? t("frozeN", { n: hit.length }) : t("pu_5"), 1300); }
-      if (k === PU.MEGA) { this.r.ring(me.x, me.y, col, 18); this.r.shake && this.r.shake(0.5); }
-      if (k === PU.RAIN) { this.rainFx = { until: performance.now() + 2300 }; this.r.ring(me.x, me.y, col, 22); }
-      if (k === PU.GIANT) { this.r.ring(me.x, me.y, col, 16); this.r.shake && this.r.shake(0.6); A.audio.play("roar"); }
+      this.hud.puFlash(k); // the HUD chip pops in; no text over the snake
+      if (k === PU.FREEZE) { for (const id of hit) { const o = this.findSnake(id); if (o) this.r.ring(o.x, o.y, [0.6, 0.95, 1], 4); } this.hud.banner(hit.length ? t("frozeN", { n: hit.length }) : t("pu_5"), 1300); }
+      if (k === PU.MEGA) { this.r.ring(me.x, me.y, col, 6); this.r.shake && this.r.shake(0.5); }
+      if (k === PU.RAIN) { this.rainFx = { until: performance.now() + 2300 }; }
+      if (k === PU.GIANT) { this.r.ring(me.x, me.y, col, 5); this.r.shake && this.r.shake(0.6); A.audio.play("roar"); }
       if (k === PU.DASH) { this.r.kick && this.r.kick(1.1, col, 0.1); A.audio.play("whoosh"); }
     } else if (s && near) A.audio.at && A.audio.at("big", p.x, p.y);
     if (me && hit && hit.includes(me.id)) { this.hud.banner("❄ " + t("frozen"), 1400); A.audio.play("warn"); haptic.tap(30); this.hud.frost(PU_DUR[5]); }
@@ -222,7 +224,7 @@ export class Game {
   onMeteor(M) { const me = this.backend && this.backend.me; if (me && me.alive && Math.hypot(M.x - me.x, M.y - me.y) < 30) this.app.audio.at ? this.app.audio.at("warn", M.x, M.y) : this.app.audio.play("warn"); }
   onImpact(x, y, r) {
     const me = this.backend && this.backend.me, near = me ? Math.hypot(x - me.x, y - me.y) : 0; if (near > 70) return;
-    this.r.ring(x, y, [1, 0.45, 0.15], r * 2.2); this.r.burst(x, y, [1.6, 0.6, 0.2], 40, 11, 1, 0.7, 6); this.r.burst(x, y, [0.4, 0.35, 0.3], 18, 6, 1.4, 0.9, 3); this.r.light && this.r.light(x, y, [3, 1.2, 0.4], 1.5);
+    this.r.ring(x, y, [1, 0.45, 0.15], r * 1.3); this.r.burst(x, y, [1.6, 0.6, 0.2], 40, 11, 1, 0.7, 6); this.r.burst(x, y, [0.4, 0.35, 0.3], 18, 6, 1.4, 0.9, 3); this.r.light && this.r.light(x, y, [3, 1.2, 0.4], 1.5);
     if (near < 40) { this.r.shake(Math.max(0.25, 1 - near / 40)); this.app.audio.play("meteor"); if (near < 14) haptic.tap(25); }
   }
   // ---------- quick emotes (bubble over the head; relayed online, bots answer sometimes) ----------
@@ -233,7 +235,7 @@ export class Game {
   botEmote(s, i) { if (!s || !s.alive || !s.bot) return; s.emo = i; s.emoT = performance.now(); }
   onShield(s) {
     const A = this.app, me = this.backend && this.backend.me; if (!s) return;
-    this.r.ring(s.x, s.y, [0.4, 0.8, 1], 9); this.r.burst(s.x, s.y, [0.4, 0.8, 1], 30, 8, 0.7, 0.5, 4);
+    this.r.ring(s.x, s.y, [0.4, 0.8, 1], 4); this.r.burst(s.x, s.y, [0.4, 0.8, 1], 18, 6, 0.6, 0.45, 4);
     if (me && s.id === me.id) { A.audio.play("shieldHit"); haptic.pattern([30, 20, 30]); this.hud.banner("🛡 " + t("shieldSaved"), 1400); this.r.kick && this.r.kick(0.7, [0.3, 0.6, 1], 0.2); }
   }
   colOf(s) { const f = skinFn(s.skin || {}), col = [0, 0, 0]; f(2, 20, 0, col); return [toLin(col[0]), toLin(col[1]), toLin(col[2])]; }
@@ -250,16 +252,16 @@ export class Game {
   onAnyDeath(s, by) {
     if (by && this.backend && this.backend.sim) { const k = this.findSnake(by), me = this.backend.me; if (k && k.bot && k !== s && me && Math.hypot(k.x - me.x, k.y - me.y) < 45 && Math.random() < (s === me ? 0.75 : 0.3)) this.botEmote(k, s === me ? (Math.random() < 0.5 ? 1 : 5) : [3, 5, 4][(Math.random() * 3) | 0]); }
     if (this.mode === "team" && by) { const k = this.findSnake(by); if (k && k.team !== undefined && k.team !== s.team) { this.teamScore[k.team]++; this.hud.modeHud(this.modeHudData()); if (this.teamScore[k.team] >= this.M.target) this.endMatch(k.team === 0, "team"); } }
-    if (this.mode === "br" && !this.ended) { const alive = this.backend.sim.snakes.filter((x) => x.alive).length; if (s !== this.backend.me) { this.hud.banner(t("aliveN", { n: alive }), 900); if (alive === 1 && this.backend.me && this.backend.me.alive) this.endMatch(true, "br"); } }
+    if (this.mode === "br" && !this.ended) { const alive = this.backend.sim.snakes.filter((x) => x.alive).length; if (s !== this.backend.me) { if (alive === 1 && this.backend.me && this.backend.me.alive) this.endMatch(true, "br"); } }
   }
   onKill(id) {
     this.stats.kills++; const A = this.app, now = performance.now(); A.audio.play("kill"); haptic.pattern([15, 40, 25]); this.r.shake(0.7);
     const v = this.findSnake(id); this.pushFeed(t("you"), v ? v.name : "?", true);
     this.streak = now - this.streakT < 4000 ? this.streak + 1 : 1; this.streakT = now;
     const label = this.streak >= 4 ? t("rampage") : this.streak === 3 ? t("tripleKill") : this.streak === 2 ? t("doubleKill") : t("eliminated");
-    const pos = v ? this.r.project(v.x, v.y, 1.5) : null; this.hud.popup("⚔ " + label, "kill", pos); this.hud.killBanner(label, v ? v.name : ""); if (this.streak >= 2) A.audio.play("streak");
+    this.hud.killBanner(label, v ? v.name : ""); if (this.streak >= 2) A.audio.play("streak");
     if (v) this.stats.bonus += Math.round(v.m * 0.25);
-    if (v) { const lin = this.colOf(v); this.r.ring(v.x, v.y, [1, 1, 1], 12); this.r.ring(v.x, v.y, lin, 18); this.r.kick && this.r.kick(0.9, [1, 1, 1], 0.12); this.r.light && this.r.light(v.x, v.y, [lin[0] * 2 + 0.5, lin[1] * 2 + 0.5, lin[2] * 2 + 0.5], 1.4); A.audio.play("shock"); }
+    if (v) { const lin = this.colOf(v); this.r.ring(v.x, v.y, lin, 7); this.r.kick && this.r.kick(0.9, [1, 1, 1], 0.12); this.r.light && this.r.light(v.x, v.y, [lin[0] * 2 + 0.5, lin[1] * 2 + 0.5, lin[2] * 2 + 0.5], 1.4); A.audio.play("shock"); }
     // slow-motion kill-cam (offline; online keeps real time but still frames the kill)
     const S = A.store.settings; if (v && S.juice && !S.reduceMotion && (this.streak >= 2 || v.m > 60 || Math.random() < 0.6)) this.killcam = { x: v.x, y: v.y, t0: now, dur: this.mode === "online" ? 700 : 1150, a0: Math.random() * 6.28 };
   }
@@ -268,7 +270,7 @@ export class Game {
     this.stats.deaths++; const life = (performance.now() - this.stats.lifeT0) / 1000; this.stats.life = Math.max(this.stats.life, life);
     A.audio.play("die"); A.audio.boost(false); haptic.pattern([40, 30, 80]); this.r.shake(1.2); this.r.kick && this.r.kick(1.2, [0.6, 0, 0], 0.35);
     const f = skinFn(this.mySkin()), lin = this.colOf({ skin: this.mySkin() });
-    this.r.shatter(me, f, 90); this.r.burst(me.x, me.y, lin, 30, 11, 1.2, 0.7, 6); this.r.ring(me.x, me.y, [1, 1, 1], 10); if (!A.store.settings.reduceMotion) this.slowUntil = performance.now() + 500; this.hud.flash();
+    this.r.shatter(me, f, 90); this.r.burst(me.x, me.y, lin, 30, 11, 1.2, 0.7, 6); this.r.ring(me.x, me.y, [1, 1, 1], 6); if (!A.store.settings.reduceMotion) this.slowUntil = performance.now() + 500; this.hud.flash();
     me.alive = false; me.deadAt = performance.now(); this.deathT = performance.now(); this.killer = by && by !== me.id ? this.findSnake(by) : null; if (this.killer === me) this.killer = null; const selfHit = (this.selfHit = !!by && !this.killer && by === me.id); this.deathCause = cause;
     this.spectate = this.killer; A.input.enabled = false; A.input.reset(); this.streak = 0;
     const msg = by && this.killer ? t("killedBy", { n: this.killer.name }) : selfHit ? t("selfDeath") : cause === 6 ? t("meteorDeath") : cause === 3 && this.mode === "br" ? t("stormDeath") : cause === 1 ? t("hitWall") : t("eliminated");

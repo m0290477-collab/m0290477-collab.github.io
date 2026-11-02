@@ -1,13 +1,13 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=m2b";
-import { Store, KV } from "./store.js?v=m2b";
-import { setLang, applyI18n, t } from "./i18n.js?v=m2b";
-import { Audio, haptic } from "./audio.js?v=m2b";
-import { Input } from "./input.js?v=m2b";
-import { Game } from "./game.js?v=m2b";
-import { UI, Hud } from "./ui.js?v=m2b";
-import { Renderer2D } from "./render2d.js?v=m2b";
+import { guard } from "./guard.js?v=m2clean";
+import { Store, KV } from "./store.js?v=m2clean";
+import { setLang, applyI18n, t } from "./i18n.js?v=m2clean";
+import { Audio, haptic } from "./audio.js?v=m2clean";
+import { Input } from "./input.js?v=m2clean";
+import { Game } from "./game.js?v=m2clean";
+import { UI, Hud } from "./ui.js?v=m2clean";
+import { Renderer2D } from "./render2d.js?v=m2clean";
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -45,7 +45,7 @@ async function makeRenderer(kind, quality) {
   const old = $("gl"), cv = document.createElement("canvas"); cv.id = "gl"; cv.setAttribute("aria-hidden", "true"); old.replaceWith(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=m2b");
+      const m = await import("./render3d.js?v=m2clean");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 3500); }, onRestored: () => { clearTimeout(app._lostT); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
@@ -108,7 +108,10 @@ async function boot() {
   try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]); } catch (_) {}
   bar(100, t("ready"));
   addEventListener("resize", () => app.renderer && app.renderer.resize()); addEventListener("orientationchange", () => setTimeout(() => app.renderer && app.renderer.resize(), 300));
-  const unlock = () => { app.audio.unlock(); if (!app.audio.musicOn) app.audio.music(true, app.game.world || 0, app.game.mode !== "attract" ? true : true); }; addEventListener("pointerdown", unlock, { passive: true }); addEventListener("keydown", unlock);
+  const unlock = () => { app.audio.unlock(); if (!app.audio.musicOn) app.audio.music(true, app.game.world || 0, app.game.mode !== "attract" ? true : true); }; // iOS Safari only lets audio start inside touchend/click (pointerdown alone is not always a valid gesture), and an "interrupted"
+  // context (call, Siri, app switch) must be resumed by the next gesture: listen to all of them, unlock() is idempotent and cheap
+  for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, unlock, { passive: true, capture: true });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && app.audio.ctx && app.audio.ctx.state !== "running") try { app.audio.ctx.resume(); } catch (_) {} });
   if (!KV.ok) setTimeout(() => app.ui.toast(t("noStorage"), "warn", 6000), 1200);
   if (app.noWebgl) setTimeout(() => app.ui.toast(t("noWebgl"), "warn", 5000), 1500);
   app.ready = true;

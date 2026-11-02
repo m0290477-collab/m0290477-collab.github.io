@@ -2,15 +2,15 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=m2b";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=m2b";
+import * as THREE from "./vendor/three.module.min.js?v=m2clean";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=m2clean";
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D } from "./worlds.js?v=m2b";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=m2b";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=m2b";
-import { World, prefetchWorld } from "./gfx/env.js?v=m2b";
-import { Post } from "./gfx/post.js?v=m2b";
-import { Studio } from "./gfx/showcase.js?v=m2b";
+import { WORLDS, W3D } from "./worlds.js?v=m2clean";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=m2clean";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=m2clean";
+import { World, prefetchWorld } from "./gfx/env.js?v=m2clean";
+import { Post } from "./gfx/post.js?v=m2clean";
+import { Studio } from "./gfx/showcase.js?v=m2clean";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: true, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 500, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -135,7 +135,7 @@ export class Renderer3D {
     this.storm = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 26, 160, 1, true), new THREE.ShaderMaterial({ uniforms: this.stormU, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false,
       vertexShader: "varying vec2 vU; varying vec3 vW; void main(){ vU=uv; vW=(modelMatrix*vec4(position,1.0)).xyz; gl_Position=projectionMatrix*viewMatrix*vec4(vW,1.0); }",
       fragmentShader: `uniform float uT; varying vec2 vU; varying vec3 vW; float h(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); } float n(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y); }
-        void main(){ vec2 p=vec2(vU.x*120.0, vU.y*6.0); float c=n(p+vec2(uT*0.6,-uT*0.9))*0.6+n(p*2.3-vec2(uT,uT*0.4))*0.4; float bolt=step(0.985,n(vec2(vU.x*400.0,uT*6.0))); float a=(0.25+0.45*c)*(1.0-vU.y*0.7)+bolt*0.6;
+        void main(){ vec2 p=vec2(vU.x*120.0, vU.y*6.0); float c=n(p+vec2(uT*0.6,-uT*0.9))*0.6+n(p*2.3-vec2(uT,uT*0.4))*0.4; float bolt=step(0.985,n(vec2(vU.x*400.0,uT*6.0))); float a=((0.1+0.28*c)*(1.0-vU.y*0.8)+bolt*0.3)*smoothstep(0.0,0.08,vU.y+0.02);
         gl_FragColor=vec4(mix(vec3(0.45,0.12,0.9),vec3(1.2,0.5,1.6),c+bolt),a); }` }));
     this.storm.visible = false; this.storm.renderOrder = 4; this.scene.add(this.storm);
     this.stormOut = new THREE.Mesh(new THREE.RingGeometry(1, 40, 128, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x3a0a6a, transparent: true, opacity: 0.45, depthWrite: false })); this.stormOut.position.y = 0.06; this.stormOut.visible = false; this.scene.add(this.stormOut);
@@ -170,7 +170,7 @@ export class Renderer3D {
     this.puPillar = this._inst(this.scene, new T.CylinderGeometry(0.5, 0.9, 8, 16, 1, true).translate(0, 4, 0), new T.ShaderMaterial({ transparent: true, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, uniforms: { uT: this.stormU.uT },
       vertexShader: "varying float vY; varying vec3 vC; void main(){ vY=position.y/8.0; vC=instanceColor; gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.0); }",
       fragmentShader: "uniform float uT; varying float vY; varying vec3 vC; void main(){ float a=(1.0-vY)*(0.35+0.25*sin(vY*20.0-uT*6.0)); gl_FragColor=vec4(vC*1.6,a*0.55); }" }), 40, true);
-    this.puTex = PU_ICON.map((ic, k) => { const cv = document.createElement("canvas"); cv.width = cv.height = 96; const x = cv.getContext("2d"); x.fillStyle = "rgba(10,12,24,0.72)"; x.beginPath(); x.arc(48, 48, 44, 0, 6.283); x.fill(); x.lineWidth = 6; x.strokeStyle = PU_COL[k]; x.stroke(); x.save(); x.translate(48 - 26, 48 - 26); x.scale(52 / 24, 52 / 24); x.fillStyle = "#fff"; x.shadowColor = PU_COL[k]; x.shadowBlur = 6; x.fill(new Path2D(PU_SVG[k]), "evenodd"); x.restore(); const tx = new T.CanvasTexture(cv); tx.colorSpace = T.SRGBColorSpace; return tx; });
+    this.puTex = PU_ICON.map((ic, k) => { const cv = document.createElement("canvas"); cv.width = cv.height = 96; const x = cv.getContext("2d"); x.save(); x.translate(48 - 24, 48 - 24); x.scale(48 / 24, 48 / 24); x.fillStyle = "#fff"; x.shadowColor = PU_COL[k]; x.shadowBlur = 4; x.fill(new Path2D(PU_SVG[k]), "evenodd"); x.restore(); const tx = new T.CanvasTexture(cv); tx.colorSpace = T.SRGBColorSpace; return tx; });
     this.puSpr = []; for (let i = 0; i < 24; i++) { const sp = new T.Sprite(new T.SpriteMaterial({ map: this.puTex[0], depthWrite: false, depthTest: false, toneMapped: false, transparent: true })); sp.visible = false; sp.renderOrder = 9; this.scene.add(sp); this.puSpr.push(sp); }
   }
   // meteor shower: a pulsing red warning ring + filling disc on the ground, and the burning rock falling into it
@@ -207,16 +207,16 @@ export class Renderer3D {
     const HM = this.puHalo.instanceMatrix.array, HC = this.puHalo.instanceColor.array, PM = this.puPillar.instanceMatrix.array, PC = this.puPillar.instanceColor.array;
     for (let i = 0; i < L.length && nh < 24; i++) {
       const p = L[i], k = p.k, mesh = this.puMesh[k]; if (!mesh || cnt[k] >= 12) continue; const c = _c.set(PU_COL[k]);
-      const age = p.b === undefined || v.tick === undefined ? 1 : Math.min(1, (v.tick - p.b) / 40); const sc = 1.25 * (0.3 + 0.7 * Math.min(1, age + 0.3)), hgt = 1.9 + Math.sin(t * 2.2 + p.id) * 0.35;
+      const age = p.b === undefined || v.tick === undefined ? 1 : Math.min(1, (v.tick - p.b) / 40); const sc = 0.72 * (0.3 + 0.7 * Math.min(1, age + 0.3)), hgt = 1.1 + Math.sin(t * 1.8 + p.id) * 0.18; // small in-world crystal, gentle bob
       _q.setFromEuler(_e.set(0.35 * Math.sin(t + p.id), t * 1.8 + p.id, 0)); _m2.compose(_v.set(p.x, hgt, p.y), _q, _s.set(sc, sc, sc)); _m2.toArray(mesh.instanceMatrix.array, cnt[k] * 16); cnt[k]++;
-      const o = nh * 16, hs = 5.2 + Math.sin(t * 5 + p.id) * 0.8; HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 3] = 0; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 7] = 0; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 11] = 0; HM[o + 12] = p.x; HM[o + 13] = hgt; HM[o + 14] = p.y; HM[o + 15] = 1;
-      HC[nh * 3] = c.r * 0.9; HC[nh * 3 + 1] = c.g * 0.9; HC[nh * 3 + 2] = c.b * 0.9;
+      const o = nh * 16, hs = 2.6 + Math.sin(t * 2.5 + p.id) * 0.3; HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 3] = 0; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 7] = 0; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 11] = 0; HM[o + 12] = p.x; HM[o + 13] = hgt; HM[o + 14] = p.y; HM[o + 15] = 1;
+      HC[nh * 3] = c.r * 0.6; HC[nh * 3 + 1] = c.g * 0.6; HC[nh * 3 + 2] = c.b * 0.6;
       _m2.makeTranslation(p.x, 0, p.y); _m2.toArray(PM, nh * 16); PC[nh * 3] = c.r; PC[nh * 3 + 1] = c.g; PC[nh * 3 + 2] = c.b;
-      const sp = this.puSpr[nh]; sp.visible = true; if (sp.material.map !== this.puTex[k]) { sp.material.map = this.puTex[k]; sp.material.needsUpdate = true; } sp.position.set(p.x, hgt + 2.1, p.y); sp.scale.set(2.1, 2.1, 1);
-      if (Math.random() < 0.25 && this.pMax) this.emit(p.x + (Math.random() - 0.5) * 1.6, 0.4, p.y + (Math.random() - 0.5) * 1.6, 0, 2 + Math.random() * 2, 0, [c.r, c.g, c.b], 0.9, 0.35, 1, -0.5);
+      const sp = this.puSpr[nh]; sp.visible = true; if (sp.material.map !== this.puTex[k]) { sp.material.map = this.puTex[k]; sp.material.needsUpdate = true; } sp.position.set(p.x, hgt + 1.15, p.y); sp.scale.set(0.95, 0.95, 1); sp.material.opacity = 0.85;
+      if (Math.random() < 0.06 && this.pMax) this.emit(p.x + (Math.random() - 0.5) * 1.6, 0.4, p.y + (Math.random() - 0.5) * 1.6, 0, 2 + Math.random() * 2, 0, [c.r, c.g, c.b], 0.9, 0.35, 1, -0.5);
       nh++;
     }
-    for (let k = 0; k < this.puMesh.length; k++) this._flush(this.puMesh[k], cnt[k]); this._flush(this.puHalo, nh); this._flush(this.puPillar, nh);
+    for (let k = 0; k < this.puMesh.length; k++) this._flush(this.puMesh[k], cnt[k]); this._flush(this.puHalo, nh); this._flush(this.puPillar, 0); // no light pillars (read as UI clutter)
     for (let i = nh; i < this.puSpr.length; i++) this.puSpr[i].visible = false;
   }
 
@@ -438,7 +438,7 @@ export class Renderer3D {
       if ((d.team || d.gold) && nt < MAXS) { const tc = d.gold ? GOLDC : d.team, rr = d._hr * (d.gold ? 3.2 + 0.3 * Math.sin(t * 6) : 2.3); _m.makeScale(rr, 1, rr).setPosition(d._hx, 0.07, d._hz); _m.toArray(TR, nt * 16); TRC[nt * 3] = tc[0] * 2; TRC[nt * 3 + 1] = tc[1] * 2; TRC[nt * 3 + 2] = tc[2] * 2; nt++; }
       if (d.emo && ne < this.emoSpr.length && !v.hideNames) { const sp = this.emoSpr[ne++], ti = d.emoI | 0; if (sp.material.map !== this.emoTex[ti]) { sp.material.map = this.emoTex[ti]; sp.material.needsUpdate = true; } const es = Math.max(3.4, d._hr * 3); sp.position.set(d._hx, d._hr * 2.6 + 1.0 + es * 0.75, d._hz - d._hr * 0.4); sp.scale.set(es, es, 1); sp.visible = true; }
       if (d.gold && this.pMax && Math.random() < 0.5) this.emit(d._hx + (Math.random() - 0.5) * d._hr * 3, d._hr * 2, d._hz + (Math.random() - 0.5) * d._hr * 3, 0, 1.5, 0, [1.6, 1.2, 0.3], 0.7, 0.3, 1, -0.3);
-      if (d.name && (Q.names > 1 || d.me || d.top) && !v.hideNames && !(d.inv && !d.me)) { const L = this._label(s.id, d.name, d.nc || "#fff", d.me); L.sp.position.set(d._hx, d._hr * 2.6 + 1.0, d._hz - d._hr * 0.4); const sw = Math.max(5.5, d._hr * 4.5) * (d.me ? 1.05 : 0.9); L.sp.scale.set(sw, sw / 4, 1); L.sp.material.opacity = d.alpha ?? 1; L.sp.visible = true; }
+      if (d.name && !d.me && (Q.names > 1 || d.top) && !v.hideNames && !d.inv) { const L = this._label(s.id, d.name, d.nc || "#fff", d.me); L.sp.position.set(d._hx, d._hr * 2.6 + 1.0, d._hz - d._hr * 0.4); const sw = Math.max(5.5, d._hr * 4.5) * (d.me ? 1.05 : 0.9); L.sp.scale.set(sw, sw / 4, 1); L.sp.material.opacity = d.alpha ?? 1; L.sp.visible = true; }
     }
     for (const [id, L] of this.labels) if (!L.used) { this.scene.remove(L.sp); this.labels.delete(id); this.labelPool.push(L); }
     for (let i = ne; i < this.emoSpr.length; i++) this.emoSpr[i].visible = false;
@@ -448,12 +448,12 @@ export class Renderer3D {
     if (this.pMax && v.rain) { const h = v.rain; for (let k = 0; k < 6; k++) { const a = Math.random() * 6.283, d = 3 + Math.random() * 16; this.emit(h.x + Math.cos(a) * d, 10 + Math.random() * 4, h.y + Math.sin(a) * d, 0, -18, 0, [0.8, 1.6, 0.3], 0.6, 0.35, 1, 0); } }
     if (this.pMax && v.goldRain) { const h = v.goldRain; for (let k = 0; k < 4; k++) { const a = Math.random() * 6.283, d = 2 + Math.random() * 28; this.emit(h.x + Math.cos(a) * d, 11 + Math.random() * 5, h.y + Math.sin(a) * d, 0, -16, 0, [1.8, 1.3, 0.3], 0.7, 0.4, 1, 0); } }
     this._particles(dt); this._bitsUpdate(dt);
-    for (const rg of this.rings) if (rg.visible) { rg.userData.t += dt * 1.5; const u = rg.userData.t; if (u >= 1) { rg.visible = false; continue; } const s2 = 1 + (1 - Math.pow(1 - u, 3)) * rg.userData.R; rg.scale.set(s2, 1, s2); rg.material.uniforms.opacity.value = (1 - u) * 0.95; rg.material.uniforms.uS.value = s2; }
+    for (const rg of this.rings) if (rg.visible) { rg.userData.t += dt * 1.5; const u = rg.userData.t; if (u >= 1) { rg.visible = false; continue; } const s2 = 1 + (1 - Math.pow(1 - u, 3)) * rg.userData.R; rg.scale.set(s2, 1, s2); rg.material.uniforms.opacity.value = (1 - u) * 0.5; rg.material.uniforms.uS.value = s2; }
     if (this.fxLight.intensity > 0.1) this.fxLight.intensity *= Math.exp(-dt * 6); else this.fxLight.intensity = 0;
     // post uniforms
     this.ca *= Math.exp(-dt * 5); this.flash.w *= Math.exp(-dt * 6); this.speed += ((v.cam.boost && !this.reduceMotion ? 1 : 0) - this.speed) * (1 - Math.exp(-dt * 5)); this.box += ((v.letterbox ? 1 : 0) - this.box) * (1 - Math.exp(-dt * 6));
     document.documentElement.style.setProperty("--box", this.post.on ? 0 : this.box.toFixed(3));
-    if (this.post.on) { const u = this.post.grade.uniforms; u.uCA.value = this.ca + this.speed * 0.25; u.uSpeed.value = this.speed; u.uBox.value = this.box; u.uFlash.value.copy(this.flash); u.uT.value = t; u.uVig.value = 0.36 + this.box * 0.2; this.post.setScene(this.scene, cam); if (this.post.dofOn) this.post.setDof(false); }
+    if (this.post.on) { const u = this.post.grade.uniforms; u.uCA.value = this.ca + this.speed * 0.25; u.uSpeed.value = this.speed * 0.6; u.uBox.value = this.box; u.uFlash.value.copy(this.flash); u.uT.value = t; u.uVig.value = 0.36 + this.box * 0.2; this.post.setScene(this.scene, cam); if (this.post.dofOn) this.post.setDof(false); }
     // planar reflection (high/ultra): mirrored camera renders the scene minus ground/water into a half-res target
     const gu = this.world.groundU; gu.uRefl.value = 0;
     if (this.mirrorRT && Q.reflect && (this.W3.reflect || (this.world.water && this.W3.water !== "lava"))) { this._mirror(); gu.tRefl.value = this.mirrorRT.texture; gu.uRefl.value = this.W3.reflect || 0.0001; }
@@ -478,7 +478,7 @@ export class Renderer3D {
     for (let i = 0; i < F.FM && nf < MAX_FOOD; i++) {
       if (!F.fa[i]) continue; const x = F.fx[i], y = F.fy[i], dx = x - vx, dz = y - vz; if (dx * dx + dz * dz > vr2) continue;
       const age = F.age ? F.age(i) : 1, grow = age < 1 ? age * age * (3 - 2 * age) : 1;
-      const val = F.fv[i], fr = (0.24 + Math.sqrt(val) * 0.17) * grow, bob = 0.5 + fr + Math.sin(t * 3 + i) * 0.14, cc = pal[F.fc[i] % pal.length];
+      const val = F.fv[i], fr = (0.17 + Math.sqrt(val) * 0.12) * grow, bob = 0.5 + fr + Math.sin(t * 3 + i) * 0.14, cc = pal[F.fc[i] % pal.length];
       const o = nf * 16;
       if (val >= 4 && ng < MAX_GEM) { const go = ng * 16, gz = fr * 1.3; GM[go] = gc * gz; GM[go + 1] = 0; GM[go + 2] = -gs * gz; GM[go + 3] = 0; GM[go + 4] = 0; GM[go + 5] = gz * 1.5; GM[go + 6] = 0; GM[go + 7] = 0; GM[go + 8] = gs * gz; GM[go + 9] = 0; GM[go + 10] = gc * gz; GM[go + 11] = 0; GM[go + 12] = x; GM[go + 13] = bob + 0.2; GM[go + 14] = y; GM[go + 15] = 1;
         GC[ng * 3] = cc[0]; GC[ng * 3 + 1] = cc[1]; GC[ng * 3 + 2] = cc[2]; ng++; for (let q = 0; q < 16; q++) FM[o + q] = 0; FM[o + 15] = 1; }
