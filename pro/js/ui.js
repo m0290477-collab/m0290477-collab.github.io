@@ -135,7 +135,7 @@ export class UI {
     });
     // difficulty (not for online/zen)
     const dd = $("l-diff"); dd.classList.toggle("x-hide", this.selMode === "online" || this.selMode === "zen");
-    dd.innerHTML = [0, 1, 2, 3].map((i) => `<button data-v="${i}" class="${p.last.diff === i ? "on" : ""} ${S.unlocked("diff", i) ? "" : "lock"}">${t("d" + i)}${S.unlocked("diff", i) ? "" : " 🔒"}</button>`).join("");
+    dd.innerHTML = [0, 1, 2, 3].map((i) => `<button data-v="${i}" class="${p.last.diff === i ? "on" : ""} ${S.unlocked("diff", i) ? "" : "lock"}">${t("d" + i)}${S.unlocked("diff", i) ? "" : " " + IC.lock}</button>`).join("");
     dd.querySelectorAll("button").forEach((b) => this.click(b, () => { const i = +b.dataset.v; if (!S.unlocked("diff", i)) { this.toast("🔒 " + t("unlockAt", { n: 10 })); return; } p.last.diff = i; S.save(); this.renderLobby(); }, "tab"));
     $("l-room").classList.toggle("x-hide", this.selMode !== "online"); $("l-code").value = p.last.room || "";
     $("l-onote").textContent = this.selMode === "online" ? t("online_rooms") : (S.isGuest ? t("guestNote") : "");
