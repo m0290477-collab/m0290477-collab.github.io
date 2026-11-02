@@ -1,9 +1,9 @@
 // super-snake-online — Cloudflare Worker + Durable Object (one DO per room). No database, no payments, nothing stored.
 // The room runs the SAME sim.js as the client at 30 Hz and is authoritative for movement, food, mass, collisions and kills.
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
-import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES } from "./sim.js";
+import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName } from "./sim.js";
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 16, VERSION = 2; // v2: power-ups (pus / pu+ / pu- / sh messages)
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 2; // v2: power-ups (pus / pu+ / pu- / sh messages)
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 const BOT_SKINS = (i) => ({ k: i % 3 === 0 ? "flag" : "skin", i: i % 3 === 0 ? (i * 37) % 197 : i % 24, e: i % 4, t: 0, n: 0 });
 const cors = { "access-control-allow-origin": "*", "content-type": "application/json" };
@@ -38,7 +38,7 @@ export class Room {
   fill() {
     if (this.noBots) return;
     const alive = this.sim.snakes.filter((s) => s.alive).length; let want = TARGET_SNAKES - alive;
-    while (want-- > 0) { const i = this.botSeq++; this.sim.addSnake(BOT_NAMES[i % BOT_NAMES.length], BOT_SKINS(i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5] }); }
+    while (want-- > 0) { const i = this.botSeq++; this.sim.addSnake(pickBotName(this.sim.snakes, i), BOT_SKINS(i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5] }); }
   }
   async fetch(req) {
     const url = new URL(req.url);

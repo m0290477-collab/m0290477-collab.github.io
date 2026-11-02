@@ -478,3 +478,31 @@ html.lefty .h-pu { inset-inline-start: calc(10px + var(--sl)); }
 .mode-pill.contest { border-color: #ff4d5e; color: #ffb3bb; animation: blink .6s infinite; }
 .mode-pill .cap { width: 100%; height: 6px; border-radius: 99px; background: rgba(255, 255, 255, 0.12); overflow: hidden; } .mode-pill .cap i { display: block; height: 100%; background: linear-gradient(90deg, #ffb000, #ffe7a3); box-shadow: 0 0 8px rgba(255, 200, 69, 0.8); transition: width .25s linear; }
 .r-season { margin-top: 4px; font-size: 12px; color: #c9b8ff; }
+
+/* ---- iOS touch hardening: no double-tap / pinch zoom, no selection, callout or rubber-band during play ---- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
+#gl, canvas, #hud, #touch, #boost, #joy { touch-action: none; }
+button, .btn, a, label, select, [role="button"], .item, .tab, .mode, .sw, .hbtn { touch-action: manipulation; }
+#hud, #hud * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+img { -webkit-user-drag: none; -webkit-touch-callout: none; }
+
+/* ---- HUD layout: kill feed top-centre under the mode/timer strip, clear of the joystick, boost and minimap ---- */
+.h-feed { top: var(--feedT, calc(44px + var(--st))); left: 50%; right: auto; inset-inline-end: auto; transform: translateX(-50%); align-items: center; max-width: min(46vw, 420px); z-index: 3; pointer-events: none; }
+.h-feed div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.h-kill { top: max(17%, calc(var(--feedB, 0px) + 14px)); }
+.h-banner { top: max(28%, calc(var(--feedB, 0px) + 30px)); }
+/* leaderboard always fully below the top inset / Safari bar; trimmed above the boost button by Hud.layout() */
+.h-lb { top: max(8px, calc(6px + var(--st))); overflow: hidden; }
+.h-tl, .h-mode { top: max(8px, calc(6px + var(--st))); }
+#h-mini { top: max(52px, calc(50px + var(--st))); }
+html.lefty #h-mini { inset-inline-start: calc(10px + var(--sl)); inset-inline-end: auto; top: max(52px, calc(50px + var(--st))); bottom: auto; }
+@media (max-height: 500px) {
+  .h-feed { font-size: 9.5px; gap: 2px; } .h-feed div { padding: 2px 7px; border-radius: 6px; }
+  .h-feed div:nth-child(n+4) { display: none; }
+  .h-lb { font-size: 10px; min-width: 128px; padding: 4px 7px; } .h-lb div { padding: 0; }
+}
+/* redeem code row (Settings → Account) */
+.set-row.redeem { flex-wrap: wrap; } .set-row .rd-box { flex-direction: row; align-items: center; gap: 8px; flex: 1 1 220px; justify-content: flex-end; }
+.rd-box input { flex: 1 1 120px; min-width: 0; max-width: 220px; height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line2); background: rgba(0, 0, 0, 0.35); font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; touch-action: manipulation; }
+.rd-box input::placeholder { text-transform: none; letter-spacing: 0; color: var(--tx3); }
+.rd-box .btn { flex: none; }

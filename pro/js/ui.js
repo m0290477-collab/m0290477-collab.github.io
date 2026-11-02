@@ -1,12 +1,12 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=f1457";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=f1457";
-import { WORLDS, worldAsset } from "./worlds.js?v=f1457";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=f1457";
-import { haptic } from "./audio.js?v=f1457";
-import { skinFn, MODES } from "./game.js?v=f1457";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG } from "./sim.js?v=f1457";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=m1a";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=m1a";
+import { WORLDS, worldAsset } from "./worlds.js?v=m1a";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=m1a";
+import { haptic } from "./audio.js?v=m1a";
+import { skinFn, MODES } from "./game.js?v=m1a";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG } from "./sim.js?v=m1a";
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
 const $ = (id) => document.getElementById(id);
@@ -31,12 +31,12 @@ const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const skinName = (i) => { const S = SKINS[i]; if (!S) return "?"; const k = "s_" + S.id; const v = t(k); return v === k ? cap(S.id) : v; };
 
 export class Hud {
-  constructor(app) { this.app = app; this.mini = $("h-mini").getContext("2d"); this.bt = 0; this.lastLb = ""; }
+  constructor(app) { this.app = app; this.mini = $("h-mini").getContext("2d"); this.bt = 0; this.lastLb = ""; addEventListener("resize", () => setTimeout(() => this.layout(), 60)); }
   show(mode) {
     $("hud").classList.remove("cine"); clearTimeout(this._cineT);
     $("hud").classList.remove("x-hide"); $("h-timer").classList.toggle("x-hide", !(mode === "time" || mode === "survival" || (MODES[mode] && MODES[mode].dur))); $("h-feed").innerHTML = ""; $("h-pop").innerHTML = ""; $("h-mode").innerHTML = "";
     $("h-mini").classList.toggle("x-hide", !this.app.store.settings.minimap); $("h-fps").classList.toggle("x-hide", !this.app.store.settings.showFps); this.storm(false); this.mode = mode; this.lastLb = "";
-    for (const id of ["h-cine", "h-kill", "h-count", "h-combo", "h-mission", "h-hint"]) $(id).classList.remove("on"); this.puClear(); this.spectate(null);
+    for (const id of ["h-cine", "h-kill", "h-count", "h-combo", "h-mission", "h-hint"]) $(id).classList.remove("on"); this.puClear(); this.spectate(null); requestAnimationFrame(() => this.layout());
   }
   hide() { $("hud").classList.add("x-hide"); this.storm(false); }
   update(d) {
@@ -49,16 +49,18 @@ export class Hud {
     else { d.top.forEach((s, i) => { h += `<div class="${s === d.me ? "me" : ""}"><b>${i === 0 ? IC.crown : i + 1}</b><i style="background:${this.dot(s)}"></i><span>${esc(s.name || "?")}</span><em>${fmtNum(s.m)}</em></div>`; });
       if (d.me && d.me.alive && d.rank > 5) h += `<div class="me"><b>${d.rank}</b><i style="background:${this.dot(d.me)}"></i><span>${esc(d.me.name)}</span><em>${fmtNum(d.me.m)}</em></div>`; }
     if (d.ping !== null) h += `<div><span>${t("online", { n: d.ping })}</span><em>${d.humans ? "👤" + d.humans : ""}</em></div>`;
-    if (h !== this.lastLb) { $("h-lb").innerHTML = h; this.lastLb = h; }
+    if (h !== this.lastLb) { const n = this.lastLb.length; $("h-lb").innerHTML = h; this.lastLb = h; if (!n || Math.abs(n - h.length) > 40) this.layout(); }
     if (d.alive !== null && d.alive !== undefined) this.modeLine(`<div class="mode-pill hot">${t("aliveN", { n: d.alive })}${d.zone ? " · " + t("zoneIn", { n: d.zone }) : ""}</div>`);
     if (d.kothMine !== null && d.kothMine !== undefined) this.modeLine(`<div class="mode-pill koth ${d.hill && d.hill.mine ? "hot" : ""} ${d.hill && d.hill.contested ? "contest" : ""}">♛ ${d.kothMine}/${d.target} ${d.hill && d.hill.mine ? "· " + t("holding") : d.hill && d.hill.contested ? "· " + t("contested") : "· " + t("goHill")}<div class="cap"><i style="width:${Math.min(100, (d.kothMine / d.target) * 100)}%"></i></div></div>`);
   }
-  modeLine(html) { const el = $("h-mode"); if (el.dataset.k !== html) { el.innerHTML = (this.modeTop || "") + html; el.dataset.k = html; } }
+  modeLine(html) { const el = $("h-mode"); if (el.dataset.k !== html) { const h0 = el.offsetHeight; el.innerHTML = (this.modeTop || "") + html; el.dataset.k = html; if (el.offsetHeight !== h0) this.layout(); } }
   modeHud(d) {
     let h = "";
     if (d && d.kind === "team") h = `<div class="tm-bar"><span class="a">${d.a}</span><span class="tb ta"><i style="width:${(d.a / d.target) * 100}%"></i></span><small>${d.target}</small><span class="tb tb2"><i style="width:${(d.b / d.target) * 100}%"></i></span><span class="b">${d.b}</span></div>`;
     if (d && d.kind === "boss") h = `<div class="boss-bar"><b>LEVIATHAN · ${t("phase")} ${d.phase}</b><div class="hb">${Array.from({ length: d.max }, (_, i) => `<i class="${i >= d.hp ? "gone" : ""}"></i>`).join("")}</div><small>${t("livesN", { n: d.lives })} · ${t("bossTip")}</small></div>`;
-    this.modeTop = h; const el = $("h-mode"); el.innerHTML = h; el.dataset.k = "";
+    if (d && d.kind === "zen") h = `<div class="mode-pill zen">☯ ${t("zenNoDeath")}</div>`;
+    if (d && d.kind === "team") h += `<div class="mode-pill">${t("teamSafe")}</div>`;
+    this.modeTop = h; const el = $("h-mode"); el.innerHTML = h; el.dataset.k = ""; this.layout();
   }
   dot(s) { if (s.team === 0) return "#4da3ff"; if (s.team === 1) return "#ff4d5e"; const k = s.skin ? JSON.stringify(s.skin) : ""; this._dots = this._dots || new Map(); let c = this._dots.get(k); if (!c) { c = s.skin ? primaryColor(s.skin) : "#888"; this._dots.set(k, c); } return c; }
   minimap(all, me, R, pal, zone, hill, boss, pus) {
@@ -72,11 +74,26 @@ export class Hud {
     const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 160);
     for (const s of all) { if (s === me || !me || !me.alive) continue; const d = Math.hypot(s.x - me.x, s.y - me.y); if (d < 40 && s.m > me.m * 1.2 && !(s.team !== undefined && s.team === me.team)) { g.strokeStyle = `rgba(255,60,70,${0.5 + pulse * 0.5})`; g.lineWidth = 2; g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, 7 + pulse * 3, 0, 6.283); g.stroke(); } }
     for (const s of all) { if (s === me) continue; g.fillStyle = s.boss ? "#ff3040" : s.team === 0 ? "#4da3ff" : s.team === 1 ? "#ff4d5e" : s.bot ? "rgba(255,255,255,0.45)" : "rgba(120,200,255,0.9)"; const r = s.boss ? 8 : Math.max(2.5, Math.min(7, s.r * 2.2)); g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, r, 0, 6.283); g.fill(); }
-    if (me && me.alive) { g.fillStyle = "#ffe7a3"; g.shadowColor = "#ffc845"; g.shadowBlur = 8; g.beginPath(); g.arc(S / 2 + me.x * k, S / 2 + me.y * k, 6, 0, 6.283); g.fill(); g.shadowBlur = 0; }
+    if (me && me.alive) { // you: the area your screen shows, a heading arrow and a pulsing gold marker
+      const mx = S / 2 + me.x * k, my = S / 2 + me.y * k, vw = Math.max(10, 22 * k * (innerWidth / Math.max(1, innerHeight)) * 0.5 + 8), vh = Math.max(8, 12 * k + 6);
+      g.strokeStyle = "rgba(255,255,255,0.55)"; g.lineWidth = 1.5; g.strokeRect(mx - vw, my - vh, vw * 2, vh * 2);
+      g.fillStyle = "#ffe7a3"; g.save(); g.translate(mx, my); g.rotate(me.a); g.beginPath(); g.moveTo(12, 0); g.lineTo(-6, 7); g.lineTo(-2, 0); g.lineTo(-6, -7); g.closePath(); g.fill(); g.restore();
+      g.strokeStyle = `rgba(255,200,69,${0.4 + pulse * 0.5})`; g.lineWidth = 2; g.beginPath(); g.arc(mx, my, 9 + pulse * 4, 0, 6.283); g.stroke(); }
   }
   net(txt) { const n = $("h-net"); n.textContent = txt; n.classList.toggle("x-hide", !txt); n.classList.toggle("bad", !!txt); }
   fps(n) { $("h-fps").textContent = n + " FPS"; }
-  feed(list) { $("h-feed").innerHTML = list.slice(0, 4).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how ? `<b>${f.how === "storm" ? "🌀" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); clearTimeout(this.ft); this.ft = setTimeout(() => ($("h-feed").innerHTML = ""), 6500); }
+  // keeps the kill feed under the top-centre mode/timer strip, pushes the centre banners below it, and stops the
+  // leaderboard short of the boost button, so nothing overlaps a touch control (safe-area insets come in via the rects)
+  layout() {
+    const hud = $("hud"); if (!hud || hud.classList.contains("x-hide")) return;
+    let top = 0; for (const id of ["h-mode", "h-net"]) { const el = $(id); if (el && !el.classList.contains("x-hide") && el.offsetHeight) top = Math.max(top, el.getBoundingClientRect().bottom); }
+    const tl = document.querySelector(".h-tl"); top = Math.max(top, tl ? tl.getBoundingClientRect().top : 8);
+    hud.style.setProperty("--feedT", Math.round(top + 4) + "px");
+    const fe = $("h-feed"); hud.style.setProperty("--feedB", fe.childElementCount ? Math.round(fe.getBoundingClientRect().bottom) + "px" : "0px");
+    const lb = $("h-lb"), bo = $("boost"); lb.style.maxHeight = "";
+    if (lb && bo && bo.offsetParent && !document.documentElement.classList.contains("lefty")) { const lr = lb.getBoundingClientRect(), br = bo.getBoundingClientRect(); if (lr.left < br.right && lr.right > br.left) lb.style.maxHeight = Math.max(60, br.top - lr.top - 8) + "px"; }
+  }
+  feed(list) { $("h-feed").innerHTML = list.slice(0, 4).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how ? `<b>${f.how === "storm" ? "🌀" : f.how === "self" ? "🔄" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); this.layout(); clearTimeout(this.ft); this.ft = setTimeout(() => { $("h-feed").innerHTML = ""; this.layout(); }, 6500); }
   banner(txt, ms) { const b = $("h-banner"); b.textContent = txt; b.classList.add("on"); clearTimeout(this.bt); this.bt = setTimeout(() => b.classList.remove("on"), ms || 1400); }
   count(txt) { const c = $("h-count"); c.textContent = txt; c.classList.remove("on"); void c.offsetWidth; c.classList.add("on"); }
   killBanner(a, b) { const k = $("h-kill"); k.querySelector("b").textContent = a; k.querySelector("small").textContent = b; k.classList.remove("on"); void k.offsetWidth; k.classList.add("on"); }
@@ -263,7 +280,10 @@ export class UI {
     let p = 10; const tick = setInterval(() => { p = Math.min(92, p + 7); this.progress(p); }, 90);
     for (let k = 0; k < 60 && !(A.renderer.worldReady ? A.renderer.worldReady() : true); k++) await new Promise((r) => setTimeout(r, 100));
     const left = 950 - (performance.now() - t0); if (left > 0) await new Promise((r) => setTimeout(r, left));
-    clearInterval(tick); this.progress(100); A.game.start(cfg); setTimeout(() => this.loading(false), 120);
+    clearInterval(tick); this.progress(96); A.game.start(cfg);
+    // compile every program the match will use while the loading screen is still up (world fog/lights/shadows differ from the lobby)
+    if (A.renderer.prewarm && !A.renderer.is2D) { this.progress(98, t("loadShaders")); await new Promise((r) => requestAnimationFrame(() => r())); await Promise.race([A.renderer.prewarm(), new Promise((r) => setTimeout(r, 8000))]); }
+    this.progress(100); setTimeout(() => this.loading(false), 120);
   }
   // ---------- tutorial ----------
   tutStart(cfg) { this.tutCfg = cfg; this.tutI = 0; $("m-tut").classList.remove("x-hide"); this.tutRender(); const loop = () => { if ($("m-tut").classList.contains("x-hide")) return; this.tutDraw(); requestAnimationFrame(loop); }; loop(); }
@@ -401,7 +421,7 @@ export class UI {
     const seg = (k, opts, label, sub) => ({ k, type: "seg", opts, label, sub }), tog = (k, label, sub) => ({ k, type: "tog", label, sub }), rng = (k, label, min, max, step, fmt) => ({ k, type: "rng", label, min, max, step, fmt });
     const R = this.app.renderer;
     if (tab === "graphics") rows = [seg("quality", [["auto", t("q_auto")], ["low", t("q_low")], ["medium", t("q_medium")], ["high", t("q_high")], ["ultra", t("q_ultra")]], "quality", R ? (s.quality === "auto" ? "→ " + t("q_" + R.qName) : "") + (R.dyn && R.dyn < 0.99 ? ` · ${t("dynRes")} ${Math.round(R.dyn * 100)}%` : "") : ""),
-      seg("renderer", [["3d", t("r3d")], ["2d", t("r2d")]], "renderer"), seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), tog("showFps", "showFps"), tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
+      { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), tog("showFps", "showFps"), tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
     if (tab === "controls") rows = [seg("ctrl", [["joy", t("c_joy")], ["follow", t("c_follow")], ["swipe", t("c_swipe")]], "ctrlType"), rng("sens", "sens", 0.5, 2, 0.05, (v) => v.toFixed(2) + "×"), tog("left", "leftHand"),
       rng("boostSize", "boostSize", 0.7, 1.4, 0.05, (v) => Math.round(v * 100) + "%"), rng("boostPos", "boostPos", 0, 1, 0.05, (v) => Math.round(v * 100) + "%"), { ...tog("haptics", "haptics"), sub: navigator.vibrate ? "" : t("hapticsNo") }];
     if (tab === "audio") rows = [rng("vMaster", "vMaster", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vSfx", "vSfx", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vMusic", "vMusic", 0, 1, 0.01, (v) => Math.round(v * 100) + "%")];
@@ -417,23 +437,28 @@ export class UI {
       if (r.type === "lang") h += LANGS.map(([c, n]) => `<div class="set-row"><span>${n}</span><button class="toggle ${s.lang === c ? "on" : ""}" data-lang="${c}" role="radio" aria-checked="${s.lang === c}" aria-label="${n}"></button></div>`).join("");
       if (r.type === "acct") { const g = this.S.isGuest, a = !g && this.S.acc[this.S.cur];
         h += `<div class="set-row"><span>${esc(this.p.name)}<small>${g ? t("guestNote") : esc(a.email || "")}</small></span>${g ? `<button class="btn primary" data-act="signup">${t("signUp")}</button>` : `<button class="btn" data-act="signout">${t("signOut")}</button>`}</div>
+          <div class="set-row redeem"><span>${t("redeem")}<small>${t("redeemSub")}</small></span><span class="rd-box"><input id="g-code" type="text" maxlength="32" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" placeholder="${t("redeemPh")}" aria-label="${t("redeem")}"><button class="btn primary" data-act="redeem">${t("redeemBtn")}</button></span></div>
           <div class="set-row"><span>${t("resetProg")}</span><button class="btn danger" data-act="reset">${t("resetProg")}</button></div>
           <div class="set-row"><span>${t("privacy")}<small>${t("localNote")}</small></span><a class="btn" href="../privacy.html" target="_blank" rel="noopener">↗</a></div>
           <div class="set-row"><span>${t("credits")}<small>${t("creditsSub")}</small></span><a class="btn" href="CREDITS.md" target="_blank" rel="noopener">↗</a></div>
           <p class="fine" style="text-align:center;margin-top:10px">${t("version")}</p>`; }
     }
     el.innerHTML = h;
-    el.querySelectorAll(".seg[data-k]").forEach((g) => g.querySelectorAll("button").forEach((b) => this.click(b, () => { const k = g.dataset.k; let v = b.dataset.v; if (typeof s[k] === "number") v = +v; s[k] = v; this.S.save(); this.app.applySetting(k); this.renderSettings(); }, "tab")));
+    el.querySelectorAll(".seg[data-k]").forEach((g) => g.querySelectorAll("button").forEach((b) => this.click(b, () => { const k = g.dataset.k; let v = b.dataset.v; if (typeof s[k] === "number") v = +v; s[k] = v; if (k === "renderer") { s.rendererPick = v; this.app.session2D = false; } this.S.save(); this.app.applySetting(k); this.renderSettings(); }, "tab")));
     el.querySelectorAll("[data-t]").forEach((b) => this.click(b, () => { const k = b.dataset.t; s[k] = !s[k]; this.S.save(); this.app.applySetting(k); this.renderSettings(); }, "toggle"));
     el.querySelectorAll("[data-r]").forEach((inp) => { const k = inp.dataset.r, row = rows.find((r) => r.k === k);
       inp.addEventListener("input", () => { s[k] = +inp.value; inp.style.setProperty("--p", ((s[k] - row.min) / (row.max - row.min)) * 100 + "%"); el.querySelector(`[data-rv="${k}"]`).textContent = row.fmt(s[k]); this.app.applySetting(k); });
       inp.addEventListener("change", () => { this.S.save(); if (k.startsWith("v")) { this.app.audio.unlock(); this.app.audio.play("eat"); } }); });
     el.querySelectorAll("[data-lang]").forEach((b) => this.click(b, () => { s.lang = b.dataset.lang; this.S.save(); this.app.applyLang(); this.renderSettings(); }, "toggle"));
+    const gc = $("g-code"); if (gc) gc.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); const b = el.querySelector('[data-act="redeem"]'); b && b.click(); } });
     el.querySelectorAll("[data-act]").forEach((b) => this.click(b, async () => {
       const a = b.dataset.act;
       if (a === "tut") { this.tutCfg = null; this.tutI = 0; this.tutStart(null); }
       if (a === "signup") this.showAuth("up");
       if (a === "signout") { this.S.signOut(); this.app.applyAll(); this.showAuth(); }
+      if (a === "redeem") { const inp = $("g-code"), r = await this.S.redeem(inp ? inp.value : "");
+        if (r === "ok") { this.toast("✓ " + t("redeemOk"), "good", 3500); this.app.audio.play("reveal"); this.coins && this.coins(this.p.coins); this.renderSettings(); }
+        else { this.toast(t(r === "na" ? "redeemNa" : "redeemBad"), "warn"); this.app.audio.play("error"); if (inp) { inp.select(); } } }
       if (a === "reset") { if (await this.confirm(t("confirmReset"))) { this.S.resetProgress(); this.app.applyAll(); this.toast("✓", "good"); this.renderSettings(); } }
     }));
   }

@@ -1,13 +1,15 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { Store, KV } from "./store.js?v=f1457";
-import { setLang, applyI18n, t } from "./i18n.js?v=f1457";
-import { Audio, haptic } from "./audio.js?v=f1457";
-import { Input } from "./input.js?v=f1457";
-import { Game } from "./game.js?v=f1457";
-import { UI, Hud } from "./ui.js?v=f1457";
-import { Renderer2D } from "./render2d.js?v=f1457";
+import { guard } from "./guard.js?v=m1a";
+import { Store, KV } from "./store.js?v=m1a";
+import { setLang, applyI18n, t } from "./i18n.js?v=m1a";
+import { Audio, haptic } from "./audio.js?v=m1a";
+import { Input } from "./input.js?v=m1a";
+import { Game } from "./game.js?v=m1a";
+import { UI, Hud } from "./ui.js?v=m1a";
+import { Renderer2D } from "./render2d.js?v=m1a";
 
+guard();
 const $ = (id) => document.getElementById(id);
 const app = (window.SSP = {});
 window.__bt = []; const bar = (p, msg) => { window.__bt.push([Math.round(performance.now()), p]); $("bootbar").style.width = p + "%"; $("bootpct").textContent = Math.round(p) + "%"; if (msg) $("bootmsg").textContent = msg; };
@@ -41,8 +43,8 @@ async function makeRenderer(kind, quality) {
   const old = $("gl"), cv = document.createElement("canvas"); cv.id = "gl"; cv.setAttribute("aria-hidden", "true"); old.replaceWith(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=f1457");
-      const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => app.ui && app.ui.toast(t("oops"), "warn"), onRestored: () => {} });
+      const m = await import("./render3d.js?v=m1a");
+      const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 3500); }, onRestored: () => { clearTimeout(app._lostT); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
   }
@@ -59,7 +61,8 @@ app.switchRenderer = async (kind, auto) => {
   const q = app.store.settings.quality === "auto" ? (kind === "3d" ? autoStart() : "low") : app.store.settings.quality;
   app.renderer = await makeRenderer(kind, q); app.game.setRenderer(app.renderer);
   app.renderer.setArena(app.game.backend ? app.game.backend.R : 130); app.renderer.setWorld(w); app.applyQuality(q === "auto" ? autoStart() : q);
-  if (auto) { app.store.settings.renderer = "2d"; app.store.save(); app.ui.toast(t("autoLow")); }
+  // an automatic drop to 2D lasts for this session only: the saved choice stays 3D, so the next launch retries 3D
+  if (auto) { app.session2D = true; try { KV.set("ssp-fall2d", JSON.stringify({ t: Date.now(), why: auto === true ? "slow" : String(auto) })); } catch (_) {} app.ui.toast(t("auto2d"), "", 4500); }
   if (app.noWebgl && kind === "3d") { app.ui.toast(t("noWebgl"), "warn", 4500); app.noWebgl = false; }
 };
 app.applyLang = () => { setLang(app.store.settings.lang); applyI18n(); if (app.ui && app.ui.cur === "lobby") app.ui.renderLobby(); };

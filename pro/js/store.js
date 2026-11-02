@@ -1,6 +1,6 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=f1457";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=m1a";
 export const SEASON = { id: "s1", tiers: 30, per: 400 };
 // free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
 export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
@@ -10,7 +10,7 @@ export const CHAINS = {
   survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
 };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=f1457";
+import { WORLDS } from "./worlds.js?v=m1a";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -30,7 +30,7 @@ export function lvInfo(xp) { let n = 1, x = xp, need = xpNeed(1); while (n < LV_
 export const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 
 export const DEF_SETTINGS = {
-  lang: "en", quality: "auto", renderer: "3d", fpsCap: 60, showFps: false, postFx: true, juice: true, minimap: true,
+  lang: "en", quality: "auto", renderer: "3d", rendererPick: "", fpsCap: 60, showFps: false, postFx: true, juice: true, minimap: true,
   ctrl: "joy", sens: 1, left: false, boostSize: 1, boostPos: 0.5, haptics: true,
   vMaster: 0.8, vSfx: 0.9, vMusic: 0.45, cb: false, reduceMotion: false, bigText: false,
 };
@@ -84,6 +84,8 @@ export class Store {
       try { this.settings.reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) {}
       const nv = navigator; if ((nv.deviceMemory && nv.deviceMemory <= 2) || (nv.hardwareConcurrency && nv.hardwareConcurrency <= 2)) this.settings.quality = "low";
     }
+    // migration: builds before Nov 2026 persisted an automatic 2D fallback as if the player had chosen it. Only an explicit pick in Settings keeps 2D.
+    if (this.settings.renderer === "2d" && this.settings.rendererPick !== "2d") this.settings.renderer = "3d";
     this.remember = KV.get("ssp-rem") || "";
     this.fails = Object.create(null); this._t = 0;
     addEventListener("storage", (e) => { if (e.key === "ssp-acc" && e.newValue) { const o2 = jparse(e.newValue); if (o2 && o2.a) for (const k of Object.keys(o2.a)) if (k !== this.cur && o2.a[k] && o2.a[k].p) { o2.a[k].p = fixProfile(o2.a[k].p); this.acc[k] = o2.a[k]; } } });
@@ -210,6 +212,23 @@ export class Store {
     this.save(); return out;
   }
 
+  // ---------- owner unlock (redeem code) ----------
+  // Only the SHA-256 of the normalised code ships in the client. Unlocks everything for the CURRENT account or guest;
+  // idempotent (running it twice changes nothing), saved immediately, and pre-marks legendaries as seen so no reveal queue fires.
+  static REDEEM = "becc72b4c1e0d080a5949c8eeaa8e39c2ef4614374418a23f5fcc3604b6e88a4";
+  static async hashCode(code) { const c = String(code || "").trim().toUpperCase(); if (!c || !(globalThis.crypto && crypto.subtle)) return ""; const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(c)); return Array.from(new Uint8Array(d), (b) => b.toString(16).padStart(2, "0")).join(""); }
+  async redeem(code) { const h = await Store.hashCode(code); if (!h) return globalThis.crypto && crypto.subtle ? "bad" : "na"; if (h !== Store.REDEEM) return "bad"; this.unlockAll(); return "ok"; }
+  unlockAll() {
+    const p = this.p; let xp = 0; for (let n = 1; n < LV_MAX; n++) xp += xpNeed(n);
+    p.xp = Math.max(p.xp, xp); p.coins = Math.max(p.coins, 999999);
+    for (const S of SKINS) { if (S.src && !p.owned.includes(S.id)) p.owned.push(S.id); if (S.fx && !p.seen.includes(S.id)) p.seen.push(S.id); }
+    p.flags = FLAGS.map((_, i) => i);
+    p.season.xp = Math.max(p.season.xp, SEASON.tiers * SEASON.per); for (let k = 1; k <= SEASON.tiers; k++) if (!p.season.claimed.includes(k)) p.season.claimed.push(k);
+    for (const id in CHAINS) { const c = this.chain(id); c.s = Math.max(c.s, CHAINS[id].steps.length); c.p = 0; }
+    p.weekly.done = Math.max(p.weekly.done || 0, 3);
+    const now = Date.now(); for (const [id] of Store.ACH) if (!p.ach[id]) p.ach[id] = now;
+    p.owner = 1; this.flush();
+  }
   // ---------- achievements ----------
   static ACH = [
     ["a_first", "🍏", (p) => p.stats.food >= 1, 20], ["a_hunter", "⚔️", (p) => p.stats.kills >= 10, 100], ["a_predator", "🦖", (p) => p.stats.kills >= 100, 400],

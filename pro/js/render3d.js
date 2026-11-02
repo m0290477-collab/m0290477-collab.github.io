@@ -2,14 +2,14 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=f1457";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=f1457";
-import { WORLDS, W3D } from "./worlds.js?v=f1457";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=f1457";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=f1457";
-import { World, prefetchWorld } from "./gfx/env.js?v=f1457";
-import { Post } from "./gfx/post.js?v=f1457";
-import { Studio } from "./gfx/showcase.js?v=f1457";
+import * as THREE from "./vendor/three.module.min.js?v=m1a";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=m1a";
+import { WORLDS, W3D } from "./worlds.js?v=m1a";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=m1a";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=m1a";
+import { World, prefetchWorld } from "./gfx/env.js?v=m1a";
+import { Post } from "./gfx/post.js?v=m1a";
+import { Studio } from "./gfx/showcase.js?v=m1a";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: true, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 500, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -57,7 +57,10 @@ export class Renderer3D {
     const G = this.snakes.G, saved = []; const force = (m, k) => { saved.push([m, k, m[k]]); };
     for (const n in G) { force(G[n].g, "instanceCount"); G[n].g.instanceCount = 1; }
     for (const m of [this.bits, this.conf, this.cores, this.coreHalo, this.teamRing, this.food, this.halo, this.gem, this.eyes.w, this.eyes.p, this.eyes.h, this.eyes.t, this.eyesS.w, this.eyesS.p, this.eyesS.h, this.eyesS.t]) { force(m, "count"); m.count = 1; }
-    for (const o of [this.storm, this.stormOut, this.hill, ...this.rings]) { force(o, "visible"); o.visible = true; }
+    for (const o of [this.storm, this.stormOut, this.hill, ...this.rings, ...(this.puSpr || []).slice(0, 1)]) { if (o) { force(o, "visible"); o.visible = true; } }
+    if (this.puPillar) { force(this.puPillar, "count"); this.puPillar.count = 1; }
+    // a name-tag sprite (fog:false SpriteMaterial) so the first label of a match doesn't compile mid-play
+    if (!this._warmLabel) { this._warmLabel = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: false, toneMapped: false, fog: false })); this._warmLabel.scale.set(0.001, 0.001, 1); this.scene.add(this._warmLabel); }
     for (const m of this.snakes.showMeshes) { force(m, "visible"); m.visible = true; }
     const restore = () => { for (const [o, k, v] of saved) o[k] = v; };
     const t0 = performance.now(); let p;
@@ -188,7 +191,7 @@ export class Renderer3D {
     const Q = this.Q; this.pMax = Q.particles;
     this.r.shadowMap.enabled = Q.shadows > 0; this.r.shadowMap.type = Q.shadows > 1 ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
     this.sun.castShadow = Q.shadows > 0; const ms = Q.shadows > 1 ? 2048 : 1024; if (this.sun.shadow.map && this.sun.shadow.mapSize.x !== ms) { this.sun.shadow.map.dispose(); this.sun.shadow.map = null; } this.sun.shadow.mapSize.set(ms, ms);
-    this.fxLight.visible = Q.post; this.studio.key.castShadow = Q.shadows > 0; this.studio.setQuality(Q);
+    this.fxLight.visible = true; // constant light count: toggling a light recompiles every lit material mid-match this.studio.key.castShadow = Q.shadows > 0; this.studio.setQuality(Q);
     if (!first) { this.snakes.build(Q); for (const m of this.snakes.worldMeshes) this.scene.add(m); for (const m of this.snakes.showMeshes) this.studio.scene.add(m); }
     if (!first && this._matTier !== Q.mat + Q.food) { for (const E of [this.eyes, this.eyesS]) for (const k in E) { E[k].parent.remove(E[k]); E[k].geometry.dispose(); E[k].material.dispose(); } for (const m of [this.food, this.halo, this.gem]) { this.scene.remove(m); m.geometry.dispose(); m.material.dispose(); } this._initFood(); this.eyes = this._eyes(this.scene); this.eyesS = this._eyes(this.studio.scene); }
     this._matTier = Q.mat + Q.food;
@@ -275,7 +278,7 @@ export class Renderer3D {
   ring(x, y, rgb, maxR = 8) { const m = this.rings.find((r) => !r.visible) || this.rings[0]; m.visible = true; m.userData.t = 0; m.userData.R = maxR; m.position.set(x, 0.15, y); m.material.color.setRGB(rgb[0] * 2.2, rgb[1] * 2.2, rgb[2] * 2.2); }
   shake(a) { if (this.juice && !this.reduceMotion) this.shakeA = Math.min(1.4, this.shakeA + a); }
   kick(ca, flashRgb, flashA = 0.18) { if (this.reduceMotion) return; this.ca = Math.min(1.5, this.ca + ca); if (flashRgb) { this.flash.set(flashRgb[0], flashRgb[1], flashRgb[2], Math.max(this.flash.w, flashA)); } }
-  light(x, y, rgb, k = 1) { if (!this.fxLight.visible) return; this.fxLight.position.set(x, 3, y); this.fxLight.color.setRGB(rgb[0], rgb[1], rgb[2]); this.fxLight.intensity = 32 * k; }
+  light(x, y, rgb, k = 1) { if (!this.Q.post) return; this.fxLight.position.set(x, 3, y); this.fxLight.color.setRGB(rgb[0], rgb[1], rgb[2]); this.fxLight.intensity = 32 * k; }
   confetti(x, y, n = 160) { const P = [[1, 0.2, 0.3], [1, 0.8, 0.1], [0.2, 0.9, 1], [0.6, 0.3, 1], [0.2, 1, 0.5], [1, 1, 1]]; for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = 2 + Math.random() * 9; this.shard(x + Math.cos(a) * 2, 2 + Math.random() * 3, y + Math.sin(a) * 2, Math.cos(a) * v, 9 + Math.random() * 10, Math.sin(a) * v, P[i % P.length], 0.35 + Math.random() * 0.2, 3 + Math.random() * 2, true); } }
 
   _label(id, name, color, me) {
