@@ -4,7 +4,7 @@
 // cross-section with a sculpted head, neck, tail taper, lateral undulation, head bob, eat squash and a
 // growth pulse running down the body. Fragment stage = PBR (clearcoat/iridescence/sheen) + procedural
 // scales + 12 legendary shader effects. All snakes = 1 instanced draw (+1 for ghost/transparent skins).
-import * as THREE from "../vendor/three.module.min.js";
+import * as THREE from "../vendor/three.module.min.js?v=f1";
 
 export const SW = 176; // spine samples per snake (2 texels each)
 export const MAXS = 56; // snake rows (last row reserved for the showcase)
@@ -34,15 +34,16 @@ void snakeVertex(out vec3 pos, out vec3 nrm){
   vCol=unpackCol(f<0.5?b.w:c.w);
   float u=s;
   // profile: sculpted head + neck + long tail taper
-  float hw=1.0+0.26*exp(-pow((dist-0.6*r)/(1.0*r),2.0))-0.1*exp(-pow((dist-2.7*r)/(0.9*r),2.0));
+  // MUST match sim.js: head disc = r*HEAD_K (1.12), body half-width = r*taperAt(u) -> collision == what you see
+  float hw=1.0+0.12*exp(-pow(dist/(0.9*r),2.0))-0.06*exp(-pow((dist-2.4*r)/(0.8*r),2.0));
   float taper=1.0-0.74*smoothstep(0.58,1.0,u);
   // growth pulse travelling head -> tail
   float pt=(uT-iB.x)*(16.0+len*0.5); float pulse=0.24*exp(-pow((dist-pt)/(1.7*r),2.0))*step(0.0,pt)*(1.0-smoothstep(len*0.85,len*1.05,pt));
   float sq=iB.y*exp(-dist/(2.6*r));
   float w=r*hw*taper*(1.0+pulse)*(1.0+0.3*sq)*alpha; float h=r*hw*taper*0.8*(1.0+pulse)*(1.0-0.24*sq)*alpha;
-  // lateral undulation (visual only, < 0.15 r so collisions read true) + head bob
+  // lateral undulation (visual only, 0.04 r so collisions read true) + head bob
   float boost=iB.z; float wave=mix(5.5,10.0,boost);
-  float wv=sin(dist/(max(r,0.5)*1.25)-uT*wave)*r*0.15*smoothstep(0.0,3.2*r,dist);
+  float wv=sin(dist/(max(r,0.5)*1.25)-uT*wave)*r*0.04*smoothstep(0.0,3.2*r,dist);
   C+=side*wv;
   C.y+=sin(uT*3.1+iC.w*6.0)*0.07*r*exp(-dist/(2.2*r));
   float th=tb.y, cs=cos(th), sn=sin(th);
@@ -53,9 +54,9 @@ void snakeVertex(out vec3 pos, out vec3 nrm){
   float k=tb.z;
   if(k<0.0){ // head cap: rounded, slightly flattened snout
     float kk=-k; float ang=kk*1.5707963; vec3 fw=-T;
-    base+=fw*(r*hw*1.32*sin(ang)*alpha); off*=cos(ang); off.y*=mix(1.0,0.78,kk); en=normalize(mix(en,fw,sin(ang)));
+    base+=fw*(r*hw*sin(ang)*alpha); off*=cos(ang); off.y*=mix(1.0,0.78,kk); en=normalize(mix(en,fw,sin(ang)));
   } else if(k>0.0){ // pointed tail tip
-    float ang=k*1.5707963; base+=T*(r*taper*2.2*sin(ang)*alpha); off*=cos(ang); en=normalize(mix(en,T,sin(ang)));
+    float ang=k*1.5707963; base+=T*(r*taper*1.0*sin(ang)*alpha); off*=cos(ang); en=normalize(mix(en,T,sin(ang)));
   }
   pos=base+off; nrm=en;
   vSk=vec3(dist,th,k); vR=max(r,0.05); vFx=vec4(iA.w,boost,alpha,iC.w); vGlow=iC.rgb; vLocal=vec3(dist,th,sq);
@@ -89,7 +90,7 @@ const FRAG_COLOR = /* glsl */ `
     vec2 p=q*0.75+vec2(-uT*0.9,0.0); float e=vor(p); float n=fbm(q*0.5);
     base=mix(vec3(0.045,0.02,0.015),vec3(0.16,0.07,0.04),n); sRough=0.82; sCC=0.2; sIrid=0.0; bumpK=1.6;
   } else if(fx==2){ // cosmos
-    float n=fbm(q*0.35+vec2(uT*0.12,0.0)); base=mix(vec3(0.03,0.01,0.09),vec3(0.18,0.05,0.32),n); sRough=0.12; sIrid=0.35; bumpK=0.4;
+    float n=fbm(q*0.35+vec2(uT*0.12,0.0)); base=mix(vec3(0.012,0.004,0.045),vec3(0.11,0.02,0.24),n); sRough=0.38; sIrid=0.08; sCC=0.3; bumpK=0.3;
   } else if(fx==3){ // prism diamond
     base=vec3(0.78,0.9,1.0); sRough=0.02; sMetal=0.55; sIrid=1.0; bumpK=0.0;
   } else if(fx==4){ // hologram
@@ -134,7 +135,7 @@ const FRAG_EMIT = /* glsl */ `
       em=mix(vec3(1.0,0.22,0.02),vec3(1.0,0.75,0.2),crack)*crack*(2.6*hot)+vec3(1.0,0.3,0.05)*fres*0.6; }
     else if(fx==2){ vec2 g=q*2.4+V.xy*vR*0.6+vec2(uT*0.5,0.0); vec2 ci=floor(g); float st=step(0.93,h21(ci))*smoothstep(0.32,0.0,length(fract(g)-0.5))*(0.5+0.5*sin(uT*4.0+h21(ci+3.0)*30.0));
       vec2 g2=q*5.0+vec2(uT*0.9,0.0); float st2=step(0.96,h21(floor(g2)))*smoothstep(0.3,0.0,length(fract(g2)-0.5));
-      float n=fbm(q*0.35+vec2(uT*0.12,0.0)); em=mix(vec3(0.25,0.05,0.5),vec3(0.05,0.35,0.6),n)*0.45*n+vec3(1.0,0.95,1.0)*(st*2.6+st2*1.2)+vec3(0.6,0.3,1.0)*fres*0.7; }
+      float n=fbm(q*0.35+vec2(uT*0.12,0.0)); em=mix(vec3(0.28,0.03,0.6),vec3(0.06,0.12,0.5),n)*0.35*n+vec3(1.0,0.95,1.0)*(st*2.6+st2*1.2)+vec3(0.42,0.12,0.9)*fres*0.32; }
     else if(fx==3){ vec2 g=q*3.0; float gl=step(0.965,h21(floor(g)+floor(uT*5.0)))*smoothstep(0.35,0.0,length(fract(g)-0.5)); em=vec3(1.0)*gl*3.5+vec3(0.6,0.9,1.0)*fres*0.9+hue(fres*2.0+uT*0.2)*fres*0.5; }
     else if(fx==4){ float scan=step(0.55,fract(vSk.x*1.8-uT*3.0))*0.25; em=hue(fres*1.6+vSk.x*0.04+uT*0.25)*(0.35+fres*1.8)+vec3(0.4,1.0,1.0)*scan*(0.4+fres); }
     else if(fx==5){ float l1=abs(fbm(q*vec2(0.35,1.1)+vec2(uT*3.1,uT*1.3))-0.5); float l2=abs(fbm(q*vec2(0.5,1.6)-vec2(uT*2.3,-uT*1.9)+7.0)-0.5);

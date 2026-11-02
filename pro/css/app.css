@@ -438,3 +438,43 @@ html.lefty #h-mini { inset-inline-start: auto; inset-inline-end: calc(10px + var
 
 body.revealing .screen { opacity: 0 !important; pointer-events: none !important; transition: opacity 0.35s ease; }
 #hud.cine > :not(.h-cine):not(#h-pop) { opacity: 0 !important; transition: opacity 0.4s ease; pointer-events: none; }
+
+/* ---- in-match features: power-up chips, combo, mission toasts, hints, spectate, kill feed, KOTH meter ---- */
+.h-pu { position: absolute; top: calc(54px + var(--st)); inset-inline-start: calc(110px + var(--sl)); display: flex; flex-wrap: wrap; max-width: 34vw; gap: 6px; z-index: 3; pointer-events: none; }
+html.lefty .h-pu { inset-inline-start: calc(10px + var(--sl)); }
+.pu-chip { position: relative; display: flex; align-items: center; gap: 4px; height: 30px; padding: 0 10px 0 6px; border-radius: 99px; background: rgba(8, 12, 22, 0.82); border: 1.5px solid var(--c); box-shadow: 0 0 14px color-mix(in srgb, var(--c) 55%, transparent), inset 0 0 10px color-mix(in srgb, var(--c) 25%, transparent); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; overflow: hidden; animation: puIn .35s var(--spring); }
+.pu-chip::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--f) * 100%); background: var(--c); transition: width .25s linear; }
+.pu-chip i { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--c); } .pu-chip svg { width: 14px; height: 14px; fill: #0a0c18; stroke: none; }
+.pu-chip span { color: #fff; }
+.pu-chip.end { animation: blink .4s infinite; } .pu-chip.bad { border-style: dashed; }
+@keyframes puIn { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+#pu-flash { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0; box-shadow: inset 0 0 120px var(--c, #fff); }
+#pu-flash.on { animation: puF .7s ease-out; }
+@keyframes puF { 0% { opacity: 1; } 100% { opacity: 0; } }
+#frost-vig { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0; transition: opacity .4s; background: radial-gradient(ellipse at center, transparent 45%, rgba(150, 230, 255, 0.45) 100%); box-shadow: inset 0 0 90px rgba(170, 240, 255, 0.7); }
+#frost-vig.on { opacity: 1; }
+.h-combo { position: absolute; top: 36%; inset-inline-end: calc(18% + var(--sr)); text-align: center; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 4; }
+.h-combo.on { opacity: 1; }
+.h-combo b { display: block; font-size: 26px; font-weight: 900; letter-spacing: 0.08em; background: linear-gradient(180deg, #fff, #ffe08a 50%, #ff8a00); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 10px rgba(255, 160, 0, 0.8)); }
+.h-combo small { font-size: 11px; color: var(--tx2); letter-spacing: 0.2em; }
+.h-combo.pump b { animation: pump .35s var(--spring); }
+@keyframes pump { 0% { transform: scale(1.8); } 100% { transform: scale(1); } }
+.pop.gain { font-size: 15px; color: #e8ffe9; } .pop.gain.hot { color: #ffd36a; font-size: 17px; }
+.pop.pu { font-size: 20px; color: #fff; text-shadow: 0 0 12px rgba(255, 255, 255, 0.8), 0 2px 6px #000; animation-duration: 1.4s; }
+.pop.rank { font-size: 18px; color: var(--gold1); text-shadow: 0 0 12px rgba(255, 200, 69, 0.7), 0 2px 6px #000; animation-duration: 1.6s; }
+.h-mission { position: absolute; bottom: calc(14px + var(--sb)); left: 50%; transform: translate(-50%, 20px); min-width: 220px; max-width: 60vw; padding: 7px 14px 9px; border-radius: 14px; background: rgba(8, 12, 22, 0.78); border: 1px solid var(--line2); opacity: 0; transition: opacity .3s, transform .4s var(--spring); pointer-events: none; z-index: 4; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: center; }
+.h-mission.on { opacity: 1; transform: translate(-50%, 0); }
+.h-mission small { grid-column: 1 / -1; font-size: 9px; letter-spacing: 0.25em; color: var(--tx2); text-transform: uppercase; }
+.h-mission b { font-size: 13px; } .h-mission em { font-style: normal; font-size: 12px; color: var(--tx2); font-variant-numeric: tabular-nums; }
+.h-mission .mbar { grid-column: 1 / -1; height: 5px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; margin-top: 4px; } .h-mission .mbar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold2), var(--gold1)); }
+.h-mission.done { border-color: var(--gold2); box-shadow: 0 0 24px rgba(255, 200, 69, 0.45); } .h-mission.done b { color: var(--gold1); }
+.h-hint { position: absolute; bottom: calc(110px + var(--sb)); left: 50%; transform: translateX(-50%); max-width: 56vw; padding: 7px 14px; border-radius: 12px; background: rgba(8, 12, 22, 0.72); border: 1px dashed rgba(255, 255, 255, 0.3); font-size: 13px; text-align: center; opacity: 0; transition: opacity .4s; pointer-events: none; z-index: 4; }
+.h-hint.on { opacity: 1; }
+.h-spec { position: absolute; bottom: calc(16px + var(--sb)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 6px 8px 6px 16px; border-radius: 99px; background: rgba(8, 12, 22, 0.78); border: 1px solid var(--line2); z-index: 6; pointer-events: auto; font-weight: 700; }
+.h-spec .btn { pointer-events: auto; padding: 6px 14px; min-height: 0; }
+#hud.watch #joy, #hud.watch #boost, #hud.watch .h-pu, #hud.watch .h-combo { display: none; }
+.h-feed div b { font-weight: 800; } .h-feed div i { font-style: normal; color: #ff6b78; margin: 0 3px; } .h-feed .dead { color: #ffb3bb; border: 1px solid rgba(255, 77, 94, 0.5); }
+.mode-pill.koth { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 170px; }
+.mode-pill.contest { border-color: #ff4d5e; color: #ffb3bb; animation: blink .6s infinite; }
+.mode-pill .cap { width: 100%; height: 6px; border-radius: 99px; background: rgba(255, 255, 255, 0.12); overflow: hidden; } .mode-pill .cap i { display: block; height: 100%; background: linear-gradient(90deg, #ffb000, #ffe7a3); box-shadow: 0 0 8px rgba(255, 200, 69, 0.8); transition: width .25s linear; }
+.r-season { margin-top: 4px; font-size: 12px; color: #c9b8ff; }

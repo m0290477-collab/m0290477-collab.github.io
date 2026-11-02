@@ -14,12 +14,12 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2305070d'/%3E%3Cpath d='M14 40c6-14 14 4 20-10s12-6 16-2' stroke='%23ffc845' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="preload" href="assets/fonts/oxanium.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/keyart_lo.webp" as="image" />
-<link rel="stylesheet" href="css/app.css" />
+<link rel="stylesheet" href="css/app.css?v=f1" />
 <link rel="modulepreload" href="js/vendor/three.module.min.js" />
 </head>
 <body>
 <canvas id="gl" aria-hidden="true"></canvas>
-<div id="vignette"></div><div id="storm-vig"></div><div id="lbox"><i></i><i></i></div>
+<div id="vignette"></div><div id="storm-vig"></div><div id="frost-vig"></div><div id="pu-flash"></div><div id="lbox"><i></i><i></i></div>
 
 <div id="rotate"><div class="rot-ic">⟳</div><p>Rotate your device to landscape</p><p dir="rtl">أدر جهازك إلى الوضع الأفقي</p></div>
 
@@ -172,6 +172,11 @@
   <div class="h-kill" id="h-kill"><b></b><small></small></div>
   <div class="h-cine" id="h-cine"><b></b><small></small></div>
   <div id="h-pop"></div>
+  <div class="h-pu" id="h-pu"></div>
+  <div class="h-combo" id="h-combo"></div>
+  <div class="h-mission" id="h-mission"></div>
+  <div class="h-hint" id="h-hint"></div>
+  <div class="h-spec x-hide" id="h-spec"><span></span><button class="btn gold" id="h-spec-back" data-i="results"></button></div>
   <div id="joy"><div class="base"></div><div class="knob"></div></div>
   <button id="boost" data-ia="boost"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></button>
   <div id="touch"></div>
@@ -189,9 +194,9 @@
   <div class="r-head"><h2 id="r-title"></h2><p id="r-sub"></p><div class="r-best x-hide" id="r-best" data-i="newBest"></div></div>
   <div class="r-score" id="r-score">0</div>
   <div class="r-grid" id="r-grid"></div>
-  <div class="r-xp"><div class="r-lv"><span data-i="level"></span> <b id="r-lv">1</b></div><div class="xpbar big"><i id="r-xpbar"></i></div><div class="r-gain"><span id="r-xp"></span> · <span id="r-coins"></span></div></div>
+  <div class="r-xp"><div class="r-lv"><span data-i="level"></span> <b id="r-lv">1</b></div><div class="xpbar big"><i id="r-xpbar"></i></div><div class="r-gain"><span id="r-xp"></span> · <span id="r-coins"></span></div><div class="r-season" id="r-season"></div></div>
   <div class="r-extra" id="r-extra"></div>
-  <div class="r-btns"><button class="btn ghost" id="r-lobby" data-i="lobby"></button><button class="btn gold" id="r-again" data-i="playAgain"></button></div>
+  <div class="r-btns"><button class="btn ghost" id="r-lobby" data-i="lobby"></button><button class="btn ghost x-hide" id="r-watch" data-i="watchKiller"></button><button class="btn gold" id="r-again" data-i="playAgain"></button></div>
 </div></div>
 
 <div id="m-tut" class="modal x-hide" role="dialog" aria-modal="true"><div class="glass mcard tut">
@@ -207,6 +212,6 @@
 
 <div id="wipe" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="toasts" aria-live="polite"></div>
-<script type="module" src="js/main.js"></script>
+<script type="module" src="js/main.js?v=f1"></script>
 </body>
 </html>

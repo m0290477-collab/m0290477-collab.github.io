@@ -10,13 +10,34 @@ export const C = {
   START_M: 24, MIN_BOOST_M: 18, BOOST_COST: 5.5, // mass per second while boosting
   FOOD_TARGET: 620, FOOD_MAX: 1300,
   CAP: 2048, // path ring capacity (samples, one per tick)
-  CELL: 4, MAXSEG: 9000,
+  CELL: 4, MAXSEG: 20000,
 };
 export const MASK = C.CAP - 1;
 export const radiusOf = (m) => Math.min(3.4, 0.55 + 0.034 * Math.sqrt(m));
 export const lengthOf = (m) => Math.min(190, 5 + 2.25 * Math.sqrt(m));
 export const turnOf = (r) => C.TURN / (1 + (r - 0.6) * 0.75);
 export const boostCost = (m, dt) => C.BOOST_COST * (1 + m / 1500) * dt;
+// ---- body shape shared by collision AND both renderers (gfx/snake.js mirrors these numbers in GLSL) ----
+// half-width of the body at fraction u (0 = head, 1 = tail tip) is r * taperAt(u); the head is a disc of r * HEAD_K.
+export const HEAD_K = 1.12;
+export const HIT_K = 0.98; // contact = edges touch (2% slack for the polyline sagitta between samples)
+export const taperAt = (u) => { const t = Math.max(0, Math.min(1, (u - 0.58) / 0.42)); return 1 - 0.74 * t * t * (3 - 2 * t); };
+export const sampleSp = (r) => Math.max(0.3, r * 0.4); // collision sample spacing: no visible gaps between discs
+// power-ups: magnet, shield, speed, x2 score, ghost, freeze, mega-orb burst
+export const PU = { MAG: 0, SHIELD: 1, SPEED: 2, X2: 3, GHOST: 4, FREEZE: 5, MEGA: 6, N: 7 };
+export const PU_DUR = [10, 20, 6, 12, 5, 4, 0];
+export const PU_ICON = ["🧲", "🛡", "⚡", "×2", "👻", "❄", "💎"];
+// 24x24 vector glyphs (no emoji-font dependency): used by the HUD chips (inline SVG) and the 3D badges (Path2D)
+export const PU_SVG = [
+  "M6 3h4v9a2 2 0 0 0 4 0V3h4v9a6 6 0 0 1-12 0Z", // magnet
+  "M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5Z", // shield
+  "M13 2 4 14h7l-1 8 9-12h-7Z", // speed bolt
+  "M3 7h3l2.5 3.5L11 7h3l-4 5 4 5h-3l-2.5-3.5L6 17H3l4-5Zm12.5 3.2c0-2 1.6-3.2 3.3-3.2 1.8 0 3.2 1.2 3.2 3 0 1.4-.8 2.3-2.2 3.5L18.6 15H22v2h-6.6v-1.7l3.4-3c.9-.8 1.2-1.3 1.2-2 0-.7-.5-1.2-1.2-1.2-.8 0-1.3.6-1.3 1.3Z", // x2
+  "M12 2a7 7 0 0 0-7 7v13l2.3-2 2.4 2 2.3-2 2.3 2 2.4-2L19 22V9a7 7 0 0 0-7-7Zm-2.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z", // ghost
+  "M11 1h2v5.3l2.6-2.6 1.4 1.4L13 9.1V11h1.9l4-4 1.4 1.4-2.6 2.6H23v2h-5.3l2.6 2.6-1.4 1.4-4-4H13v1.9l4 4-1.4 1.4-2.6-2.6V23h-2v-5.3l-2.6 2.6L7 18.9l4-4V13H9.1l-4 4-1.4-1.4L6.3 13H1v-2h5.3L3.7 8.4 5.1 7l4 4H11V9.1l-4-4 1.4-1.4L11 6.3Z", // snowflake
+  "M6 3h12l4 6-10 13L2 9Zm1.2 2L4.6 8.6h4.6L11 5Zm9.6 0H13l1.8 3.6h4.6Z", // diamond
+];
+export const PU_COL = ["#ff4fd8", "#4fc3ff", "#ffe14f", "#ffa13d", "#c6b8ff", "#9ff3ff", "#5dffb0"];
 export const angDiff = (a, b) => { let d = a - b; d -= Math.round(d / 6.283185307179586) * 6.283185307179586; return d; };
 const TAU = Math.PI * 2;
 
@@ -27,10 +48,10 @@ export const BOT_NAMES = ["Viper", "Mamba", "Cobra", "Python", "Taipan", "Krait"
 
 // Bot difficulty: look = look-ahead multiplier, react = ticks between decisions (at 60 Hz), hunt = hunting drive, boost = boost eagerness, err = mistake rate
 export const DIFF = [
-  { look: 0.75, react: 14, hunt: 0.05, boost: 0.15, err: 0.08 }, // Easy
-  { look: 1.0, react: 9, hunt: 0.35, boost: 0.4, err: 0.03 }, // Normal
-  { look: 1.25, react: 6, hunt: 0.7, boost: 0.7, err: 0.012 }, // Hard
-  { look: 1.5, react: 4, hunt: 1.0, boost: 1.0, err: 0.0 }, // Legend
+  { look: 0.75, react: 14, hunt: 0.1, boost: 0.2, err: 0.01 }, // Easy
+  { look: 1.0, react: 9, hunt: 0.4, boost: 0.45, err: 0.02 }, // Normal
+  { look: 1.2, react: 6, hunt: 0.7, boost: 0.7, err: 0.026 }, // Hard
+  { look: 1.4, react: 4, hunt: 1.0, boost: 0.9, err: 0.03 }, // Legend
 ];
 
 export class Snake {
@@ -43,7 +64,7 @@ export class Snake {
     this.m = m; this.r = radiusOf(m); this.len = lengthOf(m);
     this.h = 0; this.n = 0; this.alive = true; this.kills = 0; this.dropAcc = 0; this.bornTick = 0;
     this.bot = false; this.ai = null; this.god = false; this.best = m; this.foodEaten = 0;
-    this.lastA = a;
+    this.lastA = a; this.pu = [0, 0, 0, 0, 0, 0, 0]; this.slow = 0; this.inv = 0;
     // seed a straight tail behind the head so the body exists from frame one
     const step = 0.15; const k = Math.ceil(this.len / step) + 2;
     for (let i = k; i >= 0; i--) this.push(x - Math.cos(a) * i * step, y - Math.sin(a) * i * step);
@@ -64,8 +85,9 @@ export function moveSnake(s, dt, canBoost) {
   if (Math.abs(s.av * dt) > Math.abs(d) && Math.sign(s.av) === Math.sign(d)) s.av = d / dt; // no overshoot
   s.lastA = s.a;
   s.a += s.av * dt; if (s.a > Math.PI) s.a -= TAU; else if (s.a < -Math.PI) s.a += TAU;
-  s.boosting = !!s.boost && canBoost;
-  const v = (s.boosting ? C.BOOST : C.SPEED) * (s.vk || 1);
+  const free = s.pu && s.pu[2] > 0; // speed power-up = free boost
+  s.boosting = (!!s.boost && canBoost) || free;
+  const v = (s.boosting ? C.BOOST : C.SPEED) * (s.vk || 1) * (s.slow > 0 ? 0.55 : 1);
   s.x += Math.cos(s.a) * v * dt; s.y += Math.sin(s.a) * v * dt;
   s.push(s.x, s.y);
 }
@@ -126,6 +148,10 @@ export class Sim {
     this.tmp = new Float32Array(1200);
     this.walls = opt.walls !== false; this.diff = opt.diff ?? 1; this.botAggro = 1;
     this.netMode = !!opt.netMode;
+    // power-ups on the field: {id,k,x,y,b(born tick)}. evPu = (pu, takerId|0 for expiry, frozenIds) triples; evShield = (snakeId, hitById) pairs
+    this.powerups = opt.powerups !== false; this.pus = []; this.puSeq = 1; this.evPu = []; this.evPuNew = []; this.evShield = [];
+    this.puTarget = opt.puTarget ?? Math.max(3, Math.round(7 * (this.R / C.R) ** 2)); this.puNext = 60;
+    if (this.powerups) for (let i = 0; i < Math.ceil(this.puTarget * 0.6); i++) this.spawnPu();
     for (let i = 0; i < this.foodTarget; i++) this.spawnFood(...this.randPos(this.R - 3), 1 + (this.rand() * 2.2) | 0, (this.rand() * 12) | 0);
   }
   randPos(rr) { const a = this.rand() * TAU, d = Math.sqrt(this.rand()) * rr; return [Math.cos(a) * d, Math.sin(a) * d]; }
@@ -154,10 +180,24 @@ export class Sim {
     }
     return best;
   }
+  spawnPu(k, x, y) {
+    if (k === undefined) { const r = this.rand(); k = r < 0.17 ? 0 : r < 0.32 ? 1 : r < 0.48 ? 2 : r < 0.64 ? 3 : r < 0.77 ? 4 : r < 0.89 ? 5 : 6; }
+    if (x === undefined) [x, y] = this.randPos(this.R * 0.85);
+    const p = { id: this.puSeq = (this.puSeq % 60000) + 1, k, x, y, b: this.tick }; this.pus.push(p); this.evPuNew.push(p); return p;
+  }
+  // apply a picked power-up to snake s; returns ids of snakes it froze
+  applyPu(s, k) {
+    const hit = [];
+    if (k === PU.MEGA) { for (let i = 0; i < 26; i++) { const a = i / 26 * TAU + this.rand() * 0.2, d = 3 + this.rand() * 9; if (this.fCount < C.FOOD_MAX) this.spawnFood(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d, 4 + this.rand() * 4, (i * 5) % 12); } }
+    else if (k === PU.FREEZE) { for (const o of this.snakes) if (o !== s && o.alive && !o.god && !(this.teams && o.team === s.team)) { const dx = o.x - s.x, dy = o.y - s.y; if (dx * dx + dy * dy < 34 * 34) { o.slow = PU_DUR[5]; hit.push(o.id); } } }
+    else if (k === PU.SHIELD) s.pu[1] = PU_DUR[1];
+    else s.pu[k] = PU_DUR[k];
+    return hit;
+  }
   removeSnake(s) { const i = this.snakes.indexOf(s); if (i >= 0) this.snakes.splice(i, 1); this.byId.delete(s.id); }
 
   kill(s, killerId, cause) {
-    if (!s.alive) return; s.alive = false;
+    if (!s.alive) return; s.alive = false; s.diedTick = this.tick;
     const k = killerId ? this.byId.get(killerId) : null; if (k && k !== s) k.kills++;
     // body becomes food (≈55% of mass), spread along the corpse
     const pts = this.tmp, sp = Math.max(0.9, s.r * 0.9), n = bodyPoints(s, 0, 0, sp, s.len, pts, 590);
@@ -187,33 +227,52 @@ export class Sim {
     return 0;
   }
   botThink(s) {
-    const ai = s.ai, D = DIFF[Math.max(0, Math.min(3, ai.diff))];
-    const look = (6 + s.r * 5) * D.look * (0.85 + 0.15 * this.botAggro);
-    let want = null, boost = 0;
+    const ai = s.ai, D = DIFF[Math.max(0, Math.min(3, ai.diff))], A = this.botAggro;
+    const look = (6 + s.r * 5) * D.look * (0.85 + 0.15 * A);
+    let want = null, boost = 0, risky = false;
     if (!this._heads) this._heads = [];
     this._nh = 0; const lr2 = (look * 1.6 + 6) ** 2;
-    for (const o of this.snakes) if (o !== s && o.alive) { const dx = o.x - s.x, dy = o.y - s.y; if (dx * dx + dy * dy < lr2) { const H = this._heads[this._nh] || (this._heads[this._nh] = {}); H.x = o.x; H.y = o.y; H.a = o.a; H.v = o.boosting ? C.BOOST : C.SPEED; H.r = o.r; this._nh++; } }
-    // hunt: cut off a nearby snake by aiming ahead of its head
-    const prey = ai.prey ? this.byId.get(ai.prey) : null;
-    if (prey && prey.alive) { const lead = 3 + Math.hypot(prey.x - s.x, prey.y - s.y) * 0.35; want = Math.atan2(prey.y + Math.sin(prey.a) * lead - s.y, prey.x + Math.cos(prey.a) * lead - s.x); ai.mode = 3; boost = this.rand() < D.boost * 0.5 && s.m > 40 ? 1 : 0; }
-    if (want === null && this.zone) { const z = this.zone, dz = Math.hypot(s.x - z.x, s.y - z.y); if (dz > z.r * 0.78) { want = Math.atan2(z.y - s.y, z.x - s.x); ai.mode = 4; boost = dz > z.r && s.m > 30 ? 1 : 0; } }
-    if (want === null && this.attractPt && this.rand() < this.attractPt.w) { const A = this.attractPt, da = Math.hypot(s.x - A.x, s.y - A.y); if (da > A.r * 0.55) { want = Math.atan2(A.y - s.y, A.x - s.x) + (this.rand() - 0.5) * 0.5; ai.mode = 5; } }
-    if (want === null && (this.rand() < D.hunt * 0.25 * this.botAggro || (ai.mode === 3 && this.rand() < 0.85))) {
-      let tgt = null, td = 1e9;
-      for (const o of this.snakes) if (o !== s && o.alive && !o.god && !(this.teams && o.team === s.team)) { const dx = o.x - s.x, dy = o.y - s.y, d = dx * dx + dy * dy; if (d < td && d < 900 && (o.m < s.m * 2.5 || D.hunt > 0.6)) { td = d; tgt = o; } }
-      if (tgt) {
-        const lead = 4 + Math.sqrt(td) * 0.45, tx = tgt.x + Math.cos(tgt.a) * lead, ty = tgt.y + Math.sin(tgt.a) * lead;
-        want = Math.atan2(ty - s.y, tx - s.x); boost = Math.sqrt(td) < 14 && this.rand() < D.boost && s.m > 30 ? 1 : 0; ai.mode = 3;
-      }
+    let near = null, nd = 1e9;
+    for (const o of this.snakes) if (o !== s && o.alive) {
+      const dx = o.x - s.x, dy = o.y - s.y, d2 = dx * dx + dy * dy;
+      if (d2 < lr2) { const H = this._heads[this._nh] || (this._heads[this._nh] = {}); H.x = o.x; H.y = o.y; H.a = o.a; H.v = o.boosting ? C.BOOST : C.SPEED; H.r = o.r; this._nh++; }
+      if (!o.god && !(this.teams && o.team === s.team) && d2 < nd) { nd = d2; near = o; }
     }
-    // feed: best value/distance food in range, preferring what lies ahead
+    nd = Math.sqrt(nd);
+    // scripted prey (boss / survival hunters)
+    const prey = ai.prey ? this.byId.get(ai.prey) : null;
+    if (prey && prey.alive) { const lead = 3 + Math.hypot(prey.x - s.x, prey.y - s.y) * 0.35; want = Math.atan2(prey.y + Math.sin(prey.a) * lead - s.y, prey.x + Math.cos(prey.a) * lead - s.x); ai.mode = 3; boost = this.rand() < D.boost * 0.5 && s.m > 40 ? 1 : 0; risky = true; }
+    // power-ups are worth a detour
+    if (want === null && this.pus.length) { let bp = null, bd = 26 + D.hunt * 14; for (const p of this.pus) { const d = Math.hypot(p.x - s.x, p.y - s.y); if (d < bd) { bd = d; bp = p; } } if (bp) { want = Math.atan2(bp.y - s.y, bp.x - s.x); ai.mode = 6; boost = bd > 12 && s.m > 45 && this.rand() < D.boost ? 1 : 0; } }
+    if (want === null && this.zone) { const z = this.zone, dz = Math.hypot(s.x - z.x, s.y - z.y); if (dz > z.r * 0.78) { want = Math.atan2(z.y - s.y, z.x - s.x); ai.mode = 4; boost = dz > z.r && s.m > 30 ? 1 : 0; } }
+    if (want === null && this.attractPt && this.rand() < this.attractPt.w) { const Ap = this.attractPt, da = Math.hypot(s.x - Ap.x, s.y - Ap.y); if (da > Ap.r * 0.55) { want = Math.atan2(Ap.y - s.y, Ap.x - s.x) + (this.rand() - 0.5) * 0.5; ai.mode = 5; } }
+    // aggression, slither-style: keep committing to an attack for a while once started
+    const range = 22 + s.r * 6 + D.hunt * 14;
+    if (want === null && near && nd < range && (ai.mode === 3 && ai.commit > 0 || this.rand() < (0.04 + D.hunt * 0.4) * A * Math.min(1, 3 / (1 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11)))) {
+      const o = near; ai.commit = ai.mode === 3 ? (ai.commit || 0) - 1 : 6 + ((this.rand() * 8) | 0); ai.mode = 3; risky = true;
+      const big = s.m > o.m * 2.2 && s.len > nd * 2.5;
+      const ca = Math.cos(o.a), sa = Math.sin(o.a);
+      const rel = (s.x - o.x) * ca + (s.y - o.y) * sa; // >0: we are ahead of its head
+      if (big && D.hunt > 0.3) { // encircle: orbit the smaller snake, tightening
+        const ang = Math.atan2(o.y - s.y, o.x - s.x); const side = ai.side || (ai.side = this.rand() < 0.5 ? 1 : -1);
+        const rad = Math.max(4, s.len / 6.283 * 0.75); want = ang + side * (nd > rad ? 1.05 : 1.6); boost = 0;
+      } else { // cut off: race to a point ahead of its head, crossing its path from our side
+        const lead = 5 + nd * (0.55 + D.hunt * 0.3) + o.r * 3;
+        const px = -sa, py = ca, sd = ((s.x - o.x) * px + (s.y - o.y) * py) >= 0 ? 1 : -1; // which side of its path we are on
+        const cross = rel > 0 ? -sd * (2 + s.r * 2) : 0; // once ahead, swing across its nose
+        const tx = o.x + ca * lead + px * cross, ty = o.y + sa * lead + py * cross;
+        want = Math.atan2(ty - s.y, tx - s.x);
+        boost = s.m > 32 && this.rand() < D.boost * 1.1 && nd < range * 0.8 ? 1 : 0;
+      }
+    } else if (ai.mode === 3 && want === null) ai.mode = 0;
+    // feed: best value/distance food in range, preferring what lies ahead (corpse orbs are big and pull bots into fights)
     if (want === null) {
-      const fg = this.fgrid, rad = 3, c0 = fg.ci(s.x, s.y), dim = fg.dim; let bf = -1, bs = 0;
+      const fg = this.fgrid, rad = 3 + (D.hunt > 0.5 ? 1 : 0), c0 = fg.ci(s.x, s.y), dim = fg.dim; let bf = -1, bs = 0;
       for (let oy = -rad; oy <= rad; oy++) for (let ox = -rad; ox <= rad; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= fg.head.length) continue; let j = fg.head[c];
-        while (j >= 0) { const dx = fg.x[j] - s.x, dy = fg.y[j] - s.y, d = Math.sqrt(dx * dx + dy * dy) + 1; const fwd = (dx * Math.cos(s.a) + dy * Math.sin(s.a)) / d; const sc = fg.r[j] / d * (1.4 + fwd); if (sc > bs) { bs = sc; bf = j; } j = fg.next[j]; }
+        while (j >= 0) { const dx = fg.x[j] - s.x, dy = fg.y[j] - s.y, d = Math.sqrt(dx * dx + dy * dy) + 1; const fwd = (dx * Math.cos(s.a) + dy * Math.sin(s.a)) / d; const sc = fg.r[j] * fg.r[j] / d * (1.4 + fwd); if (sc > bs) { bs = sc; bf = j; } j = fg.next[j]; }
       }
-      if (bf >= 0) { want = Math.atan2(fg.y[bf] - s.y, fg.x[bf] - s.x); ai.mode = 1; if (fg.r[bf] > 5 && D.boost > 0.6 && s.m > 60) boost = 1; }
+      if (bf >= 0) { want = Math.atan2(fg.y[bf] - s.y, fg.x[bf] - s.x); ai.mode = 1; if (fg.r[bf] > 3.5 && this.rand() < D.boost && s.m > 45) { boost = 1; risky = true; } }
     }
     // wander, drifting back toward the centre when far out
     if (want === null) {
@@ -221,18 +280,20 @@ export class Sim {
       else ai.wa += (this.rand() - 0.5) * 0.9;
       want = ai.wa; ai.mode = 0;
     }
-    // safety: the path toward `want` (and straight ahead, since turning takes time) must be clear, else take the clearest ray
-    const smart = this.rand() > D.err * 4;
-    if (smart) {
-      const dw = this.rayDanger(s, want, look), da = this.rayDanger(s, s.a, look * 0.7);
+    // safety: the path toward `want` (and straight ahead) must be clear, else take the clearest ray.
+    // Attackers accept more risk (short look), and every bot sometimes misjudges -> real deaths, like real players.
+    const slip = D.err * (risky ? 8 : 1) * A * Math.min(1.3, 3.2 / (1.5 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11));
+    ai.slip = 1; if (this.rand() > slip) {
+      ai.slip = 0; const lk = risky ? look * Math.min(1, 0.4 + 0.2 * D.look + 0.07 * this._nh) : look;
+      const dw = this.rayDanger(s, want, lk), da = this.rayDanger(s, s.a, lk * 0.7);
       if (dw > 0 || da > 0) {
         let bestA = want, bestS = -1e9;
         for (let k = -6; k <= 6; k++) {
-          const ang = s.a + k * 0.33, dn = this.rayDanger(s, ang, look);
+          const ang = s.a + k * 0.33, dn = this.rayDanger(s, ang, lk);
           const sc = -dn * 10 - Math.abs(angDiff(ang, want)) * 0.8 - Math.abs(k) * 0.2;
           if (sc > bestS) { bestS = sc; bestA = ang; }
         }
-        want = bestA; boost = (da >= 12 && D.boost > 0.5 && s.m > 40) ? 1 : 0; ai.mode = 2;
+        want = bestA; boost = (da >= 12 && D.boost > 0.5 && s.m > 40) ? 1 : risky ? boost : 0; if (!risky) ai.mode = 2;
       }
     }
     s.ta = want; s.boost = boost;
@@ -247,14 +308,15 @@ export class Sim {
   // ---- one fixed step ----
   step(inputs) {
     const dt = this.dt; this.tick++;
-    const reactScale = (1 / 60) / dt;
+    const reactScale = (1 / 60) / dt; let na = 0; for (const s of this.snakes) if (s.alive) na++; this.nAlive = na;
     for (const s of this.snakes) {
       if (!s.alive) continue;
+      const P = s.pu; for (let q = 0; q < 6; q++) if (P[q] > 0) P[q] = Math.max(0, P[q] - dt); if (s.slow > 0) s.slow = Math.max(0, s.slow - dt); if (s.inv > 0) s.inv = Math.max(0, s.inv - dt);
       if (s.bot) { if ((this.tick + s.id) % 3 === 0 && s.ai.t > 1) this.botReflex(s); if (--s.ai.t <= 0) { this.botThink(s); const D = DIFF[Math.max(0, Math.min(3, s.ai.diff))]; s.ai.t = Math.max(1, Math.round(D.react * reactScale * (0.7 + this.rand() * 0.6))); } }
       else if (inputs) { const inp = inputs(s); if (inp === false) continue; }
       const canBoost = s.m > C.MIN_BOOST_M;
       moveSnake(s, dt, canBoost);
-      if (s.boosting) {
+      if (s.boosting && !(s.pu[2] > 0)) {
         const cost = boostCost(s.m, dt); s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - cost)); s.dropAcc += cost;
         if (s.dropAcc > 2.2) { s.dropAcc -= 2.2; const o = Math.min(s.n - 1, Math.round(s.len / (C.SPEED * dt))); this.spawnFood(s.sx(o) + (this.rand() - 0.5), s.sy(o) + (this.rand() - 0.5), 1.5, (s.id * 5) % 12); }
       }
@@ -270,9 +332,21 @@ export class Sim {
     this.buildGrid();
     this.collide();
     this.eat();
+    if (this.powerups) this.puStep();
     // keep the world fed
     let need = this.foodTarget - this.fCount, sp = 0;
     while (need-- > 0 && sp++ < 6) { const [x, y] = this.randPos(this.R - 3); this.spawnFood(x, y, 1 + (this.rand() * 2.2) | 0, (this.rand() * 12) | 0); }
+  }
+  puStep() {
+    if (this.pus.length < this.puTarget && --this.puNext <= 0) { this.spawnPu(); this.puNext = Math.round((4 + this.rand() * 4) / this.dt); }
+    for (let i = this.pus.length - 1; i >= 0; i--) {
+      const p = this.pus[i];
+      if (this.tick - p.b > 75 / this.dt) { this.pus.splice(i, 1); this.evPu.push(p, 0, null); continue; } // expires after 75 s
+      for (const s of this.snakes) {
+        if (!s.alive) continue; const dx = p.x - s.x, dy = p.y - s.y, rr = s.r * HEAD_K + 1.5;
+        if (dx * dx + dy * dy < rr * rr) { this.pus.splice(i, 1); const hit = this.applyPu(s, p.k); this.evPu.push(p, s.id, hit); break; }
+      }
+    }
   }
   fixHead(s) { s.px[s.h] = s.x; s.py[s.h] = s.y; }
 
@@ -280,37 +354,42 @@ export class Sim {
     const g = this.grid; g.clear(); const pts = this.tmp;
     for (const s of this.snakes) {
       if (!s.alive) continue;
-      const sp = Math.max(0.35, s.r * 0.6), n = bodyPoints(s, 0, 0, sp, s.len, pts, 590);
-      for (let j = 0; j < n; j++) g.add(pts[j * 2], pts[j * 2 + 1], s.r, s.id, j);
+      const sp = sampleSp(s.r), n = bodyPoints(s, 0, 0, sp, s.len, pts, 590), L = Math.max(sp, (n - 1) * sp);
+      g.add(pts[0], pts[1], s.r * HEAD_K, s.id, 0);
+      for (let j = 1; j < n; j++) g.add(pts[j * 2], pts[j * 2 + 1], s.r * taperAt(j * sp / L), s.id, j);
     }
     const f = this.fgrid; f.clear();
     for (let i = 0; i < this.FM; i++) if (this.fa[i]) f.add(this.fx[i], this.fy[i], this.fv[i], i, 0);
   }
 
-  // head vs every other snake's body (heads included → head-on collisions kill both)
+  // head (disc r*HEAD_K) vs every other snake's body discs (heads included -> head-on kills both). Contact = rendered edges touch.
+  // Body crossing body is harmless (only heads are tested). Ghost = pass through bodies; shield absorbs one hit.
   collide() {
     const g = this.grid, dim = g.dim;
     for (const s of this.snakes) {
       if (!s.alive || s.god) continue;
-      const c0 = g.ci(s.x, s.y); let killer = 0;
-      const rx = Math.max(1, Math.ceil((s.r + 3.5) / g.cell));
+      if (s.pu[4] > 0 || s.inv > 0) continue;
+      const hr = s.r * HEAD_K, c0 = g.ci(s.x, s.y); let killer = 0;
+      const rx = Math.max(1, Math.ceil((hr + 6.6) / g.cell));
       for (let oy = -rx; oy <= rx && !killer; oy++) for (let ox = -rx; ox <= rx && !killer; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= g.head.length) continue; let j = g.head[c];
         while (j >= 0) {
-          if (g.o[j] !== s.id) { const dx = g.x[j] - s.x, dy = g.y[j] - s.y, rr = (g.r[j] + s.r) * 0.8; if (dx * dx + dy * dy < rr * rr) { if (this.teams) { const o = this.byId.get(g.o[j]); if (o && o.team === s.team) { j = g.next[j]; continue; } } killer = g.o[j]; this.lastHitSeg = g.k[j]; break; } }
+          if (g.o[j] !== s.id) { const dx = g.x[j] - s.x, dy = g.y[j] - s.y, rr = (g.r[j] + hr) * HIT_K; if (dx * dx + dy * dy < rr * rr) { const o = this.byId.get(g.o[j]); if (this.teams && o && o.team === s.team) { j = g.next[j]; continue; } killer = g.o[j]; this.lastHitSeg = g.k[j]; break; } }
           j = g.next[j];
         }
       }
-      if (killer) { const k = this.byId.get(killer); if (k && k.god) continue; this.kill(s, killer, 2); }
+      if (killer) { const k = this.byId.get(killer); if (k && k.god && !k.boss) continue;
+        if (s.pu[1] > 0) { s.pu[1] = 0; s.inv = 1.2; this.evShield.push(s.id, killer); continue; }
+        this.kill(s, killer, 2); }
     }
   }
   // exported so the client can run the same test against what it renders (instant self-reported death)
   static hitTest(hx, hy, hr, others, tmp) {
+    const H = hr * HEAD_K;
     for (const o of others) {
-      if (!o.alive) continue; const sp = Math.max(0.35, o.r * 0.6), n = bodyPoints(o, o._ro || 0, o._rf || 0, sp, o.len, tmp, 590);
-      const rr = (o.r + hr) * 0.8, rr2 = rr * rr;
-      const qx = tmp[0] - hx, qy = tmp[1] - hy; if (qx * qx + qy * qy > (o.len + hr + 4) ** 2) continue;
-      for (let j = 0; j < n; j++) { const dx = tmp[j * 2] - hx, dy = tmp[j * 2 + 1] - hy; if (dx * dx + dy * dy < rr2) return o.id; }
+      if (!o.alive) continue; const sp = sampleSp(o.r), n = bodyPoints(o, o._ro || 0, o._rf || 0, sp, o.len, tmp, 590), L = Math.max(sp, (n - 1) * sp);
+      const qx = tmp[0] - hx, qy = tmp[1] - hy; if (qx * qx + qy * qy > (o.len + H + 8) ** 2) continue;
+      for (let j = 0; j < n; j++) { const rb = j ? o.r * taperAt(j * sp / L) : o.r * HEAD_K, rr = (rb + H) * HIT_K; const dx = tmp[j * 2] - hx, dy = tmp[j * 2 + 1] - hy; if (dx * dx + dy * dy < rr * rr) return o.id; }
     }
     return 0;
   }
@@ -319,18 +398,18 @@ export class Sim {
     const f = this.fgrid, dim = f.dim;
     for (const s of this.snakes) {
       if (!s.alive) continue;
-      const reach = s.r + 0.9, c0 = f.ci(s.x, s.y), rx = Math.ceil(reach / f.cell);
+      const mag = s.pu[0] > 0, reach = mag ? s.r + 7.5 : s.r + 0.9, x2 = s.pu[3] > 0 ? 2 : 1, c0 = f.ci(s.x, s.y), rx = Math.ceil(reach / f.cell);
       for (let oy = -rx; oy <= rx; oy++) for (let ox = -rx; ox <= rx; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= f.head.length) continue; let j = f.head[c];
         while (j >= 0) {
           const i = f.o[j];
-          if (this.fa[i]) { const dx = this.fx[i] - s.x, dy = this.fy[i] - s.y; if (dx * dx + dy * dy < reach * reach) { s.setMass(s.m + this.fv[i]); s.foodEaten++; this.removeFood(i, s.id); } }
+          if (this.fa[i]) { const dx = this.fx[i] - s.x, dy = this.fy[i] - s.y; const d2 = dx * dx + dy * dy; if (d2 < reach * reach) { s.setMass(s.m + this.fv[i] * x2); s.foodEaten++; this.removeFood(i, s.id); } }
           j = f.next[j];
         }
       }
     }
   }
-  drain() { this.evEat.length = 0; this.evSpawn.length = 0; this.evDie.length = 0; this.evNew.length = 0; }
+  drain() { this.evPu.length = 0; this.evPuNew.length = 0; this.evShield.length = 0; this.evEat.length = 0; this.evSpawn.length = 0; this.evDie.length = 0; this.evNew.length = 0; }
   leaderboard(n) { return this.snakes.filter((s) => s.alive).sort((a, b) => b.m - a.m).slice(0, n); }
 }
 

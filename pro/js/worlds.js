@@ -24,7 +24,7 @@ export const WORLDS = [
   {
     id: "babylon", lv: 4,
     bg: "#3a2414", fog: "#c98a52", fogNear: 45, fogFar: 150,
-    sky: "#ffd7a1", ground: "#6b4524", sun: "#ffd29a", sunI: 2.2, hemiI: 0.8,
+    sky: "#f6dcbc", ground: "#5e4a36", sun: "#ffe6c8", sunI: 2.0, hemiI: 0.8,
     rim: "#ffcc66", wall: "#ffb347", foodSat: 1,
     amb: { kind: "dust", color: "#ffe0b0", n: 140 },
     decor: ["ziggurat", "obelisk", "palm", "pillar"],
@@ -127,7 +127,7 @@ export const FOOD_COLORS_CB = ["#e69f00", "#56b4e9", "#009e73", "#f0e442", "#007
 // grade: [lift r,g,b], [gain r,g,b], sat, contrast. tod: day/night cycle seconds (0 = static). reflect: planar reflection strength on high/ultra.
 export const W3D = {
   jungle: { sky: "jungle", grade: [[0.0, 0.01, 0.0], [1.02, 1.04, 0.96], 1.12, 1.06], tod: 240, weather: ["clear", "rain"], rough: 0.85, reflect: 0, water: "lake", waterC: "#1f5a4a", foliage: "fern", creatures: "birds", fogK: 0.010, clouds: 1, bloom: 0.5, dusk: "#ff9a5a", night: "#2a3a6a" },
-  babylon: { sky: "babylon", grade: [[0.02, 0.01, 0.0], [1.08, 1.0, 0.86], 1.1, 1.08], tod: 260, weather: ["clear", "sandstorm"], rough: 0.92, reflect: 0, water: "oasis", waterC: "#2a7a8a", foliage: "reed", creatures: "birds", fogK: 0.009, clouds: 1, bloom: 0.45, dusk: "#ff7a3a", night: "#3a2a5a" },
+  babylon: { sky: "babylon", desat: 0.38, grade: [[0.015, 0.01, 0.005], [1.02, 1.0, 0.94], 0.94, 1.05], tod: 260, weather: ["clear", "sandstorm"], rough: 0.92, reflect: 0, water: "oasis", waterC: "#2a7a8a", foliage: "reed", creatures: "birds", fogK: 0.009, clouds: 1, bloom: 0.45, dusk: "#ff7a3a", night: "#3a2a5a" },
   ice: { sky: "ice", grade: [[0.0, 0.01, 0.03], [0.94, 1.02, 1.1], 1.05, 1.05], tod: 0, weather: ["snow"], rough: 0.45, reflect: 0.35, water: "none", foliage: "frost", creatures: "owls", fogK: 0.011, aurora: 1, bloom: 0.55 },
   neon: { sky: "neon", grade: [[0.02, 0.0, 0.04], [1.06, 0.94, 1.12], 1.2, 1.1], tod: 0, weather: ["rain"], rough: 0.42, reflect: 0.55, water: "none", foliage: "none", creatures: "drones", fogK: 0.012, bloom: 0.8, emissiveK: 2.2 },
   volcano: { sky: "volcano", grade: [[0.03, 0.0, 0.0], [1.12, 0.96, 0.82], 1.15, 1.12], tod: 0, weather: ["ash"], rough: 0.8, reflect: 0, water: "lava", waterC: "#ff4a00", foliage: "none", creatures: "bats", fogK: 0.011, bloom: 0.9, emissiveK: 1.9 },

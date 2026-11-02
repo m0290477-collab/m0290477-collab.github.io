@@ -2,9 +2,9 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost } from "./sim.js";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR } from "./sim.js?v=f1";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
-function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
+function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && !(s.pu && s.pu[2] > 0)) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
 export const SERVER = (typeof window !== "undefined" && window.__SSP_SERVER) || "wss://super-snake-online.molierk.workers.dev/ws";
 const DT = 1 / 30, INTERP = 2.4;
 
@@ -18,7 +18,7 @@ export class NetBackend {
     this.free = []; for (let i = this.FM - 1; i >= 0; i--) this.free.push(i); this.fmap = new Map(); this.ghosts = []; this.tmp = new Float32Array(1600);
     this.status = "connecting"; this.tries = 0; this.closed = false; this.stats = { rtt: [], corrections: 0, corrDist: 0, selfDeaths: 0, serverDeaths: 0, packets: 0, gaps: 0 };
     this.age = (i) => Math.min(1, (performance.now() - this.fb[i]) / 300);
-    this.ta = 0; this.boostIn = 0; this.publicIdx = 1;
+    this.ta = 0; this.boostIn = 0; this.publicIdx = 1; this.pus = [];
   }
   connect() {
     if (this.closed) return; const room = this.o.room || "pub-" + this.publicIdx;
@@ -60,6 +60,20 @@ export class NetBackend {
     } else if (m.t === "pong") { const rtt = performance.now() - m.c; this.pings.push(rtt); if (this.pings.length > 10) this.pings.shift(); this.ping = Math.round(this.pings.reduce((a, b) => a + b, 0) / this.pings.length); this.stats.rtt.push(rtt); }
     else if (m.t === "lb") { this.lb = m.lb; this.humans = m.humans; }
     else if (m.t === "full") {}
+    // power-ups (server v2): field list, spawns, pickups (+ who got frozen), shield breaks
+    else if (m.t === "pus") this.pus = m.l.map(([id, k, x, y]) => ({ id, k, x, y }));
+    else if (m.t === "pu+") { for (const [id, k, x, y] of m.l) this.pus.push({ id, k, x, y }); }
+    else if (m.t === "pu-") {
+      for (const [id, by, k, hit] of m.l) {
+        const i = this.pus.findIndex((p) => p.id === id); const p = i >= 0 ? this.pus.splice(i, 1)[0] : { id, k, x: 0, y: 0 }; if (!by) continue;
+        const sn = by === this.myId ? this.me : this.mirrors.get(by)?.s; if (!sn) continue;
+        if (sn === this.me && k !== PU.MEGA && k !== PU.FREEZE) this.me.pu[k] = PU_DUR[k];
+        if (this.me && hit.includes(this.myId)) this.me.slow = PU_DUR[PU.FREEZE];
+        for (const id2 of hit) { const o = this.mirrors.get(id2); if (o) o.s.slow = PU_DUR[PU.FREEZE]; }
+        if (sn !== this.me && k !== PU.MEGA && k !== PU.FREEZE) sn.pu[k] = PU_DUR[k];
+        this.cb.onPu && this.cb.onPu(sn, k, hit, p);
+      }
+    } else if (m.t === "sh") { const sn = m.id === this.myId ? this.me : this.mirrors.get(m.id)?.s; if (sn) { if (sn.pu[1] > 0 || sn !== this.me) { sn.pu[1] = 0; sn.inv = 1.2; this.cb.onShield && this.cb.onShield(sn); } } }
   }
   addMirror(m) {
     const s = new Snake(m.id); s.n = 0; s.h = 0; s.alive = true; s.name = m.name; s.skin = m.skin; s.bot = !!m.bot; s.setMass(m.m); s.a = m.a || 0;
@@ -120,12 +134,14 @@ export class NetBackend {
       const s = this.me; if (!s || this.dead) continue;
       this.seq = (this.seq + 1) & 0xffff; const q = Math.round(((this.ta + Math.PI) / (Math.PI * 2)) * 65536) & 0xffff, taQ = (q / 65536) * Math.PI * 2 - Math.PI;
       this.hist[(this.seq & 255) * 2] = taQ; this.hist[(this.seq & 255) * 2 + 1] = this.boostIn;
+      for (let k = 0; k < 6; k++) if (s.pu[k] > 0) s.pu[k] = Math.max(0, s.pu[k] - DT); if (s.slow > 0) s.slow = Math.max(0, s.slow - DT); if (s.inv > 0) s.inv = Math.max(0, s.inv - DT);
       s.ta = taQ; s.boost = this.boostIn; this.prevX = s.x; this.prevY = s.y; predict(s, DT);
       this.batch.push(this.seq, q, this.boostIn);
       if (this.batch.length >= 6) this.flush();
       // instant death: head vs bodies exactly as drawn this frame, and the wall
       this.prepareOthers();
-      const hit = Sim.hitTest(s.x, s.y, s.r, this._others, this.tmp);
+      let hit = s.pu[4] > 0 || s.inv > 0 ? 0 : Sim.hitTest(s.x, s.y, s.r, this._others, this.tmp);
+      if (hit && s.pu[1] > 0) { s.pu[1] = 0; s.inv = 1.2; hit = 0; this.cb.onShield && this.cb.onShield(s); } // shield: the server sees the same touch and spends it too
       const wall = s.x * s.x + s.y * s.y > (this.R - s.r * 0.6) ** 2;
       if (hit || wall) { this.dead = true; this.stats.selfDeaths++; this.send(JSON.stringify({ t: "die", hit: hit || 0, seq: this.seq })); this.flush(); this.cb.onMyDeath(hit, hit ? 3 : 1, true); }
     }
@@ -133,6 +149,7 @@ export class NetBackend {
     if (this.vox || this.voy) { const k = Math.exp(-dt * 12); this.vox *= k; this.voy *= k; if (Math.abs(this.vox) + Math.abs(this.voy) < 0.002) this.vox = this.voy = 0; }
     const now = performance.now();
     for (const [id, mr] of this.mirrors) if (!mr.s.alive && now - mr.deadAt > 600) this.mirrors.delete(id);
+    for (const mr of this.mirrors.values()) { const P = mr.s.pu; for (let k = 0; k < 6; k++) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt); if (mr.s.slow > 0) mr.s.slow = Math.max(0, mr.s.slow - dt); }
     for (let i = this.ghosts.length - 1; i >= 0; i--) { const g = this.ghosts[i]; g.t += dt * 7; g.tx = g.e.x; g.ty = g.e.y; if (g.t >= 1) this.ghosts.splice(i, 1); }
   }
   flush() { if (!this.batch.length) return; const n = this.batch.length / 3, b = new ArrayBuffer(2 + n * 5), v = new DataView(b); v.setUint8(0, 2); v.setUint8(1, n); for (let k = 0; k < n; k++) { v.setUint16(2 + k * 5, this.batch[k * 3], true); v.setUint16(4 + k * 5, this.batch[k * 3 + 1], true); v.setUint8(6 + k * 5, this.batch[k * 3 + 2]); } this.send(b); this.batch.length = 0; }

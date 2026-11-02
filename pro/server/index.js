@@ -3,7 +3,7 @@
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
 import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES } from "./sim.js";
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 16, VERSION = 1;
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 16, VERSION = 2; // v2: power-ups (pus / pu+ / pu- / sh messages)
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 const BOT_SKINS = (i) => ({ k: i % 3 === 0 ? "flag" : "skin", i: i % 3 === 0 ? (i * 37) % 197 : i % 24, e: i % 4, t: 0, n: 0 });
 const cors = { "access-control-allow-origin": "*", "content-type": "application/json" };
@@ -30,7 +30,7 @@ export class Room {
   init(params) {
     this.noBots = params.get("bots") === "0" && !(params.get("name_room") || "").startsWith("pub-");
     this.room = params.get("name_room") || "pub-1";
-    this.sim = new Sim({ dt: TICK, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true });
+    this.sim = new Sim({ dt: TICK, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true, powerups: true });
     this.sim.diff = 1;
     this.fill();
     this.last = Date.now(); this.acc = 0;
@@ -80,6 +80,7 @@ export class Room {
       c.name = cleanName(m.name); c.skin = sanitizeSkin(m.skin); c.joined = true;
       this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, tick: this.sim.tick, dt: TICK, R: this.sim.R, snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
       this.send(c, this.foodFull());
+      this.send(c, JSON.stringify({ t: "pus", l: this.sim.pus.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
     } else if (m.t === "spawn") {
       if (!c.joined || (c.snake && c.snake.alive)) return;
       if (c.snake) this.sim.removeSnake(c.snake);
@@ -121,6 +122,9 @@ export class Room {
     const dead = []; for (let i = 0; i < S.evDie.length; i += 3) dead.push([S.evDie[i], S.evDie[i + 1], S.evDie[i + 2]]);
     for (const id of S.evNew) { const s = S.byId.get(id); if (s && s.alive) this.bcast(JSON.stringify({ t: "sn", ...this.snakeMsg(s) })); }
     for (const [id, by, cause] of dead) this.bcast(JSON.stringify({ t: "dead", id, by, cause }));
+    if (S.evPuNew.length) this.bcast(JSON.stringify({ t: "pu+", l: S.evPuNew.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
+    if (S.evPu.length) { const l = []; for (let i = 0; i < S.evPu.length; i += 3) l.push([S.evPu[i].id, S.evPu[i + 1], S.evPu[i].k, S.evPu[i + 2] || []]); this.bcast(JSON.stringify({ t: "pu-", l })); }
+    for (let i = 0; i < S.evShield.length; i += 2) this.bcast(JSON.stringify({ t: "sh", id: S.evShield[i], by: S.evShield[i + 1] }));
     // one binary frame shared by everybody: [0]=1 [1..4]=tick [5..6]=ack [7]=extra (255 = no snake) [8..23]=own x,y,a,av [24]=count, then snakes, eats, spawns
     const alive = S.snakes.filter((s) => s.alive), ne = S.evEat.length / 2, ns = S.evSpawn.length;
     const size = 25 + alive.length * 13 + 2 + ne * 4 + 2 + ns * 12, b = new ArrayBuffer(size), v = new DataView(b);

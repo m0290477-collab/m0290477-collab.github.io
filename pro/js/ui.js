@@ -1,11 +1,13 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js";
-import { WORLDS, worldAsset } from "./worlds.js";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js";
-import { haptic } from "./audio.js";
-import { skinFn, MODES } from "./game.js";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=f1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=f1";
+import { WORLDS, worldAsset } from "./worlds.js?v=f1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=f1";
+import { haptic } from "./audio.js?v=f1";
+import { skinFn, MODES } from "./game.js?v=f1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG } from "./sim.js?v=f1";
+const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -34,7 +36,7 @@ export class Hud {
     $("hud").classList.remove("cine"); clearTimeout(this._cineT);
     $("hud").classList.remove("x-hide"); $("h-timer").classList.toggle("x-hide", !(mode === "time" || mode === "survival" || (MODES[mode] && MODES[mode].dur))); $("h-feed").innerHTML = ""; $("h-pop").innerHTML = ""; $("h-mode").innerHTML = "";
     $("h-mini").classList.toggle("x-hide", !this.app.store.settings.minimap); $("h-fps").classList.toggle("x-hide", !this.app.store.settings.showFps); this.storm(false); this.mode = mode; this.lastLb = "";
-    for (const id of ["h-cine", "h-kill", "h-count"]) $(id).classList.remove("on");
+    for (const id of ["h-cine", "h-kill", "h-count", "h-combo", "h-mission", "h-hint"]) $(id).classList.remove("on"); this.puClear(); this.spectate(null);
   }
   hide() { $("hud").classList.add("x-hide"); this.storm(false); }
   update(d) {
@@ -49,7 +51,7 @@ export class Hud {
     if (d.ping !== null) h += `<div><span>${t("online", { n: d.ping })}</span><em>${d.humans ? "👤" + d.humans : ""}</em></div>`;
     if (h !== this.lastLb) { $("h-lb").innerHTML = h; this.lastLb = h; }
     if (d.alive !== null && d.alive !== undefined) this.modeLine(`<div class="mode-pill hot">${t("aliveN", { n: d.alive })}${d.zone ? " · " + t("zoneIn", { n: d.zone }) : ""}</div>`);
-    if (d.kothMine !== null && d.kothMine !== undefined) this.modeLine(`<div class="mode-pill ${d.hill && d.hill.mine ? "hot" : ""}">♛ ${d.kothMine}/${d.target} ${d.hill && d.hill.mine ? "· " + t("holding") : d.hill && d.hill.contested ? "· " + t("contested") : ""}</div>`);
+    if (d.kothMine !== null && d.kothMine !== undefined) this.modeLine(`<div class="mode-pill koth ${d.hill && d.hill.mine ? "hot" : ""} ${d.hill && d.hill.contested ? "contest" : ""}">♛ ${d.kothMine}/${d.target} ${d.hill && d.hill.mine ? "· " + t("holding") : d.hill && d.hill.contested ? "· " + t("contested") : "· " + t("goHill")}<div class="cap"><i style="width:${Math.min(100, (d.kothMine / d.target) * 100)}%"></i></div></div>`);
   }
   modeLine(html) { const el = $("h-mode"); if (el.dataset.k !== html) { el.innerHTML = (this.modeTop || "") + html; el.dataset.k = html; } }
   modeHud(d) {
@@ -59,25 +61,41 @@ export class Hud {
     this.modeTop = h; const el = $("h-mode"); el.innerHTML = h; el.dataset.k = "";
   }
   dot(s) { const k = s.skin ? JSON.stringify(s.skin) : ""; this._dots = this._dots || new Map(); let c = this._dots.get(k); if (!c) { c = s.skin ? primaryColor(s.skin) : "#888"; this._dots.set(k, c); } return c; }
-  minimap(all, me, R, pal, zone, hill, boss) {
+  minimap(all, me, R, pal, zone, hill, boss, pus) {
     const g = this.mini, S = 180; g.clearRect(0, 0, S, S); const k = (S / 2 - 6) / R;
     const gr = g.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S / 2); gr.addColorStop(0, "rgba(255,255,255,0.02)"); gr.addColorStop(1, "rgba(255,200,69,0.12)"); g.fillStyle = gr; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); g.fill();
     g.strokeStyle = "rgba(255,200,69,0.6)"; g.lineWidth = 2.5; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); g.stroke();
     if (zone) { g.strokeStyle = "rgba(190,110,255,0.95)"; g.lineWidth = 3; g.beginPath(); g.arc(S / 2 + zone.x * k, S / 2 + zone.y * k, Math.max(2, zone.r * k), 0, 6.283); g.stroke(); }
     if (hill) { g.fillStyle = "rgba(255,200,69,0.35)"; g.beginPath(); g.arc(S / 2 + hill.x * k, S / 2 + hill.y * k, Math.max(4, hill.r * k), 0, 6.283); g.fill(); }
     if (me && me.alive) { const mx = S / 2 + me.x * k, my = S / 2 + me.y * k; g.fillStyle = "rgba(255,231,163,0.12)"; g.beginPath(); g.moveTo(mx, my); g.arc(mx, my, 34, me.a - 0.7, me.a + 0.7); g.closePath(); g.fill(); }
+    if (pus) for (const p of pus) { g.fillStyle = PU_COL[p.k]; g.beginPath(); const x = S / 2 + p.x * k, y = S / 2 + p.y * k; g.moveTo(x, y - 4); g.lineTo(x + 4, y); g.lineTo(x, y + 4); g.lineTo(x - 4, y); g.fill(); }
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 160);
+    for (const s of all) { if (s === me || !me || !me.alive) continue; const d = Math.hypot(s.x - me.x, s.y - me.y); if (d < 40 && s.m > me.m * 1.2 && !(s.team !== undefined && s.team === me.team)) { g.strokeStyle = `rgba(255,60,70,${0.5 + pulse * 0.5})`; g.lineWidth = 2; g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, 7 + pulse * 3, 0, 6.283); g.stroke(); } }
     for (const s of all) { if (s === me) continue; g.fillStyle = s.boss ? "#ff3040" : s.team === 0 ? "#4da3ff" : s.team === 1 ? "#ff4d5e" : s.bot ? "rgba(255,255,255,0.45)" : "rgba(120,200,255,0.9)"; const r = s.boss ? 8 : Math.max(2.5, Math.min(7, s.r * 2.2)); g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, r, 0, 6.283); g.fill(); }
     if (me && me.alive) { g.fillStyle = "#ffe7a3"; g.shadowColor = "#ffc845"; g.shadowBlur = 8; g.beginPath(); g.arc(S / 2 + me.x * k, S / 2 + me.y * k, 6, 0, 6.283); g.fill(); g.shadowBlur = 0; }
   }
   net(txt) { const n = $("h-net"); n.textContent = txt; n.classList.toggle("x-hide", !txt); n.classList.toggle("bad", !!txt); }
   fps(n) { $("h-fps").textContent = n + " FPS"; }
-  feed(list) { $("h-feed").innerHTML = list.slice(0, 3).map((f) => `<div class="${f.mine ? "mine" : ""}">${esc(t("kill_feed", { x: f.a, y: f.b }))}</div>`).join(""); clearTimeout(this.ft); this.ft = setTimeout(() => ($("h-feed").innerHTML = ""), 4000); }
+  feed(list) { $("h-feed").innerHTML = list.slice(0, 4).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how ? `<b>${f.how === "storm" ? "🌀" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); clearTimeout(this.ft); this.ft = setTimeout(() => ($("h-feed").innerHTML = ""), 4000); }
   banner(txt, ms) { const b = $("h-banner"); b.textContent = txt; b.classList.add("on"); clearTimeout(this.bt); this.bt = setTimeout(() => b.classList.remove("on"), ms || 1400); }
   count(txt) { const c = $("h-count"); c.textContent = txt; c.classList.remove("on"); void c.offsetWidth; c.classList.add("on"); }
   killBanner(a, b) { const k = $("h-kill"); k.querySelector("b").textContent = a; k.querySelector("small").textContent = b; k.classList.remove("on"); void k.offsetWidth; k.classList.add("on"); }
   cinematic(a, b, lose) { const hud = $("hud"); if (hud) { hud.classList.add("cine"); clearTimeout(this._cineT); this._cineT = setTimeout(() => hud.classList.remove("cine"), 3800); } const k = $("h-cine"); k.querySelector("b").textContent = a; k.querySelector("small").textContent = b || ""; k.classList.toggle("lose", !!lose); k.classList.remove("on"); void k.offsetWidth; k.classList.add("on"); }
   storm(on) { $("storm-vig").classList.toggle("on", !!on); if (on && !this._stormMsg) { this._stormMsg = 1; this.banner(t("outZone"), 1200); } if (!on) this._stormMsg = 0; }
-  popup(txt, kind, pos) { const p = document.createElement("div"); p.className = "pop " + (kind || ""); p.textContent = txt; if (pos && pos[2]) { p.style.left = pos[0] + "px"; p.style.top = pos[1] + "px"; } const box = $("h-pop"); box.appendChild(p); while (box.children.length > 6) box.firstChild.remove(); setTimeout(() => p.remove(), 1000); }
+  popup(txt, kind, pos, col) { const p = document.createElement("div"); p.className = "pop " + (kind || ""); p.textContent = txt; if (col) p.style.color = col; if (pos && pos[2]) { p.style.left = pos[0] + "px"; p.style.top = pos[1] + "px"; } const box = $("h-pop"); box.appendChild(p); while (box.children.length > 6) box.firstChild.remove(); setTimeout(() => p.remove(), 1000); }
+  combo(mul, n) { const c = $("h-combo"); if (!mul || mul < 2) { c.classList.remove("on"); return; } const k = "×" + mul; if (c.dataset.k !== k) { c.dataset.k = k; c.classList.remove("pump"); void c.offsetWidth; c.classList.add("pump"); } c.innerHTML = `<b>${t("combo")} ${k}</b><small>${n}</small>`; c.classList.add("on"); c.dataset.m = mul; }
+  pu(P, slow) {
+    const box = $("h-pu"); if (!P) { if (box.innerHTML) box.innerHTML = ""; return; } let h = "";
+    for (let k = 0; k < 6; k++) if (P[k] > 0) { const f = Math.max(0, Math.min(1, P[k] / PU_DUR[k])); h += `<div class="pu-chip ${P[k] < 2 ? "end" : ""}" style="--c:${PU_COL[k]};--f:${f.toFixed(3)}"><i>${puSvg(k)}</i><span>${k === 1 ? "1×" : Math.ceil(P[k]) + "s"}</span></div>`; }
+    if (slow > 0) h += `<div class="pu-chip bad" style="--c:#9ff3ff;--f:${(slow / PU_DUR[5]).toFixed(3)}"><i>${puSvg(5)}</i><span>${Math.ceil(slow)}s</span></div>`;
+    if (box.dataset.k !== h) { box.innerHTML = h; box.dataset.k = h; }
+  }
+  puClear() { $("h-pu").innerHTML = ""; $("h-pu").dataset.k = ""; }
+  puFlash(k) { const f = $("pu-flash"); f.style.setProperty("--c", PU_COL[k]); f.classList.remove("on"); void f.offsetWidth; f.classList.add("on"); }
+  frost(sec) { const v = $("frost-vig"); v.classList.add("on"); clearTimeout(this._frT); this._frT = setTimeout(() => v.classList.remove("on"), sec * 1000); }
+  mission(txt, v, g, done) { const m = $("h-mission"); m.innerHTML = `<small>${t(done ? "missionDoneShort" : "missionProg")}</small><b>${esc(txt)}</b><div class="mbar"><i style="width:${Math.round((v / g) * 100)}%"></i></div><em>${fmtNum(v)}/${fmtNum(g)}</em>`; m.classList.toggle("done", !!done); m.classList.remove("on"); void m.offsetWidth; m.classList.add("on"); clearTimeout(this._miT); this._miT = setTimeout(() => m.classList.remove("on"), 3200); }
+  hint(txt) { const h = $("h-hint"); h.textContent = txt; h.classList.remove("on"); void h.offsetWidth; h.classList.add("on"); clearTimeout(this._hiT); this._hiT = setTimeout(() => h.classList.remove("on"), 5200); }
+  spectate(name) { const s = $("h-spec"); s.classList.toggle("x-hide", !name); if (name) s.querySelector("span").textContent = t("watching", { n: name }); $("hud").classList.toggle("watch", !!name); }
   flash() { const v = $("vignette"); v.classList.remove("flash"); void v.offsetWidth; v.classList.add("flash"); }
 }
 
@@ -153,9 +171,11 @@ export class UI {
     this.click($("h-pause"), () => A.game.pause(true));
     this.click($("pz-resume"), () => A.game.pause(false)); this.click($("pz-restart"), () => { this.hidePause(); A.game.restart(); });
     this.click($("pz-settings"), () => { this.fromPause = true; $("m-pause").classList.add("x-hide"); this.gTab = "graphics"; this.show("settings"); });
-    this.click($("pz-quit"), () => { this.hidePause(); if (A.game.mode === "zen" && !A.game.ended) { A.game.paused = false; A.game.finish("zen"); return; } A.game.stopMatch(); this.goLobby(); });
+    this.click($("pz-quit"), () => { this.hidePause(); const g = A.game; if (!g.ended && g.stats && g.mode !== "attract" && g.mode !== "show" && (performance.now() - g.stats.t0) > 8000) { g.paused = false; g.finish(g.mode === "zen" ? "zen" : "quit"); return; } g.stopMatch(); this.goLobby(); }); // progress is never lost on quit
     this.click($("r-again"), () => { $("m-results").classList.add("x-hide"); if (A.game.mode === "online") A.game.again(); else this.launch(A.game.cfg); });
     this.click($("r-lobby"), () => { A.game.stopMatch(); this.goLobby(); });
+    this.click($("r-watch"), () => { if (!A.game.watchKiller()) this.toast(t("killerGone")); });
+    this.click($("h-spec-back"), () => A.game.stopWatch());
     this.click($("t-next"), () => this.tutNext()); this.click($("t-skip"), () => this.tutDone());
     this.click($("rv-close"), () => this.closeReveal()); this.click($("rv-equip"), () => { const i = this.revealing; if (i >= 0 && this.S.unlocked("skin", i)) { this.p.skin = { k: "skin", i }; this.S.save(); this.toast("✓ " + t("equipped"), "good"); } this.closeReveal(); });
     document.addEventListener("visibilitychange", () => { if (document.hidden) { A.game.pause(true); A.store.flush(); } });
@@ -419,6 +439,8 @@ export class UI {
   }
 
   // ---------- pause & results ----------
+  hideResults() { $("m-results").classList.add("x-hide"); this.app.hud.show(this.app.game.mode); }
+  reshowResults() { const m = $("m-results"); m.classList.remove("x-hide"); this.app.hud.hide(); $("r-watch").classList.toggle("x-hide", !(this.app.game.killer && this.app.game.killer.alive)); }
   showPause(online) { $("m-pause").classList.remove("x-hide"); $("pz-online").classList.toggle("x-hide", !online); $("pz-online").textContent = online ? t("m_online_d") : ""; $("pz-restart").classList.toggle("x-hide", online); }
   hidePause() { $("m-pause").classList.add("x-hide"); }
   showResults(r) {
@@ -428,6 +450,7 @@ export class UI {
     const cells = [["r_mass", fmtNum(r.mass)], ["r_kills", r.kills], ["r_rank", r.rank === "—" ? "—" : "#" + r.rank], ["r_time", fmtTime(r.time)]]; if (r.mode === "survival") cells[2] = ["wave", r.wave];
     $("r-grid").innerHTML = cells.map(([a, b]) => `<div><small>${a === "wave" ? t("wave", { n: "" }).trim() : t(a)}</small><b>${b}</b></div>`).join("");
     const lv = lvInfo(this.p.xp); $("r-lv").textContent = lv.n; $("r-xpbar").style.width = "0"; setTimeout(() => ($("r-xpbar").style.width = Math.round((lv.x / lv.need) * 100) + "%"), 60);
+    this.lastResults = r; $("r-watch").classList.toggle("x-hide", !r.killer); $("r-season").textContent = "✦ " + t("seasonXp", { n: r.seasonXp || r.xp }) + (r.pu ? " · " + t("puUsed", { n: r.pu }) : "");
     $("r-xp").textContent = t("xpGain", { n: r.xp }); $("r-coins").textContent = "◆ " + t("coinGain", { n: r.coins });
     const ex = []; if (r.lv.up) ex.push("⭐ " + t("levelUp", { n: r.lv.level })); if (r.tiers) ex.push("✦ " + t("tierUp", { n: this.S.seasonTier() }));
     for (const ms of r.missions) ex.push("✓ " + t("missionDone", { n: t("mi_" + ms.id, { n: ms.g }) })); for (const w of (r.mp && r.mp.weekly) || []) ex.push("✓ " + t("wk_" + w.id, { n: fmtNum(w.g) }));

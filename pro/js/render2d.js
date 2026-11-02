@@ -1,8 +1,8 @@
 // 2D fallback renderer (Canvas 2D): used when WebGL is missing/lost, or on devices too slow for 3D.
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
-import { bodyPoints } from "./sim.js";
-import { WORLDS, paintGround } from "./worlds.js";
-import { EYES } from "./skins.js";
+import { taperAt, HEAD_K, bodyPoints } from "./sim.js?v=f1";
+import { WORLDS, paintGround } from "./worlds.js?v=f1";
+import { EYES } from "./skins.js?v=f1";
 
 export class Renderer2D {
   constructor(canvas) {
@@ -50,7 +50,7 @@ export class Renderer2D {
       g.globalAlpha = d.alpha;
       g.fillStyle = "rgba(0,0,0,0.25)"; for (let j = n - 1; j >= 0; j -= 2) { g.beginPath(); g.arc(pts[j * 2] + r * 0.3, pts[j * 2 + 1] + r * 0.3, r, 0, 6.283); g.fill(); }
       for (let j = n - 1; j >= 0; j--) {
-        const u = j / Math.max(1, n - 1), rr = r * (u > 0.72 ? 1 - ((u - 0.72) / 0.28) * 0.6 : 1); d.fn(j, n, t, col);
+        const u = j / Math.max(1, n - 1), rr = j ? r * taperAt(u) : r * HEAD_K; d.fn(j, n, t, col);
         const c = `rgb(${(col[0] * 255) | 0},${(col[1] * 255) | 0},${(col[2] * 255) | 0})`; g.fillStyle = c; g.beginPath(); g.arc(pts[j * 2], pts[j * 2 + 1], rr, 0, 6.283); g.fill();
         g.fillStyle = "rgba(255,255,255,0.18)"; g.beginPath(); g.arc(pts[j * 2] - rr * 0.3, pts[j * 2 + 1] - rr * 0.3, rr * 0.45, 0, 6.283); g.fill();
       }

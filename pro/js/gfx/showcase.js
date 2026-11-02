@@ -1,6 +1,6 @@
 // Studio showcase: the player's snake coiled on a lit pedestal (lobby, locker, rarity reveals).
-import * as THREE from "../vendor/three.module.min.js";
-import { RoomEnvironment } from "../vendor/RoomEnvironment.js";
+import * as THREE from "../vendor/three.module.min.js?v=f1";
+import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=f1";
 
 export class Studio {
   constructor(r3) {
@@ -30,7 +30,7 @@ export class Studio {
     const key = new THREE.SpotLight(0xfff1dc, 75, 40, 0.5, 0.6, 1.6); key.position.set(3.5, 11, 7); key.target.position.set(0, 0.6, 0); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02; S.add(key); S.add(key.target); this.key = key;
     this.rimA = new THREE.DirectionalLight(0x3ad8ff, 2.2); this.rimA.position.set(-8, 4, -6); S.add(this.rimA);
     this.rimB = new THREE.DirectionalLight(0xffa13a, 2.0); this.rimB.position.set(8, 3, -5); S.add(this.rimB);
-    this.cam = new THREE.PerspectiveCamera(32, 2, 0.1, 120); this.cam.position.set(0, 3.4, 11.5); this.look = new THREE.Vector3(0, 1.0, 0);
+    this.cam = new THREE.PerspectiveCamera(32, 2, 0.1, 120); this.cam.position.set(0, 3.4, 11.5); this.look = new THREE.Vector3(0, 1.45, 0);
     // aura motes
     const n = 160, g = new THREE.BufferGeometry(), p = new Float32Array(n * 3), sd = new Float32Array(n * 4);
     for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, d = 1 + Math.random() * 2.6; p[i * 3] = Math.cos(a) * d; p[i * 3 + 1] = 0; p[i * 3 + 2] = Math.sin(a) * d; for (let k = 0; k < 4; k++) sd[i * 4 + k] = Math.random(); }
@@ -57,7 +57,7 @@ export class Studio {
       const d = j * sp; let x, z, y;
       const headLen = 9;
       if (d < headLen) { // neck rises from the coil to a proud head looking at the camera
-        const u = d / headLen; const lift = (1 - u) * (1 - u) * 2.7 * rear; const sway = Math.sin(t * 1.4 - u * 3) * neckW * (1 - u);
+        const u = d / headLen; const lift = (1 - u) * (1 - u) * 2.0 * rear; const sway = Math.sin(t * 1.4 - u * 3) * neckW * (1 - u);
         x = sway + Math.sin(u * 2.2) * 0.9; z = 1.15 - u * 2.1 + (1 - u) * 0.3; y = lift;
       } else { // flat spiral, outward toward the tail
         const u = (d - headLen) / (L - headLen); const ang = -1.2 + u * Math.PI * 2 * 1.65 + rot; const rad = (1.25 + u * 1.55) * coilK;

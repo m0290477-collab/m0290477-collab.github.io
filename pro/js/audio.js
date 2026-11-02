@@ -99,6 +99,13 @@ export class Audio {
         case "roar": { const o = this._tone("sawtooth", 90, 45, 1.6, 0.18); this._noise(1.6, 0.3, 500, 0.8, 0, "lowpass", undefined, 120); this._thump(60, 30, 1.6, 0.4); break; }
         case "core": this._tone("square", 880, 220, 0.3, 0.07); this._thump(160, 50, 0.4, 0.35); this._noise(0.3, 0.3, 3000, 0.8); break;
         case "hill": this._tone("sine", 1500, 0, 0.06, 0.03); break;
+        case "pu": { const k = (opt && opt.k) | 0; const base = [72, 76, 79, 74, 81, 84, 70][k] || 76; [0, 7, 12].forEach((st, i) => this._tone(k === 4 ? "sine" : "triangle", mtof(base + st), mtof(base + st + 12), 0.22, 0.07, i * 0.05)); this._noise(0.35, 0.08, 5000, 1.2, 0.02, "highpass"); if (k === 5) this._noise(0.6, 0.12, 2500, 3, 0.05, "bandpass", undefined, 9000); if (k === 6) this._thump(130, 50, 0.35, 0.35); break; }
+        case "puEnd": this._tone("sine", 900, 450, 0.18, 0.05); break;
+        case "shieldHit": this._tone("square", 1200, 300, 0.25, 0.06); this._noise(0.25, 0.25, 4000, 1, 0, "bandpass", undefined, 1200); this._thump(160, 60, 0.25, 0.3); break;
+        case "combo": { const n = Math.min(10, (opt && opt.n) | 0); this._tone("triangle", mtof(76 + n), 0, 0.12, 0.05); this._tone("sine", mtof(83 + n), 0, 0.14, 0.035, 0.03); break; }
+        case "streak": [0, 4, 7, 12].forEach((st, i) => this._tone("sawtooth", mtof(64 + st), 0, 0.3, 0.04, i * 0.05)); this._thump(90, 40, 0.5, 0.45); break;
+        case "mission": [0, 4, 7].forEach((st, i) => this._tone("sine", mtof(84 + st), 0, 0.3, 0.06, i * 0.07)); break;
+        case "pause": this._tone("sine", 700, 500, 0.12, 0.05); break;
       }
     } catch (_) {}
   }

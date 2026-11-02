@@ -1,8 +1,8 @@
 // Living world environments: panoramic sky with procedural clouds/aurora/nebula, PBR ground with anti-tiling,
 // animated water/lava, swaying instanced foliage, decor, weather (rain/snow/sandstorm/ash/stars), ambient
 // creatures, time-of-day lighting. Textures stream per world (lazy WebP) and swap in when ready.
-import * as THREE from "../vendor/three.module.min.js";
-import { W3D, worldAsset } from "../worlds.js";
+import * as THREE from "../vendor/three.module.min.js?v=f1";
+import { W3D, worldAsset } from "../worlds.js?v=f1";
 
 const loader = new THREE.TextureLoader();
 const texCache = new Map();
@@ -22,7 +22,9 @@ float fbm(vec2 p){ float s=0.0,a=0.5; for(int i=0;i<5;i++){ s+=vn(p)*a; p=p*2.02
 void main(){
   vec3 d=normalize(vDir); float lon=atan(d.z,d.x)+uRot; float lat=asin(clamp(d.y,-1.0,1.0));
   vec2 uv=vec2(fract(lon/6.2831853+0.5), clamp(0.5+lat/3.14159265*1.0, 0.002, 0.998));
-  vec3 c=uFog; if(uHas>0.5) c=texture2D(tSky,uv).rgb;
+  // seam-safe derivatives: at the panorama wrap fract() jumps 1->0, which made the GPU pick the tiniest mip (a dashed line in the sky)
+  vec3 ddx=dFdx(d), ddy=dFdy(d); float q=max(d.x*d.x+d.z*d.z,1e-5); vec2 gu=vec2(d.x*ddx.z-d.z*ddx.x, d.x*ddy.z-d.z*ddy.x)/(q*6.2831853); // analytic d(lon), continuous across the wrap
+  vec3 c=uFog; if(uHas>0.5) c=textureGrad(tSky,uv,vec2(gu.x,dFdx(uv.y)),vec2(gu.y,dFdy(uv.y))).rgb;
   c*=uTint;
   float el=d.y;
   if(uClouds>0.0 && el>0.02){ vec2 cp=d.xz/(el+0.18)*1.6+vec2(uT*0.02,uT*0.008); float cl=smoothstep(0.52,0.8,fbm(cp)); c=mix(c, mix(vec3(1.0),uTint*vec3(1.0,0.85,0.75),0.4)*(0.8+0.2*uTint.r), cl*0.55*smoothstep(0.02,0.25,el)*uClouds); }
@@ -75,13 +77,13 @@ export class World {
     const X = this.X, W = this.W, R = this.R0;
     const mat = this.Q.mat === "lambert" ? new THREE.MeshLambertMaterial({ color: 0xffffff }) : new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: X.rough, metalness: X.id === "neon" ? 0.4 : 0.0, envMapIntensity: X.reflect ? 1.4 : 0.8 });
     mat.color.set(W.ground); // placeholder until the texture streams in
-    const self = this; this.groundU = { uT: this.uT, tRefl: { value: null }, uRefl: { value: 0 }, uMat: { value: new THREE.Matrix4() }, uEm: { value: X.emissiveK || 0 }, uKind: { value: this.idx } };
+    const self = this; this.groundU = { uT: this.uT, tRefl: { value: null }, uRefl: { value: 0 }, uMat: { value: new THREE.Matrix4() }, uEm: { value: X.emissiveK || 0 }, uKind: { value: this.idx }, uDesat: { value: X.desat || 0 } };
     mat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, self.groundU); GROUND_VS_PATCH(sh);
-      sh.fragmentShader = "varying vec3 vWp; uniform float uT, uRefl, uEm, uKind; uniform sampler2D tRefl; uniform mat4 uMat;\nfloat gh(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }\nfloat gn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(gh(i),gh(i+vec2(1,0)),f.x),mix(gh(i+vec2(0,1)),gh(i+vec2(1,1)),f.x),f.y); }\n" + sh.fragmentShader
+      sh.fragmentShader = "varying vec3 vWp; uniform float uT, uRefl, uEm, uKind, uDesat; uniform sampler2D tRefl; uniform mat4 uMat;\nfloat gh(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }\nfloat gn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(gh(i),gh(i+vec2(1,0)),f.x),mix(gh(i+vec2(0,1)),gh(i+vec2(1,1)),f.x),f.y); }\n" + sh.fragmentShader
         .replace("#include <map_fragment>", `#ifdef USE_MAP
           vec4 t1 = texture2D(map, vMapUv); vec4 t2 = texture2D(map, vMapUv*0.37+vec2(0.31,0.17)); float m = gn(vWp.xz*0.035);
-          vec4 sampledDiffuseColor = mix(t1, t2, smoothstep(0.35,0.65,m)*0.55); float macro = 0.82+0.36*gn(vWp.xz*0.012); diffuseColor *= sampledDiffuseColor; diffuseColor.rgb *= macro;
+          vec4 sampledDiffuseColor = mix(t1, t2, smoothstep(0.35,0.65,m)*0.55); float macro = 0.82+0.36*gn(vWp.xz*0.012); diffuseColor *= sampledDiffuseColor; diffuseColor.rgb *= macro; diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.299,0.587,0.114))), uDesat);
         #endif`)
         .replace("#include <emissivemap_fragment>", `#ifdef USE_EMISSIVEMAP
           float em = texture2D(emissiveMap, vEmissiveMapUv).r; float pulse = 0.65+0.35*sin(uT*1.7+vWp.x*0.13+vWp.z*0.09); totalEmissiveRadiance = emissive*em*em*uEm*pulse;
