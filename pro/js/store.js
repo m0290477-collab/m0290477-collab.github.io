@@ -1,6 +1,15 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
 import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js";
+export const SEASON = { id: "s1", tiers: 30, per: 400 };
+// free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
+export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
+export const CHAINS = {
+  hunter: { reward: "phantom", steps: [["kills", 5], ["kills", 20], ["kills", 50], ["teamWin", 1]] },
+  collector: { reward: "prism", steps: [["food", 300], ["food", 1500], ["mass", 800], ["mass", 1500]] },
+  survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
+};
+const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
 import { WORLDS } from "./worlds.js";
 
 export const KV = (() => {
@@ -29,8 +38,9 @@ export function newProfile(name) {
   return {
     v: 1, name: name || "Guest", xp: 0, coins: 100, flags: [], skin: { k: "skin", i: 0 }, custom: { p: 10, c: ["#18c964", "#0b7a3b", "#b8ffcf"] },
     eye: 0, trail: 0, nc: 0, presets: [null, null, null, null],
-    stats: { games: 0, kills: 0, deaths: 0, food: 0, best: 0, time: 0, life: 0, top: 0, boost: 0, online: 0, zen: 0, wave: 0, tbest: 0 },
-    bests: { classic: [], time: [], survival: [], zen: [], online: [] }, ach: {}, daily: { d: "", m: [] }, bonus: "",
+    stats: { games: 0, kills: 0, deaths: 0, food: 0, best: 0, time: 0, life: 0, top: 0, boost: 0, online: 0, zen: 0, wave: 0, tbest: 0, wins: 0, brWins: 0, kothWins: 0, teamWins: 0, bossKills: 0, cores: 0 },
+    bests: { classic: [], time: [], survival: [], zen: [], online: [], br: [], koth: [], boss: [], team: [] }, ach: {}, daily: { d: "", m: [] }, bonus: "",
+    owned: [], season: { id: "s1", xp: 0, claimed: [] }, weekly: { w: "", m: [], done: 0 }, chains: {}, seen: [], introSeen: 0,
     last: { mode: "classic", world: 0, diff: 1, room: "" }, tut: 0,
   };
 }
@@ -40,6 +50,8 @@ function fixProfile(p) { // fill any missing field from defaults (older or impor
   for (const k in d) if (p[k] === undefined || typeof p[k] !== typeof d[k] || Array.isArray(d[k]) !== Array.isArray(p[k])) p[k] = d[k];
   for (const k in d.stats) if (typeof p.stats[k] !== "number" || !isFinite(p.stats[k])) p.stats[k] = 0;
   for (const k in d.bests) if (!Array.isArray(p.bests[k])) p.bests[k] = [];
+  if (!p.season || p.season.id !== "s1" || !Array.isArray(p.season.claimed)) p.season = d.season; p.season.xp = Math.max(0, +p.season.xp || 0);
+  if (!p.weekly || !Array.isArray(p.weekly.m)) p.weekly = d.weekly; if (!p.chains || typeof p.chains !== "object") p.chains = {}; p.owned = p.owned.filter((x) => typeof x === "string");
   for (const k in d.last) if (p.last[k] === undefined) p.last[k] = d.last[k];
   p.xp = Math.max(0, +p.xp || 0); p.coins = Math.max(0, +p.coins || 0); p.flags = p.flags.filter((i) => Number.isInteger(i) && FLAGS[i]);
   while (p.presets.length < 4) p.presets.push(null);
@@ -137,7 +149,7 @@ export class Store {
   addXp(n) { const before = this.level(); this.p.xp += Math.max(0, Math.round(n)); const after = this.level(); let coins = 0; for (let l = before + 1; l <= after; l++) coins += 25 * l + (l % 10 === 0 ? 500 : 0); this.p.coins += coins; return { up: after > before, level: after, coins }; }
   unlocked(kind, i) {
     const lv = this.level();
-    if (kind === "skin") return lv >= SKINS[i].lv; if (kind === "flag") return this.p.flags.includes(i); if (kind === "eye") return lv >= EYES[i].lv;
+    if (kind === "skin") { const S = SKINS[i]; if (!S) return false; if (S.src) { if (this.p.owned.includes(S.id)) return true; const [k, n] = S.src.split(":"); return k === "level" && lv >= +n; } return lv >= S.lv; } if (kind === "flag") return this.p.flags.includes(i); if (kind === "eye") return lv >= EYES[i].lv;
     if (kind === "trail") return lv >= TRAILS[i].lv; if (kind === "world") return lv >= WORLDS[i].lv; if (kind === "diff") return i < 3 || lv >= 10; return true;
   }
   buyFlag(i) { if (this.p.flags.includes(i)) return "own"; if (this.p.coins < FLAG_PRICE) return "noCoins"; this.p.coins -= FLAG_PRICE; this.p.flags.push(i); this.save(); return "ok"; }
@@ -162,6 +174,41 @@ export class Store {
     this.save(); return out;
   }
   claimMission(i) { const m = this.daily()[i]; if (!m || m.p < m.g || m.c) return null; m.c = 1; this.p.coins += m.r; const lv = this.addXp(m.r); this.save(); return { coins: m.r, lv }; }
+
+  // ---------- legendary ownership, season pass, weekly challenges, mission chains ----------
+  grant(id) { if (!this.p.owned.includes(id)) { this.p.owned.push(id); this.save(); return true; } return false; }
+  legendPrice(i) { const S = SKINS[i]; if (!S || !S.src) return 0; const [k, n] = S.src.split(":"); return k === "coins" ? +n : 0; }
+  buyLegend(i) { const S = SKINS[i], price = this.legendPrice(i); if (!price) return "na"; if (this.unlocked("skin", i)) return "own"; if (this.p.coins < price) return "noCoins"; this.p.coins -= price; this.grant(S.id); return "ok"; }
+  seasonTier() { return Math.min(SEASON.tiers, Math.floor(this.p.season.xp / SEASON.per)); }
+  addSeasonXp(n) { const b = this.seasonTier(); this.p.season.xp += Math.max(0, Math.round(n)); const a = this.seasonTier(); this.save(); return a > b ? a - b : 0; }
+  claimTier(k) {
+    const P = this.p.season; if (k < 1 || k > this.seasonTier() || P.claimed.includes(k)) return null; P.claimed.push(k); const r = seasonReward(k);
+    if (r.coins) this.p.coins += r.coins; let skin = null; if (r.skin) { const i = SKINS.findIndex((s) => s.id === r.skin); if (this.grant(r.skin)) skin = i; } this.save(); return { ...r, skinI: skin };
+  }
+  weekly() {
+    const w = isoWeek(); if (this.p.weekly.w === w && this.p.weekly.m.length === 3) return this.p.weekly.m;
+    let h = 7; for (const ch of w) h = (Math.imul(h, 33) + ch.charCodeAt(0)) | 0; const rnd = () => { h = (Math.imul(h ^ (h >>> 13), 1597334677) + 0x9e3779b9) | 0; return ((h >>> 0) % 10000) / 10000; };
+    const T = [["kill", 40], ["eat", 2500], ["games", 15], ["wins", 3], ["mass", 2000], ["modes", 4], ["boost", 300]]; const pick = [];
+    while (pick.length < 3) { const tt = T[(rnd() * T.length) | 0]; if (!pick.some((x) => x.id === tt[0])) pick.push({ id: tt[0], g: tt[1], p: 0, r: 450 + pick.length * 150, c: 0, ms: [] }); }
+    this.p.weekly = { w, m: pick, done: this.p.weekly.done || 0 }; this.save(); return pick;
+  }
+  claimWeekly(i) { const m = this.weekly()[i]; if (!m || m.p < m.g || m.c) return null; m.c = 1; this.p.coins += m.r; const lv = this.addXp(m.r); let skin = null; if (this.weekly().every((x) => x.c)) { this.p.weekly.done++; if (this.p.weekly.done >= 3 && this.grant("neonpulse")) skin = SKINS.findIndex((s) => s.id === "neonpulse"); } this.save(); return { coins: m.r, lv, skinI: skin }; }
+  chain(id) { const c = this.p.chains[id] || (this.p.chains[id] = { s: 0, p: 0 }); return c; }
+  // one finished match feeds weekly + chains; returns freshly completed items and legendary unlocks
+  matchProgress(ev) {
+    const out = { weekly: [], chains: [], legends: [] };
+    for (const m of this.weekly()) { if (m.p >= m.g) continue; const was = m.p;
+      if (m.id === "kill") m.p += ev.kills || 0; else if (m.id === "eat") m.p += ev.food || 0; else if (m.id === "games") m.p++; else if (m.id === "wins") m.p += ev.win ? 1 : 0; else if (m.id === "mass") m.p = Math.max(m.p, Math.floor(ev.mass || 0));
+      else if (m.id === "modes") { m.ms = m.ms || []; if (!m.ms.includes(ev.mode)) m.ms.push(ev.mode); m.p = m.ms.length; } else if (m.id === "boost") m.p += Math.floor(ev.boost || 0);
+      m.p = Math.min(m.g, m.p); if (was < m.g && m.p >= m.g) out.weekly.push(m); }
+    for (const id in CHAINS) { const C = CHAINS[id], c = this.chain(id); if (c.s >= C.steps.length) continue; const [k, g] = C.steps[c.s];
+      const v = k === "kills" ? ev.kills : k === "food" ? ev.food : k === "mass" ? ev.mass : k === "life" ? ev.life : k === "wave" ? ev.wave : k === "teamWin" ? (ev.win && ev.mode === "team" ? 1 : 0) : k === "brWin" ? (ev.win && ev.mode === "br" ? 1 : 0) : 0;
+      if (k === "kills" || k === "food" || k.endsWith("Win")) c.p += v || 0; else c.p = Math.max(c.p, Math.floor(v || 0));
+      if (c.p >= g) { c.s++; c.p = 0; out.chains.push({ id, step: c.s }); if (c.s >= C.steps.length && this.grant(C.reward)) out.legends.push(SKINS.findIndex((s) => s.id === C.reward)); } }
+    if (ev.mode === "boss" && ev.win && this.grant("solar")) out.legends.push(SKINS.findIndex((s) => s.id === "solar"));
+    const lvSkin = SKINS.findIndex((s) => s.id === "cosmos"); if (this.level() >= 15 && !this.p.seen.includes("cosmos")) { this.p.seen.push("cosmos"); out.legends.push(lvSkin); }
+    this.save(); return out;
+  }
 
   // ---------- achievements ----------
   static ACH = [

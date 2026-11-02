@@ -24,6 +24,8 @@ export class Renderer2D {
   project(x, y) { return [(x - this.camX) * this.scale + this.w / 2, (y - this.camY) * this.scale + this.h / 2, true]; }
   info() { return { calls: 0, tris: 0 }; }
   frame(v) {
+    if (v.scene === "show") { const g = this.g, W = this.w * this.dpr, H = this.h * this.dpr; const gr = g.createRadialGradient(W * 0.5, H * 0.6, 10, W * 0.5, H * 0.6, W * 0.7); gr.addColorStop(0, "#1a2c55"); gr.addColorStop(1, "#05060b"); g.fillStyle = gr; g.fillRect(0, 0, W, H); return; }
+    if (!v.food) return;
     const g = this.g, dt = Math.min(0.05, v.dt), t = v.t, W = this.W;
     const k = 1 - Math.exp(-dt * 9); this.camX += (v.cam.x - this.camX) * k; this.camY += (v.cam.y - this.camY) * k;
     this.scale += ((Math.min(this.w, this.h) / (24 * v.cam.zoom)) - this.scale) * k;

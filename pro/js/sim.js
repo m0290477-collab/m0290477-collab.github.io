@@ -52,7 +52,7 @@ export class Snake {
   // sample i back from the newest (0 = head)
   sx(i) { return this.px[(this.h - i) & MASK]; }
   sy(i) { return this.py[(this.h - i) & MASK]; }
-  setMass(m) { this.m = m; this.r = radiusOf(m); this.len = lengthOf(m); if (m > this.best) this.best = m; }
+  setMass(m) { this.m = m; this.r = radiusOf(m) * (this.rk || 1); this.len = lengthOf(m) * (this.lk || 1); if (m > this.best) this.best = m; }
 }
 
 // Move one snake one tick: turn with inertia toward ta, advance, record a path sample. Deterministic given (state, ta, boost, dt).
@@ -65,7 +65,7 @@ export function moveSnake(s, dt, canBoost) {
   s.lastA = s.a;
   s.a += s.av * dt; if (s.a > Math.PI) s.a -= TAU; else if (s.a < -Math.PI) s.a += TAU;
   s.boosting = !!s.boost && canBoost;
-  const v = s.boosting ? C.BOOST : C.SPEED;
+  const v = (s.boosting ? C.BOOST : C.SPEED) * (s.vk || 1);
   s.x += Math.cos(s.a) * v * dt; s.y += Math.sin(s.a) * v * dt;
   s.push(s.x, s.y);
 }
@@ -194,9 +194,13 @@ export class Sim {
     this._nh = 0; const lr2 = (look * 1.6 + 6) ** 2;
     for (const o of this.snakes) if (o !== s && o.alive) { const dx = o.x - s.x, dy = o.y - s.y; if (dx * dx + dy * dy < lr2) { const H = this._heads[this._nh] || (this._heads[this._nh] = {}); H.x = o.x; H.y = o.y; H.a = o.a; H.v = o.boosting ? C.BOOST : C.SPEED; H.r = o.r; this._nh++; } }
     // hunt: cut off a nearby snake by aiming ahead of its head
-    if (this.rand() < D.hunt * 0.25 * this.botAggro || (ai.mode === 3 && this.rand() < 0.85)) {
+    const prey = ai.prey ? this.byId.get(ai.prey) : null;
+    if (prey && prey.alive) { const lead = 3 + Math.hypot(prey.x - s.x, prey.y - s.y) * 0.35; want = Math.atan2(prey.y + Math.sin(prey.a) * lead - s.y, prey.x + Math.cos(prey.a) * lead - s.x); ai.mode = 3; boost = this.rand() < D.boost * 0.5 && s.m > 40 ? 1 : 0; }
+    if (want === null && this.zone) { const z = this.zone, dz = Math.hypot(s.x - z.x, s.y - z.y); if (dz > z.r * 0.78) { want = Math.atan2(z.y - s.y, z.x - s.x); ai.mode = 4; boost = dz > z.r && s.m > 30 ? 1 : 0; } }
+    if (want === null && this.attractPt && this.rand() < this.attractPt.w) { const A = this.attractPt, da = Math.hypot(s.x - A.x, s.y - A.y); if (da > A.r * 0.55) { want = Math.atan2(A.y - s.y, A.x - s.x) + (this.rand() - 0.5) * 0.5; ai.mode = 5; } }
+    if (want === null && (this.rand() < D.hunt * 0.25 * this.botAggro || (ai.mode === 3 && this.rand() < 0.85))) {
       let tgt = null, td = 1e9;
-      for (const o of this.snakes) if (o !== s && o.alive && !o.god) { const dx = o.x - s.x, dy = o.y - s.y, d = dx * dx + dy * dy; if (d < td && d < 900 && (o.m < s.m * 2.5 || D.hunt > 0.6)) { td = d; tgt = o; } }
+      for (const o of this.snakes) if (o !== s && o.alive && !o.god && !(this.teams && o.team === s.team)) { const dx = o.x - s.x, dy = o.y - s.y, d = dx * dx + dy * dy; if (d < td && d < 900 && (o.m < s.m * 2.5 || D.hunt > 0.6)) { td = d; tgt = o; } }
       if (tgt) {
         const lead = 4 + Math.sqrt(td) * 0.45, tx = tgt.x + Math.cos(tgt.a) * lead, ty = tgt.y + Math.sin(tgt.a) * lead;
         want = Math.atan2(ty - s.y, tx - s.x); boost = Math.sqrt(td) < 14 && this.rand() < D.boost && s.m > 30 ? 1 : 0; ai.mode = 3;
@@ -262,6 +266,7 @@ export class Sim {
         }
       }
     }
+    if (this.zone) { const z = this.zone; for (const s of this.snakes) { if (!s.alive || s.god) continue; const dx = s.x - z.x, dy = s.y - z.y; if (dx * dx + dy * dy > z.r * z.r) { s.storm = (s.storm || 0) + dt; s.setMass(s.m - (2.5 + s.m * 0.07) * dt * (z.dmg || 1)); if (s.m < 10) this.kill(s, 0, 3); } else s.storm = 0; } }
     this.buildGrid();
     this.collide();
     this.eat();
@@ -292,7 +297,7 @@ export class Sim {
       for (let oy = -rx; oy <= rx && !killer; oy++) for (let ox = -rx; ox <= rx && !killer; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= g.head.length) continue; let j = g.head[c];
         while (j >= 0) {
-          if (g.o[j] !== s.id) { const dx = g.x[j] - s.x, dy = g.y[j] - s.y, rr = (g.r[j] + s.r) * 0.8; if (dx * dx + dy * dy < rr * rr) { killer = g.o[j]; this.lastHitSeg = g.k[j]; break; } }
+          if (g.o[j] !== s.id) { const dx = g.x[j] - s.x, dy = g.y[j] - s.y, rr = (g.r[j] + s.r) * 0.8; if (dx * dx + dy * dy < rr * rr) { if (this.teams) { const o = this.byId.get(g.o[j]); if (o && o.team === s.team) { j = g.next[j]; continue; } } killer = g.o[j]; this.lastHitSeg = g.k[j]; break; } }
           j = g.next[j];
         }
       }
