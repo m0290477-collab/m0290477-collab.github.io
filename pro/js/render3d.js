@@ -2,14 +2,14 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=f1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=f1";
-import { WORLDS, W3D } from "./worlds.js?v=f1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=f1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=f1";
-import { World, prefetchWorld } from "./gfx/env.js?v=f1";
-import { Post } from "./gfx/post.js?v=f1";
-import { Studio } from "./gfx/showcase.js?v=f1";
+import * as THREE from "./vendor/three.module.min.js?v=f1457";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=f1457";
+import { WORLDS, W3D } from "./worlds.js?v=f1457";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=f1457";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=f1457";
+import { World, prefetchWorld } from "./gfx/env.js?v=f1457";
+import { Post } from "./gfx/post.js?v=f1457";
+import { Studio } from "./gfx/showcase.js?v=f1457";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: true, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 500, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -138,7 +138,7 @@ export class Renderer3D {
     const hd = new THREE.Mesh(new THREE.CircleGeometry(1, 64).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffc845, transparent: true, opacity: 0.12, depthWrite: false }));
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 30, 48, 1, true), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, uniforms: { uT: this.stormU.uT, uC: { value: new THREE.Color(1.2, 0.9, 0.2) } },
       vertexShader: "varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }", fragmentShader: "uniform float uT; uniform vec3 uC; varying vec2 vU; void main(){ float a=(1.0-vU.y)*(0.25+0.15*sin(vU.x*60.0+uT*3.0)); gl_FragColor=vec4(uC,a*0.6); }" }));
-    beam.position.y = 15; this.hillBeam = beam; this.hillRing = hr; this.hill.add(hr, hd, beam); hr.position.y = 0.08; hd.position.y = 0.05; this.hill.visible = false; this.scene.add(this.hill);
+    beam.position.y = 15; this.hillBeam = beam; this.hillRing = hr; this.hillDisc = hd; hd.material.opacity = 0.2; this.hill.add(hr, hd, beam); hr.position.y = 0.08; hd.position.y = 0.05; this.hill.visible = false; this.scene.add(this.hill);
     this.cores = this._inst(this.scene, new THREE.IcosahedronGeometry(1, 2), new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }), 16, true);
     this.coreHalo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(255,80,60,1)"], [0.4, "rgba(255,40,40,0.4)"], [1, "rgba(255,0,0,0)"]]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }), 16, false);
     this.teamRing = this._inst(this.scene, new THREE.RingGeometry(0.75, 1, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false, toneMapped: false }), MAXS, true);
@@ -459,7 +459,7 @@ export class Renderer3D {
     const z = v.zone; this.storm.visible = this.stormOut.visible = !!z;
     if (z) { this.storm.scale.set(z.r, 1, z.r); this.storm.position.set(z.x, 13, z.y); this.stormOut.position.set(z.x, 0.06, z.y); this.stormOut.scale.set(z.r, 1, z.r); }
     const h = v.hill; this.hill.visible = !!h;
-    if (h) { this.hill.position.set(h.x, 0, h.y); this.hill.scale.set(h.r, 1, h.r); this.hillBeam.scale.set(0.08, 1, 0.08); this.hillBeam.position.y = 15; const c = h.c || [1, 0.8, 0.2]; this.hillRing.material.color.setRGB(c[0] * 2.5, c[1] * 2.5, c[2] * 2.5); this.hillBeam.material.uniforms.uC.value.setRGB(c[0], c[1], c[2]); }
+    if (h) { this.hill.position.set(h.x, 0, h.y); this.hill.scale.set(h.r, 1, h.r); this.hillBeam.scale.set(0.08, 1, 0.08); this.hillBeam.position.y = 15; const c = h.c || [1, 0.8, 0.2]; const pl = 0.8 + 0.25 * Math.sin(t * 4); this.hillRing.material.color.setRGB(c[0] * 1.5 * pl, c[1] * 1.5 * pl, c[2] * 1.5 * pl); this.hillDisc.material.color.setRGB(c[0], c[1], c[2]); this.hillDisc.material.opacity = 0.14 + 0.08 * pl; this.hillBeam.material.uniforms.uC.value.setRGB(c[0], c[1], c[2]); }
     const cs = v.cores || []; const CM = this.cores.instanceMatrix.array, CC = this.cores.instanceColor.array, HM = this.coreHalo.instanceMatrix.array; _m.makeRotationFromQuaternion(this.cam.quaternion); const me = _m.elements;
     for (let i = 0; i < cs.length && i < 16; i++) { const c = cs[i], s = 0.9 + Math.sin(t * 6 + i) * 0.15; const o = i * 16; for (let q = 0; q < 16; q++) CM[o + q] = 0; CM[o] = CM[o + 5] = CM[o + 10] = s * (c.r || 1); CM[o + 12] = c.x; CM[o + 13] = c.h || 2.5; CM[o + 14] = c.y; CM[o + 15] = 1; CC[i * 3] = 3; CC[i * 3 + 1] = 0.5; CC[i * 3 + 2] = 0.3;
       const hs = 5 * s * (c.r || 1); HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 3] = 0; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 7] = 0; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 11] = 0; HM[o + 12] = c.x; HM[o + 13] = c.h || 2.5; HM[o + 14] = c.y; HM[o + 15] = 1; }

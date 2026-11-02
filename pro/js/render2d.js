@@ -1,8 +1,8 @@
 // 2D fallback renderer (Canvas 2D): used when WebGL is missing/lost, or on devices too slow for 3D.
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
-import { taperAt, HEAD_K, bodyPoints } from "./sim.js?v=f1";
-import { WORLDS, paintGround } from "./worlds.js?v=f1";
-import { EYES } from "./skins.js?v=f1";
+import { taperAt, HEAD_K, bodyPoints } from "./sim.js?v=f1457";
+import { WORLDS, paintGround } from "./worlds.js?v=f1457";
+import { EYES } from "./skins.js?v=f1457";
 
 export class Renderer2D {
   constructor(canvas) {

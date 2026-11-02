@@ -1,12 +1,12 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { Sim, C, BOT_NAMES, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR } from "./sim.js?v=f1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=f1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=f1";
-import { NetBackend } from "./net.js?v=f1";
-import { t, fmtNum } from "./i18n.js?v=f1";
-import { haptic } from "./audio.js?v=f1";
+import { Sim, C, BOT_NAMES, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR } from "./sim.js?v=f1457";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=f1457";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=f1457";
+import { NetBackend } from "./net.js?v=f1457";
+import { t, fmtNum } from "./i18n.js?v=f1457";
+import { haptic } from "./audio.js?v=f1457";
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
@@ -194,7 +194,7 @@ export class Game {
   onDeath(mr, by, cause) {
     const s = mr.s; const f = skinFn(s.skin || {}), lin = this.colOf(s);
     const me = this.backend && this.backend.me; const dist = me ? Math.hypot(s.x - me.x, s.y - me.y) : 999;
-    if (dist < 45) { this.r.shatter(s, f, this.app.store.settings.juice ? 60 : 25); if (this.app.store.settings.juice) this.r.ring(s.x, s.y, lin, 7); }
+    if (dist < 45) { this.r.shatter(s, f, this.app.store.settings.juice ? 60 : 25); this.r.burst(s.x, s.y, lin, 26, 9, 0.9, 0.65, 6); this.r.burst(s.x, s.y, [1, 1, 1], 10, 5, 0.4, 0.5, 3); if (this.app.store.settings.juice) { this.r.ring(s.x, s.y, lin, 7); this.r.light && this.r.light(s.x, s.y, [lin[0] * 2 + 0.6, lin[1] * 2 + 0.6, lin[2] * 2 + 0.6], 0.9); } }
     if (dist < 80 && (!by || by !== (me && me.id))) this.app.audio.at("die", s.x, s.y);
     if (by && by !== (me && me.id)) { const k = this.findSnake(by); if (k) this.pushFeed(k.name, s.name); }
     else if (!by && dist < 200) this.pushFeed("☠", s.name, false, cause === 3 ? "storm" : "wall");

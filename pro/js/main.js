@@ -1,12 +1,12 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { Store, KV } from "./store.js?v=f1";
-import { setLang, applyI18n, t } from "./i18n.js?v=f1";
-import { Audio, haptic } from "./audio.js?v=f1";
-import { Input } from "./input.js?v=f1";
-import { Game } from "./game.js?v=f1";
-import { UI, Hud } from "./ui.js?v=f1";
-import { Renderer2D } from "./render2d.js?v=f1";
+import { Store, KV } from "./store.js?v=f1457";
+import { setLang, applyI18n, t } from "./i18n.js?v=f1457";
+import { Audio, haptic } from "./audio.js?v=f1457";
+import { Input } from "./input.js?v=f1457";
+import { Game } from "./game.js?v=f1457";
+import { UI, Hud } from "./ui.js?v=f1457";
+import { Renderer2D } from "./render2d.js?v=f1457";
 
 const $ = (id) => document.getElementById(id);
 const app = (window.SSP = {});
@@ -41,7 +41,7 @@ async function makeRenderer(kind, quality) {
   const old = $("gl"), cv = document.createElement("canvas"); cv.id = "gl"; cv.setAttribute("aria-hidden", "true"); old.replaceWith(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=f1");
+      const m = await import("./render3d.js?v=f1457");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => app.ui && app.ui.toast(t("oops"), "warn"), onRestored: () => {} });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }

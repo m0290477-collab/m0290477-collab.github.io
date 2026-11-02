@@ -1,12 +1,12 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=f1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=f1";
-import { WORLDS, worldAsset } from "./worlds.js?v=f1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=f1";
-import { haptic } from "./audio.js?v=f1";
-import { skinFn, MODES } from "./game.js?v=f1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG } from "./sim.js?v=f1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=f1457";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=f1457";
+import { WORLDS, worldAsset } from "./worlds.js?v=f1457";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=f1457";
+import { haptic } from "./audio.js?v=f1457";
+import { skinFn, MODES } from "./game.js?v=f1457";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG } from "./sim.js?v=f1457";
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
 const $ = (id) => document.getElementById(id);
@@ -60,7 +60,7 @@ export class Hud {
     if (d && d.kind === "boss") h = `<div class="boss-bar"><b>LEVIATHAN · ${t("phase")} ${d.phase}</b><div class="hb">${Array.from({ length: d.max }, (_, i) => `<i class="${i >= d.hp ? "gone" : ""}"></i>`).join("")}</div><small>${t("livesN", { n: d.lives })} · ${t("bossTip")}</small></div>`;
     this.modeTop = h; const el = $("h-mode"); el.innerHTML = h; el.dataset.k = "";
   }
-  dot(s) { const k = s.skin ? JSON.stringify(s.skin) : ""; this._dots = this._dots || new Map(); let c = this._dots.get(k); if (!c) { c = s.skin ? primaryColor(s.skin) : "#888"; this._dots.set(k, c); } return c; }
+  dot(s) { if (s.team === 0) return "#4da3ff"; if (s.team === 1) return "#ff4d5e"; const k = s.skin ? JSON.stringify(s.skin) : ""; this._dots = this._dots || new Map(); let c = this._dots.get(k); if (!c) { c = s.skin ? primaryColor(s.skin) : "#888"; this._dots.set(k, c); } return c; }
   minimap(all, me, R, pal, zone, hill, boss, pus) {
     const g = this.mini, S = 180; g.clearRect(0, 0, S, S); const k = (S / 2 - 6) / R;
     const gr = g.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S / 2); gr.addColorStop(0, "rgba(255,255,255,0.02)"); gr.addColorStop(1, "rgba(255,200,69,0.12)"); g.fillStyle = gr; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); g.fill();
@@ -76,7 +76,7 @@ export class Hud {
   }
   net(txt) { const n = $("h-net"); n.textContent = txt; n.classList.toggle("x-hide", !txt); n.classList.toggle("bad", !!txt); }
   fps(n) { $("h-fps").textContent = n + " FPS"; }
-  feed(list) { $("h-feed").innerHTML = list.slice(0, 4).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how ? `<b>${f.how === "storm" ? "🌀" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); clearTimeout(this.ft); this.ft = setTimeout(() => ($("h-feed").innerHTML = ""), 4000); }
+  feed(list) { $("h-feed").innerHTML = list.slice(0, 4).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how ? `<b>${f.how === "storm" ? "🌀" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); clearTimeout(this.ft); this.ft = setTimeout(() => ($("h-feed").innerHTML = ""), 6500); }
   banner(txt, ms) { const b = $("h-banner"); b.textContent = txt; b.classList.add("on"); clearTimeout(this.bt); this.bt = setTimeout(() => b.classList.remove("on"), ms || 1400); }
   count(txt) { const c = $("h-count"); c.textContent = txt; c.classList.remove("on"); void c.offsetWidth; c.classList.add("on"); }
   killBanner(a, b) { const k = $("h-kill"); k.querySelector("b").textContent = a; k.querySelector("small").textContent = b; k.classList.remove("on"); void k.offsetWidth; k.classList.add("on"); }
