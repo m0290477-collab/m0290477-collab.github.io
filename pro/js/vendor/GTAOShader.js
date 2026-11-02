@@ -4,7 +4,7 @@ import {
 	RepeatWrapping,
 	Vector2,
 	Vector3,
-} from './three.module.min.js?v=m2clean';
+} from './three.module.min.js?v=taps1';
 
 /**
  * References:

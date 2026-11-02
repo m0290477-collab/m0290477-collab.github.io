@@ -2,15 +2,15 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=m2clean";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=m2clean";
+import * as THREE from "./vendor/three.module.min.js?v=taps1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=taps1";
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D } from "./worlds.js?v=m2clean";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=m2clean";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=m2clean";
-import { World, prefetchWorld } from "./gfx/env.js?v=m2clean";
-import { Post } from "./gfx/post.js?v=m2clean";
-import { Studio } from "./gfx/showcase.js?v=m2clean";
+import { WORLDS, W3D } from "./worlds.js?v=taps1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=taps1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=taps1";
+import { World, prefetchWorld } from "./gfx/env.js?v=taps1";
+import { Post } from "./gfx/post.js?v=taps1";
+import { Studio } from "./gfx/showcase.js?v=taps1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: true, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 500, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },

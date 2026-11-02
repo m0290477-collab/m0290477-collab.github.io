@@ -1,13 +1,13 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=m2clean";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=m2clean";
-import { WORLDS, worldAsset } from "./worlds.js?v=m2clean";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=m2clean";
-import { haptic } from "./audio.js?v=m2clean";
-import { skinFn, MODES, EMOTES } from "./game.js?v=m2clean";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=m2clean";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=m2clean";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=taps1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=taps1";
+import { WORLDS, worldAsset } from "./worlds.js?v=taps1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=taps1";
+import { haptic } from "./audio.js?v=taps1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=taps1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=taps1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=taps1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -143,7 +143,7 @@ export class UI {
     el.addEventListener("click", (e) => { this.app.audio.unlock(); this.app.audio.play(snd); haptic.tap(6); this.ripple(el, e); try { fn(e); } catch (err) { console.error(err); this.toast(t("oops"), "warn"); } });
     if (matchMedia("(hover: hover)").matches) el.addEventListener("pointerenter", () => this.app.audio.play("hover"));
   }
-  ripple(el, e) { if (!el.classList || !(el.classList.contains("btn") || el.classList.contains("item") || el.classList.contains("mode")) || this.S.settings.reduceMotion) return; const r = el.getBoundingClientRect(), d = Math.max(r.width, r.height), s = document.createElement("span"); s.className = "rip"; s.style.width = s.style.height = d + "px"; s.style.left = ((e.clientX || r.left + r.width / 2) - r.left - d / 2) + "px"; s.style.top = ((e.clientY || r.top + r.height / 2) - r.top - d / 2) + "px"; el.appendChild(s); setTimeout(() => s.remove(), 600); }
+  ripple(el, e) { if (!el.classList || !(el.classList.contains("btn") || el.classList.contains("item") || el.classList.contains("mode")) || this.S.settings.reduceMotion) return; const r = el.getBoundingClientRect(), d = Math.max(r.width, r.height), s = document.createElement("span"); s.className = "rip"; s.style.width = s.style.height = d + "px"; s.style.left = ((e.clientX || r.left + r.width / 2) - r.left - d / 2) + "px"; s.style.top = ((e.clientY || r.top + r.height / 2) - r.top - d / 2) + "px"; const w = document.createElement("span"); w.className = "ripw"; w.appendChild(s); el.appendChild(w); setTimeout(() => w.remove(), 600); }
   // screen transitions: diagonal wipe (big moves) or dissolve
   wipe(kind = "go") { if (this.S.settings.reduceMotion) return Promise.resolve(); const w = $("wipe"); w.className = ""; void w.offsetWidth; w.className = kind; this.app.audio.play("whoosh"); return new Promise((res) => setTimeout(res, kind === "go" ? 330 : 280)).finally(() => setTimeout(() => (w.className = ""), 450)); }
   async go(id, kind) { await this.wipe(kind || "go"); this.show(id); }
