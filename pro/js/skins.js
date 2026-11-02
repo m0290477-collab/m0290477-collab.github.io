@@ -39,7 +39,40 @@ export const SKINS = [
   { id: "phoenix", p: 8, c: ["#ff2a00", "#ffd000", "#ff7a00"], lv: 38 },
   { id: "diamond", p: 9, c: ["#e9fbff", "#8fe3ff", "#ffffff"], lv: 45 },
   { id: "gold", p: 10, c: ["#ffd700", "#a87900", "#fff4b8"], lv: 50 },
+  // ---- LEGENDARY: custom shaders (fx id read by the 3D renderer), unique trail, death effect and lobby idle ----
+  { id: "magma", p: 8, c: ["#2a0d05", "#ff5a00", "#ffd000"], lv: 1, rar: "legendary", fx: 1, src: "pass:10" },
+  { id: "cosmos", p: 9, c: ["#1a0838", "#7a2cff", "#ffffff"], lv: 1, rar: "legendary", fx: 2, src: "level:15" },
+  { id: "prism", p: 9, c: ["#f2fbff", "#9fe8ff", "#ffffff"], lv: 1, rar: "legendary", fx: 3, src: "chain:collector" },
+  { id: "hologram", p: 7, c: ["#7af7ff", "#ff7af2", "#ffffff"], lv: 1, rar: "legendary", fx: 4, src: "coins:6000" },
+  { id: "storm", p: 8, c: ["#0b1430", "#3ad1ff", "#e8fbff"], lv: 1, rar: "legendary", fx: 5, src: "pass:20" },
+  { id: "dragon", p: 10, c: ["#ffcf3a", "#a8680a", "#fff1b0"], lv: 1, rar: "legendary", fx: 6, src: "pass:30" },
+  { id: "phantom", p: 3, c: ["#bff8ff", "#6fd8ff", "#ffffff"], lv: 1, rar: "legendary", fx: 7, src: "chain:hunter" },
+  { id: "neonpulse", p: 8, c: ["#0a0614", "#ff2bd6", "#00e5ff"], lv: 1, rar: "legendary", fx: 8, src: "weekly:3" },
+  { id: "void", p: 11, c: ["#05030a", "#9b3dff", "#ff3df2"], lv: 1, rar: "legendary", fx: 9, src: "coins:9000" },
+  { id: "aurora_l", p: 3, c: ["#00ffa3", "#7a2cff", "#00b3ff"], lv: 1, rar: "legendary", fx: 10, src: "chain:survivor" },
+  { id: "frostking", p: 3, c: ["#dff6ff", "#4fb8ff", "#ffffff"], lv: 1, rar: "legendary", fx: 11, src: "coins:4500" },
+  { id: "solar", p: 8, c: ["#ff7a00", "#ffd84a", "#fff6d0"], lv: 1, rar: "legendary", fx: 12, src: "boss:1" },
 ];
+// rarity of every named skin (legendary ones carry their own)
+export const RARITY = ["common", "rare", "epic", "legendary"];
+for (const s of SKINS) if (!s.rar) s.rar = s.lv <= 2 ? "common" : s.lv <= 10 ? "rare" : "epic";
+export const RAR_COL = { common: "#9aa7b8", rare: "#3aa0ff", epic: "#b45cff", legendary: "#ffb636" };
+// legendary signature: trail colours + style, death effect, lobby idle animation
+export const LEGEND = {
+  1: { tr: ["#ff6a00", "#ffd000"], tk: "ember", death: "eruption", idle: "breathe", glow: "#ff5a00" },
+  2: { tr: ["#b58cff", "#ffffff"], tk: "stars", death: "supernova", idle: "orbit", glow: "#8a4dff" },
+  3: { tr: ["#ffffff", "#9fe8ff"], tk: "glint", death: "shatter", idle: "spin", glow: "#bff4ff" },
+  4: { tr: ["#7af7ff", "#ff7af2"], tk: "pixels", death: "glitch", idle: "flicker", glow: "#9af7ff" },
+  5: { tr: ["#9ff0ff", "#ffffff"], tk: "sparks", death: "thunder", idle: "charge", glow: "#3ad1ff" },
+  6: { tr: ["#ffd04a", "#ff7a1a"], tk: "ember", death: "dragonfire", idle: "rear", glow: "#ffb020" },
+  7: { tr: ["#cffbff", "#7fe3ff"], tk: "wisps", death: "fade", idle: "hover", glow: "#9ff0ff" },
+  8: { tr: ["#ff2bd6", "#00e5ff"], tk: "rings", death: "neonburst", idle: "pulse", glow: "#ff2bd6" },
+  9: { tr: ["#9b3dff", "#ff3df2"], tk: "smoke", death: "implode", idle: "coil", glow: "#9b3dff" },
+  10: { tr: ["#00ffa3", "#7a2cff"], tk: "ribbon", death: "aurora", idle: "wave", glow: "#00ffa3" },
+  11: { tr: ["#ffffff", "#9fdcff"], tk: "snow", death: "freeze", idle: "breathe", glow: "#9fdcff" },
+  12: { tr: ["#ffd84a", "#ff5a00"], tk: "flare", death: "nova", idle: "orbit", glow: "#ffb000" },
+};
+export const skinFx = (d) => (d && d.k === "skin" && SKINS[d.i] && SKINS[d.i].fx) || 0;
 export const EYES = [
   { id: "classic", lv: 1, s: 1, p: 0.55, pc: "#0a0a0a", ec: "#ffffff", n: 2 },
   { id: "cute", lv: 1, s: 1.25, p: 0.72, pc: "#101018", ec: "#ffffff", n: 2 },
