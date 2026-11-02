@@ -2,21 +2,21 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=taps1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=taps1";
+import * as THREE from "./vendor/three.module.min.js?v=calm1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=calm1";
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D } from "./worlds.js?v=taps1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=taps1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=taps1";
-import { World, prefetchWorld } from "./gfx/env.js?v=taps1";
-import { Post } from "./gfx/post.js?v=taps1";
-import { Studio } from "./gfx/showcase.js?v=taps1";
+import { WORLDS, W3D } from "./worlds.js?v=calm1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=calm1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=calm1";
+import { World, prefetchWorld } from "./gfx/env.js?v=calm1";
+import { Post } from "./gfx/post.js?v=calm1";
+import { Studio } from "./gfx/showcase.js?v=calm1";
 
 export const QUALITY = {
-  low: { mat: "lambert", food: 1, halo: true, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 500, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
-  medium: { mat: "standard", food: 1, halo: true, dpr: 1.5, post: true, msaa: 0, shadows: 1, physical: true, irid: false, rings: 72, radial: 12, particles: 1000, decor: 0.75, foliage: 0.5, creatures: true, ambient: 0.7, reflect: 0, texLo: false, normalMaps: true, names: 2, gtao: false, dof: false, bits: 220 },
-  high: { mat: "physical", food: 2, halo: true, dpr: 2, post: true, msaa: 4, shadows: 2, physical: true, irid: true, rings: 104, radial: 16, particles: 1600, decor: 1, foliage: 1, creatures: true, ambient: 1, reflect: 0.45, texLo: false, normalMaps: true, names: 2, gtao: false, dof: true, bits: 320 },
-  ultra: { mat: "physical", food: 2, halo: true, dpr: 2.5, post: true, msaa: 4, shadows: 2, physical: true, irid: true, rings: 136, radial: 20, particles: 2400, decor: 1.3, foliage: 1.4, creatures: true, ambient: 1.3, reflect: 0.6, texLo: false, normalMaps: true, names: 2, gtao: true, dof: true, bits: 400 },
+  low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
+  medium: { mat: "standard", food: 1, halo: false, dpr: 1.5, post: true, msaa: 0, shadows: 1, physical: true, irid: false, rings: 72, radial: 12, particles: 320, decor: 0.75, foliage: 0.5, creatures: true, ambient: 0.7, reflect: 0, texLo: false, normalMaps: true, names: 2, gtao: false, dof: false, bits: 220 },
+  high: { mat: "physical", food: 2, halo: true, dpr: 2, post: true, msaa: 4, shadows: 2, physical: true, irid: true, rings: 104, radial: 16, particles: 700, decor: 1, foliage: 1, creatures: true, ambient: 1, reflect: 0.45, texLo: false, normalMaps: true, names: 2, gtao: false, dof: true, bits: 320 },
+  ultra: { mat: "physical", food: 2, halo: true, dpr: 2.5, post: true, msaa: 4, shadows: 2, physical: true, irid: true, rings: 136, radial: 20, particles: 1000, decor: 1.3, foliage: 1.4, creatures: true, ambient: 1.3, reflect: 0.6, texLo: false, normalMaps: true, names: 2, gtao: true, dof: true, bits: 400 },
 };
 const MAX_FOOD = 1400, MAX_GEM = 300, MAX_HEAD = MAXS;
 const toLin = (v) => (v <= 0 ? 0 : v * v * (0.7 + 0.3 * v));
@@ -97,7 +97,7 @@ export class Renderer3D {
     return E;
   }
   _initFood() {
-    this.food = this._inst(this.scene, new THREE.IcosahedronGeometry(1, this.Q.food), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.6, 1.6), toneMapped: false }), MAX_FOOD, true);
+    this.food = this._inst(this.scene, new THREE.IcosahedronGeometry(1, this.Q.food), new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x111111 }), MAX_FOOD, true); // calm1: lit, matte food (no overbright glow)
     this.halo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(255,255,255,0.95)"], [0.25, "rgba(255,255,255,0.35)"], [1, "rgba(255,255,255,0)"]]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false }), MAX_FOOD, true);
     this.halo.renderOrder = 3;
     this.gem = this._inst(this.scene, new THREE.OctahedronGeometry(1, 0), this.Q.mat === "physical" ? new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.04, metalness: 0.2, clearcoat: 1, iridescence: 0.8, emissive: 0xffffff, emissiveIntensity: 0.25, flatShading: true, envMapIntensity: 2 }) : new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x444444, flatShading: true }), MAX_GEM, true);
@@ -165,7 +165,7 @@ export class Renderer3D {
       new T.OctahedronGeometry(0.95, 0).scale(1, 1.25, 1), // giant (big crystal)
       new T.SphereGeometry(0.62, 12, 10).scale(1, 1.35, 1), // food rain (droplet)
     ];
-    this.puMesh = g.map((geo, k) => { const c = new T.Color(PU_COL[k]); const m = this._inst(this.scene, geo, new T.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 1.25, roughness: 0.22, metalness: 0.35, flatShading: k !== 4 && k !== 10, transparent: k === 4 || k === 8, opacity: k === 4 ? 0.8 : k === 8 ? 0.55 : 1 }), 12, false); m.castShadow = !!this.Q.shadows; return m; });
+    this.puMesh = g.map((geo, k) => { const c = new T.Color(PU_COL[k]); const m = this._inst(this.scene, geo, new T.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.45, roughness: 0.22, metalness: 0.35, flatShading: k !== 4 && k !== 10, transparent: k === 4 || k === 8, opacity: k === 4 ? 0.8 : k === 8 ? 0.55 : 1 }), 12, false); m.castShadow = !!this.Q.shadows; return m; });
     this.puHalo = this._inst(this.scene, new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(255,255,255,1)"], [0.3, "rgba(255,255,255,0.4)"], [1, "rgba(255,255,255,0)"]]), transparent: true, depthWrite: false, blending: T.AdditiveBlending, toneMapped: false, fog: false }), 40, true); this.puHalo.renderOrder = 3;
     this.puPillar = this._inst(this.scene, new T.CylinderGeometry(0.5, 0.9, 8, 16, 1, true).translate(0, 4, 0), new T.ShaderMaterial({ transparent: true, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, uniforms: { uT: this.stormU.uT },
       vertexShader: "varying float vY; varying vec3 vC; void main(){ vY=position.y/8.0; vC=instanceColor; gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.0); }",
@@ -225,7 +225,7 @@ export class Renderer3D {
   _applyQ(first) {
     const Q = this.Q; this.pMax = Q.particles;
     this.r.shadowMap.enabled = Q.shadows > 0; this.r.shadowMap.type = Q.shadows > 1 ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
-    this.sun.castShadow = Q.shadows > 0; const ms = Q.shadows > 1 ? 2048 : 1024; if (this.sun.shadow.map && this.sun.shadow.mapSize.x !== ms) { this.sun.shadow.map.dispose(); this.sun.shadow.map = null; } this.sun.shadow.mapSize.set(ms, ms);
+    this.sun.castShadow = Q.shadows > 0; const ms = Q.shadows > 1 ? 2048 : 512; // calm1: one small shadow map on low/medium (phones) if (this.sun.shadow.map && this.sun.shadow.mapSize.x !== ms) { this.sun.shadow.map.dispose(); this.sun.shadow.map = null; } this.sun.shadow.mapSize.set(ms, ms);
     this.fxLight.visible = true; // constant light count: toggling a light recompiles every lit material mid-match this.studio.key.castShadow = Q.shadows > 0; this.studio.setQuality(Q);
     if (!first) { this.snakes.build(Q); for (const m of this.snakes.worldMeshes) this.scene.add(m); for (const m of this.snakes.showMeshes) this.studio.scene.add(m); }
     if (!first && this._matTier !== Q.mat + Q.food) { for (const E of [this.eyes, this.eyesS]) for (const k in E) { E[k].parent.remove(E[k]); E[k].geometry.dispose(); E[k].material.dispose(); } for (const m of [this.food, this.halo, this.gem]) { this.scene.remove(m); m.geometry.dispose(); m.material.dispose(); } this._initFood(); this.eyes = this._eyes(this.scene); this.eyesS = this._eyes(this.studio.scene); }
@@ -251,9 +251,9 @@ export class Renderer3D {
   }
   // dynamic resolution: keeps frame time on target by scaling the render resolution (55%–100%)
   _dynRes(dt) {
-    this.ftAcc += dt; this.ftN++; this.dynT += dt; if (this.dynT < 1.2) return;
+    this.ftAcc += dt; this.ftN++; this.dynT += dt; if (this.dynT < (this.dyn > 0.75 ? 0.5 : 1)) return;
     const avg = this.ftAcc / this.ftN, target = 1 / (this.fpsTarget || 60); this.ftAcc = 0; this.ftN = 0; this.dynT = 0;
-    let d = this.dyn; if (avg > target * 1.22) d = Math.max(0.55, d - 0.1); else if (avg < target * 1.04) d = Math.min(1, d + 0.05);
+    let d = this.dyn; if (avg > target * 1.6) d = Math.max(0.5, d - 0.2); else if (avg > target * 1.2) d = Math.max(0.5, d - 0.1); else if (avg < target * 1.04) d = Math.min(1, d + 0.04);
     if (Math.abs(d - this.dyn) > 0.01) { this.dyn = d; this._applyDpr(); }
   }
 
@@ -270,12 +270,13 @@ export class Renderer3D {
     // stream the neighbouring world in the background
     const nx = WORLDS[(i + 1) % WORLDS.length]; setTimeout(() => prefetchWorld(nx, this.Q.texLo), 2500);
   }
-  _grade() { if (!this.W3) return; if (this.post.bloom) this.post.bloom.strength = this.W3.bloom; const gu = this.post.grade && this.post.grade.uniforms, G = this.W3.grade; if (gu) { gu.uLift.value.set(...G[0]); gu.uGain.value.set(...G[1]); gu.uSat.value = G[2]; gu.uCon.value = G[3]; } }
+  _grade() { if (!this.W3) return; if (this.post.bloom) this.post.bloom.strength = this.W3.bloom * 0.5; const gu = this.post.grade && this.post.grade.uniforms, G = this.W3.grade; if (gu) { gu.uLift.value.set(...G[0]); gu.uGain.value.set(...G[1]); gu.uSat.value = G[2]; gu.uCon.value = G[3]; } }
   setArena(R) { this.arenaR = R; if (this.world) this.world.fit(R); }
   worldReady() { return !!(this.world && this.world.ready); }
 
   // ---------- effects ----------
   burst(x, y, rgb, n, spd = 6, life = 0.8, size = 0.5, up = 3) {
+    if (this.calm) return;
     n = Math.min(n, this.pMax);
     for (let k = 0; k < n; k++) { const a = Math.random() * 6.283, v = spd * (0.3 + Math.random() * 0.7); this.emit(x, 0.6 + Math.random() * 0.6, y, Math.cos(a) * v, up * (0.4 + Math.random()), Math.sin(a) * v, rgb, life * (0.6 + Math.random() * 0.6), size * (0.6 + Math.random() * 0.8), 2.2); }
   }
@@ -289,6 +290,7 @@ export class Renderer3D {
     L.push({ x, h, y, vx, vy, vz, c: rgb, s: size, l: life, ml: life, rx: Math.random() * 6, ry: Math.random() * 6, rz: Math.random() * 6, wx: (Math.random() - 0.5) * 12, wy: (Math.random() - 0.5) * 12, conf });
   }
   shatter(s, fn, n0 = 60) {
+    if (this.calm) return;
     const pts = this.tmp, sp = Math.max(0.4, s.r * 0.7), n = bodyPoints(s, 0, 0, sp, s.len, pts, SW), step = Math.max(1, Math.ceil(n / n0)), col = this.col;
     const fx = s.skin && s.skin.k === "skin" && SKINS[s.skin.i] ? SKINS[s.skin.i].fx : 0;
     for (let j = 0; j < n; j += step) { fn(j, n, this.time, col); const rgb = [toLin(col[0]), toLin(col[1]), toLin(col[2])]; const a = Math.random() * 6.283, v = 2 + Math.random() * 5;
@@ -311,10 +313,10 @@ export class Renderer3D {
     }
   }
   ring(x, y, rgb, maxR = 8) { const m = this.rings.find((r) => !r.visible) || this.rings[0]; m.visible = true; m.userData.t = 0; m.userData.R = maxR; m.position.set(x, 0.15, y); m.material.color.setRGB(rgb[0] * 2.2, rgb[1] * 2.2, rgb[2] * 2.2); }
-  shake(a) { if (this.juice && !this.reduceMotion) this.shakeA = Math.min(1.4, this.shakeA + a); }
-  kick(ca, flashRgb, flashA = 0.18) { if (this.reduceMotion) return; this.ca = Math.min(1.5, this.ca + ca); if (flashRgb) { this.flash.set(flashRgb[0], flashRgb[1], flashRgb[2], Math.max(this.flash.w, flashA)); } }
-  light(x, y, rgb, k = 1) { if (!this.Q.post) return; this.fxLight.position.set(x, 3, y); this.fxLight.color.setRGB(rgb[0], rgb[1], rgb[2]); this.fxLight.intensity = 32 * k; }
-  confetti(x, y, n = 160) { const P = [[1, 0.2, 0.3], [1, 0.8, 0.1], [0.2, 0.9, 1], [0.6, 0.3, 1], [0.2, 1, 0.5], [1, 1, 1]]; for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = 2 + Math.random() * 9; this.shard(x + Math.cos(a) * 2, 2 + Math.random() * 3, y + Math.sin(a) * 2, Math.cos(a) * v, 9 + Math.random() * 10, Math.sin(a) * v, P[i % P.length], 0.35 + Math.random() * 0.2, 3 + Math.random() * 2, true); } }
+  shake(a) { if (this.juice && !this.reduceMotion && !this.calm) this.shakeA = Math.min(1.4, this.shakeA + a); }
+  kick(ca, flashRgb, flashA = 0.18) { if (this.reduceMotion || this.calm) return; this.ca = Math.min(1.5, this.ca + ca); if (flashRgb) { this.flash.set(flashRgb[0], flashRgb[1], flashRgb[2], Math.max(this.flash.w, flashA)); } }
+  light(x, y, rgb, k = 1) { if (!this.Q.post || this.calm) return; this.fxLight.position.set(x, 3, y); this.fxLight.color.setRGB(rgb[0], rgb[1], rgb[2]); this.fxLight.intensity = 32 * k; }
+  confetti(x, y, n = 160) { if (this.calm) n = Math.min(n, 30); const P = [[1, 0.2, 0.3], [1, 0.8, 0.1], [0.2, 0.9, 1], [0.6, 0.3, 1], [0.2, 1, 0.5], [1, 1, 1]]; for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = 2 + Math.random() * 9; this.shard(x + Math.cos(a) * 2, 2 + Math.random() * 3, y + Math.sin(a) * 2, Math.cos(a) * v, 9 + Math.random() * 10, Math.sin(a) * v, P[i % P.length], 0.35 + Math.random() * 0.2, 3 + Math.random() * 2, true); } }
 
   _label(id, name, color, me) {
     let L = this.labels.get(id);
@@ -402,7 +404,7 @@ export class Renderer3D {
     this.camLook.x += (c.x - this.camLook.x) * k; this.camLook.z += (c.y - this.camLook.z) * k;
     this.camPos.y += (hgt - this.camPos.y) * (1 - Math.exp(-dt * 3));
     // gameplay camera
-    let px = this.camLook.x, py = this.camPos.y, pz = this.camLook.z + this.camPos.y * 0.68, lx = this.camLook.x, ly = 0, lz = this.camLook.z - hgt * 0.05;
+    let px = this.camLook.x, py = this.camPos.y, pz = this.camLook.z + this.camPos.y * 0.86, lx = this.camLook.x, ly = 0, lz = this.camLook.z - hgt * 0.05;
     if (c.orbit !== undefined) { const a = c.orbit; px = this.camLook.x + Math.sin(a) * back * 1.6; py = hgt * 0.75; pz = this.camLook.z + Math.cos(a) * back * 1.6; }
     if (c.title !== undefined) { // title flyover: sweeping low path across the arena with the sky in view
       const a = c.title * 0.06, R = (this.arenaR || 130) * 0.62; px = Math.cos(a) * R; pz = Math.sin(a) * R; py = 9 + Math.sin(c.title * 0.13) * 3; lx = Math.cos(a + 0.9) * R * 0.5; lz = Math.sin(a + 0.9) * R * 0.5; ly = 2.5;
@@ -478,7 +480,7 @@ export class Renderer3D {
     for (let i = 0; i < F.FM && nf < MAX_FOOD; i++) {
       if (!F.fa[i]) continue; const x = F.fx[i], y = F.fy[i], dx = x - vx, dz = y - vz; if (dx * dx + dz * dz > vr2) continue;
       const age = F.age ? F.age(i) : 1, grow = age < 1 ? age * age * (3 - 2 * age) : 1;
-      const val = F.fv[i], fr = (0.17 + Math.sqrt(val) * 0.12) * grow, bob = 0.5 + fr + Math.sin(t * 3 + i) * 0.14, cc = pal[F.fc[i] % pal.length];
+      const val = F.fv[i], fr = (0.17 + Math.sqrt(val) * 0.12) * grow, bob = 0.42 + fr, cc = pal[F.fc[i] % pal.length];
       const o = nf * 16;
       if (val >= 4 && ng < MAX_GEM) { const go = ng * 16, gz = fr * 1.3; GM[go] = gc * gz; GM[go + 1] = 0; GM[go + 2] = -gs * gz; GM[go + 3] = 0; GM[go + 4] = 0; GM[go + 5] = gz * 1.5; GM[go + 6] = 0; GM[go + 7] = 0; GM[go + 8] = gs * gz; GM[go + 9] = 0; GM[go + 10] = gc * gz; GM[go + 11] = 0; GM[go + 12] = x; GM[go + 13] = bob + 0.2; GM[go + 14] = y; GM[go + 15] = 1;
         GC[ng * 3] = cc[0]; GC[ng * 3 + 1] = cc[1]; GC[ng * 3 + 2] = cc[2]; ng++; for (let q = 0; q < 16; q++) FM[o + q] = 0; FM[o + 15] = 1; }
@@ -494,7 +496,7 @@ export class Renderer3D {
       const o = nf * 16; FM[o] = fr; FM[o + 5] = fr; FM[o + 10] = fr; FM[o + 1] = FM[o + 2] = FM[o + 3] = FM[o + 4] = FM[o + 6] = FM[o + 7] = FM[o + 8] = FM[o + 9] = FM[o + 11] = 0; FM[o + 12] = x; FM[o + 13] = hgt; FM[o + 14] = y; FM[o + 15] = 1;
       FC[nf * 3] = cc[0]; FC[nf * 3 + 1] = cc[1]; FC[nf * 3 + 2] = cc[2]; const hs = fr * 3; HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 3] = HM[o + 7] = HM[o + 11] = 0; HM[o + 12] = x; HM[o + 13] = hgt; HM[o + 14] = y; HM[o + 15] = 1;
       HCc[nf * 3] = cc[0]; HCc[nf * 3 + 1] = cc[1]; HCc[nf * 3 + 2] = cc[2]; nf++;
-      if (gh.mine && Math.random() < 0.7) this.emit(x, hgt, y, (Math.random() - 0.5) * 0.6, 0.2, (Math.random() - 0.5) * 0.6, cc, 0.35, 0.28, 2, 0);
+      if (gh.mine && !this.calm && Math.random() < 0.4) this.emit(x, hgt, y, (Math.random() - 0.5) * 0.6, 0.2, (Math.random() - 0.5) * 0.6, cc, 0.35, 0.28, 2, 0);
     }
     this._flush(this.food, nf); this._flush(this.halo, this.Q.halo ? nf : 0); this._flush(this.gem, ng);
   }

@@ -2,7 +2,7 @@
 // Pure data + canvas painters, shared by the 3D renderer and the 2D fallback.
 export const WORLDS = [
   {
-    id: "jungle", lv: 1,
+    id: "jungle", calm: { out: "#0c1712", ground: "#1a2b22", edge: "#6f9c84", food: ["#c9b77a", "#86b7a8", "#c79aa8", "#9fbf86", "#d8c08a"] }, lv: 1,
     bg: "#0b2416", fog: "#0e2a1a", fogNear: 40, fogFar: 135,
     sky: "#9fe6b8", ground: "#163a1f", sun: "#fff1cf", sunI: 1.9, hemiI: 0.85,
     rim: "#7dffb0", wall: "#5dffa0", foodSat: 0.9,
@@ -22,7 +22,7 @@ export const WORLDS = [
     },
   },
   {
-    id: "babylon", lv: 4,
+    id: "babylon", calm: { out: "#1b140e", ground: "#3a2c20", edge: "#c7a274", food: ["#e0c48e", "#9fb7c4", "#d49a86", "#b8c08e", "#e6d2a8"] }, lv: 4,
     bg: "#3a2414", fog: "#c98a52", fogNear: 45, fogFar: 150,
     sky: "#f6dcbc", ground: "#5e4a36", sun: "#ffe6c8", sunI: 2.0, hemiI: 0.8,
     rim: "#ffcc66", wall: "#ffb347", foodSat: 1,
@@ -39,7 +39,7 @@ export const WORLDS = [
     },
   },
   {
-    id: "ice", lv: 8,
+    id: "ice", calm: { out: "#0d1620", ground: "#1e3142", edge: "#8fb4cc", food: ["#a9d2e6", "#d8e2ea", "#b7a9d6", "#9cc7b6", "#e2cfa0"] }, lv: 8,
     bg: "#0d2238", fog: "#8fb8dc", fogNear: 40, fogFar: 140, exposure: 0.82, bloomT: 0.97,
     sky: "#d8ecff", ground: "#5d86a8", sun: "#fff6e8", sunI: 1.3, hemiI: 0.7,
     rim: "#9fe8ff", wall: "#7fd8ff", foodSat: 0.85,
@@ -56,7 +56,7 @@ export const WORLDS = [
     },
   },
   {
-    id: "neon", lv: 12,
+    id: "neon", calm: { out: "#0b0a14", ground: "#1a1828", edge: "#8f86c4", food: ["#9a8fd6", "#7fb4c8", "#c98fb0", "#9fc49a", "#d6c08a"] }, lv: 12,
     bg: "#05030f", fog: "#0a0620", fogNear: 50, fogFar: 160,
     sky: "#6a4cff", ground: "#100a2a", sun: "#c8b8ff", sunI: 1.4, hemiI: 0.7,
     rim: "#ff2bd6", wall: "#00e5ff", foodSat: 1, emissiveGround: true,
@@ -73,7 +73,7 @@ export const WORLDS = [
     },
   },
   {
-    id: "volcano", lv: 16,
+    id: "volcano", calm: { out: "#160e0c", ground: "#2c1d18", edge: "#c48a6a", food: ["#e0a87a", "#d6c08a", "#b88f86", "#a8b49a", "#c9a0a0"] }, lv: 16,
     bg: "#140504", fog: "#2a0a05", fogNear: 40, fogFar: 140, exposure: 1.0,
     sky: "#ff8a4a", ground: "#1a0703", sun: "#ffb27a", sunI: 1.6, hemiI: 0.6,
     rim: "#ff5a1a", wall: "#ff7a1a", foodSat: 1, emissiveGround: true,
@@ -88,7 +88,7 @@ export const WORLDS = [
     },
   },
   {
-    id: "nebula", lv: 20,
+    id: "nebula", calm: { out: "#0c0d18", ground: "#1b1d30", edge: "#8e93c8", food: ["#a6a3e0", "#86b8d0", "#d0a0c4", "#a8c8a4", "#dcc796"] }, lv: 20,
     bg: "#05030f", fog: "#0a0620", fogNear: 50, fogFar: 170,
     sky: "#8a6cff", ground: "#100a2a", sun: "#d8c8ff", sunI: 1.5, hemiI: 0.7,
     rim: "#b47cff", wall: "#7af7ff", foodSat: 1, emissiveGround: true,

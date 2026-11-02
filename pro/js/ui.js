@@ -1,13 +1,13 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=taps1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=taps1";
-import { WORLDS, worldAsset } from "./worlds.js?v=taps1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=taps1";
-import { haptic } from "./audio.js?v=taps1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=taps1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=taps1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=taps1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=calm1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=calm1";
+import { WORLDS, worldAsset } from "./worlds.js?v=calm1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=calm1";
+import { haptic } from "./audio.js?v=calm1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=calm1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=calm1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=calm1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -42,9 +42,9 @@ export class Hud {
   }
   hide() { $("hud").classList.add("x-hide"); $("h-emos").classList.add("x-hide"); this.storm(false); }
   update(d) {
-    this.massShown = this.massShown == null ? d.mass : this.massShown + (d.mass - this.massShown) * 0.5; if (Math.abs(d.mass - this.massShown) < 1) this.massShown = d.mass; $("h-mass").textContent = fmtNum(this.massShown); $("h-rank").textContent = d.rank ? `#${d.rank}/${d.total}` : "–"; $("h-kills").textContent = d.kills;
+    this.massShown = this.massShown == null ? d.mass : this.massShown + (d.mass - this.massShown) * 0.5; if (Math.abs(d.mass - this.massShown) < 1) this.massShown = d.mass; const tx = (id, v) => { v = String(v); const e = $(id); if (e._v !== v) { e._v = v; e.textContent = v; } }; tx("h-mass", fmtNum(this.massShown)); tx("h-rank", d.rank ? `#${d.rank}/${d.total}` : "–"); tx("h-kills", d.kills); // write only on change
     const tm = $("h-timer");
-    if (d.timeLeft !== null && d.timeLeft !== undefined) { tm.textContent = "⏱ " + fmtTime(d.timeLeft); tm.classList.toggle("warn", d.timeLeft < 15); }
+    if (d.timeLeft !== null && d.timeLeft !== undefined) { tx("h-timer", "⏱ " + fmtTime(d.timeLeft)); tm.classList.toggle("warn", d.timeLeft < 15); }
     else if (d.wave !== null) { tm.textContent = t("wave", { n: d.wave }); tm.classList.remove("warn"); }
     let h = "";
     const ic = (s) => (s.avt ? avatarHtml(s.avt, s.fr | 0, "s") : `<i style="background:${this.dot(s)}"></i>`);
@@ -75,7 +75,7 @@ export class Hud {
     if (hill) { g.fillStyle = "rgba(255,200,69,0.35)"; g.beginPath(); g.arc(S / 2 + hill.x * k, S / 2 + hill.y * k, Math.max(4, hill.r * k), 0, 6.283); g.fill(); }
     if (me && me.alive) { const mx = S / 2 + me.x * k, my = S / 2 + me.y * k; g.fillStyle = "rgba(255,231,163,0.12)"; g.beginPath(); g.moveTo(mx, my); g.arc(mx, my, 34, me.a - 0.7, me.a + 0.7); g.closePath(); g.fill(); }
     if (pus) for (const p of pus) { g.fillStyle = PU_COL[p.k]; g.beginPath(); const x = S / 2 + p.x * k, y = S / 2 + p.y * k; g.moveTo(x, y - 4); g.lineTo(x + 4, y); g.lineTo(x, y + 4); g.lineTo(x - 4, y); g.fill(); }
-    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 160);
+    const pulse = 0.5; // calm1: steady markers
     for (const s of all) { if (s === me || !me || !me.alive) continue; const d = Math.hypot(s.x - me.x, s.y - me.y); if (d < 40 && s.m > me.m * 1.2 && !(s.team !== undefined && s.team === me.team)) { g.strokeStyle = `rgba(255,60,70,${0.5 + pulse * 0.5})`; g.lineWidth = 2; g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, 7 + pulse * 3, 0, 6.283); g.stroke(); } }
     for (const s of all) { if (s === me || (s.pu && s.pu[8] > 0)) continue; g.fillStyle = s.bounty ? "#ffd23a" : s.boss ? "#ff3040" : s.team === 0 ? "#4da3ff" : s.team === 1 ? "#ff4d5e" : s.bot ? "rgba(255,255,255,0.45)" : "rgba(120,200,255,0.9)"; const r = s.boss ? 8 : s.bounty ? 6 : Math.max(2.5, Math.min(7, s.r * 2.2)); g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, r, 0, 6.283); g.fill(); }
     if (me && me.alive) { // you: the area your screen shows, a heading arrow and a pulsing gold marker
@@ -145,7 +145,8 @@ export class UI {
   }
   ripple(el, e) { if (!el.classList || !(el.classList.contains("btn") || el.classList.contains("item") || el.classList.contains("mode")) || this.S.settings.reduceMotion) return; const r = el.getBoundingClientRect(), d = Math.max(r.width, r.height), s = document.createElement("span"); s.className = "rip"; s.style.width = s.style.height = d + "px"; s.style.left = ((e.clientX || r.left + r.width / 2) - r.left - d / 2) + "px"; s.style.top = ((e.clientY || r.top + r.height / 2) - r.top - d / 2) + "px"; const w = document.createElement("span"); w.className = "ripw"; w.appendChild(s); el.appendChild(w); setTimeout(() => w.remove(), 600); }
   // screen transitions: diagonal wipe (big moves) or dissolve
-  wipe(kind = "go") { if (this.S.settings.reduceMotion) return Promise.resolve(); const w = $("wipe"); w.className = ""; void w.offsetWidth; w.className = kind; this.app.audio.play("whoosh"); return new Promise((res) => setTimeout(res, kind === "go" ? 330 : 280)).finally(() => setTimeout(() => (w.className = ""), 450)); }
+  wipe(kind = "go") { return Promise.resolve(); } // calm1: no screen wipe; screens cross-fade in 150 ms via CSS
+  wipeOld(kind = "go") { if (this.S.settings.reduceMotion) return Promise.resolve(); const w = $("wipe"); w.className = ""; void w.offsetWidth; w.className = kind; this.app.audio.play("whoosh"); return new Promise((res) => setTimeout(res, kind === "go" ? 330 : 280)).finally(() => setTimeout(() => (w.className = ""), 450)); }
   async go(id, kind) { await this.wipe(kind || "go"); this.show(id); }
   show(id) {
     document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("on", s.id === "s-" + id)); this.cur = id; $("l-notif").classList.add("x-hide");
@@ -310,16 +311,16 @@ export class UI {
   }
   // match launch: wipe → cinematic loading (streams the world) → match-intro camera sweep
   async launch(cfg) {
-    const A = this.app; await this.wipe("go"); this.hideScreens(); $("m-results").classList.add("x-hide"); $("title").classList.add("x-hide"); $("m-reveal").classList.add("x-hide");
-    const w = WORLDS[cfg.world] || WORLDS[0]; this.loading(true, `${t("m_" + cfg.mode)}<b>${esc(t("w_" + w.id))}</b>`); this.progress(10, t("loading"));
-    const t0 = performance.now(); A.renderer.setWorld(cfg.world);
-    let p = 10; const tick = setInterval(() => { p = Math.min(92, p + 7); this.progress(p); }, 90);
-    for (let k = 0; k < 60 && !(A.renderer.worldReady ? A.renderer.worldReady() : true); k++) await new Promise((r) => setTimeout(r, 100));
-    const left = 950 - (performance.now() - t0); if (left > 0) await new Promise((r) => setTimeout(r, left));
-    clearInterval(tick); this.progress(96); A.game.start(cfg);
-    // compile every program the match will use while the loading screen is still up (world fog/lights/shadows differ from the lobby)
-    if (A.renderer.prewarm && !A.renderer.is2D) { this.progress(98, t("loadShaders")); await new Promise((r) => requestAnimationFrame(() => r())); await Promise.race([A.renderer.prewarm(), new Promise((r) => setTimeout(r, 8000))]); }
-    this.progress(100); setTimeout(() => this.loading(false), 120);
+    // calm1: no wipe and no minimum loading time. The loading screen only appears when the world still has to stream
+    // in or its shaders have never been compiled for this renderer/quality; a repeat match starts straight away.
+    const A = this.app, R = A.renderer; this.hideScreens(); $("m-results").classList.add("x-hide"); $("title").classList.add("x-hide"); $("m-reveal").classList.add("x-hide");
+    const w = WORLDS[cfg.world] || WORLDS[0]; R.setWorld(cfg.world);
+    const wk = (R.is2D ? "2d" : "3d") + ":" + R.qName + ":" + cfg.world, warm = this._warm || (this._warm = new Set()), ready = () => (R.worldReady ? R.worldReady() : true);
+    const slow = !ready() || (!R.is2D && R.prewarm && !warm.has(wk));
+    if (slow) { this.loading(true, `${t("m_" + cfg.mode)}<b>${esc(t("w_" + w.id))}</b>`); this.progress(20, t("loading")); for (let k = 0; k < 60 && !ready(); k++) await new Promise((r) => setTimeout(r, 100)); this.progress(90); }
+    A.game.start(cfg);
+    if (slow && R.prewarm && !R.is2D && !warm.has(wk)) { this.progress(96, t("loadShaders")); await new Promise((r) => requestAnimationFrame(() => r())); await Promise.race([R.prewarm(), new Promise((r) => setTimeout(r, 8000))]); }
+    warm.add(wk); if (slow) { this.progress(100); this.loading(false); }
   }
   // ---------- tutorial ----------
   tutStart(cfg) { this.tutCfg = cfg; this.tutI = 0; $("m-tut").classList.remove("x-hide"); this.tutRender(); const loop = () => { if ($("m-tut").classList.contains("x-hide")) return; this.tutDraw(); requestAnimationFrame(loop); }; loop(); }
@@ -525,7 +526,7 @@ export class UI {
     const seg = (k, opts, label, sub) => ({ k, type: "seg", opts, label, sub }), tog = (k, label, sub) => ({ k, type: "tog", label, sub }), rng = (k, label, min, max, step, fmt) => ({ k, type: "rng", label, min, max, step, fmt });
     const R = this.app.renderer;
     if (tab === "graphics") rows = [seg("quality", [["auto", t("q_auto")], ["low", t("q_low")], ["medium", t("q_medium")], ["high", t("q_high")], ["ultra", t("q_ultra")]], "quality", R ? (s.quality === "auto" ? "→ " + t("q_" + R.qName) : "") + (R.dyn && R.dyn < 0.99 ? ` · ${t("dynRes")} ${Math.round(R.dyn * 100)}%` : "") : ""),
-      { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), { ...tog("showFps", "showFps"), sub: "debug" }, tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
+      { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), { ...tog("showFps", "showFps"), sub: "debug" }, tog("calmFx", "calmFx", t("calmFxSub")), tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
     if (tab === "controls") rows = [seg("ctrl", [["joy", t("c_joy")], ["follow", t("c_follow")], ["swipe", t("c_swipe")]], "ctrlType"), rng("sens", "sens", 0.5, 2, 0.05, (v) => v.toFixed(2) + "×"), tog("left", "leftHand"),
       rng("boostSize", "boostSize", 0.7, 1.4, 0.05, (v) => Math.round(v * 100) + "%"), rng("boostPos", "boostPos", 0, 1, 0.05, (v) => Math.round(v * 100) + "%"), { ...tog("haptics", "haptics"), sub: navigator.vibrate ? "" : t("hapticsNo") }];
     if (tab === "audio") rows = [rng("vMaster", "vMaster", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vSfx", "vSfx", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vMusic", "vMusic", 0, 1, 0.01, (v) => Math.round(v * 100) + "%")];
@@ -586,7 +587,7 @@ export class UI {
     const ex = []; if (r.lv.up) ex.push("⭐ " + t("levelUp", { n: r.lv.level })); if (r.tiers) ex.push("✦ " + t("tierUp", { n: this.S.seasonTier() }));
     for (const ms of r.missions) ex.push("✓ " + t("missionDone", { n: t("mi_" + ms.id, { n: ms.g }) })); for (const w of (r.mp && r.mp.weekly) || []) ex.push("✓ " + t("wk_" + w.id, { n: fmtNum(w.g) }));
     for (const c of (r.mp && r.mp.chains) || []) ex.push("⛓ " + t("ch_" + c.id) + " " + c.step + "/4"); for (const a of r.ach) ex.push(a.ic + " " + t(a.id));
-    $("r-extra").innerHTML = ex.map((x, i) => `<span style="animation-delay:${0.3 + i * 0.08}s">${esc(x)}</span>`).join("");
+    $("r-extra").innerHTML = ex.map((x, i) => `<span>${esc(x)}</span>`).join("");
     for (const a of r.ach) this.toast(`${a.ic} ${t("achUnlocked", { n: t(a.id) })} · ◆${a.r}`, "gold", 3500);
     if (r.tiers) this.note(t("tierUp", { n: this.S.seasonTier() }), "✦");
     for (const i of (r.mp && r.mp.legends) || []) this.revealQ.push(i);

@@ -1,13 +1,13 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=taps1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=taps1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=taps1";
-import { NetBackend } from "./net.js?v=taps1";
-import { t, fmtNum } from "./i18n.js?v=taps1";
-import { haptic } from "./audio.js?v=taps1";
-import { rankOf, rpDelta } from "./profile.js?v=taps1";
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=calm1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=calm1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=calm1";
+import { NetBackend } from "./net.js?v=calm1";
+import { t, fmtNum } from "./i18n.js?v=calm1";
+import { haptic } from "./audio.js?v=calm1";
+import { rankOf, rpDelta } from "./profile.js?v=calm1";
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
@@ -95,7 +95,7 @@ export class Game {
   }
   setRenderer(r) { this.r = r; }
   // calm food palette: four soft hues (less colour noise) + gold for event orbs; colour-blind mode keeps its own set
-  palettes() { const P = this.app.store.settings.cb ? FOOD_COLORS_CB : FOOD_CALM; this.view.foodPal = P.map(hexLin); this.view.foodPalCss = P; }
+  palettes(w) { const W = WORLDS[w ?? this.world ?? 0] || WORLDS[0], wf = W.calm && W.calm.food; const P = this.app.store.settings.cb ? FOOD_COLORS_CB : wf ? Array.from({ length: 13 }, (_, i) => (i === 12 ? "#e6c36a" : wf[i % wf.length])) : FOOD_CALM; this.view.foodPal = P.map(hexLin); this.view.foodPalCss = P; }
   startLoop() { if (!this.raf) this.raf = requestAnimationFrame(this._loop); }
 
   // ---------- attract (title flyover) and studio showcase (menus) ----------
@@ -105,11 +105,11 @@ export class Game {
     this.backend = this.attract; this.mode = "attract"; this.world = world; this.r.setArena(this.attract.R); this.r.setWorld(world); this.orbit = 0; this.titleT = title ? 0 : undefined; this.running = true; this.startLoop();
     for (let k = 0; k < 240; k++) this.attract.update(1 / 60);
   }
-  startShow(world) { this.stopMatch(); this.palettes(); this.backend = null; this.mode = "show"; if (world !== undefined) { this.world = world; this.r.setWorld(world); } this.running = true; this.startLoop(); }
+  startShow(world) { this.stopMatch(); this.palettes(world); this.backend = null; this.mode = "show"; if (world !== undefined) { this.world = world; this.r.setWorld(world); } this.running = true; this.startLoop(); }
 
   // ---------- matches ----------
   start(cfg) {
-    const A = this.app, S = A.store, p = S.p; this.palettes();
+    const A = this.app, S = A.store, p = S.p; this.palettes(cfg.world);
     this.cfg = cfg; this.mode = cfg.mode; this.world = cfg.world; this.attract = null; this.M = MODES[cfg.mode] || {};
     this.stats = { kills: 0, food: 0, boost: 0, life: 0, best: 0, rankBest: 99, t0: performance.now(), lifeT0: performance.now(), deaths: 0, score: 0, timeLeft: 0, wave: 1 };
     this.combo = 0; this.comboT = 0; this.gainAcc = 0; this.gainT = 0; this.rankShown = 99; this.massMile = 0; this.liveMs = new Set(); this.puLast = null; this.hintI = 0; this.hintT = 4; this.stats.bonus = 0; this.stats.pu = 0; this.stats.bounty = 0; this.watching = false; this.killer = null; this.selfHit = false; this.deathCause = 0; this.emoT = 0; this.rainFx = null; this.evNow = null; // no stale killer from the last match
@@ -133,7 +133,7 @@ export class Game {
     }
     this.r.setArena(this.backend.R || C.R); this.r.setWorld(cfg.world);
     A.audio.music(true, cfg.world, false); A.audio.setIntensity(0.2); A.input.reset(); A.input.enabled = true; this.running = true; this.hud.show(cfg.mode); this.startLoop();
-    this.countdown = cfg.mode === "online" ? 0 : 2.6; this.intro = cfg.mode === "online" ? 1.4 : 2.6; this.introDur = this.intro; this.cdShown = -1; this.timeScale = 1; this.slowUntil = 0;
+    this.countdown = cfg.mode === "online" ? 0 : 1.6; this.intro = cfg.mode === "online" ? 1 : 1.6; // calm1: shorter start beat this.introDur = this.intro; this.cdShown = -1; this.timeScale = 1; this.slowUntil = 0;
     this.r.shakeA = 0; this.hud.modeHud(this.modeHudData());
   }
   setupMode() {
@@ -263,21 +263,21 @@ export class Game {
     if (v) this.stats.bonus += Math.round(v.m * 0.25);
     if (v) { const lin = this.colOf(v); this.r.ring(v.x, v.y, lin, 7); this.r.kick && this.r.kick(0.9, [1, 1, 1], 0.12); this.r.light && this.r.light(v.x, v.y, [lin[0] * 2 + 0.5, lin[1] * 2 + 0.5, lin[2] * 2 + 0.5], 1.4); A.audio.play("shock"); }
     // slow-motion kill-cam (offline; online keeps real time but still frames the kill)
-    const S = A.store.settings; if (v && S.juice && !S.reduceMotion && (this.streak >= 2 || v.m > 60 || Math.random() < 0.6)) this.killcam = { x: v.x, y: v.y, t0: now, dur: this.mode === "online" ? 700 : 1150, a0: Math.random() * 6.28 };
+    const S = A.store.settings; if (v && S.juice && !S.reduceMotion && !S.calmFx && (this.streak >= 2 || v.m > 60 || Math.random() < 0.6)) this.killcam = { x: v.x, y: v.y, t0: now, dur: this.mode === "online" ? 700 : 1150, a0: Math.random() * 6.28 };
   }
   onMyDeath(by, cause) {
     const A = this.app, me = this.backend.me; if (!me) return;
     this.stats.deaths++; const life = (performance.now() - this.stats.lifeT0) / 1000; this.stats.life = Math.max(this.stats.life, life);
     A.audio.play("die"); A.audio.boost(false); haptic.pattern([40, 30, 80]); this.r.shake(1.2); this.r.kick && this.r.kick(1.2, [0.6, 0, 0], 0.35);
     const f = skinFn(this.mySkin()), lin = this.colOf({ skin: this.mySkin() });
-    this.r.shatter(me, f, 90); this.r.burst(me.x, me.y, lin, 30, 11, 1.2, 0.7, 6); this.r.ring(me.x, me.y, [1, 1, 1], 6); if (!A.store.settings.reduceMotion) this.slowUntil = performance.now() + 500; this.hud.flash();
+    const calm = A.store.settings.calmFx; if (!calm) { this.r.shatter(me, f, 40); this.r.burst(me.x, me.y, lin, 16, 9, 0.8, 0.7, 6); this.hud.flash(); } this.r.ring(me.x, me.y, [1, 1, 1], 6); // calm1: short, cheap death beat, no slow-motion
     me.alive = false; me.deadAt = performance.now(); this.deathT = performance.now(); this.killer = by && by !== me.id ? this.findSnake(by) : null; if (this.killer === me) this.killer = null; const selfHit = (this.selfHit = !!by && !this.killer && by === me.id); this.deathCause = cause;
     this.spectate = this.killer; A.input.enabled = false; A.input.reset(); this.streak = 0;
     const msg = by && this.killer ? t("killedBy", { n: this.killer.name }) : selfHit ? t("selfDeath") : cause === 6 ? t("meteorDeath") : cause === 3 && this.mode === "br" ? t("stormDeath") : cause === 1 ? t("hitWall") : t("eliminated");
     if (by && this.killer) this.pushFeed(this.killer.name, t("you"), false); else if (selfHit) this.pushFeed("☠", t("you"), false, "self"); this.hud.combo(0); this.hud.puClear();
     const respawn = (this.mode === "time" && this.stats.timeLeft > 2) || this.mode === "koth" || this.mode === "team" || (this.mode === "boss" && --this.lives > 0);
     if (respawn) { this.respawnAt = performance.now() + 1900; this.hud.banner(msg + (this.mode === "boss" ? " · " + t("livesN", { n: this.lives }) : ""), 1700); }
-    else { if (this.mode === "br") this.place = this.backend.sim.snakes.filter((x) => x.alive).length + 1; this.endAt = performance.now() + 1600; this.hud.banner(msg, 1500); }
+    else { if (this.mode === "br") this.place = this.backend.sim.snakes.filter((x) => x.alive).length + 1; this.endAt = performance.now() + 650; this.hud.banner(msg, 1200); } // calm1: results almost straight away
   }
   onNet(st, n) {
     const A = this.app;
@@ -300,7 +300,7 @@ export class Game {
       this.hud.cinematic(t("victory"), t("vic_" + reason)); const p = me && me.alive ? me : { x: this.camX, y: this.camY };
       if (this.r.confetti) { this.r.confetti(p.x, p.y, 180); setTimeout(() => this.r.confetti && this.backend && this.r.confetti(p.x + 3, p.y - 2, 140), 700); }
       this.r.ring(p.x, p.y, [1, 0.85, 0.3], 20); this.r.kick && this.r.kick(0.4, [1, 0.95, 0.8], 0.25);
-    } else { A.audio.play("defeat"); this.endAt = performance.now() + 1200; this.hud.cinematic(t("defeat"), t("def_" + reason), true); A.input.enabled = false; }
+    } else { A.audio.play("defeat"); this.endAt = performance.now() + 600; this.hud.cinematic(t("defeat"), t("def_" + reason), true); A.input.enabled = false; }
   }
   finish(reason) {
     if (this.ended) return; this.ended = true; this.victory = null; this.killcam = null; const A = this.app, S = A.store, p = S.p, st = this.stats, me = this.backend && this.backend.me;
@@ -349,6 +349,8 @@ export class Game {
     if (set.quality === "auto" && this.fi % 120 === 0 && this.fi > 240 && !document.hidden && this.mode !== "show") this.autoQuality();
     if (this.mode === "show") { const v = this.view; v.t = this.t; v.dt = dt; v.scene = "show"; v.show = this.show; v.fpsTarget = set.fpsCap || 60; this.r.frame(v); return; }
     const b = this.backend; if (!b) return; this.view.scene = "world";
+    // calm1: behind the results card or the pause menu the last frame stays on screen; nothing is re-rendered
+    if ((this.ended && !this.watching) || (this.paused && this.mode !== "online")) { if (this._frozen) return; this._frozen = true; } else this._frozen = false;
     const me = b.me; const now = performance.now();
     const cine = this.killcam || this.victory;
     if (this.mode !== "attract" && !this.paused && !this.ended && me && me.alive && !this.victory) {

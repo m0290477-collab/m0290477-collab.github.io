@@ -1,6 +1,6 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=taps1";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=calm1";
 export const SEASON = { id: "s1", tiers: 30, per: 400 };
 // free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
 export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
@@ -10,7 +10,7 @@ export const CHAINS = {
   survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
 };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=taps1";
+import { WORLDS } from "./worlds.js?v=calm1";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -31,6 +31,8 @@ export const today = () => { const d = new Date(); return `${d.getFullYear()}-${
 
 export const DEF_SETTINGS = {
   lang: "en", quality: "auto", renderer: "3d", rendererPick: "", fpsCap: 60, showFps: false, postFx: true, juice: true, minimap: true,
+  // calm1: "Reduce effects" (no shake, flashes, particles, slow-motion) is on by default on phones and tablets
+  calmFx: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent)),
   ctrl: "joy", sens: 1, left: false, boostSize: 1, boostPos: 0.5, haptics: true,
   vMaster: 0.8, vSfx: 0.9, vMusic: 0.45, cb: false, reduceMotion: false, bigText: false, sv: 2, a2hs: 0,
 };

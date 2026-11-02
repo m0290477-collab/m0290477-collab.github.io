@@ -29,7 +29,7 @@ html.nopost #vignette { opacity: 1; }
 #vignette.flash { animation: hit .5s ease-out; }
 @keyframes hit { 0% { background: radial-gradient(ellipse at center, rgba(255, 0, 40, 0.25) 30%, rgba(160, 0, 20, 0.75) 100%); opacity: 1; } 100% { opacity: inherit; } }
 #storm-vig { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0; transition: opacity .35s; background: radial-gradient(ellipse at center, transparent 40%, rgba(130, 40, 255, 0.55) 100%); box-shadow: inset 0 0 80px rgba(170, 60, 255, 0.6); }
-#storm-vig.on { opacity: 1; animation: stormp 1s ease-in-out infinite; }
+#storm-vig.on { opacity: 1; }
 @keyframes stormp { 50% { opacity: 0.6; } }
 #lbox i { position: fixed; left: 0; right: 0; height: calc(11vh * var(--box)); background: #000; z-index: 2; pointer-events: none; }
 #lbox i:first-child { top: 0; } #lbox i:last-child { bottom: 0; }
@@ -64,7 +64,7 @@ html.nopost #vignette { opacity: 1; }
 @keyframes fadeout { to { opacity: 0; visibility: hidden; } }
 
 /* ---------- cinematic loading ---------- */
-#boot { position: fixed; inset: 0; z-index: 90; background: #04060b; overflow: hidden; transition: opacity .6s, visibility .6s; }
+#boot { position: fixed; inset: 0; z-index: 90; background: #04060b; overflow: hidden; transition: opacity .15s, visibility .15s; }
 #boot.out { opacity: 0; visibility: hidden; }
 .ld-art { position: absolute; inset: -4%; background: #04060b url("../assets/keyart_lo.webp") center/cover no-repeat; animation: kb 18s ease-in-out infinite alternate; }
 .ld-art.hi { background-image: url("../assets/keyart.webp"); }
@@ -145,7 +145,7 @@ input:focus { border-color: var(--gold2); box-shadow: 0 0 0 3px rgba(255, 200, 6
 /* ---------- screens & transitions ---------- */
 #ui { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
 .screen { position: absolute; inset: 0; display: none; pointer-events: auto; padding: calc(10px + var(--st)) calc(12px + var(--sr)) calc(10px + var(--sb)) calc(12px + var(--sl)); }
-.screen.on { display: flex; flex-direction: column; animation: scin .5s var(--ease); }
+.screen.on { display: flex; flex-direction: column; animation: scin .15s ease-out; }
 @keyframes scin { from { opacity: 0; } }
 html.rm .screen.on, html.rm .modal, html.rm .mcard { animation: none !important; }
 .screen.panel { background: linear-gradient(90deg, rgba(4, 6, 12, 0.88), rgba(4, 6, 12, 0.55) 60%, rgba(4, 6, 12, 0.2)); }
@@ -386,8 +386,8 @@ html.lefty #boost { inset-inline-end: auto; inset-inline-start: calc(22px + var(
 html.lefty #h-mini { inset-inline-start: auto; inset-inline-end: calc(10px + var(--sr)); top: auto; bottom: calc(110px + var(--sb)); }
 
 /* ---------- modals ---------- */
-.modal { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: rgba(2, 4, 10, 0.55); backdrop-filter: var(--bf); -webkit-backdrop-filter: var(--bf); animation: fin .25s; padding: 10px; }
-.mcard { width: min(380px, 92vw); padding: 18px; display: flex; flex-direction: column; gap: 9px; animation: mpop .45s var(--spring); max-height: 96vh; overflow-y: auto; }
+.modal { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: rgba(2, 4, 10, 0.55); backdrop-filter: var(--bf); -webkit-backdrop-filter: var(--bf); animation: fin .15s; padding: 10px; }
+.mcard { width: min(380px, 92vw); padding: 18px; display: flex; flex-direction: column; gap: 9px; animation: mpop .15s ease-out; max-height: 96vh; overflow-y: auto; }
 @keyframes mpop { from { opacity: 0; } }
 .mcard h2 { margin: 0 0 4px; text-align: center; letter-spacing: 0.08em; }
 .results { width: min(560px, 94vw); gap: 7px; }
@@ -717,3 +717,20 @@ input[type="range"] { height: 44px; background-color: transparent; background-si
 #l-diff, #l-room { grid-row: 2; grid-column: 1; align-self: center; }
 /* short landscape phones: the results card fits without scrolling so its buttons are never cut off */
 @media (max-height: 440px) { .results { gap: 4px; padding-top: 10px; padding-bottom: 10px; } .results .r-score { line-height: 1; } }
+
+/* ---------- calm1: eye comfort + cheap compositing ---------- */
+/* full-screen overlays: no blurred inset shadows, no pulsing, no flashes in Reduce effects */
+#storm-vig { box-shadow: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(70, 40, 120, 0.35) 100%); }
+#frost-vig { box-shadow: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(150, 200, 230, 0.28) 100%); }
+html.nopost #vignette { opacity: 0; }
+html.calm #vignette.flash, html.calm #pu-flash.on { animation: none; }
+html.calm .h-count.on { animation-duration: .5s; }
+.r-grid div, .r-extra span { animation: none; }
+.notif { animation-duration: .15s; }
+/* glass stays subtle */
+.glass { box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+.glass::before { opacity: .55; }
+/* no flashing anywhere; Reduce effects also stops the looping repaint animations (gradient shimmer, shine, pulses) */
+.h-chip.warn, .pu-chip.end, .mode-pill.contest { animation: none; }
+html.calm .dot, html.calm .rar.legendary, html.calm .play, html.calm .play .pl-shine, html.calm .item.r-legendary, html.calm .r-best, html.calm .mfade.bot svg, html.calm .ava.fr-legend::before, html.calm .ava.fr-season::before, html.calm .cal .cd.today, html.calm .ld-art, html.calm .t-emb { animation: none; }
+html.calm .play .pl-shine { display: none; }
