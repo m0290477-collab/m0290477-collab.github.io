@@ -322,7 +322,7 @@ export class UI {
   nextReveal() {
     if ($("m-results") && !$("m-results").classList.contains("x-hide")) return; const i = this.revealQ.shift(); if (i === undefined) { this.revealing = undefined; return; }
     this.revealing = i; const s = SKINS[i]; const m = $("m-reveal"); m.className = "r-" + s.rar; $("rv-rar").textContent = t("rar_" + s.rar); $("rv-name").textContent = skinName(i); $("rv-sub").textContent = t("newLegend");
-    const prevCur = this.cur; this.app.game.startShow(); this.sel = { k: "skin", i, e: this.p.eye, t: this.p.trail, n: this.p.nc }; const was = this.cur; this.cur = "custom"; this.updateShow(); this.cur = was; this.app.game.show.x = 0; this.app.game.show.zoom = 0.9;
+    const prevCur = this.cur; this.app.game.startShow(); this.sel = { k: "skin", i, e: this.p.eye, t: this.p.trail, n: this.p.nc }; const was = this.cur; this.cur = "custom"; this.updateShow(); this.cur = was; this.app.game.show.x = 0; this.app.game.show.zoom = 1.25; this.app.game.show.lift = -0.6;
     this.app.audio.play("reveal"); haptic.pattern([20, 40, 60, 40, 120]); setTimeout(() => this.app.renderer.reveal && this.app.renderer.reveal(), 600); this.note(t("newLegend") + " " + skinName(i), "★");
     m.classList.remove("x-hide"); m.style.display = ""; document.body.classList.add("revealing");
   }

@@ -118,8 +118,12 @@ export class Renderer3D {
     this.bD = []; this.cD = [];
   }
   _initFx() {
-    this.rings = []; const rg = new THREE.RingGeometry(0.82, 1, 72).rotateX(-Math.PI / 2);
-    for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })); m.visible = false; m.userData.t = 1; this.scene.add(m); this.rings.push(m); }
+    // shockwave rings: thin hot leading edge + soft trailing glow (width stays fine as the ring grows)
+    this.rings = []; const rg = new THREE.RingGeometry(0.55, 1, 96, 1).rotateX(-Math.PI / 2);
+    const RVS = "varying vec2 vP; void main(){ vP=position.xz; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }";
+    const RFS = "uniform vec3 color; uniform float opacity, uS; varying vec2 vP; void main(){ float r=length(vP); float w=0.03+0.25/max(uS,1.0); float edge=smoothstep(1.0-w,1.0-w*0.35,r)*(1.0-smoothstep(1.0-w*0.2,1.0,r)); float trail=pow(smoothstep(0.55,1.0,r),5.0)*0.22; gl_FragColor=vec4(color*(edge+trail), (edge+trail)*opacity); }";
+    for (let i = 0; i < 8; i++) { const mat = new THREE.ShaderMaterial({ uniforms: { color: { value: new THREE.Color(1, 1, 1) }, opacity: { value: 1 }, uS: { value: 1 } }, vertexShader: RVS, fragmentShader: RFS, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+      Object.defineProperty(mat, "color", { get() { return this.uniforms.color.value; } }); const m = new THREE.Mesh(rg, mat); m.visible = false; m.userData.t = 1; this.scene.add(m); this.rings.push(m); }
     // battle-royale storm wall + king-of-the-hill zone + boss weak cores
     this.stormU = { uT: { value: 0 } };
     this.storm = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 26, 160, 1, true), new THREE.ShaderMaterial({ uniforms: this.stormU, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false,
@@ -363,7 +367,7 @@ export class Renderer3D {
     if (v.cam.title !== undefined) { this.food.count = this.halo.count = this.gem.count = 0; } else this._food(v, t, vx, vz, far ? 1e9 : vr2);
     this._modeFx(v, t);
     this._particles(dt); this._bitsUpdate(dt);
-    for (const rg of this.rings) if (rg.visible) { rg.userData.t += dt * 1.5; const u = rg.userData.t; if (u >= 1) { rg.visible = false; continue; } const s2 = 1 + (1 - Math.pow(1 - u, 3)) * rg.userData.R; rg.scale.set(s2, 1, s2); rg.material.opacity = (1 - u) * 0.95; }
+    for (const rg of this.rings) if (rg.visible) { rg.userData.t += dt * 1.5; const u = rg.userData.t; if (u >= 1) { rg.visible = false; continue; } const s2 = 1 + (1 - Math.pow(1 - u, 3)) * rg.userData.R; rg.scale.set(s2, 1, s2); rg.material.uniforms.opacity.value = (1 - u) * 0.95; rg.material.uniforms.uS.value = s2; }
     if (this.fxLight.intensity > 0.1) this.fxLight.intensity *= Math.exp(-dt * 6); else this.fxLight.intensity = 0;
     // post uniforms
     this.ca *= Math.exp(-dt * 5); this.flash.w *= Math.exp(-dt * 6); this.speed += ((v.cam.boost && !this.reduceMotion ? 1 : 0) - this.speed) * (1 - Math.exp(-dt * 5)); this.box += ((v.letterbox ? 1 : 0) - this.box) * (1 - Math.exp(-dt * 6));
