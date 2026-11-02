@@ -2,14 +2,15 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=m2a";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=m2a";
-import { WORLDS, W3D } from "./worlds.js?v=m2a";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=m2a";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=m2a";
-import { World, prefetchWorld } from "./gfx/env.js?v=m2a";
-import { Post } from "./gfx/post.js?v=m2a";
-import { Studio } from "./gfx/showcase.js?v=m2a";
+import * as THREE from "./vendor/three.module.min.js?v=m2b";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=m2b";
+const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
+import { WORLDS, W3D } from "./worlds.js?v=m2b";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=m2b";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=m2b";
+import { World, prefetchWorld } from "./gfx/env.js?v=m2b";
+import { Post } from "./gfx/post.js?v=m2b";
+import { Studio } from "./gfx/showcase.js?v=m2b";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: true, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 500, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -57,7 +58,8 @@ export class Renderer3D {
     const G = this.snakes.G, saved = []; const force = (m, k) => { saved.push([m, k, m[k]]); };
     for (const n in G) { force(G[n].g, "instanceCount"); G[n].g.instanceCount = 1; }
     for (const m of [this.bits, this.conf, this.cores, this.coreHalo, this.teamRing, this.food, this.halo, this.gem, this.eyes.w, this.eyes.p, this.eyes.h, this.eyes.t, this.eyesS.w, this.eyesS.p, this.eyesS.h, this.eyesS.t]) { force(m, "count"); m.count = 1; }
-    for (const o of [this.storm, this.stormOut, this.hill, ...this.rings, ...(this.puSpr || []).slice(0, 1)]) { if (o) { force(o, "visible"); o.visible = true; } }
+    for (const m of [this.metRing, this.metDisc, this.metRock]) if (m) { force(m, "count"); m.count = 1; }
+    for (const o of [this.storm, this.stormOut, this.hill, ...this.rings, ...(this.puSpr || []).slice(0, 1), ...(this.emoSpr || []).slice(0, 1)]) { if (o) { force(o, "visible"); o.visible = true; } }
     if (this.puPillar) { force(this.puPillar, "count"); this.puPillar.count = 1; }
     // a name-tag sprite (fog:false SpriteMaterial) so the first label of a match doesn't compile mid-play
     if (!this._warmLabel) { this._warmLabel = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: false, toneMapped: false, fog: false })); this._warmLabel.scale.set(0.001, 0.001, 1); this.scene.add(this._warmLabel); }
@@ -146,7 +148,7 @@ export class Renderer3D {
     this.coreHalo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(255,80,60,1)"], [0.4, "rgba(255,40,40,0.4)"], [1, "rgba(255,0,0,0)"]]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }), 16, false);
     this.teamRing = this._inst(this.scene, new THREE.RingGeometry(0.75, 1, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false, toneMapped: false }), MAXS, true);
     this.mirrorCam = new THREE.PerspectiveCamera(); this.mirrorMat = new THREE.Matrix4();
-    this._initPu();
+    this._initPu(); this._initMet(); this._initEmo();
   }
   // power-up pickups: a spinning glowing 3D icon per kind + pulsing halo + light pillar + emoji badge above it
   _initPu() {
@@ -158,8 +160,12 @@ export class Renderer3D {
       new T.SphereGeometry(0.72, 14, 10).scale(1, 1.2, 1), // ghost (orb)
       new T.IcosahedronGeometry(0.8, 0), // freeze (ice crystal)
       new T.DodecahedronGeometry(0.85, 0), // mega orb (gem)
+      new T.ConeGeometry(0.62, 1.5, 6).rotateZ(-Math.PI / 2), // dash (arrowhead)
+      new T.TorusGeometry(0.62, 0.2, 10, 24), // invisible (glass ring)
+      new T.OctahedronGeometry(0.95, 0).scale(1, 1.25, 1), // giant (big crystal)
+      new T.SphereGeometry(0.62, 12, 10).scale(1, 1.35, 1), // food rain (droplet)
     ];
-    this.puMesh = g.map((geo, k) => { const c = new T.Color(PU_COL[k]); const m = this._inst(this.scene, geo, new T.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 1.25, roughness: 0.22, metalness: 0.35, flatShading: k !== 4, transparent: k === 4, opacity: k === 4 ? 0.8 : 1 }), 12, false); m.castShadow = !!this.Q.shadows; return m; });
+    this.puMesh = g.map((geo, k) => { const c = new T.Color(PU_COL[k]); const m = this._inst(this.scene, geo, new T.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 1.25, roughness: 0.22, metalness: 0.35, flatShading: k !== 4 && k !== 10, transparent: k === 4 || k === 8, opacity: k === 4 ? 0.8 : k === 8 ? 0.55 : 1 }), 12, false); m.castShadow = !!this.Q.shadows; return m; });
     this.puHalo = this._inst(this.scene, new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(255,255,255,1)"], [0.3, "rgba(255,255,255,0.4)"], [1, "rgba(255,255,255,0)"]]), transparent: true, depthWrite: false, blending: T.AdditiveBlending, toneMapped: false, fog: false }), 40, true); this.puHalo.renderOrder = 3;
     this.puPillar = this._inst(this.scene, new T.CylinderGeometry(0.5, 0.9, 8, 16, 1, true).translate(0, 4, 0), new T.ShaderMaterial({ transparent: true, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, uniforms: { uT: this.stormU.uT },
       vertexShader: "varying float vY; varying vec3 vC; void main(){ vY=position.y/8.0; vC=instanceColor; gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.0); }",
@@ -167,8 +173,37 @@ export class Renderer3D {
     this.puTex = PU_ICON.map((ic, k) => { const cv = document.createElement("canvas"); cv.width = cv.height = 96; const x = cv.getContext("2d"); x.fillStyle = "rgba(10,12,24,0.72)"; x.beginPath(); x.arc(48, 48, 44, 0, 6.283); x.fill(); x.lineWidth = 6; x.strokeStyle = PU_COL[k]; x.stroke(); x.save(); x.translate(48 - 26, 48 - 26); x.scale(52 / 24, 52 / 24); x.fillStyle = "#fff"; x.shadowColor = PU_COL[k]; x.shadowBlur = 6; x.fill(new Path2D(PU_SVG[k]), "evenodd"); x.restore(); const tx = new T.CanvasTexture(cv); tx.colorSpace = T.SRGBColorSpace; return tx; });
     this.puSpr = []; for (let i = 0; i < 24; i++) { const sp = new T.Sprite(new T.SpriteMaterial({ map: this.puTex[0], depthWrite: false, depthTest: false, toneMapped: false, transparent: true })); sp.visible = false; sp.renderOrder = 9; this.scene.add(sp); this.puSpr.push(sp); }
   }
+  // meteor shower: a pulsing red warning ring + filling disc on the ground, and the burning rock falling into it
+  _initMet() {
+    const T = THREE; this.metRing = this._inst(this.scene, new T.RingGeometry(0.86, 1, 48).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false, toneMapped: false, side: T.DoubleSide, fog: false }), 24, true);
+    this.metDisc = this._inst(this.scene, new T.CircleGeometry(1, 40).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false, toneMapped: false, side: T.DoubleSide, fog: false }), 24, true);
+    this.metRock = this._inst(this.scene, new T.IcosahedronGeometry(1, 1), new T.MeshStandardMaterial({ color: 0x3a2418, emissive: 0xff5a1a, emissiveIntensity: 1.8, roughness: 0.8, flatShading: true }), 24, false);
+    this.metRing.renderOrder = 2; this.metDisc.renderOrder = 2;
+  }
+  _meteors(v, t) {
+    const L = v.mets || []; let n = 0; const RM = this.metRing.instanceMatrix.array, RC = this.metRing.instanceColor.array, DM = this.metDisc.instanceMatrix.array, DC = this.metDisc.instanceColor.array, KM = this.metRock.instanceMatrix.array;
+    for (let i = 0; i < L.length && n < 24; i++) {
+      const M = L[i], u = Math.max(0, Math.min(1, 1 - M.t / (M.T || 1.9))), pl = 0.75 + 0.25 * Math.sin(t * 18 + i), r = M.r;
+      _m2.makeScale(r, 1, r).setPosition(M.x, 0.12, M.y); _m2.toArray(RM, n * 16); RC[n * 3] = 1; RC[n * 3 + 1] = 0.1 + 0.15 * pl; RC[n * 3 + 2] = 0.06;
+      const dr = r * (0.15 + 0.85 * u); _m2.makeScale(dr, 1, dr).setPosition(M.x, 0.1, M.y); _m2.toArray(DM, n * 16); DC[n * 3] = 1; DC[n * 3 + 1] = 0.12 + 0.3 * u; DC[n * 3 + 2] = 0.05;
+      const f = Math.pow(1 - u, 1.4), hx = M.x + 14 * f, hy = 1 + 46 * f, hz = M.y - 9 * f, rs = 0.9 + 0.5 * u;
+      _q.setFromEuler(_e.set(t * 3 + i, t * 2, 0)); _m2.compose(_v.set(hx, hy, hz), _q, _s.set(rs, rs, rs)); _m2.toArray(KM, n * 16);
+      if (this.pMax && Math.random() < 0.9) this.emit(hx + (Math.random() - 0.5), hy + 0.5, hz + (Math.random() - 0.5), 4 + Math.random() * 3, 3, -2.6, [1.6, 0.55 + Math.random() * 0.3, 0.15], 0.5, 0.7, 1, 0);
+      n++;
+    }
+    this._flush(this.metRing, n); this._flush(this.metDisc, n); this._flush(this.metRock, n);
+  }
+  // quick emotes: one cached bubble texture per emote, a small sprite pool above the heads
+  _initEmo() {
+    const T = THREE, E = ["👋", "😂", "😡", "🔥", "👍", "GG"];
+    this.emoTex = E.map((e) => { const cv = document.createElement("canvas"); cv.width = cv.height = 128; const x = cv.getContext("2d"); x.fillStyle = "rgba(10,14,26,0.85)"; x.strokeStyle = "rgba(255,220,140,0.95)"; x.lineWidth = 6;
+      x.beginPath(); x.arc(64, 58, 48, 0, 6.283); x.fill(); x.stroke(); x.beginPath(); x.moveTo(52, 102); x.lineTo(64, 122); x.lineTo(76, 102); x.closePath(); x.fill();
+      x.textAlign = "center"; x.textBaseline = "middle"; if (e === "GG") { x.font = "800 46px Oxanium, sans-serif"; x.fillStyle = "#ffd23a"; x.fillText(e, 64, 60); } else { x.font = "60px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif"; x.fillText(e, 64, 62); }
+      const tx = new T.CanvasTexture(cv); tx.colorSpace = T.SRGBColorSpace; return tx; });
+    this.emoSpr = []; for (let i = 0; i < 10; i++) { const sp = new T.Sprite(new T.SpriteMaterial({ map: this.emoTex[0], transparent: true, depthWrite: false, depthTest: false, toneMapped: false, fog: false })); sp.visible = false; sp.renderOrder = 11; this.scene.add(sp); this.emoSpr.push(sp); }
+  }
   _pus(v, t) {
-    const L = v.pus || [], cnt = [0, 0, 0, 0, 0, 0, 0]; let nh = 0; _m.makeRotationFromQuaternion(this.cam.quaternion); const me = _m.elements;
+    const L = v.pus || [], cnt = this._puCnt || (this._puCnt = new Int32Array(this.puMesh.length)); cnt.fill(0); let nh = 0; _m.makeRotationFromQuaternion(this.cam.quaternion); const me = _m.elements;
     const HM = this.puHalo.instanceMatrix.array, HC = this.puHalo.instanceColor.array, PM = this.puPillar.instanceMatrix.array, PC = this.puPillar.instanceColor.array;
     for (let i = 0; i < L.length && nh < 24; i++) {
       const p = L[i], k = p.k, mesh = this.puMesh[k]; if (!mesh || cnt[k] >= 12) continue; const c = _c.set(PU_COL[k]);
@@ -181,7 +216,7 @@ export class Renderer3D {
       if (Math.random() < 0.25 && this.pMax) this.emit(p.x + (Math.random() - 0.5) * 1.6, 0.4, p.y + (Math.random() - 0.5) * 1.6, 0, 2 + Math.random() * 2, 0, [c.r, c.g, c.b], 0.9, 0.35, 1, -0.5);
       nh++;
     }
-    for (let k = 0; k < 7; k++) this._flush(this.puMesh[k], cnt[k]); this._flush(this.puHalo, nh); this._flush(this.puPillar, nh);
+    for (let k = 0; k < this.puMesh.length; k++) this._flush(this.puMesh[k], cnt[k]); this._flush(this.puHalo, nh); this._flush(this.puPillar, nh);
     for (let i = nh; i < this.puSpr.length; i++) this.puSpr[i].visible = false;
   }
 
@@ -313,7 +348,7 @@ export class Renderer3D {
     const fn = d.fn; for (let j = 0; j < n; j++) { fn(j, n, t, col); C[j] = packCol(toLin(col[0]), toLin(col[1]), toLin(col[2])); }
     this.snakes.writeRow(row, pts, n, r, ys, C);
     const fx = d.fx || 0, glow = d.glow || (fx && LEGC[fx] ? LEGC[fx].glow : null);
-    const gk = d.team ? 0.9 : fx ? 0.35 : 0;
+    const gk = d.team ? 0.9 : d.gold ? 1.1 : fx ? 0.35 : 0;
     this.snakes.set(show ? this._showGrp : ghost ? "g" : fx ? "f" : "i", slot, [row, n, len, fx], [show ? (d.pulse ?? st.pulse) : st.pulse, st.sq, d.boost ? 1 : 0, d.alpha ?? 1], [glow ? glow[0] * gk : 0, glow ? glow[1] * gk : 0, glow ? glow[2] * gk : 0, st.seed]);
     // eyes / tongue: follow the head frame exactly as the vertex shader builds it
     const hx = pts[0], hz = pts[1], hy = ys[0], fxw = pts[0] - pts[2], fzw = pts[1] - pts[3], fl = Math.hypot(fxw, fzw, ys[0] - ys[1]) || 1;
@@ -394,19 +429,24 @@ export class Renderer3D {
     this.sun.position.set(this.camLook.x + this.sunDir.x * 70, this.sunDir.y * 70, this.camLook.z + this.sunDir.z * 70); this.sun.target.position.set(this.camLook.x, 0, this.camLook.z);
     // snakes
     const E = this.eyes, cnt = { e: 0, t: 0 }; let ni = 0, ng = 0, nfx = 0, row = 0; const TR = this.teamRing.instanceMatrix.array, TRC = this.teamRing.instanceColor.array; let nt = 0;
-    for (const L of this.labels.values()) L.used = false;
+    for (const L of this.labels.values()) L.used = false; let ne = 0;
     for (const d of v.snakes) {
       if (row >= SHOW_ROW) break; const s = d.s; const hx0 = s.sx(d.o), hy0 = s.sy(d.o), dx0 = hx0 - vx, dz0 = hy0 - vz;
       if (dx0 * dx0 + dz0 * dz0 > (cullR + s.len) * (cullR + s.len)) continue;
-      const ghost = d.fx === 7, lf = !ghost && d.fx > 0; if ((ghost && ng >= 16) || (lf && nfx >= 24)) continue; const slot = ghost ? ng : lf ? nfx : ni;
+      const ghost = d.fx === 7 || d.inv, lf = !ghost && d.fx > 0; if ((ghost && ng >= 16) || (lf && nfx >= 24)) continue; const slot = ghost ? ng : lf ? nfx : ni;
       const n = this._snake(d, row, slot, ghost, E, t, cnt, false); if (!n) continue; row++; if (ghost) ng++; else if (lf) nfx++; else ni++;
-      if (d.team && nt < MAXS) { const rr = d._hr * 2.3; _m.makeScale(rr, 1, rr).setPosition(d._hx, 0.07, d._hz); _m.toArray(TR, nt * 16); TRC[nt * 3] = d.team[0] * 2; TRC[nt * 3 + 1] = d.team[1] * 2; TRC[nt * 3 + 2] = d.team[2] * 2; nt++; }
-      if (d.name && (Q.names > 1 || d.me || d.top) && !v.hideNames) { const L = this._label(s.id, d.name, d.nc || "#fff", d.me); L.sp.position.set(d._hx, d._hr * 2.6 + 1.0, d._hz - d._hr * 0.4); const sw = Math.max(5.5, d._hr * 4.5) * (d.me ? 1.05 : 0.9); L.sp.scale.set(sw, sw / 4, 1); L.sp.material.opacity = d.alpha ?? 1; L.sp.visible = true; }
+      if ((d.team || d.gold) && nt < MAXS) { const tc = d.gold ? GOLDC : d.team, rr = d._hr * (d.gold ? 3.2 + 0.3 * Math.sin(t * 6) : 2.3); _m.makeScale(rr, 1, rr).setPosition(d._hx, 0.07, d._hz); _m.toArray(TR, nt * 16); TRC[nt * 3] = tc[0] * 2; TRC[nt * 3 + 1] = tc[1] * 2; TRC[nt * 3 + 2] = tc[2] * 2; nt++; }
+      if (d.emo && ne < this.emoSpr.length && !v.hideNames) { const sp = this.emoSpr[ne++], ti = d.emoI | 0; if (sp.material.map !== this.emoTex[ti]) { sp.material.map = this.emoTex[ti]; sp.material.needsUpdate = true; } const es = Math.max(3.4, d._hr * 3); sp.position.set(d._hx, d._hr * 2.6 + 1.0 + es * 0.75, d._hz - d._hr * 0.4); sp.scale.set(es, es, 1); sp.visible = true; }
+      if (d.gold && this.pMax && Math.random() < 0.5) this.emit(d._hx + (Math.random() - 0.5) * d._hr * 3, d._hr * 2, d._hz + (Math.random() - 0.5) * d._hr * 3, 0, 1.5, 0, [1.6, 1.2, 0.3], 0.7, 0.3, 1, -0.3);
+      if (d.name && (Q.names > 1 || d.me || d.top) && !v.hideNames && !(d.inv && !d.me)) { const L = this._label(s.id, d.name, d.nc || "#fff", d.me); L.sp.position.set(d._hx, d._hr * 2.6 + 1.0, d._hz - d._hr * 0.4); const sw = Math.max(5.5, d._hr * 4.5) * (d.me ? 1.05 : 0.9); L.sp.scale.set(sw, sw / 4, 1); L.sp.material.opacity = d.alpha ?? 1; L.sp.visible = true; }
     }
     for (const [id, L] of this.labels) if (!L.used) { this.scene.remove(L.sp); this.labels.delete(id); this.labelPool.push(L); }
+    for (let i = ne; i < this.emoSpr.length; i++) this.emoSpr[i].visible = false;
     this.snakes.commit(ni, nfx, ng); this._flushE(E, cnt); this._flush(this.teamRing, nt);
     if (v.cam.title !== undefined) { this.food.count = this.halo.count = this.gem.count = 0; } else this._food(v, t, vx, vz, far ? 1e9 : vr2);
-    this._modeFx(v, t); this._pus(v, t);
+    this._modeFx(v, t); this._pus(v, t); this._meteors(v, t);
+    if (this.pMax && v.rain) { const h = v.rain; for (let k = 0; k < 6; k++) { const a = Math.random() * 6.283, d = 3 + Math.random() * 16; this.emit(h.x + Math.cos(a) * d, 10 + Math.random() * 4, h.y + Math.sin(a) * d, 0, -18, 0, [0.8, 1.6, 0.3], 0.6, 0.35, 1, 0); } }
+    if (this.pMax && v.goldRain) { const h = v.goldRain; for (let k = 0; k < 4; k++) { const a = Math.random() * 6.283, d = 2 + Math.random() * 28; this.emit(h.x + Math.cos(a) * d, 11 + Math.random() * 5, h.y + Math.sin(a) * d, 0, -16, 0, [1.8, 1.3, 0.3], 0.7, 0.4, 1, 0); } }
     this._particles(dt); this._bitsUpdate(dt);
     for (const rg of this.rings) if (rg.visible) { rg.userData.t += dt * 1.5; const u = rg.userData.t; if (u >= 1) { rg.visible = false; continue; } const s2 = 1 + (1 - Math.pow(1 - u, 3)) * rg.userData.R; rg.scale.set(s2, 1, s2); rg.material.uniforms.opacity.value = (1 - u) * 0.95; rg.material.uniforms.uS.value = s2; }
     if (this.fxLight.intensity > 0.1) this.fxLight.intensity *= Math.exp(-dt * 6); else this.fxLight.intensity = 0;

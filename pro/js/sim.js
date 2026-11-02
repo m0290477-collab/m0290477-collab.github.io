@@ -23,11 +23,17 @@ export const HEAD_K = 1.12;
 export const HIT_K = 0.98; // contact = edges touch (2% slack for the polyline sagitta between samples)
 export const taperAt = (u) => { const t = Math.max(0, Math.min(1, (u - 0.58) / 0.42)); return 1 - 0.74 * t * t * (3 - 2 * t); };
 export const sampleSp = (r) => Math.max(0.3, r * 0.4); // collision sample spacing: no visible gaps between discs
-// power-ups: magnet, shield, speed, x2 score, ghost, freeze, mega-orb burst
-export const PU = { MAG: 0, SHIELD: 1, SPEED: 2, X2: 3, GHOST: 4, FREEZE: 5, MEGA: 6, N: 7 };
-export const PU_DUR = [10, 20, 6, 12, 5, 4, 0];
-export const PU_TIMED = [0, 1, 2, 3, 4, 5]; // kinds with a countdown (HUD chips)
-export const PU_ICON = ["🧲", "🛡", "⚡", "×2", "👻", "❄", "💎"];
+// power-ups: magnet, shield, speed, x2 score, ghost, freeze, mega-orb burst, dash, invisibility, giant, food rain
+export const PU = { MAG: 0, SHIELD: 1, SPEED: 2, X2: 3, GHOST: 4, FREEZE: 5, MEGA: 6, DASH: 7, INVIS: 8, GIANT: 9, RAIN: 10, N: 11 };
+export const PU_DUR = [10, 20, 6, 12, 5, 4, 0, 1.6, 8, 10, 0];
+export const PU_TIMED = [0, 1, 2, 3, 4, 5, 7, 8, 9]; // kinds with a countdown (HUD chips)
+const PU_W = [15, 13, 13, 13, 10, 10, 7, 9, 8, 8, 7]; // spawn weights
+export const PU_ICON = ["🧲", "🛡", "⚡", "×2", "👻", "❄", "💎", "💨", "◌", "⬆", "☔"];
+export const GIANT_K = 1.6, DASH_V = 1.55; // giant radius multiplier, dash speed (× boost)
+// tick a snake's power-up timers; giant mode ends cleanly (radius back to normal)
+export function puTick(s, dt) { const P = s.pu; for (let i = 0; i < PU_TIMED.length; i++) { const q = PU_TIMED[i]; if (P[q] > 0) { P[q] -= dt; if (P[q] <= 0) { P[q] = 0; if (q === 9) { s.gk = 1; s.setMass(s.m); } } } } if (s.slow > 0) s.slow = Math.max(0, s.slow - dt); if (s.inv > 0) s.inv = Math.max(0, s.inv - dt); }
+// start a timed power-up on a snake (shared by the sim, the online client and its mirrors)
+export function puGive(s, k) { if (PU_DUR[k] > 0) s.pu[k] = PU_DUR[k]; if (k === 9) { s.gk = GIANT_K; s.setMass(s.m); } }
 // 24x24 vector glyphs (no emoji-font dependency): used by the HUD chips (inline SVG) and the 3D badges (Path2D)
 export const PU_SVG = [
   "M6 3h4v9a2 2 0 0 0 4 0V3h4v9a6 6 0 0 1-12 0Z", // magnet
@@ -37,8 +43,15 @@ export const PU_SVG = [
   "M12 2a7 7 0 0 0-7 7v13l2.3-2 2.4 2 2.3-2 2.3 2 2.4-2L19 22V9a7 7 0 0 0-7-7Zm-2.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z", // ghost
   "M11 1h2v5.3l2.6-2.6 1.4 1.4L13 9.1V11h1.9l4-4 1.4 1.4-2.6 2.6H23v2h-5.3l2.6 2.6-1.4 1.4-4-4H13v1.9l4 4-1.4 1.4-2.6-2.6V23h-2v-5.3l-2.6 2.6L7 18.9l4-4V13H9.1l-4 4-1.4-1.4L6.3 13H1v-2h5.3L3.7 8.4 5.1 7l4 4H11V9.1l-4-4 1.4-1.4L11 6.3Z", // snowflake
   "M6 3h12l4 6-10 13L2 9Zm1.2 2L4.6 8.6h4.6L11 5Zm9.6 0H13l1.8 3.6h4.6Z", // diamond
+  "M2 5h3.5l7 7-7 7H2l7-7Zm9 0h3.5l7 7-7 7H11l7-7Z", // dash (double chevron)
+  "M12 5c5 0 9 4.4 10 7-1 2.6-5 7-10 7S3 14.6 2 12c1-2.6 5-7 10-7Zm0 3.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6ZM3.4 2 22 20.6 20.6 22 2 3.4Z", // invisible (eye, slashed)
+  "M3 3h7v2.4H7.1l4.1 4.1-1.7 1.7-4.1-4.1V10H3Zm18 18h-7v-2.4h2.9l-4.1-4.1 1.7-1.7 4.1 4.1V14H21ZM14 3h7v7h-2.4V7.1l-4.1 4.1-1.7-1.7 4.1-4.1H14ZM3 14h2.4v2.9l4.1-4.1 1.7 1.7-4.1 4.1H10V21H3Z", // giant (expand)
+  "M7 14a4.5 4.5 0 0 1 .4-9A6 6 0 0 1 18.6 6.5 3.8 3.8 0 0 1 18 14Zm.5 2h2l-1.6 5.5h-2Zm5 0h2l-1.6 5.5h-2Zm5 0h2l-1.6 5.5h-2Z", // food rain (cloud + drops)
 ];
-export const PU_COL = ["#ff4fd8", "#4fc3ff", "#ffe14f", "#ffa13d", "#c6b8ff", "#9ff3ff", "#5dffb0"];
+export const PU_COL = ["#ff4fd8", "#4fc3ff", "#ffe14f", "#ffa13d", "#c6b8ff", "#9ff3ff", "#5dffb0", "#00ffd5", "#eef2ff", "#ff5a36", "#c3ff3d"];
+// arena events: golden food rain, meteor shower (warned impact circles), golden bounty bot
+export const EVENTS = ["rain", "meteor", "bounty"];
+export const GOLD_FC = 12; // food colour index 12 = gold (both palettes carry it)
 export const angDiff = (a, b) => { let d = a - b; d -= Math.round(d / 6.283185307179586) * 6.283185307179586; return d; };
 const TAU = Math.PI * 2;
 
@@ -67,7 +80,7 @@ export class Snake {
     this.m = m; this.r = radiusOf(m); this.len = lengthOf(m);
     this.h = 0; this.n = 0; this.alive = true; this.kills = 0; this.dropAcc = 0; this.bornTick = 0;
     this.bot = false; this.ai = null; this.god = false; this.best = m; this.foodEaten = 0;
-    this.lastA = a; this.pu = [0, 0, 0, 0, 0, 0, 0]; this.slow = 0; this.inv = 0;
+    this.lastA = a; this.pu = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; this.slow = 0; this.inv = 0; this.gk = 1; this.rainT = 0; this.bounty = false;
     // seed a straight tail behind the head so the body exists from frame one
     const step = 0.15; const k = Math.ceil(this.len / step) + 2;
     for (let i = k; i >= 0; i--) this.push(x - Math.cos(a) * i * step, y - Math.sin(a) * i * step);
@@ -76,7 +89,7 @@ export class Snake {
   // sample i back from the newest (0 = head)
   sx(i) { return this.px[(this.h - i) & MASK]; }
   sy(i) { return this.py[(this.h - i) & MASK]; }
-  setMass(m) { this.m = m; this.r = radiusOf(m) * (this.rk || 1); this.len = lengthOf(m) * (this.lk || 1); if (m > this.best) this.best = m; }
+  setMass(m) { this.m = m; this.r = radiusOf(m) * (this.rk || 1) * (this.gk || 1); this.len = lengthOf(m) * (this.lk || 1); if (m > this.best) this.best = m; }
 }
 
 // Move one snake one tick: turn with inertia toward ta, advance, record a path sample. Deterministic given (state, ta, boost, dt).
@@ -88,9 +101,9 @@ export function moveSnake(s, dt, canBoost) {
   if (Math.abs(s.av * dt) > Math.abs(d) && Math.sign(s.av) === Math.sign(d)) s.av = d / dt; // no overshoot
   s.lastA = s.a;
   s.a += s.av * dt; if (s.a > Math.PI) s.a -= TAU; else if (s.a < -Math.PI) s.a += TAU;
-  const free = s.pu && s.pu[2] > 0; // speed power-up = free boost
+  const dash = s.pu && s.pu[7] > 0, free = s.pu && (s.pu[2] > 0 || dash); // speed power-up / dash = free boost
   s.boosting = (!!s.boost && canBoost) || free;
-  const v = (s.boosting ? C.BOOST : C.SPEED) * (s.vk || 1) * (s.slow > 0 ? 0.55 : 1);
+  const v = (s.boosting ? C.BOOST : C.SPEED) * (dash ? DASH_V : 1) * (s.vk || 1) * (s.slow > 0 ? 0.55 : 1);
   s.x += Math.cos(s.a) * v * dt; s.y += Math.sin(s.a) * v * dt;
   s.push(s.x, s.y);
 }
@@ -156,6 +169,9 @@ export class Sim {
     this.powerups = opt.powerups !== false; this.pus = []; this.puSeq = 1; this.evPu = []; this.evPuNew = []; this.evShield = [];
     this.puTarget = opt.puTarget ?? Math.max(4, Math.round(9 * (this.R / 130) ** 2)); this.puNext = 60; this.puNear = opt.puNear ?? 9; this.puCap = 160;
     if (this.powerups) for (let i = 0; i < Math.ceil(this.puTarget * 0.6); i++) this.spawnPu();
+    // arena events (opt.events = list of allowed kinds). evEvt = {k, ph, ...} announcements, evMet = new meteors, evImpact = impacts
+    this.events = Array.isArray(opt.events) ? opt.events.filter((k) => EVENTS.includes(k)) : opt.events === true ? EVENTS.slice() : [];
+    this.evt = null; this.evtNext = opt.evtFirst ?? 40; this.evtLast = ""; this.mets = []; this.metSeq = 1; this.evEvt = []; this.evMet = []; this.evImpact = []; this.bountyId = 0;
     for (let i = 0; i < this.foodTarget; i++) this.spawnFood(...this.randPos(this.R - 3), 1 + (this.rand() * 2.2) | 0, (this.rand() * 12) | 0);
   }
   randPos(rr) { const a = this.rand() * TAU, d = Math.sqrt(this.rand()) * rr; return [Math.cos(a) * d, Math.sin(a) * d]; }
@@ -185,7 +201,7 @@ export class Sim {
     return best;
   }
   spawnPu(k, x, y) {
-    if (k === undefined) { const r = this.rand(); k = r < 0.17 ? 0 : r < 0.32 ? 1 : r < 0.48 ? 2 : r < 0.64 ? 3 : r < 0.77 ? 4 : r < 0.89 ? 5 : 6; }
+    if (k === undefined) { let w = 0; for (const x of PU_W) w += x; let r = this.rand() * w; k = 0; while (k < PU_W.length - 1 && (r -= PU_W[k]) >= 0) k++; }
     if (x === undefined) [x, y] = this.randPos(this.R * 0.85);
     const p = { id: this.puSeq = (this.puSeq % 60000) + 1, k, x, y, b: this.tick }; this.pus.push(p); this.evPuNew.push(p); return p;
   }
@@ -194,8 +210,8 @@ export class Sim {
     const hit = [];
     if (k === PU.MEGA) { for (let i = 0; i < 26; i++) { const a = i / 26 * TAU + this.rand() * 0.2, d = 3 + this.rand() * 9; if (this.fCount < this.FM - 60) this.spawnFood(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d, 4 + this.rand() * 4, (i * 5) % 12); } }
     else if (k === PU.FREEZE) { for (const o of this.snakes) if (o !== s && o.alive && !o.god && !(this.teams && o.team === s.team)) { const dx = o.x - s.x, dy = o.y - s.y; if (dx * dx + dy * dy < 34 * 34) { o.slow = PU_DUR[5]; hit.push(o.id); } } }
-    else if (k === PU.SHIELD) s.pu[1] = PU_DUR[1];
-    else s.pu[k] = PU_DUR[k];
+    else if (k === PU.RAIN) s.rainT = 2.2; // orbs fall around the head for ~2 s (see step)
+    else puGive(s, k);
     return hit;
   }
   removeSnake(s) { const i = this.snakes.indexOf(s); if (i >= 0) this.snakes.splice(i, 1); this.byId.delete(s.id); }
@@ -210,6 +226,9 @@ export class Sim {
       const ox = (this.rand() - 0.5) * s.r * 1.4, oy = (this.rand() - 0.5) * s.r * 1.4;
       if (this.fCount < this.FM - 60) this.spawnFood(pts[j * 2] + ox, pts[j * 2 + 1] + oy, per * (0.7 + this.rand() * 0.6), (s.id * 3 + j) % 12);
     }
+    if (s.bounty) { s.bounty = false; this.bountyId = 0; // the golden bounty drops a pile of gold and announces who claimed it
+      for (let j = 0; j < 36; j++) { const a = this.rand() * TAU, d = 1 + this.rand() * 7; if (this.fCount < this.FM - 60) this.spawnFood(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d, 5 + this.rand() * 3, GOLD_FC); }
+      this.evEvt.push({ k: "bounty", ph: "claim", id: s.id, by: k && k !== s ? k.id : 0 }); if (this.evt && this.evt.k === "bounty") { this.evt = null; this.evtNext = 55 + this.rand() * 30; } }
     this.evDie.push(s.id, killerId || 0, cause || 0);
   }
 
@@ -222,6 +241,7 @@ export class Sim {
       if (qx * qx + qy * qy > wl) return (6 - st) * 3;
       const tt = (look * st / 5) / (s.boosting ? C.BOOST : C.SPEED), H = this._heads;
       for (let h = 0; h < this._nh; h++) { const o = H[h], ex = o.x + Math.cos(o.a) * o.v * tt - qx, ey = o.y + Math.sin(o.a) * o.v * tt - qy, rr = o.r + s.r + 1.6; if (ex * ex + ey * ey < rr * rr) return (6 - st) * 3; }
+      for (let mi = 0; mi < this.mets.length; mi++) { const M = this.mets[mi]; if (M.t < 2.2) { const ex = M.x - qx, ey = M.y - qy, rr = M.r + s.r + 1; if (ex * ex + ey * ey < rr * rr) return (6 - st) * 3; } }
       const c0 = g.ci(qx, qy);
       for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= g.head.length) continue; let j = g.head[c];
@@ -240,7 +260,7 @@ export class Sim {
     for (const o of this.snakes) if (o !== s && o.alive) {
       const dx = o.x - s.x, dy = o.y - s.y, d2 = dx * dx + dy * dy;
       if (d2 < lr2) { const H = this._heads[this._nh] || (this._heads[this._nh] = {}); H.x = o.x; H.y = o.y; H.a = o.a; H.v = o.boosting ? C.BOOST : C.SPEED; H.r = o.r; this._nh++; }
-      if (!o.god && !(this.teams && o.team === s.team) && d2 < nd) { nd = d2; near = o; }
+      if (!o.god && !(o.pu[8] > 0) && !(this.teams && o.team === s.team) && d2 < nd) { nd = d2; near = o; }
     }
     nd = Math.sqrt(nd);
     // scripted prey (boss / survival hunters)
@@ -315,12 +335,13 @@ export class Sim {
     const reactScale = (1 / 60) / dt; let na = 0; for (const s of this.snakes) if (s.alive) na++; this.nAlive = na;
     for (const s of this.snakes) {
       if (!s.alive) continue;
-      const P = s.pu; for (let q = 0; q < 6; q++) if (P[q] > 0) P[q] = Math.max(0, P[q] - dt); if (s.slow > 0) s.slow = Math.max(0, s.slow - dt); if (s.inv > 0) s.inv = Math.max(0, s.inv - dt);
+      puTick(s, dt);
+      if (s.rainT > 0) { s.rainT -= dt; s.rainAcc = (s.rainAcc || 0) + dt * 48; while (s.rainAcc >= 1) { s.rainAcc -= 1; const a = s.a + (this.rand() - 0.5) * 3.2, d = 3 + this.rand() * 16; if (this.fCount < this.FM - 80) this.spawnFood(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d, 1.6 + this.rand() * 1.8, (this.rand() * 12) | 0); } }
       if (s.bot) { if ((this.tick + s.id) % 3 === 0 && s.ai.t > 1) this.botReflex(s); if (--s.ai.t <= 0) { this.botThink(s); const D = DIFF[Math.max(0, Math.min(3, s.ai.diff))]; s.ai.t = Math.max(1, Math.round(D.react * reactScale * (0.7 + this.rand() * 0.6))); } }
       else if (inputs) { const inp = inputs(s); if (inp === false) continue; }
       const canBoost = s.m > C.MIN_BOOST_M;
       moveSnake(s, dt, canBoost);
-      if (s.boosting && !(s.pu[2] > 0)) {
+      if (s.boosting && !(s.pu[2] > 0) && !(s.pu[7] > 0)) {
         const cost = boostCost(s.m, dt); s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - cost)); s.dropAcc += cost;
         if (s.dropAcc > 2.2) { s.dropAcc -= 2.2; const o = Math.min(s.n - 1, Math.round(s.len / (C.SPEED * dt))); this.spawnFood(s.sx(o) + (this.rand() - 0.5), s.sy(o) + (this.rand() - 0.5), 1.5, (s.id * 5) % 12); }
       }
@@ -337,6 +358,7 @@ export class Sim {
     this.collide();
     this.eat();
     if (this.powerups) this.puStep();
+    if (this.events.length || this.mets.length) this.eventStep(dt);
     // keep the world fed
     let need = this.foodTarget - this.fCount, sp = 0;
     while (need-- > 0 && sp++ < 6) { const [x, y] = this.randPos(this.R - 3); this.spawnFood(x, y, 1 + (this.rand() * 2.2) | 0, (this.rand() * 12) | 0); }
@@ -359,6 +381,37 @@ export class Sim {
       }
     }
   }
+  // ---- arena events ----
+  humansAlive() { const H = this._hum || (this._hum = []); H.length = 0; for (const s of this.snakes) if (s.alive && !s.bot) H.push(s); return H; }
+  startEvent(kind) {
+    const pool = this.events.filter((k) => k !== this.evtLast); kind = kind || pool[(this.rand() * pool.length) | 0] || this.events[0]; if (!kind) return;
+    if (kind === "bounty") { let best = null; for (const s of this.snakes) if (s.alive && s.bot && !s.boss && !s.god && s.m > 40 && (!best || s.m > best.m)) best = s; if (!best) { this.evtNext = 10; return; } best.bounty = true; this.bountyId = best.id; this.evt = { k: kind, t: 45, id: best.id }; this.evEvt.push({ k: kind, ph: "start", id: best.id, d: 45 }); }
+    else { this.evt = { k: kind, t: kind === "rain" ? 12 : 14, acc: 0 }; this.evEvt.push({ k: kind, ph: "start", d: this.evt.t }); }
+    this.evtLast = kind;
+  }
+  endEvent() { const e = this.evt; if (!e) return; if (e.k === "bounty") { const b = this.byId.get(e.id); if (b) b.bounty = false; this.bountyId = 0; } this.evEvt.push({ k: e.k, ph: "end", id: e.id || 0 }); this.evt = null; this.evtNext = 50 + this.rand() * 35; }
+  eventStep(dt) {
+    if (this.events.length && !this.evt) { this.evtNext -= dt; if (this.evtNext <= 0) this.startEvent(); }
+    const e = this.evt;
+    if (e) {
+      e.t -= dt; if (e.t <= 0) this.endEvent();
+      else if (e.k === "rain") { e.acc += dt; while (e.acc >= 0.2) { e.acc -= 0.2; // gold orbs land around every player (and a few anywhere)
+          for (const h of this.humansAlive()) for (let q = 0; q < 3; q++) { const a = h.a + (this.rand() - 0.5) * 4, d = 4 + this.rand() * 26; if (this.fCount < this.FM - 80) this.spawnFood(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d, 4.5 + this.rand() * 2, GOLD_FC); }
+          for (let q = 0; q < 2; q++) { const [x, y] = this.randPos(this.R - 4); if (this.fCount < this.FM - 80) this.spawnFood(x, y, 4.5, GOLD_FC); } } }
+      else if (e.k === "meteor") { e.acc += dt; while (e.acc >= 0.75) { e.acc -= 0.75; // warned impact circles near players, preferring the path ahead
+          for (const h of this.humansAlive()) { const a = h.a + (this.rand() - 0.5) * 2.4, d = 7 + this.rand() * 20; this.addMeteor(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d); }
+          const [x, y] = this.randPos(this.R * 0.9); this.addMeteor(x, y); } }
+      else if (e.k === "bounty") { const b = this.byId.get(e.id); if (!b || !b.alive) { this.evt = null; this.evtNext = 50 + this.rand() * 30; } }
+    }
+    for (let i = this.mets.length - 1; i >= 0; i--) { const M = this.mets[i]; M.t -= dt; if (M.t > 0) continue; this.mets.splice(i, 1); this.impact(M); }
+  }
+  addMeteor(x, y) { const L = Math.hypot(x, y), lim = this.R - 5; if (L > lim) { x *= lim / L; y *= lim / L; } const M = { id: this.metSeq = (this.metSeq % 60000) + 1, x, y, r: 4.6, t: 1.9, T: 1.9 }; this.mets.push(M); this.evMet.push(M); return M; }
+  impact(M) {
+    this.evImpact.push(M.x, M.y, M.r);
+    for (const s of this.snakes) { if (!s.alive || s.god || s.pu[4] > 0 || s.pu[7] > 0 || s.inv > 0) continue; const dx = s.x - M.x, dy = s.y - M.y, rr = M.r + s.r * HEAD_K;
+      if (dx * dx + dy * dy < rr * rr) { if (s.pu[1] > 0) { s.pu[1] = 0; s.inv = 1.2; this.evShield.push(s.id, 0); } else this.kill(s, 0, 6); } }
+    for (let j = 0; j < 8; j++) { const a = this.rand() * TAU, d = 1 + this.rand() * M.r; if (this.fCount < this.FM - 60) this.spawnFood(M.x + Math.cos(a) * d, M.y + Math.sin(a) * d, 2 + this.rand() * 2, 9); }
+  }
   fixHead(s) { s.px[s.h] = s.x; s.py[s.h] = s.y; }
 
   buildGrid() {
@@ -379,7 +432,7 @@ export class Sim {
     const g = this.grid, dim = g.dim;
     for (const s of this.snakes) {
       if (!s.alive || s.god) continue;
-      if (s.pu[4] > 0 || s.inv > 0) continue;
+      if (s.pu[4] > 0 || s.pu[7] > 0 || s.inv > 0) continue;
       const hr = s.r * HEAD_K, c0 = g.ci(s.x, s.y); let killer = 0;
       const rx = Math.max(1, Math.ceil((hr + 6.6) / g.cell));
       for (let oy = -rx; oy <= rx && !killer; oy++) for (let ox = -rx; ox <= rx && !killer; ox++) {
@@ -420,7 +473,7 @@ export class Sim {
       }
     }
   }
-  drain() { this.evPu.length = 0; this.evPuNew.length = 0; this.evShield.length = 0; this.evEat.length = 0; this.evSpawn.length = 0; this.evDie.length = 0; this.evNew.length = 0; }
+  drain() { this.evEvt.length = 0; this.evMet.length = 0; this.evImpact.length = 0; this.evPu.length = 0; this.evPuNew.length = 0; this.evShield.length = 0; this.evEat.length = 0; this.evSpawn.length = 0; this.evDie.length = 0; this.evNew.length = 0; }
   leaderboard(n) { return this.snakes.filter((s) => s.alive).sort((a, b) => b.m - a.m).slice(0, n); }
 }
 

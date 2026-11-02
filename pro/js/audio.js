@@ -105,6 +105,10 @@ export class Audio {
         case "combo": { const n = Math.min(10, (opt && opt.n) | 0); this._tone("triangle", mtof(76 + n), 0, 0.12, 0.05); this._tone("sine", mtof(83 + n), 0, 0.14, 0.035, 0.03); break; }
         case "streak": [0, 4, 7, 12].forEach((st, i) => this._tone("sawtooth", mtof(64 + st), 0, 0.3, 0.04, i * 0.05)); this._thump(90, 40, 0.5, 0.45); break;
         case "mission": [0, 4, 7].forEach((st, i) => this._tone("sine", mtof(84 + st), 0, 0.3, 0.06, i * 0.07)); break;
+        case "event": [0, 7, 12, 19].forEach((st, i) => this._tone("triangle", mtof(72 + st), mtof(84 + st), 0.35, 0.06, i * 0.08)); this._noise(0.6, 0.1, 6000, 1, 0.1, "highpass"); break;
+        case "meteor": this._thump(80, 26, 0.9, 0.55); this._noise(0.9, 0.4, 700, 0.7, 0, "lowpass", undefined, 90); this._tone("sawtooth", 300, 60, 0.5, 0.06); break;
+        case "emote": this._tone("sine", 880, 1320, 0.1, 0.06); this._tone("sine", 1320, 1760, 0.12, 0.04, 0.06); break;
+        case "spin": this._tone("triangle", 1200, 1000, 0.04, 0.04); break;
         case "pause": this._tone("sine", 700, 500, 0.12, 0.05); break;
       }
     } catch (_) {}

@@ -2,9 +2,9 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=m2a";
-import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=m2a";
-import { EYES } from "./skins.js?v=m2a";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=m2b";
+import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=m2b";
+import { EYES } from "./skins.js?v=m2b";
 
 const TAU = Math.PI * 2;
 const CSS = new Array(32768); // 15-bit quantised rgb -> "rgb(...)" (no string building per segment)
@@ -101,14 +101,20 @@ export class Renderer2D {
       g.globalAlpha = 1; g.beginPath(); for (const i of L) { const r = 0.22 + Math.sqrt(F.fv[i]) * 0.16; g.moveTo(F.fx[i] + r, F.fy[i]); g.arc(F.fx[i], F.fy[i], r, 0, TAU); } g.fill(); }
     // power-up pickups: cached sprites, bobbing + pulsing so they read at a glance
     if (v.pus) for (const p of v.pus) { if ((p.x - cx) ** 2 + (p.y - cy) ** 2 > vr2) continue; const sz = 2.6 + Math.sin(t * 4 + p.id) * 0.25; g.drawImage(this.puSpr[p.k] || this.puSpr[0], p.x - sz, p.y - sz - Math.sin(t * 3 + p.id) * 0.25, sz * 2, sz * 2); }
+    // meteor warnings: red ring, filling disc, the falling rock and its shadow
+    if (v.mets) for (const M of v.mets) { const u = Math.max(0, Math.min(1, 1 - M.t / (M.T || 1.9))); g.globalAlpha = 0.2 + 0.2 * u; g.fillStyle = "#ff4a1a"; g.beginPath(); g.arc(M.x, M.y, M.r * (0.15 + 0.85 * u), 0, TAU); g.fill();
+      g.globalAlpha = 0.65 + 0.3 * Math.sin(t * 18); g.strokeStyle = "#ff3b2a"; g.lineWidth = 0.35; g.beginPath(); g.arc(M.x, M.y, M.r, 0, TAU); g.stroke();
+      const f = Math.pow(1 - u, 1.4), rx = M.x + 10 * f, ry = M.y - 14 * f; g.globalAlpha = 1; g.fillStyle = "#ff8a2a"; g.beginPath(); g.arc(rx, ry, 1 + u * 0.6, 0, TAU); g.fill(); g.fillStyle = "#3a2418"; g.beginPath(); g.arc(rx - 0.2, ry - 0.2, 0.7 + u * 0.4, 0, TAU); g.fill(); }
+    g.globalAlpha = 1;
+    if (v.rain || v.goldRain) { const h = v.rain || v.goldRain; if (Math.random() < 0.8) this.burst(h.x + (Math.random() - 0.5) * 30, h.y + (Math.random() - 0.5) * 20, v.rain ? [0.8, 1, 0.3] : [1, 0.85, 0.2], 2, 1.5, 0.6); }
     // snakes
     const pts = this.tmp, col = this.col;
     for (const d of v.snakes) {
       const s = d.s, r = s.r * (d.scale || 1); if ((s.sx(d.o) - cx) ** 2 + (s.sy(d.o) - cy) ** 2 > (vr + s.len) ** 2) continue;
       const n = bodyPoints(s, d.o, d.f, Math.max(0.3, r * 0.6), s.len, pts, 790);
       if (d.ox || d.oy) for (let j = 0; j < n; j++) { pts[j * 2] += d.ox; pts[j * 2 + 1] += d.oy; }
-      const P = s.pu || null, ghost = P && P[4] > 0, frozen = s.slow > 0;
-      g.globalAlpha = d.alpha * (ghost ? 0.45 + 0.1 * Math.sin(t * 10) : 1);
+      const P = s.pu || null, ghost = P && P[4] > 0, frozen = s.slow > 0, inv = d.inv;
+      d.alpha = d.alpha * (inv ? (d.me ? 0.42 : 0.1 + 0.05 * Math.sin(t * 7)) : 1); g.globalAlpha = d.alpha * (ghost ? 0.45 + 0.1 * Math.sin(t * 10) : 1);
       g.fillStyle = "rgba(0,0,0,0.25)"; g.beginPath(); for (let j = n - 1; j >= 0; j -= 2) { g.moveTo(pts[j * 2] + r * 1.3, pts[j * 2 + 1] + r * 0.3); g.arc(pts[j * 2] + r * 0.3, pts[j * 2 + 1] + r * 0.3, r, 0, TAU); } g.fill();
       if (d.team) { g.strokeStyle = lin2css(d.team); g.lineWidth = r * 0.5; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.globalAlpha *= 0.55; g.lineWidth = r * 2.5; g.stroke(); g.globalAlpha = d.alpha; }
       // body: consecutive segments of the same colour share one path
@@ -131,9 +137,13 @@ export class Renderer2D {
           if (P[0] > 0) { g.strokeStyle = PU_COL[0]; g.lineWidth = 0.15; g.globalAlpha = 0.35; g.setLineDash([0.6, 0.6]); g.beginPath(); g.arc(pts[0], pts[1], r + 7.5, t, t + TAU); g.stroke(); g.setLineDash([]); }
           if (P[2] > 0) { g.strokeStyle = PU_COL[2]; g.lineWidth = 0.25; g.globalAlpha = 0.6; g.beginPath(); for (let q = -1; q <= 1; q++) { const bx = pts[0] - Math.cos(a) * r * 2.4 - Math.sin(a) * q * r * 0.7, by = pts[1] - Math.sin(a) * r * 2.4 + Math.cos(a) * q * r * 0.7; g.moveTo(bx, by); g.lineTo(bx - Math.cos(a) * r * 2.5, by - Math.sin(a) * r * 2.5); } g.stroke(); }
           if (P[3] > 0) { g.fillStyle = PU_COL[3]; g.globalAlpha = 0.3; g.beginPath(); g.arc(pts[0], pts[1], r * 1.8, 0, TAU); g.fill(); }
+          if (P[7] > 0) { g.strokeStyle = PU_COL[7]; g.lineWidth = 0.3; g.globalAlpha = 0.8; g.beginPath(); for (let q = -2; q <= 2; q++) { const bx = pts[0] - Math.cos(a) * r * 1.6 - Math.sin(a) * q * r * 0.5, by = pts[1] - Math.sin(a) * r * 1.6 + Math.cos(a) * q * r * 0.5; g.moveTo(bx, by); g.lineTo(bx - Math.cos(a) * r * 4, by - Math.sin(a) * r * 4); } g.stroke(); }
+          if (P[9] > 0) { g.strokeStyle = PU_COL[9]; g.lineWidth = 0.25; g.globalAlpha = 0.5 + 0.2 * Math.sin(t * 8); g.beginPath(); g.arc(pts[0], pts[1], r * 1.9, 0, TAU); g.stroke(); }
           g.globalAlpha = d.alpha;
         }
-        if (d.name) { g.save(); g.translate(pts[0], pts[1] - r * 2.2); g.scale(1 / S, 1 / S); g.font = "600 13px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.fillStyle = d.nc || "#fff"; g.fillText(d.name, 0, 0); g.restore(); }
+        if (d.gold) { g.strokeStyle = "#ffd23a"; g.lineWidth = 0.35; g.globalAlpha = 0.6 + 0.3 * Math.sin(t * 6); g.beginPath(); g.arc(pts[0], pts[1], r * 2.6, 0, TAU); g.stroke(); g.globalAlpha = d.alpha; }
+        if (d.emo) { g.save(); g.globalAlpha = 1; g.translate(pts[0], pts[1] - r * 2.2 - 2.2); g.scale(1 / S, 1 / S); g.fillStyle = "rgba(10,14,26,0.85)"; g.strokeStyle = "rgba(255,220,140,0.95)"; g.lineWidth = 2; g.beginPath(); g.arc(0, -16, 17, 0, TAU); g.fill(); g.stroke(); g.textAlign = "center"; g.textBaseline = "middle"; g.font = d.emo === "GG" ? "800 15px sans-serif" : "20px sans-serif"; g.fillStyle = "#ffd23a"; g.fillText(d.emo, 0, -15); g.restore(); }
+        if (d.name && !(inv && !d.me)) { g.save(); g.translate(pts[0], pts[1] - r * 2.2); g.scale(1 / S, 1 / S); g.font = "600 13px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.fillStyle = d.nc || "#fff"; g.fillText(d.name, 0, 0); g.restore(); }
       }
       g.globalAlpha = 1;
     }

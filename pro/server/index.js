@@ -3,7 +3,7 @@
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
 import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName } from "./sim.js";
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 2; // v2: power-ups (pus / pu+ / pu- / sh messages)
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 3; // v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 const BOT_SKINS = (i) => ({ k: i % 3 === 0 ? "flag" : "skin", i: i % 3 === 0 ? (i * 37) % 197 : i % 24, e: i % 4, t: 0, n: 0, av: i % 3 === 0 ? "f" + ((i * 37) % 197) : "p" + ((i * 7) % 16), fr: i % 5 === 0 ? 0 : 1 + (i % 4) });
 const cors = { "access-control-allow-origin": "*", "content-type": "application/json" };
@@ -30,7 +30,7 @@ export class Room {
   init(params) {
     this.noBots = params.get("bots") === "0" && !(params.get("name_room") || "").startsWith("pub-");
     this.room = params.get("name_room") || "pub-1";
-    this.sim = new Sim({ dt: TICK, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true, powerups: true });
+    this.sim = new Sim({ dt: TICK, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true, powerups: true, events: true, evtFirst: 35 });
     this.sim.diff = 1;
     this.fill();
     this.last = Date.now(); this.acc = 0;
@@ -81,6 +81,8 @@ export class Room {
       this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, tick: this.sim.tick, dt: TICK, R: this.sim.R, snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
       this.send(c, this.foodFull());
       this.send(c, JSON.stringify({ t: "pus", l: this.sim.pus.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
+      const E = this.sim.evt; if (E) this.send(c, JSON.stringify({ t: "evt", k: E.k, ph: "start", id: E.id || 0, d: Math.max(1, Math.round(E.t)), late: 1 }));
+      if (this.sim.mets.length) this.send(c, JSON.stringify({ t: "met", l: this.sim.mets.map((M) => [M.id, Math.round(M.x * 100) / 100, Math.round(M.y * 100) / 100, M.r, +M.t.toFixed(2), M.T]) }));
     } else if (m.t === "spawn") {
       if (!c.joined || (c.snake && c.snake.alive)) return;
       if (c.snake) this.sim.removeSnake(c.snake);
@@ -94,6 +96,9 @@ export class Room {
       const s = c.snake; if (!s || !s.alive) return; const k = this.sim.byId.get(m.hit | 0);
       let by = 0; if (k && k.alive && k !== s) { const dx = k.x - s.x, dy = k.y - s.y; by = dx * dx + dy * dy < (k.len + 8) ** 2 ? k.id : 0; }
       this.sim.kill(s, by, by ? 3 : 1);
+    } else if (m.t === "emo") { // quick emote: one per second per player, relayed to everyone else in the room
+      const s = c.snake, e = m.e | 0; if (!s || !s.alive || e < 0 || e > 5 || now - (c.lastEmo || 0) < 1000) return; c.lastEmo = now;
+      const msg = JSON.stringify({ t: "emo", id: s.id, e }); for (const o of this.clients) if (o !== c && o.joined) this.send(o, msg);
     } else if (m.t === "ping") this.send(c, JSON.stringify({ t: "pong", c: m.c, s: Date.now(), tick: this.sim.tick }));
   }
   foodFull() {
@@ -125,6 +130,8 @@ export class Room {
     if (S.evPuNew.length) this.bcast(JSON.stringify({ t: "pu+", l: S.evPuNew.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
     if (S.evPu.length) { const l = []; for (let i = 0; i < S.evPu.length; i += 3) l.push([S.evPu[i].id, S.evPu[i + 1], S.evPu[i].k, S.evPu[i + 2] || []]); this.bcast(JSON.stringify({ t: "pu-", l })); }
     for (let i = 0; i < S.evShield.length; i += 2) this.bcast(JSON.stringify({ t: "sh", id: S.evShield[i], by: S.evShield[i + 1] }));
+    for (const e of S.evEvt) this.bcast(JSON.stringify({ t: "evt", ...e }));
+    if (S.evMet.length) this.bcast(JSON.stringify({ t: "met", l: S.evMet.map((M) => [M.id, Math.round(M.x * 100) / 100, Math.round(M.y * 100) / 100, M.r, M.t, M.T]) }));
     // one binary frame shared by everybody: [0]=1 [1..4]=tick [5..6]=ack [7]=extra (255 = no snake) [8..23]=own x,y,a,av [24]=count, then snakes, eats, spawns
     const alive = S.snakes.filter((s) => s.alive), ne = S.evEat.length / 2, ns = S.evSpawn.length;
     const size = 25 + alive.length * 13 + 2 + ne * 4 + 2 + ns * 12, b = new ArrayBuffer(size), v = new DataView(b);

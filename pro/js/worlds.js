@@ -119,9 +119,9 @@ export function paintGround(w, size) {
   const S = size || 512, cv = document.createElement("canvas"); cv.width = cv.height = S; seed = 7 + WORLDS.indexOf(w) * 101;
   const g = cv.getContext("2d"); w.tex(g, S); return cv;
 }
-export const FOOD_COLORS = ["#ff3b5c", "#ffb300", "#ffe94d", "#7dff4d", "#2dffb3", "#29d8ff", "#3d7bff", "#9b5cff", "#ff4df0", "#ff7a3d", "#ffffff", "#a6ff00"];
+export const FOOD_COLORS = ["#ff3b5c", "#ffb300", "#ffe94d", "#7dff4d", "#2dffb3", "#29d8ff", "#3d7bff", "#9b5cff", "#ff4df0", "#ff7a3d", "#ffffff", "#a6ff00", "#ffd23a"]; // [12] = gold (event orbs)
 // colour-blind safe palette (Okabe–Ito based) used when the accessibility mode is on
-export const FOOD_COLORS_CB = ["#e69f00", "#56b4e9", "#009e73", "#f0e442", "#0072b2", "#d55e00", "#cc79a7", "#ffffff", "#e69f00", "#56b4e9", "#f0e442", "#cc79a7"];
+export const FOOD_COLORS_CB = ["#e69f00", "#56b4e9", "#009e73", "#f0e442", "#0072b2", "#d55e00", "#cc79a7", "#ffffff", "#e69f00", "#56b4e9", "#f0e442", "#cc79a7", "#ffd23a"];
 
 // ---- AAA 3D layer per world: generated sky panorama + PBR ground (lazy-loaded WebP), grading, weather, time of day, life ----
 // grade: [lift r,g,b], [gain r,g,b], sat, contrast. tod: day/night cycle seconds (0 = static). reflect: planar reflection strength on high/ultra.

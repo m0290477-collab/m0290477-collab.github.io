@@ -1,14 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=m2a";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=m2a";
-import { WORLDS, worldAsset } from "./worlds.js?v=m2a";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=m2a";
-import { haptic } from "./audio.js?v=m2a";
-import { skinFn, MODES } from "./game.js?v=m2a";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=m2a";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=m2a";
-export const EMOTES = ["👋", "😂", "😡", "🔥", "👍", "GG"];
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=m2b";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=m2b";
+import { WORLDS, worldAsset } from "./worlds.js?v=m2b";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=m2b";
+import { haptic } from "./audio.js?v=m2b";
+import { skinFn, MODES, EMOTES } from "./game.js?v=m2b";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=m2b";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=m2b";
+
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
 const $ = (id) => document.getElementById(id);
@@ -40,7 +40,7 @@ export class Hud {
     $("h-mini").classList.toggle("x-hide", !this.app.store.settings.minimap); $("h-fps").classList.toggle("x-hide", !this.app.store.settings.showFps); this.storm(false); this.mode = mode; this.lastLb = "";
     for (const id of ["h-cine", "h-kill", "h-count", "h-combo", "h-mission", "h-hint"]) $(id).classList.remove("on"); this.puClear(); this.spectate(null); requestAnimationFrame(() => this.layout());
   }
-  hide() { $("hud").classList.add("x-hide"); this.storm(false); }
+  hide() { $("hud").classList.add("x-hide"); $("h-emos").classList.add("x-hide"); this.storm(false); }
   update(d) {
     this.massShown = this.massShown == null ? d.mass : this.massShown + (d.mass - this.massShown) * 0.5; if (Math.abs(d.mass - this.massShown) < 1) this.massShown = d.mass; $("h-mass").textContent = fmtNum(this.massShown); $("h-rank").textContent = d.rank ? `#${d.rank}/${d.total}` : "–"; $("h-kills").textContent = d.kills;
     const tm = $("h-timer");
@@ -63,6 +63,7 @@ export class Hud {
     if (d && d.kind === "boss") h = `<div class="boss-bar"><b>LEVIATHAN · ${t("phase")} ${d.phase}</b><div class="hb">${Array.from({ length: d.max }, (_, i) => `<i class="${i >= d.hp ? "gone" : ""}"></i>`).join("")}</div><small>${t("livesN", { n: d.lives })} · ${t("bossTip")}</small></div>`;
     if (d && d.kind === "zen") h = `<div class="mode-pill zen">☯ ${t("zenNoDeath")}</div>`;
     if (d && d.kind === "team") h += `<div class="mode-pill">${t("teamSafe")}</div>`;
+    if (d && d.ev) h += `<div class="mode-pill ev ev-${d.ev.k}">${d.ev.k === "rain" ? "✨ " + t("evS_rain") : d.ev.k === "meteor" ? "☄ " + t("evS_meteor") : "💰 " + t("evS_bounty") + " · " + esc(d.ev.name || "")}</div>`;
     this.modeTop = h; const el = $("h-mode"); el.innerHTML = h; el.dataset.k = ""; this.layout();
   }
   dot(s) { if (s.team === 0) return "#4da3ff"; if (s.team === 1) return "#ff4d5e"; const k = s.skin ? JSON.stringify(s.skin) : ""; this._dots = this._dots || new Map(); let c = this._dots.get(k); if (!c) { c = s.skin ? primaryColor(s.skin) : "#888"; this._dots.set(k, c); } return c; }
@@ -76,7 +77,7 @@ export class Hud {
     if (pus) for (const p of pus) { g.fillStyle = PU_COL[p.k]; g.beginPath(); const x = S / 2 + p.x * k, y = S / 2 + p.y * k; g.moveTo(x, y - 4); g.lineTo(x + 4, y); g.lineTo(x, y + 4); g.lineTo(x - 4, y); g.fill(); }
     const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 160);
     for (const s of all) { if (s === me || !me || !me.alive) continue; const d = Math.hypot(s.x - me.x, s.y - me.y); if (d < 40 && s.m > me.m * 1.2 && !(s.team !== undefined && s.team === me.team)) { g.strokeStyle = `rgba(255,60,70,${0.5 + pulse * 0.5})`; g.lineWidth = 2; g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, 7 + pulse * 3, 0, 6.283); g.stroke(); } }
-    for (const s of all) { if (s === me) continue; g.fillStyle = s.boss ? "#ff3040" : s.team === 0 ? "#4da3ff" : s.team === 1 ? "#ff4d5e" : s.bot ? "rgba(255,255,255,0.45)" : "rgba(120,200,255,0.9)"; const r = s.boss ? 8 : Math.max(2.5, Math.min(7, s.r * 2.2)); g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, r, 0, 6.283); g.fill(); }
+    for (const s of all) { if (s === me || (s.pu && s.pu[8] > 0)) continue; g.fillStyle = s.bounty ? "#ffd23a" : s.boss ? "#ff3040" : s.team === 0 ? "#4da3ff" : s.team === 1 ? "#ff4d5e" : s.bot ? "rgba(255,255,255,0.45)" : "rgba(120,200,255,0.9)"; const r = s.boss ? 8 : s.bounty ? 6 : Math.max(2.5, Math.min(7, s.r * 2.2)); g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, r, 0, 6.283); g.fill(); }
     if (me && me.alive) { // you: the area your screen shows, a heading arrow and a pulsing gold marker
       const mx = S / 2 + me.x * k, my = S / 2 + me.y * k, vw = Math.max(10, 22 * k * (innerWidth / Math.max(1, innerHeight)) * 0.5 + 8), vh = Math.max(8, 12 * k + 6);
       g.strokeStyle = "rgba(255,255,255,0.55)"; g.lineWidth = 1.5; g.strokeRect(mx - vw, my - vh, vw * 2, vh * 2);
@@ -96,7 +97,7 @@ export class Hud {
     const lb = $("h-lb"), bo = $("boost"); lb.style.maxHeight = "";
     if (lb && bo && bo.offsetParent && !document.documentElement.classList.contains("lefty")) { const lr = lb.getBoundingClientRect(), br = bo.getBoundingClientRect(); if (lr.left < br.right && lr.right > br.left) lb.style.maxHeight = Math.max(60, br.top - lr.top - 8) + "px"; }
   }
-  feed(list) { $("h-feed").innerHTML = list.slice(0, 4).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how ? `<b>${f.how === "storm" ? "🌀" : f.how === "self" ? "🔄" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); this.layout(); clearTimeout(this.ft); this.ft = setTimeout(() => { $("h-feed").innerHTML = ""; this.layout(); }, 6500); }
+  feed(list) { $("h-feed").innerHTML = list.slice(0, 4).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how === "bounty" ? `<b>💰</b> ${esc(f.b)}` : f.how ? `<b>${f.how === "storm" ? "🌀" : f.how === "self" ? "🔄" : f.how === "meteor" ? "☄" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); this.layout(); clearTimeout(this.ft); this.ft = setTimeout(() => { $("h-feed").innerHTML = ""; this.layout(); }, 6500); }
   banner(txt, ms) { const b = $("h-banner"); b.textContent = txt; b.classList.add("on"); clearTimeout(this.bt); this.bt = setTimeout(() => b.classList.remove("on"), ms || 1400); }
   count(txt) { const c = $("h-count"); c.textContent = txt; c.classList.remove("on"); void c.offsetWidth; c.classList.add("on"); }
   killBanner(a, b) { const k = $("h-kill"); k.querySelector("b").textContent = a; k.querySelector("small").textContent = b; k.classList.remove("on"); void k.offsetWidth; k.classList.add("on"); }
@@ -549,7 +550,7 @@ export class UI {
   // ---------- pause & results ----------
   hideResults() { $("m-results").classList.add("x-hide"); this.app.hud.show(this.app.game.mode); }
   reshowResults() { const m = $("m-results"); m.classList.remove("x-hide"); this.app.hud.hide(); $("r-watch").classList.toggle("x-hide", !(this.app.game.killer && this.app.game.killer.alive)); }
-  showPause(online) { $("m-pause").classList.remove("x-hide"); $("pz-online").classList.toggle("x-hide", !online); $("pz-online").textContent = online ? t("m_online_d") : ""; $("pz-restart").classList.toggle("x-hide", online); }
+  showPause(online) { $("m-pause").classList.remove("x-hide"); $("pz-online").classList.toggle("x-hide", !online); $("pz-online").textContent = online ? t("m_online_d") : ""; $("pz-restart").classList.toggle("x-hide", online); $("pz-share").classList.toggle("x-hide", !online); }
   hidePause() { $("m-pause").classList.add("x-hide"); }
   showResults(r) {
     const m = $("m-results"); m.classList.remove("x-hide"); this.app.hud.hide(); m.querySelector(".results").classList.toggle("win", !!r.win);
