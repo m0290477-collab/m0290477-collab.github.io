@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' wss://super-snake-online.molierk.workers.dev https://super-snake-online.molierk.workers.dev; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'" />
+<meta name="referrer" content="no-referrer" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#07090d" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="description" content="Super Snake Pro — a premium 3D snake arena: themed worlds, smart bots, online rooms, missions, achievements and deep customization." />
+<title>Super Snake Pro</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2307090d'/%3E%3Cpath d='M14 40c6-14 14 4 20-10s12-6 16-2' stroke='%23f5c451' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="css/app.css" />
+<link rel="modulepreload" href="js/vendor/three.module.min.js" />
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div id="vignette"></div>
+
+<div id="rotate"><div class="rot-ic">⟳</div><p>Rotate your device to landscape</p><p dir="rtl">أدر جهازك إلى الوضع الأفقي</p></div>
+
+<div id="boot">
+  <div class="brand big"><span class="b1">SUPER</span><span class="b2">SNAKE</span><span class="pro">PRO</span></div>
+  <div class="bar"><i id="bootbar"></i></div>
+  <p id="bootmsg" data-i="loading">Loading</p>
+  <noscript><p>Super Snake needs JavaScript.</p></noscript>
+</div>
+
+<main id="ui">
+  <!-- AUTH -->
+  <section id="s-auth" class="screen">
+    <div class="auth-wrap">
+      <div class="auth-hero">
+        <div class="brand"><span class="b1">SUPER</span><span class="b2">SNAKE</span><span class="pro">PRO</span></div>
+        <p class="tag" data-i="tagline"></p>
+        <button class="btn gold xl" id="a-guest" data-i="guest"></button>
+        <p class="fine" data-i="localNote"></p>
+      </div>
+      <div class="card auth-card">
+        <div class="seg" id="a-tabs" role="tablist"><button data-v="in" class="on" data-i="signIn"></button><button data-v="up" data-i="signUp"></button></div>
+        <form id="f-in" autocomplete="on">
+          <input id="in-u" data-ip="username" autocomplete="username" maxlength="16" />
+          <input id="in-p" data-ip="password" type="password" autocomplete="current-password" maxlength="128" />
+          <label class="chk"><input type="checkbox" id="in-rem" /><span data-i="remember"></span></label>
+          <p class="err" id="in-err" role="alert"></p>
+          <button class="btn primary wide" id="in-go" data-i="signIn"></button>
+        </form>
+        <form id="f-up" class="x-hide" autocomplete="on">
+          <input id="up-u" data-ip="username" autocomplete="username" maxlength="16" />
+          <input id="up-e" data-ip="email" type="email" autocomplete="email" maxlength="254" />
+          <input id="up-p" data-ip="password" type="password" autocomplete="new-password" maxlength="128" />
+          <input id="up-p2" data-ip="password2" type="password" autocomplete="new-password" maxlength="128" />
+          <p class="err" id="up-err" role="alert"></p>
+          <button class="btn primary wide" id="up-go" data-i="signUp"></button>
+        </form>
+      </div>
+    </div>
+    <div class="lang-row" id="auth-langs"></div>
+  </section>
+
+  <!-- LOBBY -->
+  <section id="s-lobby" class="screen">
+    <header class="topbar">
+      <button class="chip prof" id="l-prof" aria-label="Profile"><span class="av" id="l-av">S</span><span class="pinfo"><b id="l-name">Guest</b><small><span data-i="level"></span> <span id="l-lv">1</span></small><span class="xpbar"><i id="l-xp"></i></span></span></button>
+      <div class="chip coins"><span class="coin">◆</span><b id="l-coins">0</b></div>
+      <div class="sp"></div>
+      <button class="icon-btn" id="l-custom" data-ia="customize"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5C21 6.4 17 3 12 3Z"/><circle cx="7.5" cy="11" r="1.4"/><circle cx="10.5" cy="7.5" r="1.4"/><circle cx="15" cy="7.5" r="1.4"/></svg><span data-i="customize"></span></button>
+      <button class="icon-btn" id="l-progress" data-ia="progress"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4ZM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg><span data-i="progress"></span><i class="dot x-hide" id="l-pdot"></i></button>
+      <button class="icon-btn" id="l-settings" data-ia="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg><span data-i="settings"></span></button>
+    </header>
+    <div class="lobby-body">
+      <nav class="modes card" id="l-modes" role="tablist"></nav>
+      <div class="hero">
+        <h1 id="l-mtitle"></h1>
+        <p id="l-mdesc"></p>
+        <div class="field-l"><span data-i="world"></span></div>
+        <div class="worlds" id="l-worlds"></div>
+        <div class="row-opts">
+          <div class="seg small" id="l-diff"></div>
+          <div class="room x-hide" id="l-room"><input id="l-code" data-ip="roomCode" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" /></div>
+        </div>
+        <button class="btn gold play" id="l-play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5-12-7.5Z"/></svg><span data-i="play"></span></button>
+      </div>
+      <aside class="side card">
+        <h3><span data-i="daily"></span><small id="l-dreset"></small></h3>
+        <div id="l-daily"></div>
+        <p class="fine" id="l-onote"></p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- CUSTOMIZE -->
+  <section id="s-custom" class="screen panel">
+    <header class="phead"><button class="icon-btn back" data-back data-ia="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 data-i="customize"></h2>
+      <div class="seg tabs" id="c-tabs"><button data-v="skins" class="on" data-i="skins"></button><button data-v="flags" data-i="flags"></button><button data-v="editor" data-i="editor"></button><button data-v="eyes" data-i="eyes"></button><button data-v="trails" data-i="trails"></button><button data-v="name" data-i="name"></button></div>
+      <div class="chip coins"><span class="coin">◆</span><b class="coinsv">0</b></div></header>
+    <div class="pbody split">
+      <div class="preview card"><canvas id="c-prev" width="520" height="300"></canvas><div class="pv-name" id="c-pvname"></div>
+        <div class="presets"><span data-i="presets"></span><div id="c-presets"></div></div></div>
+      <div class="pcontent" id="c-content"></div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="s-progress" class="screen panel">
+    <header class="phead"><button class="icon-btn back" data-back data-ia="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 data-i="progress"></h2>
+      <div class="seg tabs" id="p-tabs"><button data-v="missions" class="on" data-i="missions"></button><button data-v="ach" data-i="achievements"></button><button data-v="stats" data-i="stats"></button><button data-v="bests" data-i="bests"></button></div>
+      <div class="chip coins"><span class="coin">◆</span><b class="coinsv">0</b></div></header>
+    <div class="pbody"><div class="pcontent wide" id="p-content"></div></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="s-settings" class="screen panel">
+    <header class="phead"><button class="icon-btn back" data-back data-ia="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 data-i="settings"></h2>
+      <div class="seg tabs" id="g-tabs"><button data-v="graphics" class="on" data-i="g_graphics"></button><button data-v="controls" data-i="g_controls"></button><button data-v="audio" data-i="g_audio"></button><button data-v="access" data-i="g_access"></button><button data-v="lang" data-i="g_lang"></button><button data-v="account" data-i="g_account"></button></div></header>
+    <div class="pbody"><div class="pcontent wide" id="g-content"></div></div>
+  </section>
+</main>
+
+<!-- HUD -->
+<div id="hud" class="x-hide">
+  <div class="h-tl">
+    <button class="hbtn" id="h-pause" data-ia="pause"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+    <div class="h-score"><b id="h-mass">0</b><small><span data-i="rank"></span> <span id="h-rank">–</span></small></div>
+    <div class="h-chip x-hide" id="h-timer"></div>
+    <div class="h-chip kills">⚔ <span id="h-kills">0</span></div>
+  </div>
+  <canvas id="h-mini" width="180" height="180"></canvas>
+  <div class="h-lb" id="h-lb"></div>
+  <div class="h-net x-hide" id="h-net"></div>
+  <div class="h-fps x-hide" id="h-fps"></div>
+  <div class="h-feed" id="h-feed"></div>
+  <div class="h-banner" id="h-banner"></div>
+  <div id="h-pop"></div>
+  <div id="joy"><div class="base"></div><div class="knob"></div></div>
+  <button id="boost" data-ia="boost"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></button>
+  <div id="touch"></div>
+</div>
+
+<!-- MODALS -->
+<div id="m-pause" class="modal x-hide" role="dialog" aria-modal="true"><div class="card mcard">
+  <h2 data-i="pause"></h2><p class="fine x-hide" id="pz-online"></p>
+  <button class="btn gold wide" id="pz-resume" data-i="resume"></button>
+  <button class="btn wide" id="pz-restart" data-i="restart"></button>
+  <button class="btn wide" id="pz-settings" data-i="settings"></button>
+  <button class="btn ghost wide" id="pz-quit" data-i="quit"></button></div></div>
+
+<div id="m-results" class="modal x-hide" role="dialog" aria-modal="true"><div class="card mcard results">
+  <div class="r-head"><h2 id="r-title"></h2><p id="r-sub"></p><div class="r-best x-hide" id="r-best" data-i="newBest"></div></div>
+  <div class="r-score" id="r-score">0</div>
+  <div class="r-grid" id="r-grid"></div>
+  <div class="r-xp"><div class="r-lv"><span data-i="level"></span> <b id="r-lv">1</b></div><div class="xpbar big"><i id="r-xpbar"></i></div><div class="r-gain"><span id="r-xp"></span> · <span id="r-coins"></span></div></div>
+  <div class="r-extra" id="r-extra"></div>
+  <div class="r-btns"><button class="btn ghost" id="r-lobby" data-i="lobby"></button><button class="btn gold" id="r-again" data-i="playAgain"></button></div>
+</div></div>
+
+<div id="m-tut" class="modal x-hide" role="dialog" aria-modal="true"><div class="card mcard tut">
+  <canvas id="t-anim" width="360" height="150"></canvas>
+  <p id="t-text"></p><div class="dots" id="t-dots"></div>
+  <div class="r-btns"><button class="btn ghost" id="t-skip" data-i="skip"></button><button class="btn gold" id="t-next" data-i="next"></button></div></div></div>
+
+<div id="m-confirm" class="modal x-hide" role="dialog" aria-modal="true"><div class="card mcard"><p id="cf-text"></p>
+  <div class="r-btns"><button class="btn ghost" id="cf-no" data-i="no"></button><button class="btn danger" id="cf-yes" data-i="yes"></button></div></div></div>
+
+<div id="toasts" aria-live="polite"></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
