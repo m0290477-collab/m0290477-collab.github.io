@@ -2,15 +2,15 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=calm1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=calm1";
+import * as THREE from "./vendor/three.module.min.js?v=sharp1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=sharp1";
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D } from "./worlds.js?v=calm1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=calm1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=calm1";
-import { World, prefetchWorld } from "./gfx/env.js?v=calm1";
-import { Post } from "./gfx/post.js?v=calm1";
-import { Studio } from "./gfx/showcase.js?v=calm1";
+import { WORLDS, W3D } from "./worlds.js?v=sharp1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=sharp1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=sharp1";
+import { World, prefetchWorld } from "./gfx/env.js?v=sharp1";
+import { Post } from "./gfx/post.js?v=sharp1";
+import { Studio } from "./gfx/showcase.js?v=sharp1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -29,17 +29,17 @@ const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _m = new THREE.Matrix
 export class Renderer3D {
   constructor(canvas, opts = {}) {
     const initQ = opts.quality || "high";
-    const gl = canvas.getContext("webgl2", { antialias: initQ === "low", alpha: false, powerPreference: "high-performance", stencil: false });
+    const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, powerPreference: "high-performance", stencil: false });
     if (!gl) throw new Error("webgl2");
     this.canvas = canvas;
-    this.r = new THREE.WebGLRenderer({ canvas, context: gl, antialias: initQ === "low", alpha: false, stencil: false, powerPreference: "high-performance" });
+    this.r = new THREE.WebGLRenderer({ canvas, context: gl, antialias: true, alpha: false, stencil: false, powerPreference: "high-performance" });
     this.r.outputColorSpace = THREE.SRGBColorSpace; this.r.toneMapping = THREE.ACESFilmicToneMapping; this.r.toneMappingExposure = 1.0;
     this.r.shadowMap.enabled = true; this.r.shadowMap.type = THREE.PCFSoftShadowMap;
     this.pmrem = new THREE.PMREMGenerator(this.r);
     this.scene = new THREE.Scene(); this.scene.fog = new THREE.FogExp2(0x000000, 0.01);
     this.cam = new THREE.PerspectiveCamera(48, 2, 0.4, 900);
     this.camPos = new THREE.Vector3(0, 30, 20); this.camLook = new THREE.Vector3(); this.camU = { value: new THREE.Vector3() }; this.ptScale = { value: 300 };
-    this.shakeA = 0; this.reduceMotion = false; this.juice = true; this.postFx = true; this.time = 0; this.ca = 0; this.flash = new THREE.Vector4(); this.box = 0; this.speed = 0; this.dyn = 1; this.dynT = 0; this.ftAcc = 0; this.ftN = 0;
+    this.shakeA = 0; this.reduceMotion = false; this.juice = true; this.postFx = true; this.time = 0; this.ca = 0; this.flash = new THREE.Vector4(); this.box = 0; this.speed = 0; this.dyn = 1; this.dynT = 0; this.ftAcc = 0; this.ftN = 0; this.resMode = "high"; this.userLow = false; this.prDyn = 0; this.slowS = 0; this.goodS = 0; this.dynLast = 0; this._sz = "";
     this.qName = QUALITY[initQ] ? initQ : "high"; this.Q = QUALITY[this.qName];
     this.tmp = new Float32Array(SW * 2 + 64); this.ys = new Float32Array(SW); this.cols = new Float32Array(SW); this.col = [0, 0, 0]; this.state = new Map();
     this.sunDir = new THREE.Vector3(-0.45, 0.75, 0.35).normalize();
@@ -234,27 +234,40 @@ export class Renderer3D {
     this._built = true; this._applyDpr(); this.warm = this.prewarm && this.studio ? this.prewarm() : null;
   }
   setOptions(o) { Object.assign(this, o); this._applyDpr(); }
+  // sharp1: pixel ratio comes from the Resolution setting, not the effects tier. High = min(dpr, 2), Max = min(dpr, 3),
+  // Auto = High that may step down (>=0.25 at a time, never below 1.25) only after sustained slow frames. The drawing
+  // buffer is only reallocated when the size or ratio really changes (setSize on every call reallocated it).
+  _basePR() { const d = window.devicePixelRatio || 1; return Math.min(d, this.userLow ? 1.5 : this.resMode === "max" ? 3 : 2); }
+  _ptScale() { this.ptScale.value = (this.h || 400) * this.dpr * 0.5 / Math.tan((this.cam.fov * Math.PI) / 360); }
   _applyDpr() {
-    const dpr = Math.min(window.devicePixelRatio || 1, this.Q.dpr) * this.dyn; this.dpr = dpr;
-    this.r.setPixelRatio(dpr); this.r.setSize(this.w || 1, this.h || 1, false);
+    const base = this._basePR(); if (this.resMode !== "auto" || this.userLow) this.prDyn = 0;
+    const dpr = this.prDyn ? Math.min(base, this.prDyn) : base; this.dpr = dpr; this.dyn = dpr / base;
+    const key = (this.w || 1) + "x" + (this.h || 1) + "@" + dpr, changed = key !== this._sz;
+    if (changed) { this._sz = key; this.r.setPixelRatio(dpr); this.r.setSize(this.w || 1, this.h || 1, false); }
     const want = this.Q.post && this.postFx;
     if (want && (!this.post.on || this.post.Q !== this.Q)) { this.post.build(this.Q, this.scene, this.cam); this._grade(); }
+    else if (changed && this.post.on) this.post.setSize();
     if (!want && this.post.on) this.post.dispose();
-    if (this.post.on) this.post.setSize();
     document.documentElement.classList.toggle("nopost", !this.post.on);
-    if (this.Q.reflect && this.W3 && (this.W3.reflect || this.W3.water !== "none")) { const s = this.Q.reflect, w = Math.max(64, (this.w * dpr * s) | 0), h = Math.max(64, (this.h * dpr * s) | 0); if (!this.mirrorRT) this.mirrorRT = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType }); else this.mirrorRT.setSize(w, h); }
-    const sc = (this.h || 400) * dpr * 0.5 / Math.tan((this.cam.fov * Math.PI) / 360); this.ptScale.value = sc;
+    if (this.Q.reflect && this.W3 && (this.W3.reflect || this.W3.water !== "none")) { const s = this.Q.reflect, w = Math.max(64, (this.w * dpr * s) | 0), h = Math.max(64, (this.h * dpr * s) | 0); if (!this.mirrorRT) this.mirrorRT = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType }); else if (this.mirrorRT.width !== w || this.mirrorRT.height !== h) this.mirrorRT.setSize(w, h); }
+    this._ptScale();
   }
   resize() {
     const w = this.canvas.clientWidth || innerWidth, h = this.canvas.clientHeight || innerHeight; this.w = w; this.h = h;
     this.cam.aspect = w / h; this.cam.updateProjectionMatrix(); this.studio.resize(w, h); this._applyDpr();
   }
-  // dynamic resolution: keeps frame time on target by scaling the render resolution (55%–100%)
+  // dynamic resolution (Resolution = Auto only), last resort with strong hysteresis: 1 s windows; step down 0.25 only after
+  // 3 s of sustained slow frames, step up only after 10 s of good frames, at most one change per 5 s, floor pixel ratio 1.25.
   _dynRes(dt) {
-    this.ftAcc += dt; this.ftN++; this.dynT += dt; if (this.dynT < (this.dyn > 0.75 ? 0.5 : 1)) return;
+    if (dt > 0.25 || document.hidden) { this.ftAcc = 0; this.ftN = 0; this.dynT = 0; return; } // stalls / tab switches are not load
+    this.ftAcc += dt; this.ftN++; this.dynT += dt; if (this.dynT < 1) return;
     const avg = this.ftAcc / this.ftN, target = 1 / (this.fpsTarget || 60); this.ftAcc = 0; this.ftN = 0; this.dynT = 0;
-    let d = this.dyn; if (avg > target * 1.6) d = Math.max(0.5, d - 0.2); else if (avg > target * 1.2) d = Math.max(0.5, d - 0.1); else if (avg < target * 1.04) d = Math.min(1, d + 0.04);
-    if (Math.abs(d - this.dyn) > 0.01) { this.dyn = d; this._applyDpr(); }
+    if (avg > target * 1.25) { this.slowS++; this.goodS = 0; } else if (avg < target * 1.08) { this.goodS++; this.slowS = 0; } else { this.slowS = 0; this.goodS = 0; }
+    const now = performance.now(); if (now - this.dynLast < 5000) return;
+    const base = this._basePR(), cur = this.prDyn || base, floor = Math.min(base, 1.25); let next = cur;
+    if (this.slowS >= 3 && cur > floor + 0.01) next = Math.max(floor, cur - 0.25);
+    else if (this.goodS >= 10 && cur < base - 0.01) next = Math.min(base, cur + 0.25);
+    if (next !== cur) { this.prDyn = next >= base - 0.01 ? 0 : next; this.dynLast = now; this.slowS = 0; this.goodS = 0; this._applyDpr(); }
   }
 
   // ---------- worlds ----------
@@ -321,9 +334,9 @@ export class Renderer3D {
   _label(id, name, color, me) {
     let L = this.labels.get(id);
     if (!L || L.name !== name || L.color !== color) {
-      if (!L) { L = this.labelPool.pop(); if (!L) { const cv = document.createElement("canvas"); cv.width = 256; cv.height = 64; const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+      if (!L) { L = this.labelPool.pop(); if (!L) { const cv = document.createElement("canvas"); cv.width = 512; cv.height = 128; const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
         const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, toneMapped: false, fog: false })); sp.renderOrder = 10; L = { cv, tex, sp }; } this.scene.add(L.sp); this.labels.set(id, L); }
-      const g = L.cv.getContext("2d"); g.clearRect(0, 0, 256, 64); g.font = `700 ${me ? 32 : 28}px Oxanium, "Cairo", -apple-system, "Segoe UI", Roboto, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
+      const g = L.cv.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, 512, 128); g.setTransform(2, 0, 0, 2, 0, 0); g.font = `700 ${me ? 32 : 28}px Oxanium, "Cairo", -apple-system, "Segoe UI", Roboto, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
       g.lineWidth = 7; g.strokeStyle = "rgba(0,0,0,0.6)"; g.strokeText(name, 128, 34); g.fillStyle = color; g.fillText(name, 128, 34);
       L.tex.needsUpdate = true; L.name = name; L.color = color;
     }
@@ -392,14 +405,14 @@ export class Renderer3D {
     if (this.lost) return;
     const t = v.t, dt = Math.min(0.05, v.dt); this.time = t; this.dt = dt; const Q = this.Q;
     this.snakes.uniforms.uT.value = t; this.stormU.uT.value = t;
-    if (!this.reduceMotion && Q.post) this._dynRes(v.dt); this.fpsTarget = v.fpsTarget || 60;
+    if (this.resMode === "auto" && !this.userLow && v.scene !== "show") this._dynRes(v.dt); this.fpsTarget = v.fpsTarget || 60;
     for (const st of this.state.values()) st.used = false;
     if (v.scene === "show") { this._frameShow(v, t, dt); } else this._frameWorld(v, t, dt);
     for (const [id, st] of this.state) if (!st.used) this.state.delete(id);
   }
   _camera(v, dt) {
     const cam = this.cam, c = v.cam, zoom = c.zoom || 1, hgt = 17.5 * zoom, back = hgt * 0.68;
-    const fov = 48 + (c.boost && !this.reduceMotion ? 8 : 0) + (c.fovAdd || 0); if (Math.abs(cam.fov - fov) > 0.05) { cam.fov += (fov - cam.fov) * (1 - Math.exp(-dt * 6)); cam.updateProjectionMatrix(); this._applyDpr(); }
+    const fov = 48 + (c.boost && !this.reduceMotion ? 8 : 0) + (c.fovAdd || 0); if (Math.abs(cam.fov - fov) > 0.05) { cam.fov += (fov - cam.fov) * (1 - Math.exp(-dt * 6)); cam.updateProjectionMatrix(); this._ptScale(); }
     const k = 1 - Math.exp(-dt * (c.snap ? 60 : 9));
     this.camLook.x += (c.x - this.camLook.x) * k; this.camLook.z += (c.y - this.camLook.z) * k;
     this.camPos.y += (hgt - this.camPos.y) * (1 - Math.exp(-dt * 3));
@@ -464,10 +477,10 @@ export class Renderer3D {
   _mirror() {
     const cam = this.cam, mc = this.mirrorCam; const cp = _v.setFromMatrixPosition(cam.matrixWorld);
     _m.extractRotation(cam.matrixWorld); const look = _v2.set(0, 0, -1).applyMatrix4(_m).add(cp);
-    mc.position.set(cp.x, -cp.y, cp.z); const target = new THREE.Vector3(look.x, -look.y, look.z); mc.up.set(0, 1, 0).applyMatrix4(_m); mc.up.y = -mc.up.y; mc.lookAt(target);
+    mc.position.set(cp.x, -cp.y, cp.z); const target = (this._mt || (this._mt = new THREE.Vector3())).set(look.x, -look.y, look.z); mc.up.set(0, 1, 0).applyMatrix4(_m); mc.up.y = -mc.up.y; mc.lookAt(target);
     mc.fov = cam.fov; mc.aspect = cam.aspect; mc.near = cam.near; mc.far = cam.far; mc.updateMatrixWorld(); mc.projectionMatrix.copy(cam.projectionMatrix);
     this.mirrorMat.set(0.5, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0, 0.5, 0.5, 0, 0, 0, 1).multiply(mc.projectionMatrix).multiply(mc.matrixWorldInverse); this.world.groundU.uMat.value.copy(this.mirrorMat);
-    const g = this.world.ground, w = this.world.water, vis = []; g.visible = false; if (w) w.visible = false; for (const L of this.labels.values()) { vis.push(L.sp); L.sp.visible = false; } this.pts.visible = false;
+    const g = this.world.ground, w = this.world.water, vis = this._vis || (this._vis = []); vis.length = 0; g.visible = false; if (w) w.visible = false; for (const L of this.labels.values()) { vis.push(L.sp); L.sp.visible = false; } this.pts.visible = false;
     const shadow = this.r.shadowMap.autoUpdate; this.r.shadowMap.autoUpdate = false;
     const prev = this.r.getRenderTarget(); this.r.setRenderTarget(this.mirrorRT); this.r.clear(); this.r.render(this.scene, mc); this.r.setRenderTarget(prev);
     this.r.shadowMap.autoUpdate = shadow; g.visible = true; if (w) w.visible = true; for (const s of vis) s.visible = true; this.pts.visible = true;

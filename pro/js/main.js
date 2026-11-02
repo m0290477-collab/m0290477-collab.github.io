@@ -1,13 +1,13 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=calm1";
-import { Store, KV } from "./store.js?v=calm1";
-import { setLang, applyI18n, t } from "./i18n.js?v=calm1";
-import { Audio, haptic } from "./audio.js?v=calm1";
-import { Input } from "./input.js?v=calm1";
-import { Game } from "./game.js?v=calm1";
-import { UI, Hud } from "./ui.js?v=calm1";
-import { Renderer2D } from "./render2d.js?v=calm1";
+import { guard } from "./guard.js?v=sharp1";
+import { Store, KV } from "./store.js?v=sharp1";
+import { setLang, applyI18n, t } from "./i18n.js?v=sharp1";
+import { Audio, haptic } from "./audio.js?v=sharp1";
+import { Input } from "./input.js?v=sharp1";
+import { Game } from "./game.js?v=sharp1";
+import { UI, Hud } from "./ui.js?v=sharp1";
+import { Renderer2D } from "./render2d.js?v=sharp1";
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -45,7 +45,7 @@ async function makeRenderer(kind, quality) {
   const old = $("gl"), cv = document.createElement("canvas"); cv.id = "gl"; cv.setAttribute("aria-hidden", "true"); old.replaceWith(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=calm1");
+      const m = await import("./render3d.js?v=sharp1");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 3500); }, onRestored: () => { clearTimeout(app._lostT); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
@@ -55,7 +55,7 @@ async function makeRenderer(kind, quality) {
 
 app.applyQuality = (q) => {
   const r = app.renderer; if (!r) return; r.setQuality(q); document.documentElement.classList.toggle("lowfx", q === "low"); document.documentElement.classList.remove("blur"); // calm1: no backdrop-filter anywhere (very expensive on iOS)
-  const S0 = app.store.settings; r.setOptions({ postFx: S0.postFx && !(isMobile && q !== "high" && q !== "ultra"), juice: S0.juice && !S0.reduceMotion && !S0.calmFx, reduceMotion: S0.reduceMotion, calm: S0.calmFx }); document.documentElement.classList.toggle("calm", !!S0.calmFx);
+  const S0 = app.store.settings; r.setOptions({ postFx: S0.postFx && !(isMobile && q !== "high" && q !== "ultra"), juice: S0.juice && !S0.reduceMotion && !S0.calmFx, reduceMotion: S0.reduceMotion, calm: S0.calmFx, resMode: S0.res || "high", userLow: S0.quality === "low" }); document.documentElement.classList.toggle("calm", !!S0.calmFx);
 };
 app.switchRenderer = async (kind, auto) => {
   const w = app.game.world ?? app.store.p.last.world ?? 0;
@@ -75,7 +75,7 @@ app.applySetting = (k) => {
     case "renderer": app.switchRenderer(s.renderer); break;
     case "showFps": $("h-fps").classList.toggle("x-hide", !s.showFps); break;
     case "minimap": $("h-mini").classList.toggle("x-hide", !s.minimap); break;
-    case "postFx": case "juice": case "reduceMotion": case "calmFx": if (r) app.applyQuality(r.qName || (s.quality === "auto" ? autoStart() : s.quality)); H.classList.toggle("rm", s.reduceMotion); break;
+    case "res": case "postFx": case "juice": case "reduceMotion": case "calmFx": if (r) app.applyQuality(r.qName || (s.quality === "auto" ? autoStart() : s.quality)); H.classList.toggle("rm", s.reduceMotion); break;
     case "ctrl": case "sens": case "left": app.input.configure(s); H.classList.toggle("lefty", s.left); break;
     case "boostSize": $("boost").style.setProperty("--bs", s.boostSize); break;
     case "boostPos": $("boost").style.setProperty("--bp", s.boostPos); break;

@@ -1,13 +1,13 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=calm1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=calm1";
-import { WORLDS, worldAsset } from "./worlds.js?v=calm1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=calm1";
-import { haptic } from "./audio.js?v=calm1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=calm1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=calm1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=calm1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=sharp1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=sharp1";
+import { WORLDS, worldAsset } from "./worlds.js?v=sharp1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=sharp1";
+import { haptic } from "./audio.js?v=sharp1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=sharp1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=sharp1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=sharp1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -46,13 +46,25 @@ export class Hud {
     const tm = $("h-timer");
     if (d.timeLeft !== null && d.timeLeft !== undefined) { tx("h-timer", "⏱ " + fmtTime(d.timeLeft)); tm.classList.toggle("warn", d.timeLeft < 15); }
     else if (d.wave !== null) { tm.textContent = t("wave", { n: d.wave }); tm.classList.remove("warn"); }
-    let h = "";
+    // sharp1: the leaderboard keeps its row elements; a row's markup (rank, avatar, name) is only rebuilt when it changes,
+    // and the mass/score cell is a textContent write. (Rebuilding the whole list with innerHTML 4x a second re-created
+    // every avatar <img>: a style/layout/decode hitch every 250 ms on phones.)
+    const R = this._lbQ || (this._lbQ = []); R.length = 0; let ri = 0;
+    const row = (cls, st, v) => { const o = R[ri] || (R[ri] = {}); ri++; o.cls = cls; o.st = st; o.v = String(v); };
     const ic = (s) => (s.avt ? avatarHtml(s.avt, s.fr | 0, "s") : `<i style="background:${this.dot(s)}"></i>`);
-    if (d.scoreList) { d.scoreList.forEach((x, i) => { h += `<div class="${x.s === d.me ? "me" : ""}"><b>${i === 0 ? IC.crown : i + 1}</b>${ic(x.s)}<span>${esc(x.s.name || "?")}</span><em>${x.v}/${d.target}</em></div>`; }); }
-    else { d.top.forEach((s, i) => { h += `<div class="${s === d.me ? "me" : ""}"><b>${i === 0 ? IC.crown : i + 1}</b>${ic(s)}<span>${s.bounty ? "💰 " : ""}${esc(s.name || "?")}</span><em>${fmtNum(s.m)}</em></div>`; });
-      if (d.me && d.me.alive && d.rank > 5) h += `<div class="me"><b>${d.rank}</b>${ic(d.me)}<span>${esc(d.me.name)}</span><em>${fmtNum(d.me.m)}</em></div>`; }
-    if (d.ping !== null) h += `<div><span>${t("online", { n: d.ping })}</span><em>${d.humans ? "👤" + d.humans : ""}</em></div>`;
-    if (h !== this.lastLb) { const n = this.lastLb.length; $("h-lb").innerHTML = h; this.lastLb = h; if (!n || Math.abs(n - h.length) > 40) this.layout(); }
+    if (d.scoreList) { d.scoreList.forEach((x, i) => row(x.s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(x.s)}<span>${esc(x.s.name || "?")}</span>`, `${x.v}/${d.target}`)); }
+    else { d.top.forEach((s, i) => row(s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(s)}<span>${s.bounty ? "💰 " : ""}${esc(s.name || "?")}</span>`, fmtNum(s.m)));
+      if (d.me && d.me.alive && d.rank > 5) row("me", `<b>${d.rank}</b>${ic(d.me)}<span>${esc(d.me.name)}</span>`, fmtNum(d.me.m)); }
+    if (d.ping !== null) row("", `<span>${t("online", { n: d.ping })}</span>`, d.humans ? "👤" + d.humans : "");
+    const box = $("h-lb"), E = this._lbE || (this._lbE = []); let relayout = false;
+    if (box.childElementCount !== E.length || (E.length && E[0].el.parentNode !== box)) { box.textContent = ""; E.length = 0; }
+    for (let i = 0; i < ri; i++) { const o = R[i]; let e = E[i];
+      if (!e) { const el = document.createElement("div"); box.appendChild(el); e = E[i] = { el, st: null, cls: null, em: null, v: null }; relayout = true; }
+      if (e.st !== o.st) { e.el.innerHTML = o.st + "<em></em>"; e.st = o.st; e.em = e.el.lastChild; e.v = null; }
+      if (e.cls !== o.cls) { e.el.className = o.cls; e.cls = o.cls; }
+      if (e.v !== o.v) { e.em.textContent = o.v; e.v = o.v; } }
+    while (E.length > ri) { box.removeChild(E.pop().el); relayout = true; }
+    this.lastLb = "x"; if (relayout) this.layout();
     if (d.alive !== null && d.alive !== undefined) this.modeLine(`<div class="mode-pill hot">${t("aliveN", { n: d.alive })}${d.zone ? " · " + t("zoneIn", { n: d.zone }) : ""}</div>`);
     if (d.kothMine !== null && d.kothMine !== undefined) this.modeLine(`<div class="mode-pill koth ${d.hill && d.hill.mine ? "hot" : ""} ${d.hill && d.hill.contested ? "contest" : ""}">♛ ${d.kothMine}/${d.target} ${d.hill && d.hill.mine ? "· " + t("holding") : d.hill && d.hill.contested ? "· " + t("contested") : "· " + t("goHill")}<div class="cap"><i style="width:${Math.min(100, (d.kothMine / d.target) * 100)}%"></i></div></div>`);
   }
@@ -68,9 +80,11 @@ export class Hud {
   }
   dot(s) { if (s.team === 0) return "#4da3ff"; if (s.team === 1) return "#ff4d5e"; const k = s.skin ? JSON.stringify(s.skin) : ""; this._dots = this._dots || new Map(); let c = this._dots.get(k); if (!c) { c = s.skin ? primaryColor(s.skin) : "#888"; this._dots.set(k, c); } return c; }
   minimap(all, me, R, pal, zone, hill, boss, pus) {
-    const g = this.mini, S = 180; g.clearRect(0, 0, S, S); const k = (S / 2 - 6) / R;
-    const gr = g.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S / 2); gr.addColorStop(0, "rgba(255,255,255,0.02)"); gr.addColorStop(1, "rgba(255,255,255,0.05)"); g.fillStyle = gr; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); g.fill();
-    g.strokeStyle = "rgba(255,255,255,0.22)"; g.lineWidth = 2; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); g.stroke();
+    const g = this.mini, S = 180; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, 276, 276); g.setTransform(276 / S, 0, 0, 276 / S, 0, 0); const k = (S / 2 - 6) / R;
+    if (!this.miniBg) { const c = (this.miniBg = document.createElement("canvas")); c.width = c.height = 276; const x = c.getContext("2d"); x.scale(276 / S, 276 / S); // static disc + rim, painted once
+      const gr = x.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S / 2); gr.addColorStop(0, "rgba(255,255,255,0.02)"); gr.addColorStop(1, "rgba(255,255,255,0.05)"); x.fillStyle = gr; x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); x.fill();
+      x.strokeStyle = "rgba(255,255,255,0.22)"; x.lineWidth = 2; x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); x.stroke(); }
+    g.drawImage(this.miniBg, 0, 0, S, S);
     if (zone) { g.strokeStyle = "rgba(190,110,255,0.95)"; g.lineWidth = 3; g.beginPath(); g.arc(S / 2 + zone.x * k, S / 2 + zone.y * k, Math.max(2, zone.r * k), 0, 6.283); g.stroke(); }
     if (hill) { g.fillStyle = "rgba(255,200,69,0.35)"; g.beginPath(); g.arc(S / 2 + hill.x * k, S / 2 + hill.y * k, Math.max(4, hill.r * k), 0, 6.283); g.fill(); }
     if (me && me.alive) { const mx = S / 2 + me.x * k, my = S / 2 + me.y * k; g.fillStyle = "rgba(255,231,163,0.12)"; g.beginPath(); g.moveTo(mx, my); g.arc(mx, my, 34, me.a - 0.7, me.a + 0.7); g.closePath(); g.fill(); }
@@ -525,7 +539,8 @@ export class UI {
     $("g-tabs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.v === tab));
     const seg = (k, opts, label, sub) => ({ k, type: "seg", opts, label, sub }), tog = (k, label, sub) => ({ k, type: "tog", label, sub }), rng = (k, label, min, max, step, fmt) => ({ k, type: "rng", label, min, max, step, fmt });
     const R = this.app.renderer;
-    if (tab === "graphics") rows = [seg("quality", [["auto", t("q_auto")], ["low", t("q_low")], ["medium", t("q_medium")], ["high", t("q_high")], ["ultra", t("q_ultra")]], "quality", R ? (s.quality === "auto" ? "→ " + t("q_" + R.qName) : "") + (R.dyn && R.dyn < 0.99 ? ` · ${t("dynRes")} ${Math.round(R.dyn * 100)}%` : "") : ""),
+    if (tab === "graphics") rows = [seg("quality", [["auto", t("q_auto")], ["low", t("q_low")], ["medium", t("q_medium")], ["high", t("q_high")], ["ultra", t("q_ultra")]], "quality", R && s.quality === "auto" ? "→ " + t("q_" + R.qName) : ""),
+      seg("res", [["auto", t("res_auto")], ["high", t("res_high")], ["max", t("res_max")]], "resolution", t("resSub") + (R && !R.is2D && R.dyn && R.dyn < 0.99 ? ` · ${t("dynRes")} ${Math.round(R.dyn * 100)}%` : "")),
       { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), { ...tog("showFps", "showFps"), sub: "debug" }, tog("calmFx", "calmFx", t("calmFxSub")), tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
     if (tab === "controls") rows = [seg("ctrl", [["joy", t("c_joy")], ["follow", t("c_follow")], ["swipe", t("c_swipe")]], "ctrlType"), rng("sens", "sens", 0.5, 2, 0.05, (v) => v.toFixed(2) + "×"), tog("left", "leftHand"),
       rng("boostSize", "boostSize", 0.7, 1.4, 0.05, (v) => Math.round(v * 100) + "%"), rng("boostPos", "boostPos", 0, 1, 0.05, (v) => Math.round(v * 100) + "%"), { ...tog("haptics", "haptics"), sub: navigator.vibrate ? "" : t("hapticsNo") }];

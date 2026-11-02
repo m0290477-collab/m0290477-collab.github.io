@@ -2,9 +2,9 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=calm1";
-import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=calm1";
-import { EYES } from "./skins.js?v=calm1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=sharp1";
+import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=sharp1";
+import { EYES } from "./skins.js?v=sharp1";
 
 const TAU = Math.PI * 2;
 const CSS = new Array(32768); // 15-bit quantised rgb -> "rgb(...)" (no string building per segment)
@@ -14,7 +14,7 @@ const lin2css = (c) => css(Math.sqrt(c[0]), Math.sqrt(c[1]), Math.sqrt(c[2]));
 export class Renderer2D {
   constructor(canvas) {
     this.canvas = canvas; this.g = canvas.getContext("2d", { alpha: false }); if (!this.g) throw new Error("2d");
-    this.tmp = new Float32Array(1600); this.col = [0, 0, 0]; this.parts = []; this.rings = []; this.shakeA = 0; this.juice = true; this.reduceMotion = false;
+    this.tmp = new Float32Array(1600); this.col = [0, 0, 0]; this.parts = []; this.pPool = []; this.rings = []; this.shakeA = 0; this.juice = true; this.reduceMotion = false;
     this.camX = 0; this.camY = 0; this.scale = 14; this.qName = "low"; this.Q = { particles: 300 }; this.is2D = true;
     this.buckets = Array.from({ length: 16 }, () => []); this.puSpr = PU_COL.map((c, k) => this._puSprite(k)); this.bgImg = null; this.vig = null; this.vigK = "";
     this.glowSpr = new Map(); // food glow sprite per colour (additive)
@@ -22,7 +22,7 @@ export class Renderer2D {
     this.setWorld(0); this.resize();
   }
   setQuality(q) { this.qName = q; }
-  setOptions(o) { Object.assign(this, o); }
+  setOptions(o) { const lo = this.userLow; Object.assign(this, o); if (this.userLow !== lo) this.resize(); }
   setArena(R) { this.R = R; }
   setWorld(i) {
     if (i === this.worldI && this.W) return;
@@ -32,16 +32,26 @@ export class Renderer2D {
     const img = new Image(); img.decoding = "async"; img.onload = () => { this.bgImg = img; this.bdK = ""; }; img.src = worldAsset(this.W, "sky", true);
     if (!this.keyImg) { const k = new Image(); k.decoding = "async"; k.onload = () => { this.keyImg = k; this.bdK = ""; }; k.src = "assets/keyart_lo.webp"; this.keyImg = null; }
   }
-  resize() { const w = this.canvas.clientWidth || innerWidth, h = this.canvas.clientHeight || innerHeight; this.w = w; this.h = h; this.dpr = Math.min(this.qName === "low" ? 1.5 : 2, devicePixelRatio || 1); this.bdK = ""; this.canvas.width = Math.round(w * this.dpr); this.canvas.height = Math.round(h * this.dpr); this.vig = null; }
-  burst(x, y, rgb, n, spd = 6, life = 0.8) { if (this.calm) return; for (let k = 0; k < Math.min(n, 40); k++) { const a = Math.random() * TAU, v = spd * (0.3 + Math.random() * 0.7); this.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: life, m: life, c: lin2css(rgb) }); } if (this.parts.length > 300) this.parts.splice(0, this.parts.length - 300); }
+  // sharp1: full device pixel ratio (cap 3), no dynamic resolution. The backing store matches the canvas's exact CSS box
+  // x DPR (integer), and the transform uses the real backing/CSS ratio so nothing is resampled by the compositor.
+  // The buffer is only reallocated when the size really changes.
+  resize() {
+    const rc = this.canvas.getBoundingClientRect(), w = rc.width || innerWidth, h = rc.height || innerHeight, d = Math.min(this.userLow ? 2 : 3, devicePixelRatio || 1);
+    const bw = Math.max(1, Math.round(w * d)), bh = Math.max(1, Math.round(h * d)); this.w = w; this.h = h; this.dpr = d; this.kx = bw / w; this.ky = bh / h;
+    if (this.canvas.width !== bw || this.canvas.height !== bh) { this.canvas.width = bw; this.canvas.height = bh; }
+    this.g.imageSmoothingEnabled = true; this.g.imageSmoothingQuality = "high"; this.bdK = ""; this.vig = null;
+  }
+  burst(x, y, rgb, n, spd = 6, life = 0.8) { if (this.calm) return; for (let k = 0; k < Math.min(n, 40); k++) { const a = Math.random() * TAU, v = spd * (0.3 + Math.random() * 0.7); this._part(x, y, Math.cos(a) * v, Math.sin(a) * v, life, lin2css(rgb)); } }
   emit() {}
-  shatter(s, fn) { if (this.calm) return; const pts = this.tmp, n = bodyPoints(s, 0, 0, Math.max(0.5, s.r * 0.8), s.len, pts, 790), col = this.col; for (let j = 0; j < n; j += Math.max(1, (n / 40) | 0)) { fn(j, n, 0, col); const a = Math.random() * TAU, v = 2 + Math.random() * 5; this.parts.push({ x: pts[j * 2], y: pts[j * 2 + 1], vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: 1, m: 1, c: css(col[0], col[1], col[2]) }); } }
+  shatter(s, fn) { if (this.calm) return; const pts = this.tmp, n = bodyPoints(s, 0, 0, Math.max(0.5, s.r * 0.8), s.len, pts, 790), col = this.col; for (let j = 0; j < n; j += Math.max(1, (n / 40) | 0)) { fn(j, n, 0, col); const a = Math.random() * TAU, v = 2 + Math.random() * 5; this._part(pts[j * 2], pts[j * 2 + 1], Math.cos(a) * v, Math.sin(a) * v, 1, css(col[0], col[1], col[2])); } }
+  // pooled particles (sharp1): no object churn, capped at 300
+  _part(x, y, vx, vy, l, c) { if (this.parts.length >= 300) return; const p = this.pPool.pop() || {}; p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.l = p.m = l; p.c = c; this.parts.push(p); }
   ring(x, y, rgb, R = 8) { this.rings.push({ x, y, t: 0, R, c: lin2css(rgb) }); }
   shake(a) { if (this.juice && !this.reduceMotion && !this.calm) this.shakeA = Math.min(1.2, this.shakeA + a); }
   project(x, y) { return [(x - this.camX) * this.scale + this.w / 2, (y - this.camY) * this.scale + this.h / 2, true]; }
   info() { return { calls: 0, tris: 0 }; }
   worldReady() { return true; }
-  _puSprite(k) { const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d"), col = PU_COL[k];
+  _puSprite(k) { const c = document.createElement("canvas"); c.width = c.height = 192; const x = c.getContext("2d"), col = PU_COL[k]; x.scale(3, 3);
     const gr = x.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, col + "55"); gr.addColorStop(0.35, col + "22"); gr.addColorStop(1, col + "00"); x.fillStyle = gr; x.fillRect(0, 0, 64, 64); // soft halo
     const og = x.createRadialGradient(27, 26, 1, 32, 32, 13); og.addColorStop(0, "#ffffff"); og.addColorStop(0.35, col); og.addColorStop(1, col + "55"); x.fillStyle = og; x.beginPath(); x.arc(32, 32, 12.5, 0, TAU); x.fill(); // glassy orb
     x.save(); x.translate(32 - 7.5, 32 - 7.5); x.scale(15 / 24, 15 / 24); x.fillStyle = "rgba(255,255,255,0.95)"; x.fill(new Path2D(PU_SVG[k]), "evenodd"); x.restore(); return c; }
@@ -51,14 +61,14 @@ export class Renderer2D {
 
   // ---------- lobby / menus: backdrop + animated coiling showcase of the equipped skin on a glowing pedestal ----------
   _show(v) {
-    const g = this.g, W = this.w, H = this.h, t = v.t || 0, sv = v.show; g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    const g = this.g, W = this.w, H = this.h, t = v.t || 0, sv = v.show; g.setTransform(this.kx, 0, 0, this.ky, 0, 0);
     // backdrop (sky art + shade + vignette) is painted once per size/world into a cached canvas, then blitted
     const img = this.bgImg || this.keyImg, bk = W + "x" + H + ":" + (img ? img.src : "");
-    if (this.bdK !== bk) { this.bdK = bk; const c = this.bd || (this.bd = document.createElement("canvas")); c.width = Math.round(W * this.dpr); c.height = Math.round(H * this.dpr); const x = c.getContext("2d"); x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    if (this.bdK !== bk) { this.bdK = bk; const c = this.bd || (this.bd = document.createElement("canvas")); c.width = this.canvas.width; c.height = this.canvas.height; const x = c.getContext("2d"); x.setTransform(this.kx, 0, 0, this.ky, 0, 0); x.imageSmoothingQuality = "high";
       x.fillStyle = "#05060b"; x.fillRect(0, 0, W, H); if (img) { const s2 = Math.max(W / img.width, H / img.height) * 1.05, dw = img.width * s2, dh = img.height * s2; x.globalAlpha = 0.5; x.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh); x.globalAlpha = 1; }
       const gr = x.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "rgba(5,6,11,0.55)"); gr.addColorStop(0.55, "rgba(5,6,11,0.2)"); gr.addColorStop(1, "rgba(5,6,11,0.75)"); x.fillStyle = gr; x.fillRect(0, 0, W, H);
       const vg = x.createRadialGradient(W / 2, H / 2, H * 0.4, W / 2, H / 2, W * 0.7); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.4)"); x.fillStyle = vg; x.fillRect(0, 0, W, H); }
-    g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(this.bd, 0, 0); g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(this.bd, 0, 0); g.setTransform(this.kx, 0, 0, this.ky, 0, 0);
     if (!sv || !sv.d || !sv.d.fn) return;
     const cx = W * (0.5 + (sv.x || 0) * 0.55), cy = H * 0.43, R = Math.min(H * 0.2, W * 0.14) * (sv.zoom || 1), glow = sv.glow || "#ffc845";
     // pedestal
@@ -92,7 +102,7 @@ export class Renderer2D {
     const k = 1 - Math.exp(-dt * 9); this.camX += (v.cam.x - this.camX) * k; this.camY += (v.cam.y - this.camY) * k;
     this.scale += ((Math.min(this.w, this.h) / (24 * v.cam.zoom)) - this.scale) * k;
     let sx = 0, sy = 0; if (this.shakeA > 0.01) { sx = (Math.random() - 0.5) * this.shakeA * 8; sy = (Math.random() - 0.5) * this.shakeA * 8; this.shakeA *= Math.exp(-dt * 7); }
-    g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    g.setTransform(this.kx, 0, 0, this.ky, 0, 0);
     // calm1: a plain, solid ground. One fill for the outside, one disc for the arena, two soft strokes for its edge.
     const CM = W.calm || { out: "#0c1018", ground: "#1a2230", edge: "#8090a8" };
     g.fillStyle = CM.out; g.fillRect(0, 0, this.w, this.h);
@@ -100,9 +110,13 @@ export class Renderer2D {
     const R = this.R || 130, vr = Math.max(this.w, this.h) / S * 0.75, vr2 = vr * vr, cx = this.camX, cy = this.camY;
     g.fillStyle = CM.ground; g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fill();
     // barely visible fine grid (alpha 0.04): gives a sense of speed without any texture; one path, clipped to the arena
-    { const G = 5, x0 = Math.floor((cx - this.w / S / 2 - G) / G) * G, x1 = cx + this.w / S / 2 + G, y0 = Math.floor((cy - this.h / S / 2 - G) / G) * G, y1 = cy + this.h / S / 2 + G;
-      g.save(); g.beginPath(); g.arc(0, 0, R, 0, TAU); g.clip(); g.strokeStyle = "#ffffff"; g.globalAlpha = 0.04; g.lineWidth = 0.08; g.beginPath();
-      for (let x = x0; x <= x1; x += G) { g.moveTo(x, y0); g.lineTo(x, y1); } for (let y = y0; y <= y1; y += G) { g.moveTo(x0, y); g.lineTo(x1, y); } g.stroke(); g.restore(); g.globalAlpha = 1; }
+    // barely visible fine grid, drawn in device pixels: each line is snapped to the pixel grid and exactly 1 CSS px wide
+    // (sharp1: world-space 0.08-unit lines landed between pixels and smeared into soft 2-4 px bands at DPR 3)
+    { const G = 5, kx = this.kx, ky = this.ky, ox = (this.w / 2 + sx - cx * S) * kx, oy = (this.h / 2 + sy - cy * S) * ky, BW = this.canvas.width, BH = this.canvas.height;
+      const lw = Math.max(1, Math.round(kx)), half = (lw & 1) ? 0.5 : 0, sxp = S * kx, syp = S * ky;
+      const x0 = Math.ceil((-ox / sxp) / G) * G, x1 = (BW - ox) / sxp, y0 = Math.ceil((-oy / syp) / G) * G, y1 = (BH - oy) / syp;
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.beginPath(); g.arc(ox, oy, R * sxp, 0, TAU); g.clip(); g.strokeStyle = "#ffffff"; g.globalAlpha = 0.05; g.lineWidth = lw; g.beginPath();
+      for (let x = x0; x <= x1; x += G) { const px = Math.round(ox + x * sxp) + half; g.moveTo(px, 0); g.lineTo(px, BH); } for (let y = y0; y <= y1; y += G) { const py = Math.round(oy + y * syp) + half; g.moveTo(0, py); g.lineTo(BW, py); } g.stroke(); g.restore(); g.globalAlpha = 1; }
     if (Math.hypot(cx, cy) + vr > R - 4) { g.strokeStyle = CM.edge; g.globalAlpha = 0.1; g.lineWidth = 2.4; g.beginPath(); g.arc(0, 0, R - 1.2, 0, TAU); g.stroke(); g.globalAlpha = 0.35; g.lineWidth = 0.3; g.beginPath(); g.arc(0, 0, R, 0, TAU); g.stroke(); g.globalAlpha = 1; }
     // KOTH hill and BR storm: flat tints and one soft edge, no pulsing
     if (v.hill) { const h = v.hill, c = lin2css(h.c || [1, 0.8, 0.2]); g.globalAlpha = 0.14; g.fillStyle = c; g.beginPath(); g.arc(h.x, h.y, h.r, 0, TAU); g.fill(); g.globalAlpha = 0.6; g.strokeStyle = c; g.lineWidth = 0.3; g.stroke(); g.globalAlpha = 1; }
@@ -168,7 +182,7 @@ export class Renderer2D {
       }
       g.globalAlpha = 1;
     }
-    for (let i = this.parts.length - 1; i >= 0; i--) { const p = this.parts[i]; p.l -= dt; if (p.l <= 0) { this.parts.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.95; p.vy *= 0.95; g.globalAlpha = p.l / p.m; g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, 0.25, 0, TAU); g.fill(); }
+    for (let i = this.parts.length - 1; i >= 0; i--) { const p = this.parts[i]; p.l -= dt; if (p.l <= 0) { const L = this.parts, last = L.pop(); if (last !== p) L[i] = last; this.pPool.push(p); continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.95; p.vy *= 0.95; g.globalAlpha = p.l / p.m; g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, 0.25, 0, TAU); g.fill(); }
     for (let i = this.rings.length - 1; i >= 0; i--) { const q = this.rings[i]; q.t += dt * 1.6; if (q.t >= 1) { this.rings.splice(i, 1); continue; } g.globalAlpha = (1 - q.t) * 0.5; g.strokeStyle = q.c || "#fff"; g.lineWidth = 0.22; g.beginPath(); g.arc(q.x, q.y, 1 + q.t * Math.min(q.R, 8), 0, TAU); g.stroke(); }
     g.globalAlpha = 1; g.restore();
   }

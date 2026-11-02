@@ -1,13 +1,13 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=calm1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=calm1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=calm1";
-import { NetBackend } from "./net.js?v=calm1";
-import { t, fmtNum } from "./i18n.js?v=calm1";
-import { haptic } from "./audio.js?v=calm1";
-import { rankOf, rpDelta } from "./profile.js?v=calm1";
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=sharp1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=sharp1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=sharp1";
+import { NetBackend } from "./net.js?v=sharp1";
+import { t, fmtNum } from "./i18n.js?v=sharp1";
+import { haptic } from "./audio.js?v=sharp1";
+import { rankOf, rpDelta } from "./profile.js?v=sharp1";
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
@@ -113,7 +113,7 @@ export class Game {
     this.cfg = cfg; this.mode = cfg.mode; this.world = cfg.world; this.attract = null; this.M = MODES[cfg.mode] || {};
     this.stats = { kills: 0, food: 0, boost: 0, life: 0, best: 0, rankBest: 99, t0: performance.now(), lifeT0: performance.now(), deaths: 0, score: 0, timeLeft: 0, wave: 1 };
     this.combo = 0; this.comboT = 0; this.gainAcc = 0; this.gainT = 0; this.rankShown = 99; this.massMile = 0; this.liveMs = new Set(); this.puLast = null; this.hintI = 0; this.hintT = 4; this.stats.bonus = 0; this.stats.pu = 0; this.stats.bounty = 0; this.watching = false; this.killer = null; this.selfHit = false; this.deathCause = 0; this.emoT = 0; this.rainFx = null; this.evNow = null; // no stale killer from the last match
-    this.matchT0 = performance.now(); this.slowWins = 0; this.goodWins = 0; this.ft.fill(1000 / (this.app.store.settings.fpsCap || 60)); this.ended = false; this.paused = false; this.deathT = 0; this.spectate = null; this.feed = []; this.lastLb = 0; this.killcam = null; this.victory = null; this.streak = 0; this.streakT = 0; this.endAt = 0; this.respawnAt = 0;
+    this.matchT0 = performance.now(); this.slowWins = 0; this.goodWins = 0; this.slowQ = 0; this.qRose = false; this.ft.fill(1000 / (this.app.store.settings.fpsCap || 60)); this.ended = false; this.paused = false; this.deathT = 0; this.spectate = null; this.feed = []; this.lastLb = 0; this.killcam = null; this.victory = null; this.streak = 0; this.streakT = 0; this.endAt = 0; this.respawnAt = 0;
     this.zone = null; this.hill = null; this.boss = null; this.teamScore = [0, 0]; this.kothPts = new Map(); this.lives = this.M.lives || 0; this.win = false; this.place = 0;
     const skin = this.mySkin();
     const cb = {
@@ -471,7 +471,7 @@ export class Game {
       if (this.titleT !== undefined) { this.titleT += dt; cam.title = this.titleT; v.hideNames = true; } else { this.orbit += dt * 0.05; cam.orbit = this.orbit; } zoom = 1.9;
     } else {
       const foc = this.spectate && this.spectate.alive ? this.spectate : me;
-      if (foc) { const head = foc === me && me.alive ? lerpHead(me, alpha) : [foc.x, foc.y]; if (foc === me && b.vox) { head[0] += b.vox; head[1] += b.voy; }
+      if (foc) { const head = foc === me && me.alive ? lerpHead(me, alpha) : (_LH[0] = foc.x, _LH[1] = foc.y, _LH); if (foc === me && b.vox) { head[0] += b.vox; head[1] += b.voy; }
         const la = (foc.boosting ? 4.2 : 2.6) * (1 + Math.max(0, foc.r - 0.6) * 0.5); this.lookX = (this.lookX || 0) + (Math.cos(foc.a) * la - (this.lookX || 0)) * Math.min(1, dt * 3); this.lookY = (this.lookY || 0) + (Math.sin(foc.a) * la - (this.lookY || 0)) * Math.min(1, dt * 3);
         tx = head[0] + this.lookX; ty = head[1] + this.lookY; zoom = 1 + Math.max(0, foc.r - 0.6) * 0.55; cam.boost = !!foc.boosting && foc === me; }
       if (this.intro > 0 && this.introDur) cam.intro = this.intro / this.introDur;
@@ -522,18 +522,23 @@ export class Game {
     const k = this.killer; if (!k || !k.alive || !this.backend) return false; this.watching = true; this.spectate = k; this.app.ui.hideResults(); this.hud.spectate(k.name); this.running = true; return true;
   }
   stopWatch() { this.watching = false; this.spectate = null; this.hud.spectate(null); this.app.ui.reshowResults(); }
+  // sharp1: tier changes rebuild materials and meshes (a visible hitch), so they are rare: drop one tier only after two
+  // slow windows in a row (~4 s), rise at most once per match after six good windows, never two changes within 10 s.
+  // The 2D renderer has no tiers that matter, so it is never touched.
   autoQuality() {
-    const A = this.app, n = this.ft.length, arr = Array.from(this.ft).sort((a, c) => a - c), p90 = arr[Math.floor(n * 0.9)];
-    const target = 1000 / (A.store.settings.fpsCap || 60), order = ["low", "medium", "high", "ultra"], cur = this.r.qName, i = order.indexOf(cur);
+    const A = this.app; if (this.r.is2D) return;
+    const n = this.ft.length, arr = this._ftS || (this._ftS = new Float32Array(n)); arr.set(this.ft); arr.sort(); const p90 = arr[Math.floor(n * 0.9)];
+    const target = 1000 / (A.store.settings.fpsCap || 60), order = ["low", "medium", "high", "ultra"], cur = this.r.qName, i = order.indexOf(cur), now = performance.now(), calm = now - (this.qChangeT || 0) > 10000;
     if (p90 > target * 1.45) {
-      this.goodWins = 0;
-      if (i > 0) { A.applyQuality(order[i - 1]); if (!this.autoToasted) { this.autoToasted = true; A.ui.toast(t("autoLow")); } }
+      this.goodWins = 0; this.slowQ = (this.slowQ || 0) + 1;
+      if (i > 0 && this.slowQ >= 2 && calm) { this.slowQ = 0; this.qChangeT = now; A.applyQuality(order[i - 1]); this.ft.fill(target); if (!this.autoToasted) { this.autoToasted = true; A.ui.toast(t("autoLow")); } }
       // 2D only after a sustained real problem: already at low, well past the first seconds of the match (shader/stream
       // stalls), and three slow windows in a row (~6 s). Never persisted (see switchRenderer), so the next launch retries 3D.
-      else if (!this.r.is2D && p90 > 45 && performance.now() - (this.matchT0 || 0) > 15000) { if (++this.slowWins >= 3) { this.slowWins = 0; A.switchRenderer("2d", true); } }
-      this.ft.fill(target);
-    } else if ((this.slowWins = 0) || p90 < target * 1.08) { if (++this.goodWins >= 4 && i >= 0 && i < (A.maxAuto || 2)) { this.goodWins = 0; A.applyQuality(order[i + 1]); this.ft.fill(target); } }
-    else this.goodWins = 0;
+      else if (i === 0 && p90 > 45 && now - (this.matchT0 || 0) > 15000) { if (++this.slowWins >= 3) { this.slowWins = 0; A.switchRenderer("2d", true); } }
+    } else if (p90 < target * 1.08) { this.slowWins = 0; this.slowQ = 0; if (++this.goodWins >= 6 && calm && !this.qRose && i >= 0 && i < (A.maxAuto || 2)) { this.goodWins = 0; this.qRose = true; this.qChangeT = now; A.applyQuality(order[i + 1]); this.ft.fill(target); } }
+    else { this.goodWins = 0; this.slowWins = 0; this.slowQ = 0; }
   }
+
 }
-function lerpHead(s, a) { const x1 = s.sx(1), y1 = s.sy(1); return [x1 + (s.sx(0) - x1) * a, y1 + (s.sy(0) - y1) * a]; }
+const _LH = [0, 0]; // reused: no per-frame allocation
+function lerpHead(s, a) { const x1 = s.sx(1), y1 = s.sy(1); _LH[0] = x1 + (s.sx(0) - x1) * a; _LH[1] = y1 + (s.sy(0) - y1) * a; return _LH; }
