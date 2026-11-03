@@ -52,6 +52,7 @@ export const SKINS = [
   { id: "aurora_l", p: 3, c: ["#00ffa3", "#7a2cff", "#00b3ff"], lv: 1, rar: "legendary", fx: 10, src: "chain:survivor" },
   { id: "frostking", p: 3, c: ["#dff6ff", "#4fb8ff", "#ffffff"], lv: 1, rar: "legendary", fx: 11, src: "coins:4500" },
   { id: "solar", p: 8, c: ["#ff7a00", "#ffd84a", "#fff6d0"], lv: 1, rar: "legendary", fx: 12, src: "boss:1" },
+  { id: "phoenix", p: 8, c: ["#8a1a00", "#ff6a00", "#ffd27a"], lv: 1, rar: "legendary", fx: 13, src: "coins:7500" }, // aaa2: flame feathers, crest, fire trail, rebirth
 ];
 // rarity of every named skin (legendary ones carry their own)
 export const RARITY = ["common", "rare", "epic", "legendary"];
@@ -71,6 +72,7 @@ export const LEGEND = {
   10: { tr: ["#00ffa3", "#7a2cff"], tk: "ribbon", death: "aurora", idle: "wave", glow: "#00ffa3" },
   11: { tr: ["#ffffff", "#9fdcff"], tk: "snow", death: "freeze", idle: "breathe", glow: "#9fdcff" },
   12: { tr: ["#ffd84a", "#ff5a00"], tk: "flare", death: "nova", idle: "orbit", glow: "#ffb000" },
+  13: { tr: ["#ff7a1a", "#ffd27a"], tk: "phoenix", death: "rebirth", idle: "rear", glow: "#ff6a00" },
 };
 export const skinFx = (d) => (d && d.k === "skin" && SKINS[d.i] && SKINS[d.i].fx) || 0;
 export const EYES = [

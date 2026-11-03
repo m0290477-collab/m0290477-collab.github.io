@@ -4,7 +4,7 @@
 // cross-section with a sculpted head, neck, tail taper, lateral undulation, head bob, eat squash and a
 // growth pulse running down the body. Fragment stage = PBR (clearcoat/iridescence/sheen) + procedural
 // scales + 12 legendary shader effects. All snakes = 1 instanced draw (+1 for ghost/transparent skins).
-import * as THREE from "../vendor/three.module.min.js?v=modes1b";
+import * as THREE from "../vendor/three.module.min.js?v=aaa2a";
 
 export const SW = 176; // spine samples per snake (2 texels each)
 export const MAXS = 56; // snake rows (last row reserved for the showcase)
@@ -77,7 +77,7 @@ vec3 hue(float h){ return clamp(abs(mod(h*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0,0.
 const FRAG_COLOR = /* glsl */ `
   int fx=int(vFx.x+0.5); float boost=vFx.y;
   vec2 q=vec2(vSk.x, vSk.y*vR); // body-space (along, around) in world units
-  vec3 base=vCol; float sRough=0.3, sMetal=0.04, sIrid=0.12, sCC=1.0, sAlpha=1.0, bumpK=1.0;
+  vec3 base=vCol; float sRough=0.26, sMetal=0.04, sIrid=0.12, sCC=1.0, sAlpha=1.0, bumpK=0.75;
   // procedural scales (offset rows of domed plates), dorsal darkening, lighter belly
   vec2 sc=vec2(vSk.x/(vR*0.5), vSk.y*1.4323);
   sc.y+=mod(floor(sc.x),2.0)*0.5; vec2 cl=fract(sc)-0.5; float sd=length(cl*vec2(1.0,1.25));
@@ -90,34 +90,36 @@ const FRAG_COLOR = /* glsl */ `
     vec2 p=q*0.75+vec2(-uT*0.9,0.0); float e=vor(p); float n=fbm(q*0.5);
     base=mix(vec3(0.045,0.02,0.015),vec3(0.16,0.07,0.04),n); sRough=0.82; sCC=0.2; sIrid=0.0; bumpK=1.6;
   } else if(fx==2){ // cosmos
-    float n=fbm(q*0.35+vec2(uT*0.12,0.0)); base=mix(vec3(0.012,0.004,0.045),vec3(0.11,0.02,0.24),n); sRough=0.38; sIrid=0.08; sCC=0.3; bumpK=0.3;
+    float n=fbm(q*0.35+vec2(uT*0.12,0.0)); base=mix(vec3(0.004,0.002,0.016),vec3(0.05,0.012,0.12),n*n); sRough=0.3; sIrid=0.0; sCC=0.8; bumpK=0.0;
   } else if(fx==3){ // prism diamond
-    base=vec3(0.78,0.9,1.0); sRough=0.02; sMetal=0.55; sIrid=1.0; bumpK=0.0;
+    base=vec3(0.1,0.17,0.24); sRough=0.02; sMetal=0.65; sIrid=1.0; bumpK=0.0;
   } else if(fx==4){ // hologram
     base=vec3(0.04,0.05,0.07); sRough=0.08; sIrid=1.0; sMetal=0.3; bumpK=0.3;
   } else if(fx==5){ // storm caller
     base=mix(vec3(0.02,0.035,0.09),vec3(0.05,0.1,0.22),fbm(q*0.4)); sRough=0.28; sIrid=0.2;
   } else if(fx==6){ // golden dragon
-    base=mix(vec3(0.78,0.46,0.1),vec3(0.95,0.74,0.34),sh); base*=mix(0.4,1.0,smoothstep(0.62,0.3,sd)); sMetal=1.0; sRough=0.24+0.3*(1.0-sh); sIrid=0.15; bumpK=2.2;
+    base=mix(vec3(0.78,0.46,0.1),vec3(0.95,0.74,0.34),sh); base*=mix(0.4,1.0,smoothstep(0.62,0.3,sd)); sMetal=1.0; sRough=0.22+0.25*(1.0-sh); sIrid=0.1; bumpK=1.3;
   } else if(fx==7){ // phantom
-    base=vec3(0.55,0.9,1.0); sRough=0.1; sIrid=0.6;
+    base=vec3(0.16,0.32,0.42); sRough=0.1; sIrid=0.6;
   } else if(fx==8){ // neon pulse
-    base=vec3(0.015,0.012,0.02); sRough=0.12; sIrid=0.1; bumpK=0.6;
+    base=vec3(0.012,0.01,0.018); sRough=0.18; sIrid=0.0; sCC=0.6; bumpK=0.6;
   } else if(fx==9){ // void
     base=vec3(0.008,0.006,0.014); sRough=0.55; sCC=0.6; sIrid=0.4;
   } else if(fx==10){ // aurora
-    base=mix(vec3(0.01,0.06,0.07),vec3(0.06,0.02,0.12),fbm(q*0.3+uT*0.1)); sRough=0.15; sIrid=0.5;
+    base=mix(vec3(0.004,0.02,0.03),vec3(0.03,0.008,0.06),fbm(q*0.3+uT*0.1)); sRough=0.2; sIrid=0.25; sCC=0.7;
   } else if(fx==11){ // frost king
     base=vec3(0.72,0.88,1.0)*mix(0.8,1.05,sh); sRough=0.06; sMetal=0.25; sIrid=0.7; bumpK=1.4;
   } else if(fx==12){ // solar flare
-    base=vec3(0.9,0.38,0.06); sRough=0.5; sCC=0.3; sIrid=0.0;
+    base=vec3(0.55,0.16,0.02); sRough=0.45; sCC=0.4; sIrid=0.0;
+  } else if(fx==13){ // phoenix: layered flame feathers, dark ember roots
+    float fe=abs(fract(q.x*0.55+abs(cos(vSk.y))*0.9)-0.5); base=mix(vec3(0.09,0.01,0.0),vec3(0.55,0.08,0.01),smoothstep(0.5,0.15,fe)); sRough=0.42; sCC=0.5; sIrid=0.1; bumpK=0.4;
   }
 #endif
   diffuseColor.rgb=base;
 `;
 const FRAG_BUMP = /* glsl */ `
   { // derivative bump from the scale height field (three.js bump technique, no tangents needed)
-    float hgt=sh*0.05*vR*bumpK;
+    float hgt=sh*0.05*vR*bumpK*(1.0-smoothstep(0.15,0.5,length(fwidth(sc)))); // aaa2: fade sub-pixel scales (no sparkle noise)
 #ifdef SNAKE_FX
     if(fx==3){ hgt=abs(fract(q.x*0.9+q.y*0.6)-0.5)*0.06*vR+abs(fract(q.x*0.9-q.y*0.6)-0.5)*0.06*vR; }
 #endif
@@ -132,31 +134,33 @@ const FRAG_EMIT = /* glsl */ `
     vec3 em=vec3(0.0);
 #ifdef SNAKE_FX
     if(fx==1){ vec2 p=q*0.75+vec2(-uT*0.9,0.0); float e=vor(p); float crack=smoothstep(0.11,0.0,e); float hot=0.6+0.4*sin(uT*3.0+q.x*0.7);
-      em=mix(vec3(1.0,0.22,0.02),vec3(1.0,0.75,0.2),crack)*crack*(2.6*hot)+vec3(1.0,0.3,0.05)*fres*0.6; }
-    else if(fx==2){ vec2 g=q*2.4+V.xy*vR*0.6+vec2(uT*0.5,0.0); vec2 ci=floor(g); float st=step(0.93,h21(ci))*smoothstep(0.32,0.0,length(fract(g)-0.5))*(0.5+0.5*sin(uT*4.0+h21(ci+3.0)*30.0));
+      em=mix(vec3(1.0,0.16,0.0),vec3(1.0,0.5,0.06),crack)*crack*(1.9*hot)+vec3(1.0,0.25,0.02)*fres*0.22; }
+    else if(fx==2){ vec2 g=q*2.4+V.xy*vR*0.6+vec2(uT*0.5,0.0); vec2 ci=floor(g); float st=step(0.9,h21(ci))*smoothstep(0.42,0.0,length(fract(g)-0.5))*(0.55+0.45*sin(uT*1.5+h21(ci+3.0)*30.0));
       vec2 g2=q*5.0+vec2(uT*0.9,0.0); float st2=step(0.96,h21(floor(g2)))*smoothstep(0.3,0.0,length(fract(g2)-0.5));
-      float n=fbm(q*0.35+vec2(uT*0.12,0.0)); em=mix(vec3(0.28,0.03,0.6),vec3(0.06,0.12,0.5),n)*0.35*n+vec3(1.0,0.95,1.0)*(st*2.6+st2*1.2)+vec3(0.42,0.12,0.9)*fres*0.32; }
-    else if(fx==3){ vec2 g=q*3.0; float gl=step(0.965,h21(floor(g)+floor(uT*5.0)))*smoothstep(0.35,0.0,length(fract(g)-0.5)); em=vec3(1.0)*gl*3.5+vec3(0.6,0.9,1.0)*fres*0.9+hue(fres*2.0+uT*0.2)*fres*0.5; }
-    else if(fx==4){ float scan=step(0.55,fract(vSk.x*1.8-uT*3.0))*0.25; em=hue(fres*1.6+vSk.x*0.04+uT*0.25)*(0.35+fres*1.8)+vec3(0.4,1.0,1.0)*scan*(0.4+fres); }
+      float n=fbm(q*0.35+vec2(uT*0.12,0.0)); em=mix(vec3(0.4,0.05,0.75),vec3(0.05,0.25,0.7),n)*0.55*smoothstep(0.45,0.85,n)+vec3(1.0,0.95,1.0)*(st*2.6+st2*1.2)+vec3(0.42,0.12,0.9)*fres*0.32; }
+    else if(fx==3){ vec2 g=q*3.0; float gl=step(0.965,h21(floor(g)))*smoothstep(0.35,0.0,length(fract(g)-0.5))*pow(0.5+0.5*sin(uT*1.6+h21(floor(g)+5.0)*40.0),3.0); em=vec3(1.0)*gl*3.0+vec3(0.55,0.85,1.0)*pow(fres,1.5)*0.8+hue(fres*2.2+vSk.x*0.05+uT*0.1)*fres*0.75+vec3(0.35,0.55,0.7)*pow(abs(sin(q.x*0.9+q.y*0.6+uT*0.3)),12.0)*0.5; }
+    else if(fx==4){ float scan=smoothstep(0.35,0.5,abs(fract(vSk.x*0.6-uT*0.5)-0.5))*0.14; em=(hue(fres*1.6+vSk.x*0.04+uT*0.12)*0.6+0.4)*(0.18+fres*1.3)+vec3(0.4,1.0,1.0)*scan*(0.4+fres); }
     else if(fx==5){ float l1=abs(fbm(q*vec2(0.35,1.1)+vec2(uT*3.1,uT*1.3))-0.5); float l2=abs(fbm(q*vec2(0.5,1.6)-vec2(uT*2.3,-uT*1.9)+7.0)-0.5);
-      float bolt=smoothstep(0.03,0.0,l1)+smoothstep(0.022,0.0,l2)*0.8; float fl=0.7+0.3*step(0.5,fract(uT*9.0)); em=vec3(0.55,0.85,1.0)*bolt*4.0*fl+vec3(0.2,0.55,1.0)*fres*0.9; }
+      float bolt=smoothstep(0.03,0.0,l1)+smoothstep(0.022,0.0,l2)*0.8; float fl=0.85+0.15*sin(uT*4.0); em=vec3(0.55,0.85,1.0)*bolt*4.0*fl+vec3(0.2,0.55,1.0)*fres*0.9; }
     else if(fx==6){ em=vec3(1.0,0.45,0.08)*pow(fres,1.5)*0.9+vec3(1.0,0.6,0.1)*smoothstep(0.55,0.62,sd)*0.12; }
-    else if(fx==7){ float w=fbm(q*0.5+vec2(uT*0.8,0.0)); em=vec3(0.45,0.9,1.0)*(fres*1.8+w*0.25); }
-    else if(fx==8){ float band=pow(0.5+0.5*sin(vSk.x*1.25-uT*11.0),14.0); float line=smoothstep(0.12,0.0,abs(cos(vSk.y)))*0.9; vec3 c=mix(vec3(1.0,0.17,0.84),vec3(0.0,0.9,1.0),0.5+0.5*sin(vSk.x*0.18+uT*1.5));
-      em=c*(band*3.2+line*1.4+fres*0.6); }
+    else if(fx==7){ float w=fbm(q*0.5+vec2(uT*0.8,0.0)); em=vec3(0.45,0.9,1.0)*(fres*1.6+smoothstep(0.55,0.8,w)*0.5); }
+    else if(fx==8){ float band=pow(0.5+0.5*sin(vSk.x*1.25-uT*5.0),14.0); float line=smoothstep(0.12,0.0,abs(cos(vSk.y)))*0.9; vec3 c=mix(vec3(1.0,0.17,0.84),vec3(0.0,0.9,1.0),0.5+0.5*sin(vSk.x*0.18+uT*1.5));
+      em=c*(band*2.2+line*1.1+fres*0.6); }
     else if(fx==9){ float fl=fbm(q*0.6+vec2(uT*1.6,-uT*0.7)); em=vec3(0.6,0.15,1.0)*pow(fres,1.6)*(1.0+fl*2.4)+vec3(1.0,0.2,0.9)*smoothstep(0.7,0.95,fl)*0.5; }
-    else if(fx==10){ float b=fbm(vec2(vSk.x*0.12-uT*0.6, vSk.y*0.8)); float bands=smoothstep(0.35,0.75,b); em=mix(vec3(0.0,1.0,0.6),vec3(0.55,0.2,1.0),fbm(q*0.2+uT*0.2))*bands*1.7+vec3(0.2,1.0,0.8)*fres*0.5; }
-    else if(fx==11){ vec2 g=q*4.0; float sp=step(0.95,h21(floor(g)+floor(uT*3.0)))*smoothstep(0.3,0.0,length(fract(g)-0.5)); em=vec3(0.85,0.95,1.0)*sp*2.8+vec3(0.5,0.8,1.0)*fres*0.9; }
-    else if(fx==12){ float pl=fbm(q*0.45+vec2(-uT*1.4,uT*0.5)); float pl2=fbm(q*0.9-vec2(uT*2.0,0.0)); em=mix(vec3(1.0,0.25,0.02),vec3(1.0,0.85,0.3),pl)*(1.4+pl2*1.8)+vec3(1.0,0.6,0.1)*fres; }
+    else if(fx==10){ float b=fbm(vec2(vSk.x*0.12-uT*0.6, vSk.y*0.8)); float bands=smoothstep(0.35,0.75,b); em=mix(vec3(0.0,1.0,0.55),vec3(0.5,0.15,1.0),fbm(q*0.2+uT*0.2))*bands*1.2+vec3(0.1,0.8,0.6)*pow(fres,2.0)*0.35; }
+    else if(fx==11){ vec2 g=q*4.0; float sp=step(0.95,h21(floor(g)))*smoothstep(0.3,0.0,length(fract(g)-0.5))*pow(0.5+0.5*sin(uT*1.3+h21(floor(g)+9.0)*40.0),3.0); em=vec3(0.85,0.95,1.0)*sp*2.8+vec3(0.5,0.8,1.0)*fres*0.9; }
+    else if(fx==13){ float fe=abs(fract(q.x*0.55+abs(cos(vSk.y))*0.9)-0.5); float fl=fbm(vec2(q.x*0.35+uT*1.8, q.y*0.9)); float tip=smoothstep(0.32,0.05,fe);
+      em=mix(vec3(1.0,0.2,0.0),vec3(1.0,0.62,0.12),fl)*(tip*(0.5+fl*0.9))+vec3(1.0,0.35,0.04)*pow(fres,1.6)*0.45; }
+    else if(fx==12){ float pl=fbm(q*0.45+vec2(-uT*1.4,uT*0.5)); float pl2=fbm(q*0.9-vec2(uT*2.0,0.0)); em=mix(vec3(1.0,0.2,0.0),vec3(1.0,0.6,0.1),pl)*(0.18+smoothstep(0.5,0.8,pl2)*0.95)+vec3(1.0,0.42,0.04)*pow(fres,1.6)*0.35; }
     else
 #endif
-    { em=vCol*fres*0.18; }
+    { em=vCol*fres*0.2+vec3(0.55,0.65,0.8)*pow(fres,2.2)*0.14; }
     // boost: energy streaks racing down the body; team/legend tint on the rim
     em+=mix(vCol+0.15,vec3(1.0),0.25)*boost*pow(0.5+0.5*sin(vSk.x*0.85-uT*24.0),6.0)*1.6;
     em+=vGlow*fres*1.2;
     totalEmissiveRadiance+=em;
 #ifdef SNAKE_FX
-    if(fx==7){ sAlpha=0.28+0.72*fres; }
+    if(fx==7){ sAlpha=0.16+0.84*fres; }
 #endif
   }
 `;
@@ -217,13 +221,15 @@ export class SnakeSystem {
   build(Q) {
     this.dispose(true); this.Q = Q;
     this.geo = tubeGeometry(Q.rings, Q.radial);
-    const phys = Q.physical && Q.mat !== "standard";
-    const mk = (ghost, fxOn) => {
-      const m = Q.mat === "lambert" ? new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: ghost }) : phys ? new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.05, clearcoat: 1, clearcoatRoughness: 0.08, iridescence: Q.irid ? 0.2 : 0, iridescenceIOR: 1.6, sheen: Q.irid ? 0.12 : 0, sheenRoughness: 0.5, sheenColor: new THREE.Color(0.5, 0.6, 0.7), envMapIntensity: 1.15, transparent: ghost, depthWrite: true })
+    const phys0 = Q.physical && Q.mat !== "standard";
+    const mk = (ghost, fxOn, studio) => {
+      const phys = studio ? Q.mat !== "lambert" : phys0; // aaa2: the showcase snake always gets the full clearcoat/sheen/iridescence material (one snake, menus only)
+      const m = Q.mat === "lambert" ? new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: ghost }) : phys ? new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.05, clearcoat: 1, clearcoatRoughness: 0.08, iridescence: Q.irid || studio ? 0.2 : 0, iridescenceIOR: 1.6, sheen: Q.irid && !studio ? 0.12 : 0, sheenRoughness: 0.5, sheenColor: new THREE.Color(0.5, 0.6, 0.7), envMapIntensity: 1.15, transparent: ghost, depthWrite: true })
         : new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.05, envMapIntensity: 1.2, transparent: ghost });
       patch(m, false, this.uniforms, ghost, fxOn); return m;
     };
     this.mat = mk(false, false); this.matF = mk(false, true); this.matG = mk(true, true);
+    this.matS = mk(false, false, true); this.matSF = mk(false, true, true); this.matSG = mk(true, true, true);
     this.depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }); patch(this.depth, true, this.uniforms, false, false);
     // instance groups share the template buffers: plain skins, legendary shader skins, ghost (transparent) skins, + showcase copies
     const group = (n, mat, shadow) => {
@@ -233,10 +239,23 @@ export class SnakeSystem {
       const m = new THREE.Mesh(g, mat); m.frustumCulled = false; if (shadow) { m.customDepthMaterial = this.depth; m.castShadow = !!Q.shadows; m.receiveShadow = !!Q.shadows; }
       return { g, A, B, C, m };
     };
-    this.G = { i: group(MAXS, this.mat, true), f: group(24, this.matF, true), g: group(16, this.matG, false), s: group(1, this.mat, true), sf: group(1, this.matF, true), sg: group(1, this.matG, false) };
+    this.G = { i: group(MAXS, this.mat, true), f: group(24, this.matF, true), g: group(16, this.matG, false), s: group(1, this.matS, true), sf: group(1, this.matSF, true), sg: group(1, this.matSG, false) };
     this.G.g.m.renderOrder = 2; this.G.sg.m.renderOrder = 2;
+    // aaa2: soft contact shadow = the same tube flattened onto the ground along the sun, alpha falling off to the edges.
+    // Replaces snake shadow-map casting in the world (one cheap transparent draw per group instead of a depth pass).
+    this.shU = { uSpine: this.uniforms.uSpine, uT: this.uniforms.uT, uSun: { value: new THREE.Vector3(-0.45, 0.75, 0.35).normalize() }, uK: { value: 0.65 } };
+    this.shMat = new THREE.ShaderMaterial({ uniforms: this.shU, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, fog: false,
+      vertexShader: GLSL_COMMON + `uniform vec3 uSun; varying float vS; varying float vE;
+        void main(){ vec3 pos, nrm; snakeVertex(pos, nrm); float sn=sin(tb.y), cs=cos(tb.y); vS=sn; vE=1.0-cs*cs;
+          vec2 sh=uSun.xz/max(uSun.y,0.2); vec3 c=pos; c.xz-=sh*c.y*0.55; c.xz+=normalize(nrm.xz+vec2(1e-4,0.0))*vR*0.45*abs(cs); c.y=0.04;
+          gl_Position=projectionMatrix*viewMatrix*vec4(c,1.0); }`,
+      fragmentShader: `uniform float uK; varying float vS; varying float vE; varying vec4 vFx;
+        void main(){ if(vS<0.0) discard; float a=pow(clamp(vE,0.0,1.0),0.9)*uK*vFx.z; gl_FragColor=vec4(0.0,0.0,0.0,a); }` });
+    const shM = (G) => { const m = new THREE.Mesh(G.g, this.shMat); m.frustumCulled = false; m.renderOrder = 1; return m; };
+    this.shadowMeshes = [shM(this.G.i), shM(this.G.f)];
+    for (const k of ["i", "f"]) this.G[k].m.castShadow = false;
     this.mesh = this.G.i.m; this.meshF = this.G.f.m; this.meshG = this.G.g.m;
-    this.worldMeshes = [this.G.i.m, this.G.f.m, this.G.g.m]; this.showMeshes = [this.G.s.m, this.G.sf.m, this.G.sg.m];
+    this.worldMeshes = [this.G.i.m, this.G.f.m, this.G.g.m, ...this.shadowMeshes]; this.showMeshes = [this.G.s.m, this.G.sf.m, this.G.sg.m];
   }
   setShow(fx) { const k = fx === 7 ? "sg" : fx ? "sf" : "s"; for (const n of ["s", "sf", "sg"]) { this.G[n].g.instanceCount = n === k ? 1 : 0; this.G[n].m.visible = n === k; } return k; }
   // write one snake: pts = [x0,z0,x1,z1...] head first, ys optional heights, colorAt(j, n) -> packed int
@@ -251,7 +270,7 @@ export class SnakeSystem {
     this.tex.needsUpdate = true;
   }
   dispose(keepTex) {
-    if (this.G) { for (const k in this.G) { const G = this.G[k]; if (G.m.parent) G.m.parent.remove(G.m); G.g.dispose(); } this.geo.dispose(); this.mat.dispose(); this.matF.dispose(); this.matG.dispose(); this.depth.dispose(); this.G = null; }
+    if (this.G) { for (const k in this.G) { const G = this.G[k]; if (G.m.parent) G.m.parent.remove(G.m); G.g.dispose(); } this.geo.dispose(); if (this.shadowMeshes) { for (const m of this.shadowMeshes) if (m.parent) m.parent.remove(m); this.shMat.dispose(); } this.mat.dispose(); this.matF.dispose(); this.matG.dispose(); this.matS.dispose(); this.matSF.dispose(); this.matSG.dispose(); this.depth.dispose(); this.G = null; }
     if (!keepTex && this.tex) this.tex.dispose();
   }
 }

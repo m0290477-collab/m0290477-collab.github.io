@@ -1,16 +1,16 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=modes1b"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=modes1b";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=modes1b";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=modes1b";
-import { NetBackend } from "./net.js?v=modes1b";
-import { t, fmtNum } from "./i18n.js?v=modes1b";
-import { haptic } from "./audio.js?v=modes1b";
-import { rankOf, rpDelta } from "./profile.js?v=modes1b";
-import { Replay } from "./replay.js?v=modes1b";
-import { emit } from "./events.js?v=modes1b"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=aaa2a"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=aaa2a";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=aaa2a";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=aaa2a";
+import { NetBackend } from "./net.js?v=aaa2a";
+import { t, fmtNum } from "./i18n.js?v=aaa2a";
+import { haptic } from "./audio.js?v=aaa2a";
+import { rankOf, rpDelta } from "./profile.js?v=aaa2a";
+import { Replay } from "./replay.js?v=aaa2a";
+import { emit } from "./events.js?v=aaa2a"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -467,7 +467,7 @@ export class Game {
     const add = (s, o, f, me, boost) => {
       let e = this.entries.get(s); if (!e) { e = { s }; this.entries.set(s, e); }
       const sk = s.skin || {}; e.o = o; e.f = f; e.fn = skinFn(sk); e.eye = sk.e | 0; e.trail = sk.t | 0; e.name = s.name; e.nc = NAME_COLORS[sk.n | 0] || "#fff"; e.me = me; e.boost = boost; e.fx = skinFx(sk);
-      e.alpha = s.alive ? 1 : Math.max(0, 1 - (now - (s.deadAt || now)) / 450); e.scale = s.alive ? 1 : 1 + (1 - e.alpha) * 0.25; e.look = s.ta; e.top = false; e.used = true; e.ox = me && b.vox ? b.vox : 0; e.oy = me && b.voy ? b.voy : 0;
+      e.alpha = s.alive ? 1 : Math.max(0, 1 - (now - (s.deadAt || now)) / 450); e.scale = s.alive ? 1 : 1 + (1 - e.alpha) * 0.25; e.look = s.ta; e.top = false; e.top1 = false; e.used = true; e.ox = me && b.vox ? b.vox : 0; e.oy = me && b.voy ? b.voy : 0;
       e.team = s.team !== undefined ? TEAM_COL[s.team] : null; if (s.team !== undefined) e.nc = TEAM_CSS[s.team]; if (s.boss) { e.nc = "#ff4040"; e.glow = [1, 0.1, 0.1]; e.team = null; } else e.glow = null;
       if (s.boss && this.boss && this.boss.phase === 3) e.glow = [1.6, 0.2, 0.05];
       if (s.bounty) { e.glow = [1.5, 1.05, 0.15]; e.nc = "#ffd23a"; e.name = "💰 " + s.name; }
@@ -479,7 +479,7 @@ export class Game {
     if (b.sim) { for (const s of b.sim.snakes) if (s.n > 2) add(s, 1, alpha, s === b.me, s.boosting); }
     else { b.prepareOthers(); for (const mr of b.mirrors.values()) add(mr.s, mr.s._ro, mr.s._rf, false, mr.boost); if (b.me) add(b.me, 1, alpha, true, b.me.boosting); }
     for (const [k, e] of this.entries) if (!e.used) this.entries.delete(k);
-    for (let q = 0; q < 3; q++) { let best = null; for (const e of list) if (!e.top && e.s.alive && (!best || e.s.m > best.s.m)) best = e; if (best) best.top = true; }
+    for (let q = 0; q < 3; q++) { let best = null; for (const e of list) if (!e.top && e.s.alive && (!best || e.s.m > best.s.m)) best = e; if (best) { best.top = true; if (q === 0) best.top1 = true; } }
     v.food = b; v.ghosts = b.ghosts; v.pus = b.pus || null; v.mets = b.mets || null; v.tick = b.sim ? b.sim.tick : undefined;
     v.rain = this.rainFx && now < this.rainFx.until && b.me && b.me.alive ? b.me : null; v.goldRain = this.evNow && this.evNow.k === "rain" && now < this.evNow.until && b.me ? b.me : null;
     v.zone = this.zone && this.mode === "br" ? this.zone : null; v.hill = this.hill && this.mode === "koth" ? { x: this.hill.x, y: this.hill.y, r: this.hill.r, c: this.hill.mine ? [0.3, 1, 0.5] : this.hill.contested ? [1, 0.3, 0.3] : [1, 0.8, 0.2] } : null;

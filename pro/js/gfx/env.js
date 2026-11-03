@@ -1,8 +1,8 @@
 // Living world environments: panoramic sky with procedural clouds/aurora/nebula, PBR ground with anti-tiling,
 // animated water/lava, swaying instanced foliage, decor, weather (rain/snow/sandstorm/ash/stars), ambient
 // creatures, time-of-day lighting. Textures stream per world (lazy WebP) and swap in when ready.
-import * as THREE from "../vendor/three.module.min.js?v=modes1b";
-import { W3D, worldAsset } from "../worlds.js?v=modes1b";
+import * as THREE from "../vendor/three.module.min.js?v=aaa2a";
+import { W3D, worldAsset } from "../worlds.js?v=aaa2a";
 
 const loader = new THREE.TextureLoader();
 const texCache = new Map();
@@ -77,16 +77,16 @@ export class World {
     const X = this.X, W = this.W, R = this.R0;
     const mat = this.Q.mat === "lambert" ? new THREE.MeshLambertMaterial({ color: 0xffffff }) : new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: X.rough, metalness: X.id === "neon" ? 0.4 : 0.0, envMapIntensity: X.reflect ? 1.4 : 0.8 });
     mat.color.set(W.ground); // placeholder until the texture streams in
-    const self = this; this.groundU = { uT: this.uT, tRefl: { value: null }, uRefl: { value: 0 }, uMat: { value: new THREE.Matrix4() }, uEm: { value: X.emissiveK || 0 }, uKind: { value: this.idx }, uDesat: { value: X.desat || 0 }, uFlat: { value: new THREE.Color(W.calm ? W.calm.ground : W.ground).multiplyScalar(2.6) }, uFlatK: { value: 0.75 } };
+    const self = this; this.groundU = { uT: this.uT, tRefl: { value: null }, uRefl: { value: 0 }, uMat: { value: new THREE.Matrix4() }, uEm: { value: X.emissiveK || 0 }, uKind: { value: this.idx }, uDesat: { value: X.desat || 0 }, uFlat: { value: new THREE.Color(W.calm ? W.calm.ground : W.ground).multiplyScalar(2.6) }, uFlatK: { value: 0.92 } };
     mat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, self.groundU); GROUND_VS_PATCH(sh);
       sh.fragmentShader = "varying vec3 vWp; uniform float uT, uRefl, uEm, uKind, uDesat, uFlatK; uniform vec3 uFlat; uniform sampler2D tRefl; uniform mat4 uMat;\nfloat gh(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }\nfloat gn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(gh(i),gh(i+vec2(1,0)),f.x),mix(gh(i+vec2(0,1)),gh(i+vec2(1,1)),f.x),f.y); }\n" + sh.fragmentShader
         .replace("#include <map_fragment>", `#ifdef USE_MAP
           vec4 t1 = texture2D(map, vMapUv); vec4 t2 = texture2D(map, vMapUv*0.37+vec2(0.31,0.17)); float m = gn(vWp.xz*0.035);
-          vec4 sampledDiffuseColor = mix(t1, t2, smoothstep(0.35,0.65,m)*0.55); float macro = 0.82+0.36*gn(vWp.xz*0.012); diffuseColor *= sampledDiffuseColor; diffuseColor.rgb *= macro; diffuseColor.rgb = mix(diffuseColor.rgb, uFlat * (0.9 + 0.2 * macro), uFlatK); diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.299,0.587,0.114))), uDesat);
+          vec4 sampledDiffuseColor = mix(t1, t2, smoothstep(0.35,0.65,m)*0.55); float macro = 0.82+0.36*gn(vWp.xz*0.012); diffuseColor *= sampledDiffuseColor; diffuseColor.rgb *= macro; diffuseColor.rgb = mix(diffuseColor.rgb, uFlat * (0.9 + 0.2 * macro), uFlatK); { float cl = gn(vWp.xz*0.016 + uT*vec2(0.011,0.006)) * 0.65 + gn(vWp.xz*0.041 - uT*vec2(0.006,0.013)) * 0.35; diffuseColor.rgb *= 1.0 - 0.17*smoothstep(0.42,0.78,cl); } diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.299,0.587,0.114))), uDesat);
         #endif`)
         .replace("#include <emissivemap_fragment>", `#ifdef USE_EMISSIVEMAP
-          float em = texture2D(emissiveMap, vEmissiveMapUv).r; float pulse = 0.6; totalEmissiveRadiance = emissive*em*em*uEm*pulse;
+          float em = texture2D(emissiveMap, vEmissiveMapUv).r; float pulse = 0.32; totalEmissiveRadiance = emissive*em*em*uEm*pulse;
         #endif`)
         .replace("#include <opaque_fragment>", `if(uRefl>0.0){ vec4 pc = uMat*vec4(vWp,1.0); vec2 ruv = pc.xy/pc.w + normal.xy*0.03; vec3 rc = texture2D(tRefl, ruv).rgb; float fr = 0.25+0.75*pow(1.0-clamp(dot(normal, normalize(vViewPosition)),0.0,1.0),4.0); outgoingLight = mix(outgoingLight, outgoingLight+rc*0.9, uRefl*fr); }
           #include <opaque_fragment>`);
@@ -259,7 +259,7 @@ export class World {
       this.fogColor = sampleHorizon(sky.image, W.fog); this.r3.scene.fog && this.r3.scene.fog.color.set(this.fogColor); this.skyU.uFog.value.set(this.fogColor); }
     const rep = (this.R0 + 150) * 2 / (X.id === "neon" ? 26 : 22); // calm1: larger tiles = lower-frequency ground
     if (gmap) { gmap.wrapS = gmap.wrapT = THREE.RepeatWrapping; gmap.repeat.set(rep, rep); gmap.anisotropy = Math.min(8, r.capabilities.getMaxAnisotropy()); this.groundMat.map = gmap; this.groundMat.color.set(0xffffff); }
-    if (nmap && this.Q.normalMaps) { nmap.wrapS = nmap.wrapT = THREE.RepeatWrapping; nmap.repeat.set(rep, rep); this.groundMat.normalMap = nmap; this.groundMat.normalScale.set(0.55, 0.55); }
+    if (nmap && this.Q.normalMaps) { nmap.wrapS = nmap.wrapT = THREE.RepeatWrapping; nmap.repeat.set(rep, rep); this.groundMat.normalMap = nmap; this.groundMat.normalScale.set(0.3, 0.3); }
     if (emap) { emap.wrapS = emap.wrapT = THREE.RepeatWrapping; emap.repeat.set(rep, rep); this.groundMat.emissiveMap = emap; this.groundMat.emissive.set(X.id === "volcano" ? 0xff5a10 : X.id === "neon" ? 0xd040ff : 0x9a6cff); }
     this.groundMat.needsUpdate = true; this.r3.warm = this.r3.prewarm ? this.r3.prewarm() : null; if (this.r3.warm) await this.r3.warm; this.ready = true; this.r3.onWorldReady && this.r3.onWorldReady(this.idx);
   }

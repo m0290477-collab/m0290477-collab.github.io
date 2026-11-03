@@ -2,14 +2,33 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=modes1b";
-import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=modes1b";
-import { EYES } from "./skins.js?v=modes1b";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=aaa2a";
+import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=aaa2a";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=aaa2a";
+import { on as onEv } from "./events.js?v=aaa2a";
+const NO2 = 220;
 
 const TAU = Math.PI * 2;
 const CSS = new Array(32768); // 15-bit quantised rgb -> "rgb(...)" (no string building per segment)
 const css = (r, g, b) => { const R = Math.max(0, Math.min(31, (r * 31 + 0.5) | 0)), G = Math.max(0, Math.min(31, (g * 31 + 0.5) | 0)), B = Math.max(0, Math.min(31, (b * 31 + 0.5) | 0)); const k = (R << 10) | (G << 5) | B; return CSS[k] || (CSS[k] = `rgb(${(R * 255 / 31) | 0},${(G * 255 / 31) | 0},${(B * 255 / 31) | 0})`); };
 const lin2css = (c) => css(Math.sqrt(c[0]), Math.sqrt(c[1]), Math.sqrt(c[2]));
+
+// aaa2: per-legendary animated surface for the 2D showcase (calm, smooth bands; no strobing)
+const _hx = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
+const LEG2 = {}; for (const k in LEGEND) LEG2[k] = { a: _hx(LEGEND[k].tr[0]), b: _hx(LEGEND[k].tr[1]), g: _hx(LEGEND[k].glow) };
+function leg2(fx, u, j, t, o) { const L = LEG2[fx]; if (!L) return; let w = 0, c = L.b;
+  switch (fx) {
+    case 1: case 13: case 12: w = Math.pow(0.5 + 0.5 * Math.sin(u * 40 - t * 2.2), 4) * 0.75; c = L.a; break; // flowing heat
+    case 2: w = (j % 7 === 3) ? 0.5 + 0.5 * Math.sin(t * 1.5 + j) : 0; c = [1, 1, 1]; break;               // stars inside
+    case 3: case 11: w = Math.pow(0.5 + 0.5 * Math.sin(u * 14 - t * 1.4), 8) * 0.8; c = [1, 1, 1]; break;   // crystal glint sweep
+    case 4: { const h = (u * 1.5 + t * 0.12) % 1; w = 0.45; c = [0.55 + 0.45 * Math.cos(h * 6.28), 0.55 + 0.45 * Math.cos(h * 6.28 - 2.1), 0.55 + 0.45 * Math.cos(h * 6.28 + 2.1)]; break; } // holographic sheen
+    case 5: w = Math.pow(0.5 + 0.5 * Math.sin(u * 22 - t * 5), 10) * 0.9; c = [0.85, 0.97, 1]; break;      // current racing
+    case 6: w = Math.pow(0.5 + 0.5 * Math.sin(u * 9 - t * 1.1), 12) * 0.7; c = [1, 0.95, 0.75]; break;     // gold glint
+    case 9: w = 0.35 + 0.25 * Math.sin(u * 8 + t); c = L.a; break;
+    case 10: case 8: w = 0.5 + 0.5 * Math.sin(u * 6 - t * 0.8); c = L.b; break;
+    default: return;
+  }
+  o[0] += (c[0] - o[0]) * w; o[1] += (c[1] - o[1]) * w; o[2] += (c[2] - o[2]) * w; }
 
 export class Renderer2D {
   constructor(canvas) {
@@ -19,6 +38,8 @@ export class Renderer2D {
     this.buckets = Array.from({ length: 16 }, () => []); this.puSpr = PU_COL.map((c, k) => this._puSprite(k)); this.bgImg = null; this.vig = null; this.vigK = "";
     this.glowSpr = new Map(); // food glow sprite per colour (additive)
     this.calm = false;
+    // aaa2: pooled soft orbs (typed arrays, no per-frame allocation) + event-driven fx + top-1 crown
+    this.oP = new Float32Array(NO2 * 4); this.oL = new Float32Array(NO2 * 2); this.oC = new Array(NO2).fill("#fff"); this.oH = new Float32Array(NO2 * 3); this.oN = 0; this.meH = null; this.meC = "#9fe8b0"; this._fnMap = new WeakMap(); this._subFx();
     this.setWorld(0); this.resize();
   }
   setQuality(q) { this.qName = q; }
@@ -85,14 +106,29 @@ export class Renderer2D {
     for (let pass = 0; pass < 2; pass++) for (let j = n - 1; j >= 0; j--) {
       const behind = pts[j * 2 + 1] < cy + R * 0.55 - (1 - j / (n - 1)) ** 2 * R * 0.9; if ((pass === 0) !== behind && j > 3) continue; if (pass === 0 && j <= 3) continue;
       const u = j / (n - 1), rr = j ? rad * Math.max(0.35, taperAt(u)) * 1.05 : rad * HEAD_K * 1.1; fn(j, n, t, col);
-      g.fillStyle = css(col[0], col[1], col[2]); g.beginPath(); g.arc(pts[j * 2], pts[j * 2 + 1], rr, 0, TAU); g.fill();
+      if (fx) leg2(fx, u, j, t, col); g.globalAlpha = fx === 7 ? 0.62 : 1;
+      g.fillStyle = css(col[0], col[1], col[2]); g.beginPath(); g.arc(pts[j * 2], pts[j * 2 + 1], rr, 0, TAU); g.fill(); g.globalAlpha = 1;
       g.fillStyle = "rgba(255,255,255,0.22)"; g.beginPath(); g.arc(pts[j * 2] - rr * 0.3, pts[j * 2 + 1] - rr * 0.35, rr * 0.42, 0, TAU); g.fill();
     }
     // eyes looking at the camera, with a slow blink
     const E = EYES[sv.d.eye] || EYES[0], hx = pts[0], hy = pts[1], er = rad * 0.38 * E.s, blink = (t % 4.2) < 0.12 ? 0.15 : 1;
     for (let q = 0; q < E.n; q++) { const side = E.n === 1 ? 0 : (q ? 1 : -1) * rad * 0.5, ex = hx + side, ey = hy - rad * 0.15; g.fillStyle = E.ec; g.beginPath(); g.ellipse(ex, ey, er, er * blink, 0, 0, TAU); g.fill(); if (blink > 0.5) { g.fillStyle = E.pc; g.beginPath(); g.arc(ex + Math.sin(t * 0.7) * er * 0.3, ey + er * 0.15, er * E.p, 0, TAU); g.fill(); } }
-    // legendary sparkle orbit
-    if (fx) { g.fillStyle = glow; for (let k = 0; k < 14; k++) { const a = t * 0.8 + k / 14 * TAU, r2 = R * (1.15 + 0.12 * Math.sin(t * 2 + k)), x = cx + Math.cos(a) * r2, y = cy + R * 0.2 + Math.sin(a) * r2 * 0.42 - Math.sin(t + k) * R * 0.3; g.globalAlpha = 0.55; g.beginPath(); g.arc(x, y, 1.6 + (k % 3), 0, TAU); g.fill(); } g.globalAlpha = 1; }
+    // aaa2: legendary signature aura (parametric, no state): each legendary has its own motion
+    if (fx) { const L = LEGEND[fx], c0 = L ? L.tr[0] : glow, c1 = L ? L.tr[1] : glow, base = cy + R * 0.75;
+      for (let k = 0; k < 30; k++) { const h1 = ((k * 0.6180339) % 1), h2 = ((k * 0.4142135 + 0.3) % 1), ph = (t * (0.12 + h2 * 0.1) + h1) % 1, life = Math.sin(ph * Math.PI); let x = cx, y = base, r0 = 1.2 + h2 * 1.6, a = h1 * TAU, al = life;
+        switch (fx) {
+          case 1: case 6: case 13: { const rr = R * (0.3 + h2 * 1.0) * (fx === 13 ? 1 - ph * 0.5 : 1); a += t * 0.15; x = cx + Math.cos(a) * rr; y = base - ph * R * 2.0 + Math.sin(a) * rr * 0.4; break; }
+          case 7: { const rr = R * (0.3 + h2 * 1.0); x = cx + Math.cos(a) * rr + Math.sin(t * 0.6 + k) * 4; y = base - ph * R * 1.8; r0 = 4 + h2 * 5; al = life * 0.25; break; }
+          case 2: case 3: case 12: { const rr = R * (1.25 + h2 * 0.45); a += t * (0.12 + h2 * 0.08); x = cx + Math.cos(a) * rr; y = cy + R * 0.3 + Math.sin(a) * rr * 0.4 - (fx === 12 ? Math.sin(ph * Math.PI) * R * 0.35 : (h1 - 0.5) * R * 0.5); al = fx === 12 ? life : 0.35 + 0.65 * Math.pow(0.5 + 0.5 * Math.sin(t * 1.3 + k * 2.1), 3); break; }
+          case 11: { const rr = R * (0.2 + h2 * 1.5); x = cx + Math.cos(a) * rr + Math.sin(t * 0.5 + k) * 3; y = cy - R * 1.2 + ph * R * 2.3; break; }
+          case 9: { const rr = R * 1.8 * (1 - ph) + R * 0.2; a += ph * 5; x = cx + Math.cos(a) * rr; y = cy + R * 0.45 + Math.sin(a) * rr * 0.4; al = ph * (1 - ph) * 3.5; break; }
+          case 4: case 8: { const rr = R * (0.4 + ph * 1.6); x = cx + Math.cos(a) * rr; y = base + Math.sin(a) * rr * 0.32; al = (1 - ph) * 0.8; r0 = 1.4; break; }
+          case 5: { const f = (t * 1.6 + h1) % 1, rr = R * (0.5 + h2 * 0.9); a += Math.floor(t * 1.6 + h1) * 2.4; x = cx + Math.cos(a) * rr; y = cy + R * 0.2 + Math.sin(a) * rr * 0.42 - h2 * R * 0.6; al = (1 - f) * (1 - f); r0 = 1 + (1 - f) * 1.6; break; }
+          case 10: { const rr = R * 1.5; x = cx + Math.cos(a) * rr; y = cy - R * 0.1 + Math.sin(a * 3 + t * 0.7) * R * 0.25 - h2 * R * 0.6; al = 0.2 + 0.35 * h2; r0 = 2.2; break; }
+        }
+        g.globalAlpha = Math.max(0, Math.min(1, al)) * 0.8; g.fillStyle = k % 2 ? c0 : c1; g.beginPath(); g.arc(x, y, r0, 0, TAU); g.fill(); }
+      g.globalAlpha = 1; }
+    if (false) { g.fillStyle = glow; for (let k = 0; k < 14; k++) { const a = t * 0.8 + k / 14 * TAU, r2 = R * (1.15 + 0.12 * Math.sin(t * 2 + k)), x = cx + Math.cos(a) * r2, y = cy + R * 0.2 + Math.sin(a) * r2 * 0.42 - Math.sin(t + k) * R * 0.3; g.globalAlpha = 0.55; g.beginPath(); g.arc(x, y, 1.6 + (k % 3), 0, TAU); g.fill(); } g.globalAlpha = 1; }
   }
 
   frame(v) {
@@ -135,11 +171,12 @@ export class Renderer2D {
     g.globalAlpha = 1;
     if ((v.rain || v.goldRain) && !this.calm) { const h = v.rain || v.goldRain; if (Math.random() < 0.3) this.burst(h.x + (Math.random() - 0.5) * 30, h.y + (Math.random() - 0.5) * 20, v.rain ? [0.8, 1, 0.3] : [1, 0.85, 0.2], 2, 1.5, 0.6); }
     // snakes
-    const pts = this.tmp, col = this.col;
+    const pts = this.tmp, col = this.col; this._palCss = v.foodPalCss; let crown = null; this._look2d(v);
     for (const d of v.snakes) {
       const s = d.s, r = s.r * (d.scale || 1); if ((s.sx(d.o) - cx) ** 2 + (s.sy(d.o) - cy) ** 2 > (vr + s.len) ** 2) continue;
       const n = bodyPoints(s, d.o, d.f, Math.max(0.3, r * 0.6), s.len, pts, 790);
       if (d.ox || d.oy) for (let j = 0; j < n; j++) { pts[j * 2] += d.ox; pts[j * 2 + 1] += d.oy; }
+      this._fnMap.set(s, d.fn); if (d.me) { const H = this.meH || (this.meH = [0, 0, 0]); H[0] = pts[0]; H[1] = pts[1]; H[2] = r; d.fn(n >> 2, n, t, col); this.meC = css(Math.min(1, col[0] * 1.1 + 0.08), Math.min(1, col[1] * 1.1 + 0.08), Math.min(1, col[2] * 1.1 + 0.08)); this.meFa = n > 1 ? Math.atan2(pts[1] - pts[3], pts[0] - pts[2]) : 0; }
       const P = s.pu || null, ghost = P && P[4] > 0, frozen = s.slow > 0, inv = d.inv;
       d.alpha = d.alpha * (inv ? (d.me ? 0.42 : 0.12) : 1); g.globalAlpha = d.alpha * (ghost ? 0.5 : 1);
       g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); for (let j = n - 1; j >= 0; j -= 2) { g.moveTo(pts[j * 2] + r * 1.45, pts[j * 2 + 1] + r * 0.45); g.arc(pts[j * 2] + r * 0.45, pts[j * 2 + 1] + r * 0.45, r * 1.02, 0, TAU); } g.fill(); // soft drop shadow
@@ -155,17 +192,19 @@ export class Renderer2D {
       }
       if (open) g.fill();
       // tube shading: a soft specular stripe on top + subtle scale bands
+      if (n > 2) { g.strokeStyle = "rgba(0,0,0,0.13)"; g.lineWidth = r * 0.7; g.lineCap = g.lineJoin = "round"; g.beginPath(); g.moveTo(pts[0] + r * 0.4, pts[1] + r * 0.45); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] + r * 0.4, pts[j * 2 + 1] + r * 0.45); g.stroke(); }
       if (n > 2) { g.strokeStyle = "rgba(255,255,255,0.2)"; g.lineWidth = r * 0.55; g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0] - r * 0.32, pts[1] - r * 0.38); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] - r * 0.32, pts[j * 2 + 1] - r * 0.38); g.stroke();
         }
       if (n > 1) {
-        const a = Math.atan2(pts[1] - pts[3], pts[0] - pts[2]), E = EYES[d.eye] || EYES[0], er = r * 0.42 * E.s, la = d.look ?? a, ca = Math.cos(a), sa = Math.sin(a);
+        const a = Math.atan2(pts[1] - pts[3], pts[0] - pts[2]), E = EYES[d.eye] || EYES[0], er = r * 0.42 * E.s, la = d.me && this.meLook !== undefined ? this.meLook : d.look ?? a, ca = Math.cos(a), sa = Math.sin(a);
         // head: a snout-shaped oval in the head colour, lit from the top-left, nostrils, then big glossy eyes
         d.fn(0, n, t, col); const hc = frozen ? css(col[0] * 0.5 + 0.35, col[1] * 0.5 + 0.45, col[2] * 0.5 + 0.5) : css(col[0], col[1], col[2]), hr = r * HEAD_K;
         g.save(); g.translate(pts[0] + ca * r * 0.18, pts[1] + sa * r * 0.18); g.rotate(a); g.fillStyle = "rgba(0,0,0,0.38)"; g.beginPath(); g.ellipse(0, 0, hr * 1.24, hr * 1.06, 0, 0, TAU); g.fill();
         g.fillStyle = hc; g.beginPath(); g.ellipse(0, 0, hr * 1.16, hr * 0.98, 0, 0, TAU); g.fill(); g.fillStyle = "rgba(255,255,255,0.2)"; g.beginPath(); g.ellipse(-hr * 0.15, -hr * 0.35, hr * 0.7, hr * 0.38, 0, 0, TAU); g.fill();
         g.fillStyle = "rgba(0,0,0,0.45)"; g.beginPath(); g.arc(hr * 0.98, -hr * 0.22, hr * 0.07, 0, TAU); g.arc(hr * 0.98, hr * 0.22, hr * 0.07, 0, TAU); g.fill(); g.restore();
+        const bph = (t * 0.31 + (s.id % 97) * 0.173) % 1, bk = bph < 0.035 ? Math.sin(bph / 0.035 * Math.PI) : 1; // gentle blink every ~3 s
         for (let q = 0; q < E.n; q++) { const side = E.n === 1 ? 0 : (q ? 1 : -1) * r * 0.5, ex = pts[0] + ca * r * 0.42 - sa * side, ey = pts[1] + sa * r * 0.42 + ca * side;
-          g.fillStyle = "rgba(0,0,0,0.35)"; g.beginPath(); g.arc(ex, ey, er * 1.18, 0, TAU); g.fill(); g.fillStyle = E.ec; g.beginPath(); g.arc(ex, ey, er, 0, TAU); g.fill();
+          g.fillStyle = "rgba(0,0,0,0.35)"; g.beginPath(); g.arc(ex, ey, er * 1.18, 0, TAU); g.fill(); g.fillStyle = E.ec; g.beginPath(); g.arc(ex, ey, er, 0, TAU); g.fill(); if (bk < 0.99) { g.fillStyle = hc; g.beginPath(); g.ellipse(ex, ey, er * 1.05, er * 1.05 * (1 - bk), a, 0, TAU); g.fill(); continue; }
           const px = ex + Math.cos(la) * er * 0.38, py = ey + Math.sin(la) * er * 0.38; g.fillStyle = E.pc; g.beginPath(); g.arc(px, py, er * E.p, 0, TAU); g.fill(); g.fillStyle = "rgba(255,255,255,0.9)"; g.beginPath(); g.arc(px - er * 0.22, py - er * 0.25, er * 0.2, 0, TAU); g.fill(); }
         // power-up auras: shield bubble, magnet ring, speed streaks, x2 crown glow
         if (P) {
@@ -176,16 +215,53 @@ export class Renderer2D {
 
           g.globalAlpha = d.alpha;
         }
+        if (d.top1 && s.alive && !inv) { crown = d; d._x2 = pts[0]; d._y2 = pts[1]; d._r2 = r; }
         if (d.gold) { g.strokeStyle = "#ffd23a"; g.lineWidth = 0.25; g.globalAlpha = 0.45; g.beginPath(); g.arc(pts[0], pts[1], r * 2, 0, TAU); g.stroke(); g.globalAlpha = d.alpha; }
         if (d.emo) { g.save(); g.globalAlpha = 1; g.translate(pts[0], pts[1] - r * 2.2 - 2.2); g.scale(1 / S, 1 / S); g.fillStyle = "rgba(10,14,26,0.85)"; g.strokeStyle = "rgba(255,220,140,0.95)"; g.lineWidth = 2; g.beginPath(); g.arc(0, -16, 17, 0, TAU); g.fill(); g.stroke(); g.textAlign = "center"; g.textBaseline = "middle"; g.font = d.emo === "GG" ? "800 15px sans-serif" : "20px sans-serif"; g.fillStyle = "#ffd23a"; g.fillText(d.emo, 0, -15); g.restore(); }
         if (d.name && !d.me && !inv) { g.save(); g.translate(pts[0], pts[1] - r * 2.3); g.scale(1 / S, 1 / S); g.font = "600 11.5px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.fillStyle = "rgba(0,0,0,0.5)"; g.fillText(d.name, 1, 1); g.globalAlpha = 0.85 * d.alpha; g.fillStyle = d.nc || "#fff"; g.fillText(d.name, 0, 0); g.restore(); } // own name tag hidden
       }
       g.globalAlpha = 1;
     }
+    if (crown) { const pts2 = crown; g.globalAlpha = crown.alpha ?? 1; this._crown(g, crown._x2, crown._y2, crown._r2, t); g.globalAlpha = 1; }
+    this._fx2d(g, dt);
     for (let i = this.parts.length - 1; i >= 0; i--) { const p = this.parts[i]; p.l -= dt; if (p.l <= 0) { const L = this.parts, last = L.pop(); if (last !== p) L[i] = last; this.pPool.push(p); continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.95; p.vy *= 0.95; g.globalAlpha = p.l / p.m; g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, 0.25, 0, TAU); g.fill(); }
-    for (let i = this.rings.length - 1; i >= 0; i--) { const q = this.rings[i]; q.t += dt * 1.6; if (q.t >= 1) { this.rings.splice(i, 1); continue; } g.globalAlpha = (1 - q.t) * 0.5; g.strokeStyle = q.c || "#fff"; g.lineWidth = 0.22; g.beginPath(); g.arc(q.x, q.y, 1 + q.t * Math.min(q.R, 8), 0, TAU); g.stroke(); }
+    for (let i = this.rings.length - 1; i >= 0; i--) { const q = this.rings[i]; q.t += dt * 1.6; if (q.t >= 1) { this.rings.splice(i, 1); continue; } if (q.t < 0) continue; g.globalAlpha = (1 - q.t) * 0.5; g.strokeStyle = q.c || "#fff"; g.lineWidth = 0.22; g.beginPath(); g.arc(q.x, q.y, 1 + q.t * Math.min(q.R, 8), 0, TAU); g.stroke(); }
     g.globalAlpha = 1; g.restore();
   }
-  clearFx() { for (const p of this.parts) this.pPool.push(p); this.parts.length = 0; this.rings.length = 0; } // replay1: a clean stage for the replay
-  dispose() {}
+
+  // ---------- aaa2: soft fx (calm-safe: short, low-count, no flashes) ----------
+  _orb(x, y, vx, vy, life, size, c, hx, hy, hk) { if (this.oN >= NO2) return; const i = this.oN++, o = i * 4; this.oP[o] = x; this.oP[o + 1] = y; this.oP[o + 2] = vx; this.oP[o + 3] = vy; this.oL[i * 2] = life; this.oL[i * 2 + 1] = life; this.oC[i] = c; this.oH[i * 3] = hx || 0; this.oH[i * 3 + 1] = hy || 0; this.oH[i * 3 + 2] = hk || 0; this.oS = this.oS || new Float32Array(NO2); this.oS[i] = size; }
+  _subFx() {
+    const self = this, near = (x, y, R) => (x - self.camX) ** 2 + (y - self.camY) ** 2 < R * R;
+    this._unsub = [
+      onEv("fx.eat", (e) => { if (!e.me || !self.meH) return; const h = self.meH, pal = self._palCss, c = pal && pal.length ? pal[(e.c | 0) % pal.length] : "#fff"; const n = self.calm ? 2 : 4; for (let k = 0; k < n; k++) { const a = Math.random() * TAU, sp = 2 + Math.random() * 3; self._orb(h[0], h[1], Math.cos(a) * sp, Math.sin(a) * sp, 0.35, e.v >= 4 ? 0.3 : 0.2, c); } if (e.v >= 4) self.rings.push({ x: h[0], y: h[1], t: 0, R: 3, c }); }),
+      onEv("fx.levelup", (e) => { const h = self.meH, x = h ? h[0] : e.x, y = h ? h[1] : e.y; self.rings.push({ x, y, t: 0, R: 8, c: "#ffd98a" }); self.rings.push({ x, y, t: -0.15, R: 5, c: self.meC }); const n = self.calm ? 12 : 26; for (let k = 0; k < n; k++) { const a = (k / n) * TAU, sp = 5 + Math.random() * 3; self._orb(x, y, Math.cos(a) * sp, Math.sin(a) * sp, 0.9, 0.28, k % 3 ? self.meC : "#ffe6a8"); } }),
+      onEv("fx.kill", (e) => { const s = e.s; if (!s || !near(e.x, e.y, 46)) return; const pts = self.tmp, n = bodyPoints(s, 1, 1, Math.max(0.5, s.r * 0.8), s.len, pts, 790); if (n < 2) return; const col = self.col; const fn = self._fnOf(s); const cap = self.calm ? 22 : 44, st = Math.max(1, Math.ceil(n / cap));
+        const fx = s.skin && s.skin.k === "skin" && SKINS[s.skin.i] ? SKINS[s.skin.i].fx | 0 : 0, gl = fx && LEGEND[fx] ? LEGEND[fx].glow : null;
+        for (let j = 0; j < n; j += st) { let c = gl && (j / st) % 3 === 0 ? gl : "#ffffff"; if (fn) { fn(j, n, 0, col); c = gl && (j / st) % 3 === 0 ? gl : css(Math.min(1, col[0] * 1.15 + 0.1), Math.min(1, col[1] * 1.15 + 0.1), Math.min(1, col[2] * 1.15 + 0.1)); } const a = Math.random() * TAU, sp = 0.8 + Math.random() * 1.6; self._orb(pts[j * 2], pts[j * 2 + 1], Math.cos(a) * sp, Math.sin(a) * sp, 0.9 + Math.random() * 0.5, s.r * (0.35 + Math.random() * 0.25), c, e.kx, e.ky, e.hasK ? 2.5 : 0); }
+        self.rings.push({ x: pts[0], y: pts[1], t: 0, R: 8, c: gl || "#ffffff" }); }),
+      onEv("fx.win", (e) => { const h = self.meH, x = h ? h[0] : e.x, y = h ? h[1] : e.y; self.rings.push({ x, y, t: 0, R: 12, c: "#ffd98a" }); self.rings.push({ x, y, t: -0.25, R: 8, c: "#ffffff" }); for (let k = 0; k < 30; k++) { const a = Math.random() * TAU, sp = 3 + Math.random() * 6; self._orb(x, y, Math.cos(a) * sp, Math.sin(a) * sp, 1.2, 0.3, ["#ffd23a", "#ff7a9a", "#7ad7ff", "#b6ff8a", "#ffffff"][k % 5]); } }),
+    ];
+  }
+  _look2d(v) { const H = this.meH; this._lf = (this._lf || 0) + 1; if (!H || !v.food || this._lf % 4) return; const F = v.food, fa = this.meFa || 0, fx0 = Math.cos(fa), fz0 = Math.sin(fa); let best = 1e9, bx = 0, by = 0;
+    for (let i = 0; i < F.FM; i++) { if (!F.fa[i]) continue; const dx = F.fx[i] - H[0], dy = F.fy[i] - H[1], q = dx * dx + dy * dy; if (q > 64 || q < 0.3 || dx * fx0 + dy * fz0 < 0.35 * Math.sqrt(q)) continue; if (q < best) { best = q; bx = dx; by = dy; } }
+    const tgt = best < 1e9 ? Math.atan2(by, bx) : fa; if (this.meLook === undefined) this.meLook = tgt; let da = tgt - this.meLook; da -= Math.round(da / TAU) * TAU; this.meLook += da * 0.45; }
+  _fnOf(s) { const e = this._fnMap && this._fnMap.get(s); return e || null; }
+  _fx2d(g, dt) {
+    let w = 0; const P = this.oP, L = this.oL, H = this.oH, S2 = this.oS;
+    for (let i = 0; i < this.oN; i++) { const l = L[i * 2] - dt; if (l <= 0) continue; const o = i * 4; let vx = P[o + 2], vy = P[o + 3]; const dr = Math.exp(-dt * 2.2);
+      if (H[i * 3 + 2] > 0) { const u = 1 - l / L[i * 2 + 1], hk = H[i * 3 + 2] * u * u * 4; vx += (H[i * 3] - P[o]) * hk * dt; vy += (H[i * 3 + 1] - P[o + 1]) * hk * dt; }
+      vx *= dr; vy *= dr; const x = P[o] + vx * dt, y = P[o + 1] + vy * dt;
+      if (w !== i) { const q = w * 4; L[w * 2 + 1] = L[i * 2 + 1]; this.oC[w] = this.oC[i]; H[w * 3] = H[i * 3]; H[w * 3 + 1] = H[i * 3 + 1]; H[w * 3 + 2] = H[i * 3 + 2]; S2[w] = S2[i]; }
+      const q = w * 4; P[q] = x; P[q + 1] = y; P[q + 2] = vx; P[q + 3] = vy; L[w * 2] = l; const u = l / L[w * 2 + 1], a = u > 0.85 ? (1 - u) / 0.15 : u / 0.85;
+      g.globalAlpha = a * 0.85; g.fillStyle = this.oC[w]; g.beginPath(); g.arc(x, y, S2[w] * (0.6 + 0.4 * a), 0, TAU); g.fill(); w++; }
+    this.oN = w; g.globalAlpha = 1;
+  }
+  _crown(g, x, y, r, t) { const s = Math.max(0.55, r * 0.8), by = y - r * 1.55 - s * 0.9 + Math.sin(t * 2.2) * 0.08 * s; g.save(); g.translate(x, by); g.scale(s, s);
+    g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); g.ellipse(0.06, 0.62, 1.0, 0.18, 0, 0, TAU); g.fill();
+    g.fillStyle = "#e8b53a"; g.beginPath(); g.moveTo(-0.95, 0.5); g.lineTo(-1.0, -0.35); g.lineTo(-0.5, 0.05); g.lineTo(0, -0.6); g.lineTo(0.5, 0.05); g.lineTo(1.0, -0.35); g.lineTo(0.95, 0.5); g.closePath(); g.fill();
+    g.fillStyle = "#ffe08a"; g.beginPath(); g.moveTo(-0.95, 0.5); g.lineTo(-1.0, -0.35); g.lineTo(-0.5, 0.05); g.lineTo(0, -0.6); g.lineTo(0, 0.5); g.closePath(); g.globalAlpha *= 0.55; g.fill(); g.globalAlpha /= 0.55;
+    g.fillStyle = "#b07a18"; g.fillRect(-0.95, 0.3, 1.9, 0.2); g.fillStyle = "#ff4a6a"; g.beginPath(); g.arc(0, 0.12, 0.13, 0, TAU); g.fill(); g.restore(); }
+  clearFx() { for (const p of this.parts) this.pPool.push(p); this.parts.length = 0; this.rings.length = 0; this.oN = 0; } // replay1: a clean stage for the replay
+  dispose() { if (this._unsub) for (const u of this._unsub) u(); this._unsub = null; }
 }
