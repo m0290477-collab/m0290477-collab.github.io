@@ -4,7 +4,7 @@
 // cross-section with a sculpted head, neck, tail taper, lateral undulation, head bob, eat squash and a
 // growth pulse running down the body. Fragment stage = PBR (clearcoat/iridescence/sheen) + procedural
 // scales + 12 legendary shader effects. All snakes = 1 instanced draw (+1 for ghost/transparent skins).
-import * as THREE from "../vendor/three.module.min.js?v=cos1";
+import * as THREE from "../vendor/three.module.min.js?v=anim1";
 
 export const SW = 176; // spine samples per snake (2 texels each)
 export const MAXS = 56; // snake rows (last row reserved for the showcase)
@@ -64,7 +64,7 @@ void snakeVertex(out vec3 pos, out vec3 nrm){
 `;
 
 const GLSL_FRAG_COMMON = /* glsl */ `
-uniform float uT; uniform float uGhost;
+uniform float uT; uniform float uGhost; uniform float uSheen;
 varying vec3 vSk; varying vec4 vFx; varying vec3 vCol; varying vec3 vGlow; varying float vR; varying vec3 vLocal;
 float h21(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
 float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y); }
@@ -171,10 +171,10 @@ const FRAG_EMIT = /* glsl */ `
     else if(fx==16){ em=vec3(1.0,0.75,0.35)*pow(0.5+0.5*sin(q.x*0.6-uT*1.2),12.0)*0.5+vec3(1.0,0.7,0.3)*pow(fres,1.8)*0.35; }
     else if(fx==17){ em=vec3(1.0,0.75,0.4)*pow(fres,1.8)*0.4+vec3(1.0,0.85,0.55)*smoothstep(0.75,0.95,fbm(q*0.8+vec2(uT*0.8,0.0)))*0.25; }
     else if(fx==18){ vec2 g=q*3.0+vec2(uT*0.3,0.0); float st=step(0.93,h21(floor(g)))*smoothstep(0.4,0.0,length(fract(g)-0.5))*(0.6+0.4*sin(uT*1.2+h21(floor(g)+3.0)*30.0)); em=vec3(0.85,0.9,1.0)*st*2.2+vec3(0.35,0.45,1.0)*pow(fres,1.6)*0.55; }
-    else if(fx==19){ em=vec3(1.0,0.3,0.4)*pow(fres,2.0)*0.6+vCol*0.08; }
-    else if(fx==20){ em=vec3(1.0,0.6,0.1)*pow(fres,1.6)*0.45+vCol*0.12; }
+    else if(fx==19){ em=vec3(1.0,0.3,0.4)*pow(fres,2.0)*0.6+vCol*0.08+vec3(1.0,0.75,0.8)*pow(0.5+0.5*sin(q.x*0.9-uT*1.4+cos(vSk.y)*1.5),18.0)*0.45; }
+    else if(fx==20){ float jw=0.5+0.5*sin(q.x*0.35-uT*1.1); em=vec3(1.0,0.6,0.1)*pow(fres,1.6)*0.45+vCol*(0.08+0.12*jw); }
     else if(fx==21){ vec2 g=q*4.0; float sp=step(0.955,h21(floor(g)))*smoothstep(0.3,0.0,length(fract(g)-0.5))*pow(0.5+0.5*sin(uT*1.1+h21(floor(g)+9.0)*40.0),3.0); em=vec3(0.9,0.97,1.0)*sp*2.0+vec3(0.7,0.85,1.0)*pow(fres,1.8)*0.5; }
-    else if(fx==22){ float gd=step(0.3,vCol.r-vCol.b); em=vec3(1.0,0.7,0.15)*pow(fres,1.5)*(0.25+gd*0.6); }
+    else if(fx==22){ float gd=step(0.3,vCol.r-vCol.b); em=vec3(1.0,0.7,0.15)*pow(fres,1.5)*(0.25+gd*0.6)+vec3(1.0,0.85,0.4)*gd*pow(0.5+0.5*sin(q.x*0.45-uT*1.6),10.0)*0.55; }
     else if(fx==23){ float cs=smoothstep(0.08,0.0,vor(q*0.9+vec2(uT*0.5,uT*0.2))); em=vec3(0.4,0.9,1.0)*cs*0.7+vec3(0.2,0.6,1.0)*pow(fres,1.7)*0.5; }
     else if(fx==24){ vec2 g=fract(q*vec2(0.8,1.6))-0.5; float ln=smoothstep(0.06,0.0,min(abs(g.x),abs(g.y))); float run=pow(0.5+0.5*sin(vSk.x*0.5-uT*2.0),6.0); em=vCol*ln*(0.35+run*1.2)+hue(vSk.x*0.03+uT*0.08)*pow(fres,1.6)*0.5; }
     else if(fx==25){ em=vec3(1.0,0.75,0.25)*pow(fres,1.4)*0.6+vec3(1.0,0.9,0.6)*pow(0.5+0.5*sin(q.x*0.5-uT*1.0),14.0)*0.5; }
@@ -183,6 +183,8 @@ const FRAG_EMIT = /* glsl */ `
     else
 #endif
     { em=vCol*fres*0.2+vec3(0.55,0.65,0.8)*pow(fres,2.2)*0.14; }
+    // anim1: slow living sheen gliding down every body (calm / reduce motion -> uSheen 0)
+    em+=mix(vCol,vec3(1.0),0.35)*uSheen*pow(0.5+0.5*sin(vSk.x*0.28-uT*1.8),16.0)*(0.22+fres*0.5);
     // boost: energy streaks racing down the body; team/legend tint on the rim
     em+=mix(vCol+0.15,vec3(1.0),0.25)*boost*pow(0.5+0.5*sin(vSk.x*0.85-uT*24.0),6.0)*1.6;
     em+=vGlow*fres*1.2;
@@ -195,7 +197,7 @@ const FRAG_EMIT = /* glsl */ `
 
 function patch(mat, isDepth, uniforms, ghost, fxOn) {
   mat.onBeforeCompile = (sh) => {
-    sh.uniforms.uSpine = uniforms.uSpine; sh.uniforms.uT = uniforms.uT; sh.uniforms.uGhost = { value: ghost ? 1 : 0 };
+    sh.uniforms.uSpine = uniforms.uSpine; sh.uniforms.uT = uniforms.uT; sh.uniforms.uSheen = uniforms.uSheen || { value: 0 }; sh.uniforms.uGhost = { value: ghost ? 1 : 0 };
     sh.vertexShader = GLSL_COMMON + sh.vertexShader;
     if (isDepth) {
       sh.vertexShader = sh.vertexShader.replace("#include <begin_vertex>", "vec3 snP, snN; snakeVertex(snP, snN); vec3 transformed = snP;");
@@ -243,7 +245,7 @@ export class SnakeSystem {
     this.r3 = renderer; this.data = new Float32Array(SW * 2 * MAXS * 4);
     this.tex = new THREE.DataTexture(this.data, SW * 2, MAXS, THREE.RGBAFormat, THREE.FloatType);
     this.tex.minFilter = this.tex.magFilter = THREE.NearestFilter; this.tex.generateMipmaps = false; this.tex.needsUpdate = true;
-    this.uniforms = { uSpine: { value: this.tex }, uT: { value: 0 } };
+    this.uniforms = { uSpine: { value: this.tex }, uT: { value: 0 }, uSheen: { value: 1 } };
     this.build(Q);
   }
   build(Q) {

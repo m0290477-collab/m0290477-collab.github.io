@@ -2,11 +2,11 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=cos1";
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=cos1";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=cos1";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=cos1";
-import { on as onEv } from "./events.js?v=cos1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=anim1";
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=anim1";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=anim1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=anim1";
+import { on as onEv } from "./events.js?v=anim1";
 const NO2 = 220;
 
 const TAU = Math.PI * 2;
@@ -121,7 +121,7 @@ export class Renderer2D {
     for (let pass = 0; pass < 2; pass++) for (let j = n - 1; j >= 0; j--) {
       const behind = pts[j * 2 + 1] < cy + R * 0.55 - (1 - j / (n - 1)) ** 2 * R * 0.9; if ((pass === 0) !== behind && j > 3) continue; if (pass === 0 && j <= 3) continue;
       const u = j / (n - 1), rr = j ? rad * Math.max(0.35, taperAt(u)) * 1.05 : rad * HEAD_K * 1.1; fn(j, n, t, col);
-      if (fx) leg2(fx, u, j, t, col); g.globalAlpha = fx === 7 ? 0.62 : 1;
+      if (fx) leg2(fx, u, j, t, col); else if (!this.reduceMotion) { const w = Math.pow(0.5 + 0.5 * Math.sin(u * 18 - t * 1.8), 14) * 0.45; col[0] += (1 - col[0]) * w; col[1] += (1 - col[1]) * w; col[2] += (1 - col[2]) * w; } g.globalAlpha = fx === 7 ? 0.62 : 1;
       g.fillStyle = css(col[0], col[1], col[2]); g.beginPath(); g.arc(pts[j * 2], pts[j * 2 + 1], rr, 0, TAU); g.fill(); g.globalAlpha = 1;
       g.fillStyle = "rgba(255,255,255,0.22)"; g.beginPath(); g.arc(pts[j * 2] - rr * 0.3, pts[j * 2 + 1] - rr * 0.35, rr * 0.42, 0, TAU); g.fill();
     }
