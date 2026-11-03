@@ -2,20 +2,20 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=feast1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=feast1";
+import * as THREE from "./vendor/three.module.min.js?v=cos1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=cos1";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=feast1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=feast1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=feast1";
-import { World, prefetchWorld } from "./gfx/env.js?v=feast1";
-import { Post } from "./gfx/post.js?v=feast1";
-import { Studio } from "./gfx/showcase.js?v=feast1";
-import { SoftFx } from "./gfx/fx.js?v=feast1";
-import { on as onEv } from "./events.js?v=feast1";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=feast1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=cos1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=cos1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=cos1";
+import { World, prefetchWorld } from "./gfx/env.js?v=cos1";
+import { Post } from "./gfx/post.js?v=cos1";
+import { Studio } from "./gfx/showcase.js?v=cos1";
+import { SoftFx } from "./gfx/fx.js?v=cos1";
+import { on as onEv } from "./events.js?v=cos1";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=cos1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -422,7 +422,7 @@ export class Renderer3D {
       PC[e * 3] = EC.p[0] * glowE; PC[e * 3 + 1] = EC.p[1] * glowE; PC[e * 3 + 2] = EC.p[2] * glowE;
       _m.makeScale(er * 0.18 * bk, er * 0.18 * bk, er * 0.18 * bk).setPosition(ex + lc * pd * 0.9 - 0.15 * er, ey + er * 0.7 * bk, ez + ls * pd * 0.9 + 0.1 * er); _m.toArray(H, e * 16);
     }
-    if (fx === 6 || fx === 13) { const HN = E.hn.instanceMatrix.array, HC = E.hn.instanceColor.array, hc = fx === 6 ? HORN_GOLD : HORN_FIRE; const ya = Math.atan2(fwz, fwx);
+    if (fx === 6 || fx === 13 || (LEGEND[fx] && LEGEND[fx].hn)) { const HN = E.hn.instanceMatrix.array, HC = E.hn.instanceColor.array, hc = fx === 13 ? HORN_FIRE : HORN_GOLD; const ya = Math.atan2(fwz, fwx);
       for (let q = -1; q <= 1; q += 2) { const hi = (cnt.h = (cnt.h || 0) + 1) - 1; _q.setFromEuler(_e.set(q * 0.35, -ya, 0, "YXZ")); _s.set(hr * 0.75, hr * 0.8 * (fx === 13 ? 1.3 : 1), hr * 0.75); _m.compose(_v2.set(hx - fwx * hr * 0.15 + sdx * q * hr * 0.42, hy + r * 0.8 * alpha + bob + hr * 0.62, hz - fwz * hr * 0.15 + sdz * q * hr * 0.42), _q, _s); _m.toArray(HN, hi * 16); HC[hi * 3] = hc[0]; HC[hi * 3 + 1] = hc[1]; HC[hi * 3 + 2] = hc[2]; } }
     const tph = (t * 0.45 + s.id * 0.37) % 1;
     if (tph < 0.1 && alpha > 0.9) { const ext = Math.sin((tph / 0.1) * Math.PI) * hr * 1.4, flick = Math.sin(t * 60) * 0.25, a = Math.atan2(fwz, fwx) + flick; const T2 = E.t.instanceMatrix.array, ti = cnt.t++;

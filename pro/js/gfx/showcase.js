@@ -1,6 +1,6 @@
 // Studio showcase: the player's snake coiled on a lit pedestal (lobby, locker, rarity reveals).
-import * as THREE from "../vendor/three.module.min.js?v=feast1";
-import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=feast1";
+import * as THREE from "../vendor/three.module.min.js?v=cos1";
+import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=cos1";
 
 const AURA_VS = /* glsl */ `
 uniform float uT, uK, uScale; uniform vec3 uC1, uC2; attribute vec4 seed; varying vec3 vC; varying float vA;
@@ -86,7 +86,7 @@ export class Studio {
   // per-legendary studio look: aura motion + colours, beam, rim lights and reflections tuned to the skin
   setLegend(fx, L) {
     if (this.legK === fx) return; this.legK = fx; const on = fx > 0 && !!L;
-    this.auraU.uK.value = fx; this.auraU.uI.value = on ? 1 : 0; this.aura.visible = on; this.beam.visible = on; this.beamU.uA.value = on ? 0.16 : 0; this.moteU.uI.value = on ? 0.25 : 0.6;
+    this.auraU.uK.value = (L && L.au) || fx; this.auraU.uI.value = on ? 1 : 0; this.aura.visible = on; this.beam.visible = on; this.beamU.uA.value = on ? 0.16 : 0; this.moteU.uI.value = on ? 0.25 : 0.6;
     if (on) { this.auraU.uC1.value.set(L.tr[0]); this.auraU.uC2.value.set(L.tr[1]); this.beamU.uC.value.set(L.glow).lerp(new THREE.Color(1, 1, 1), 0.45); this.rimA.color.set(L.tr[1]).lerp(new THREE.Color(0x3ad8ff), 0.3); this.rimA.intensity = 2.6; this.rimB.intensity = 2.2; if (this.scene.environmentIntensity !== undefined) this.scene.environmentIntensity = 0.3; this.key.intensity = 68; }
     else { this.rimA.color.set(0x3ad8ff); this.rimA.intensity = 2.2; this.rimB.intensity = 2.0; if (this.scene.environmentIntensity !== undefined) this.scene.environmentIntensity = 0.5; this.key.intensity = 75; }
   }

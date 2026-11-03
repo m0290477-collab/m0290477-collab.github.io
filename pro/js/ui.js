@@ -1,14 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=feast1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=feast1";
-import { WORLDS, worldAsset } from "./worlds.js?v=feast1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=feast1";
-import { haptic } from "./audio.js?v=feast1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=feast1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=feast1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=feast1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=feast1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=cos1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=cos1";
+import { WORLDS, worldAsset } from "./worlds.js?v=cos1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=cos1";
+import { haptic } from "./audio.js?v=cos1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=cos1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=cos1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=cos1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=cos1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -504,7 +504,7 @@ export class UI {
   }
 
   // ---------- profile: identity, cosmetics, stats, pinned achievements, history + leaderboard ----------
-  reqText(req) { if (!req) return ""; if (req.lv) return t("unlockAt", { n: req.lv }); if (req.ach) return t("reqAch", { n: t(req.ach) }); if (req.stat) return req.stat[0] === "wins" ? t("reqWins", { n: req.stat[1] }) : t("reqBoss"); if (req.season) return t("reqSeason", { n: req.season }); return t("reqOwner"); }
+  reqText(req) { if (!req) return ""; if (req.lv) return t("unlockAt", { n: req.lv }); if (req.ach) return t("reqAch", { n: t(req.ach) }); if (req.stat) return req.stat[0] === "wins" ? t("reqWins", { n: req.stat[1] }) : req.stat[0] === "online" ? t("reqOnline", { n: req.stat[1] }) : req.stat[1] > 1 ? t("reqBossN", { n: req.stat[1] }) : t("reqBoss"); if (req.season) return t("reqSeason", { n: req.season }); return t("reqOwner"); }
   cosName(key) { const [k, v] = key.split(":"); if (k === "av") return t("avatar") + " #" + (+v.slice(1) + 1); if (k === "fr") return t("fr_" + FRAMES[+v].id); if (k === "ti") return t("ti_" + TITLES[+v].id); return this.bannerName(+v); }
   bannerName(i) { const B = BANNERS[i]; return B && B.w ? t("w_" + B.w.id) : t("bn_" + (i === 7 ? 7 : 0)); }
   renderProfile() {

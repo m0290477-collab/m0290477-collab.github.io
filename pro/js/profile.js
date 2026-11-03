@@ -1,17 +1,21 @@
 // Player identity: avatars (16 portraits + every flag), frames, titles, banners, ranked tiers, daily login calendar
 // and the free lucky spin. Rewards are coins / XP / cosmetics only (never paid). Pure data + rules, no DOM.
-import { WORLDS, worldAsset } from "./worlds.js?v=feast1";
-import { FLAGS, flagEmoji } from "./skins.js?v=feast1";
+import { WORLDS, worldAsset } from "./worlds.js?v=cos1";
+import { FLAGS, flagEmoji } from "./skins.js?v=cos1";
 
 // requirement shapes: null = free · {lv} · {ach} · {stat:[key,n]} · {season} (tier) · {owner}
 export const AVATARS = [
   null, null, null, null, // buddy, viper, frost, neon
   { lv: 5 }, { lv: 8 }, { lv: 12 }, { lv: 15 }, { lv: 20 }, { lv: 25 }, // pharaoh, magma, cosmos, venom, storm, mech
   { ach: "a_king" }, { ach: "a_survivor" }, { ach: "a_hunter" }, { lv: 40 }, { ach: "a_predator" }, { stat: ["wins", 10] }, // king, phantom, ninja, dragon, skull, prism
+  { lv: 30 }, { lv: 10 }, { lv: 18 }, { lv: 45 }, { stat: ["wins", 20] }, { stat: ["online", 10] }, { lv: 22 }, { stat: ["bossKills", 1] }, // cos1: babylon, sand viper, sea serpent, jade emperor, pirate, astronaut, sakura, viking
 ];
 export const FRAMES = [
   { id: "none", req: null }, { id: "bronze", req: { lv: 5 } }, { id: "silver", req: { lv: 15 } }, { id: "gold", req: { lv: 30 } },
   { id: "diamond", req: { lv: 50 } }, { id: "legend", req: { lv: 75 } }, { id: "season", req: { season: 15 } },
+  // cos1
+  { id: "emerald", req: { lv: 10 } }, { id: "ruby", req: { lv: 20 } }, { id: "babylon", req: { lv: 35 } }, { id: "flame", req: { stat: ["wins", 25] } },
+  { id: "ice", req: { stat: ["bossKills", 3] } }, { id: "obsidian", req: { lv: 60 } }, { id: "tigris", req: { lv: 12 } }, { id: "sakura", req: { season: 10 } },
 ];
 export const TITLES = [
   { id: "rookie", req: null }, { id: "hunter", req: { ach: "a_hunter" } }, { id: "predator", req: { ach: "a_predator" } }, { id: "glutton", req: { ach: "a_glutton" } },
@@ -53,7 +57,7 @@ export function lockedCosmetics(S) {
 // avatar markup: portrait webp or flag emoji on a tinted disc, wrapped in the frame ring. size: "s" (rows), "m" (cards), "l" (profile)
 export function avatarHtml(av, frame, size = "m") {
   const id = typeof av === "string" ? av : "p0"; const fr = FRAMES[frame | 0] ? FRAMES[frame | 0].id : "none";
-  const inner = /^f\d+$/.test(id) && FLAGS[+id.slice(1)] ? `<span class="avf" style="background:linear-gradient(135deg,${FLAGS[+id.slice(1)].cols.slice(0, 3).join(",")})"><b>${flagEmoji(FLAGS[+id.slice(1)].c)}</b></span>` : `<img src="assets/av/${Math.max(0, Math.min(15, +id.slice(1) || 0))}.webp" alt="" decoding="async" draggable="false">`;
+  const inner = /^f\d+$/.test(id) && FLAGS[+id.slice(1)] ? `<span class="avf" style="background:linear-gradient(135deg,${FLAGS[+id.slice(1)].cols.slice(0, 3).join(",")})"><b>${flagEmoji(FLAGS[+id.slice(1)].c)}</b></span>` : `<img src="assets/av/${Math.max(0, Math.min(AVATARS.length - 1, +id.slice(1) || 0))}.webp" alt="" decoding="async" draggable="false">`;
   return `<span class="ava ${size} fr-${fr}">${inner}</span>`;
 }
 export const bannerCss = (i) => { const B = BANNERS[i | 0] || BANNERS[0]; if (B.w) return `url(${worldAsset(B.w, "sky", true)}) center/cover`; if ((i | 0) === 7) return "linear-gradient(120deg,#3a2400,#ffc845 45%,#7a4a00)"; return "linear-gradient(120deg,#141c33,#0a0f1d)"; };

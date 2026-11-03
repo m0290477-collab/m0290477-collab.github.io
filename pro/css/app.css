@@ -562,6 +562,26 @@ html.lefty #h-mini { inset-inline-start: calc(10px + var(--sl)); inset-inline-en
 .ava.fr-legend img, .ava.fr-legend .avf, .ava.fr-season img, .ava.fr-season .avf { box-shadow: 0 0 14px rgba(255, 140, 60, 0.6); }
 .ava { isolation: isolate; }
 @keyframes frs { to { transform: rotate(360deg); } }
+
+/* cos1: eight new frames (static rings; flame and babylon get a slow sheen, off in calm mode) */
+.ava.fr-emerald img, .ava.fr-emerald .avf { box-shadow: 0 0 0 var(--fw) #1b9e5a, 0 0 0 calc(var(--fw) * 1.8) #b8ffcf, 0 0 0 calc(var(--fw) * 2.4) #0b5a33, 0 0 12px rgba(47, 210, 122, 0.45); }
+.ava.fr-ruby img, .ava.fr-ruby .avf { box-shadow: 0 0 0 var(--fw) #c4102e, 0 0 0 calc(var(--fw) * 1.7) #ffd1d9, 0 0 0 calc(var(--fw) * 2.2) #6a0716, 0 0 16px rgba(255, 40, 80, 0.5); }
+.ava.fr-ruby::after, .ava.fr-ice::after, .ava.fr-babylon::after { content: ""; position: absolute; inset: calc(var(--fw) * -2.2); border-radius: 50%; pointer-events: none; }
+.ava.fr-ruby::after { background: radial-gradient(circle at 50% 0, #ff8aa0 0 4%, #c4102e 4.5% 6%, transparent 6.5%), radial-gradient(circle at 50% 100%, #ff8aa0 0 4%, #c4102e 4.5% 6%, transparent 6.5%), radial-gradient(circle at 0 50%, #ff8aa0 0 4%, #c4102e 4.5% 6%, transparent 6.5%), radial-gradient(circle at 100% 50%, #ff8aa0 0 4%, #c4102e 4.5% 6%, transparent 6.5%); }
+.ava.fr-babylon::before, .ava.fr-flame::before, .ava.fr-ice::before, .ava.fr-sakura::before { content: ""; position: absolute; inset: calc(var(--fw) * -1.8); border-radius: 50%; z-index: -1; }
+.ava.fr-babylon::before { background: repeating-conic-gradient(from var(--fa, 0deg), #1f4fa8 0 13deg, #e9c46a 13deg 15deg); animation: frs 24s linear infinite; }
+.ava.fr-babylon img, .ava.fr-babylon .avf { box-shadow: 0 0 0 2px #e9c46a, 0 0 14px rgba(58, 124, 255, 0.5); }
+.ava.fr-babylon::after { background: radial-gradient(circle at 50% 2%, #fff1b0 0 3%, #e9c46a 3.5% 6%, transparent 6.5%); }
+.ava.fr-flame::before { background: conic-gradient(from var(--fa, 0deg), #ff2a00, #ffb000, #ff6a00, #ffd84a, #ff2a00, #ff8a00, #ff2a00); animation: frs 9s linear infinite; }
+.ava.fr-flame img, .ava.fr-flame .avf { box-shadow: 0 0 0 2px #3a0a00, 0 0 18px rgba(255, 110, 0, 0.65); }
+.ava.fr-ice::before { background: repeating-conic-gradient(#e9fbff 0 10deg, #7fd3ff 10deg 20deg); }
+.ava.fr-ice img, .ava.fr-ice .avf { box-shadow: 0 0 0 2px #fff, 0 0 16px rgba(140, 220, 255, 0.65); }
+.ava.fr-ice::after { background: radial-gradient(circle at 15% 15%, #fff 0 4%, transparent 5%), radial-gradient(circle at 85% 15%, #fff 0 4%, transparent 5%), radial-gradient(circle at 50% 98%, #dff6ff 0 3.5%, transparent 4.5%); }
+.ava.fr-obsidian img, .ava.fr-obsidian .avf { box-shadow: 0 0 0 var(--fw) #120f1a, 0 0 0 calc(var(--fw) * 1.6) #9b3dff, 0 0 0 calc(var(--fw) * 2.1) #120f1a, 0 0 18px rgba(155, 61, 255, 0.5); }
+.ava.fr-tigris img, .ava.fr-tigris .avf { box-shadow: 0 0 0 var(--fw) #0b5563, 0 0 0 calc(var(--fw) * 1.6) #2ec4b6, 0 0 0 calc(var(--fw) * 2.2) #cbf3f0, 0 0 12px rgba(46, 196, 182, 0.45); }
+.ava.fr-sakura::before { background: repeating-conic-gradient(#ffd1e6 0 18deg, #ff6fae 18deg 24deg); }
+.ava.fr-sakura img, .ava.fr-sakura .avf { box-shadow: 0 0 0 2px #fff, 0 0 12px rgba(255, 111, 174, 0.45); }
+html.calm .ava.fr-babylon::before, html.calm .ava.fr-flame::before { animation: none; }
 html.rm .ava::before { animation: none; }
 /* ranked badge */
 .rkb { display: inline-grid; place-items: center; width: 28px; height: 28px; flex: none; } .rkb.s { width: 16px; height: 16px; }

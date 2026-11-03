@@ -2,11 +2,11 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=feast1";
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=feast1";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=feast1";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=feast1";
-import { on as onEv } from "./events.js?v=feast1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=cos1";
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=cos1";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=cos1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=cos1";
+import { on as onEv } from "./events.js?v=cos1";
 const NO2 = 220;
 
 const TAU = Math.PI * 2;
@@ -18,7 +18,7 @@ const lin2css = (c) => css(Math.sqrt(c[0]), Math.sqrt(c[1]), Math.sqrt(c[2]));
 const _hx = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
 const LEG2 = {}; for (const k in LEGEND) LEG2[k] = { a: _hx(LEGEND[k].tr[0]), b: _hx(LEGEND[k].tr[1]), g: _hx(LEGEND[k].glow) };
 function leg2(fx, u, j, t, o) { const L = LEG2[fx]; if (!L) return; let w = 0, c = L.b;
-  switch (fx) {
+  switch (LEGEND[fx].au || fx) {
     case 1: case 13: case 12: w = Math.pow(0.5 + 0.5 * Math.sin(u * 40 - t * 2.2), 4) * 0.75; c = L.a; break; // flowing heat
     case 2: w = (j % 7 === 3) ? 0.5 + 0.5 * Math.sin(t * 1.5 + j) : 0; c = [1, 1, 1]; break;               // stars inside
     case 3: case 11: w = Math.pow(0.5 + 0.5 * Math.sin(u * 14 - t * 1.4), 8) * 0.8; c = [1, 1, 1]; break;   // crystal glint sweep

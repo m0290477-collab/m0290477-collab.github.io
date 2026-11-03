@@ -53,6 +53,21 @@ export const SKINS = [
   { id: "frostking", p: 3, c: ["#dff6ff", "#4fb8ff", "#ffffff"], lv: 1, rar: "legendary", fx: 11, src: "coins:4500" },
   { id: "solar", p: 8, c: ["#ff7a00", "#ffd84a", "#fff6d0"], lv: 1, rar: "legendary", fx: 12, src: "boss:1" },
   { id: "phoenix", p: 8, c: ["#8a1a00", "#ff6a00", "#ffd27a"], lv: 1, rar: "legendary", fx: 13, src: "coins:7500" }, // aaa2: flame feathers, crest, fire trail, rebirth
+  // cos1: 14 new legendaries (own surface shader + signature trail, death, idle; au = aura motion reused)
+  { id: "babylon", p: 10, c: ["#1f4fa8", "#0b2357", "#e9c46a"], lv: 1, rar: "legendary", fx: 14, src: "level:22" },
+  { id: "tigris", p: 3, c: ["#2ec4b6", "#0b5563", "#cbf3f0"], lv: 1, rar: "legendary", fx: 15, src: "level:9" },
+  { id: "datepalm", p: 5, c: ["#c08a3e", "#4a2a0c", "#f2d49b"], lv: 1, rar: "legendary", fx: 16, src: "level:11" },
+  { id: "desertviper", p: 4, c: ["#e3b778", "#7a4b1d", "#f6e3b4"], lv: 1, rar: "legendary", fx: 17, src: "level:6" },
+  { id: "midnight", p: 3, c: ["#0b1020", "#2a3a8c", "#9fb4ff"], lv: 1, rar: "legendary", fx: 18, src: "level:13" },
+  { id: "cherry", p: 2, c: ["#7a0f1d", "#2b0508", "#ff6b7a"], lv: 1, rar: "legendary", fx: 19, src: "level:4" },
+  { id: "mango", p: 3, c: ["#ffb703", "#fb8500", "#ffe8a3"], lv: 1, rar: "legendary", fx: 20, src: "level:3" },
+  { id: "arcticfox", p: 6, c: ["#f5fbff", "#9bb7d4", "#ffffff"], lv: 1, rar: "legendary", fx: 21, src: "level:26" },
+  { id: "kingcobra", p: 1, c: ["#2b2b2b", "#d4a017", "#2b2b2b"], lv: 1, rar: "legendary", fx: 22, src: "level:30" },
+  { id: "oceandeep", p: 9, c: ["#023e8a", "#0096c7", "#90e0ef"], lv: 1, rar: "legendary", fx: 23, src: "level:34" },
+  { id: "cyber", p: 7, c: ["#00f5d4", "#9b5de5", "#f15bb5"], lv: 1, rar: "legendary", fx: 24, src: "level:42" },
+  { id: "emperor", p: 11, c: ["#ffd700", "#7a0019", "#fff1b8"], lv: 1, rar: "legendary", fx: 25, src: "coins:2500" },
+  { id: "jadedragon", p: 10, c: ["#00a86b", "#004d32", "#c9ffe5"], lv: 1, rar: "legendary", fx: 26, src: "coins:3500" },
+  { id: "sandstorm", p: 8, c: ["#d9a35b", "#6b4423", "#fff0c9"], lv: 1, rar: "legendary", fx: 27, src: "coins:1800" },
 ];
 // rarity of every named skin (legendary ones carry their own)
 export const RARITY = ["common", "rare", "epic", "legendary"];
@@ -73,6 +88,20 @@ export const LEGEND = {
   11: { tr: ["#ffffff", "#9fdcff"], tk: "snow", death: "freeze", idle: "breathe", glow: "#9fdcff" },
   12: { tr: ["#ffd84a", "#ff5a00"], tk: "flare", death: "nova", idle: "orbit", glow: "#ffb000" },
   13: { tr: ["#ff7a1a", "#ffd27a"], tk: "phoenix", death: "rebirth", idle: "rear", glow: "#ff6a00" },
+  14: { tr: ["#e9c46a", "#3a7cff"], tk: "glint", death: "shatter", idle: "rear", glow: "#e9c46a", au: 6, hn: 1 },
+  15: { tr: ["#7ff3e8", "#ffffff"], tk: "wisps", death: "fade", idle: "wave", glow: "#2ec4b6", au: 7 },
+  16: { tr: ["#ffd27a", "#c08a3e"], tk: "glint", death: "shatter", idle: "breathe", glow: "#ffb84a", au: 6 },
+  17: { tr: ["#f6e3b4", "#e3b778"], tk: "smoke", death: "implode", idle: "coil", glow: "#e3a050", au: 9, hn: 1 },
+  18: { tr: ["#9fb4ff", "#ffffff"], tk: "stars", death: "supernova", idle: "orbit", glow: "#6f86ff", au: 2 },
+  19: { tr: ["#ff6b7a", "#ffd1d9"], tk: "rings", death: "neonburst", idle: "breathe", glow: "#ff3355", au: 8 },
+  20: { tr: ["#ffd166", "#ff8a00"], tk: "flare", death: "nova", idle: "breathe", glow: "#ffb000", au: 12 },
+  21: { tr: ["#ffffff", "#bfe6ff"], tk: "snow", death: "freeze", idle: "hover", glow: "#bfe6ff", au: 11 },
+  22: { tr: ["#ffd04a", "#fff1b0"], tk: "ember", death: "dragonfire", idle: "rear", glow: "#d4a017", au: 6, hn: 1 },
+  23: { tr: ["#90e0ef", "#ffffff"], tk: "wisps", death: "fade", idle: "wave", glow: "#00b4d8", au: 10 },
+  24: { tr: ["#00f5d4", "#f15bb5"], tk: "pixels", death: "glitch", idle: "spin", glow: "#00f5d4", au: 4 },
+  25: { tr: ["#ffd700", "#fff1b8"], tk: "glint", death: "nova", idle: "rear", glow: "#ffc845", au: 6, hn: 1 },
+  26: { tr: ["#7affc4", "#ffd76a"], tk: "ribbon", death: "aurora", idle: "rear", glow: "#00d68f", au: 10, hn: 1 },
+  27: { tr: ["#fff0c9", "#d9a35b"], tk: "smoke", death: "implode", idle: "coil", glow: "#e0a860", au: 9 },
 };
 export const skinFx = (d) => (d && d.k === "skin" && SKINS[d.i] && SKINS[d.i].fx) || 0;
 export const EYES = [
