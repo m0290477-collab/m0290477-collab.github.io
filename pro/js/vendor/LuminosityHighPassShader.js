@@ -1,6 +1,6 @@
 import {
 	Color
-} from './three.module.min.js?v=tidy2';
+} from './three.module.min.js?v=prof2';
 
 /**
  * Luminosity

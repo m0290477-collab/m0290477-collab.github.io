@@ -1,6 +1,6 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=tidy2";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=prof2";
 export const SEASON = { id: "s1", tiers: 30, per: 400 };
 // free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
 export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
@@ -10,7 +10,7 @@ export const CHAINS = {
   survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
 };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=tidy2";
+import { WORLDS } from "./worlds.js?v=prof2";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -46,7 +46,7 @@ export function newProfile(name) {
     last: { mode: "classic", world: 0, diff: 1, room: "" }, tut: 0,
     // identity (M2): avatar "p0".."p15" or "f<flag>", frame/title/banner index, pinned achievements, last 10 matches,
     // games per mode, ranked points, login calendar, free daily spin, cosmetics granted by rewards
-    av: "p0", frame: 0, title: 0, banner: 0, pins: [], hist: [], mg: {}, rp: 0, login: { d: "", n: 0 }, spin: "", cos: [],
+    av: "p0", frame: 0, title: 0, banner: 0, pins: [], hist: [], mg: {}, rp: 0, login: { d: "", n: 0 }, spin: "", cos: [], bio: "", hob: [],
   };
 }
 function fixProfile(p) { // fill any missing field from defaults (older or imported profiles)
@@ -65,6 +65,7 @@ function fixProfile(p) { // fill any missing field from defaults (older or impor
   p.pins = p.pins.filter((x) => typeof x === "string" && Store.ACH.some((a) => a[0] === x)).slice(0, 3); p.cos = p.cos.filter((x) => typeof x === "string" && /^(av|fr|ti|bn):[a-z0-9]{1,4}$/.test(x));
   p.hist = p.hist.filter((h) => h && typeof h === "object" && typeof h.m === "string").slice(0, 10); if (!p.mg || typeof p.mg !== "object" || Array.isArray(p.mg)) p.mg = {};
   for (const k of Object.keys(p.mg)) if (typeof p.mg[k] !== "number" || !isFinite(p.mg[k])) delete p.mg[k];
+  p.bio = String(p.bio).replace(/[<>]/g, "").slice(0, 90); p.hob = p.hob.filter((x) => typeof x === "string" && /^[a-z]{2,12}$/.test(x)).slice(0, 5);
   if (!p.login || typeof p.login.d !== "string") p.login = { d: "", n: 0 }; p.login.n = Math.max(0, Math.min(6, p.login.n | 0));
   return p;
 }
