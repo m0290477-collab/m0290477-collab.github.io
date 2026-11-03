@@ -1004,3 +1004,34 @@ table.lb .w { color: #8fe0b6; }
 .rv-card { animation: lxPop 260ms var(--ease); }
 .rv-rar { background: linear-gradient(90deg, var(--champ1), var(--champ2), var(--champ1)); -webkit-background-clip: text; background-clip: text; animation: none; }
 @media (max-height: 430px) { #m-reveal { padding-top: calc(10px + var(--st)); padding-bottom: calc(10px + var(--sb)); } .rv-name { font-size: 34px; } }
+/* ===== modes1 · weekly skill chain, daily info, HUD tracker ===== */
+#l-skill { margin-top: var(--sp2); }
+.wc-mini { position: relative; padding: var(--sp2) var(--sp3); border-radius: var(--rad-s); background: linear-gradient(180deg, rgba(226, 192, 120, 0.1), rgba(226, 192, 120, 0.03)); box-shadow: inset 0 0 0 1px rgba(226, 192, 120, 0.24); }
+.wc-mini small { display: block; font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--champ2); }
+html[lang="ar"] .wc-mini small { letter-spacing: 0; font-size: 11px; }
+.wc-mini b { display: block; font-size: 12px; line-height: 1.25; color: var(--ivory); margin-top: 2px; padding-inline-end: 44px; }
+.wc-dots { position: absolute; top: 10px; inset-inline-end: 10px; display: flex; gap: 4px; }
+.wc-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(243, 234, 214, 0.12); }
+.wc-dots i.on { background: var(--champ2); } .wc-dots i.cur { box-shadow: inset 0 0 0 1.5px var(--champ2); }
+.wc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp2); margin-bottom: var(--sp3); }
+.wc-tier { padding: var(--sp2) var(--sp3); border-radius: var(--rad-m); background: linear-gradient(180deg, rgba(243, 234, 214, 0.05), rgba(243, 234, 214, 0.015)); box-shadow: inset 0 0 0 1px var(--lx-edge); }
+.wc-tier.cur { box-shadow: inset 0 0 0 1px var(--champ2), 0 0 16px rgba(226, 192, 120, 0.18); }
+.wc-tier.done { opacity: 0.75; } .wc-tier.lock { opacity: 0.55; }
+.wc-th { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.wc-th b { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--champ1); } .wc-th em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--champ1); }
+.wc-m { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; line-height: 1.25; color: var(--ivory2); padding: 4px 0; }
+.wc-m i { flex: none; width: 16px; text-align: center; font-style: normal; color: var(--champ3); } .wc-m i svg { width: 12px; height: 12px; }
+.wc-m.ok { color: var(--ivory); } .wc-m.ok i { color: #8fe0b6; }
+.dinfo { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: var(--rad-s); background: rgba(226, 192, 120, 0.08); box-shadow: inset 0 0 0 1px rgba(226, 192, 120, 0.3); font-size: 12px; color: var(--ivory2); white-space: nowrap; }
+.dinfo span svg { width: 16px; height: 16px; stroke: var(--champ2); } .dinfo b { color: var(--champ1); }
+.h-track { position: absolute; left: 50%; bottom: calc(10px + var(--sb)); transform: translateX(-50%); display: flex; align-items: center; gap: 6px; max-width: 46vw; padding: 5px 12px; border-radius: 99px; font-size: 11px; color: var(--ivory2); background: rgba(10, 13, 21, 0.62); border: 1px solid rgba(226, 192, 120, 0.16); pointer-events: none; opacity: 0.9; transition: opacity 200ms; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.h-track i { font-style: normal; color: var(--champ2); } .h-track span { overflow: hidden; text-overflow: ellipsis; }
+#hud:has(.h-mission.on) .h-track, #hud.cine .h-track { opacity: 0; }
+.mode-pill.gr.hot, .mode-pill.inf.hot { border-color: rgba(226, 192, 120, 0.6); color: var(--champ1); }
+#l-daily .mis { min-height: 38px; padding: 6px 10px 10px; margin-bottom: 4px; }
+#l-daily .mis .pb { left: 10px; right: 10px; bottom: 4px; }
+#l-skill .wc-mini { padding: 6px 10px; }
+.side { -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 14px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 14px), transparent); }
+.dinfo b { margin-inline-end: 4px; }
+.wc-mini small { padding-inline-end: 40px; }
+@media (max-height: 396px) { #l-skill { display: none; } }

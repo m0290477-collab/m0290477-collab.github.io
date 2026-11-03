@@ -1,14 +1,15 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=lux1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=lux1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=lux1";
-import { NetBackend } from "./net.js?v=lux1";
-import { t, fmtNum } from "./i18n.js?v=lux1";
-import { haptic } from "./audio.js?v=lux1";
-import { rankOf, rpDelta } from "./profile.js?v=lux1";
-import { Replay } from "./replay.js?v=lux1";
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=modes1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=modes1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=modes1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=modes1";
+import { NetBackend } from "./net.js?v=modes1";
+import { t, fmtNum } from "./i18n.js?v=modes1";
+import { haptic } from "./audio.js?v=modes1";
+import { rankOf, rpDelta } from "./profile.js?v=modes1";
+import { Replay } from "./replay.js?v=modes1";
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
@@ -20,6 +21,7 @@ export const MODES = {
   classic: { bots: 30, R: 240 }, time: { bots: 26, R: 205, dur: 180 }, survival: { bots: 14, R: 200 }, zen: { bots: 16, R: 200 },
   br: { bots: 34, R: 300, noRespawn: true }, koth: { bots: 20, R: 190, dur: 180, target: 100 }, boss: { bots: 8, R: 190, lives: 3 }, team: { bots: 25, R: 220, dur: 180, target: 25 },
 };
+Object.assign(MODES, XMODE_CFG); Object.assign(MODE_EVENTS, XMODE_EVENTS); // Track B modes
 const FOOD_CALM = ["#ffd56b", "#7fe6ff", "#ff92bd", "#a6ff7c", "#ffd56b", "#7fe6ff", "#ff92bd", "#a6ff7c", "#ffd56b", "#7fe6ff", "#ff92bd", "#a6ff7c", "#ffc93a"];
 const TEAM_COL = [[0.2, 0.55, 1.0], [1.0, 0.25, 0.3]], TEAM_CSS = ["#4da3ff", "#ff4d5e"];
 const skinCache = new Map();
@@ -128,7 +130,7 @@ export class Game {
     if (cfg.mode === "online") {
       this.backend = new NetBackend({ room: cfg.room, name: p.name, skin, cb, bots: cfg.bots }); this.backend.connect(); this.hud.net(t("connecting"));
     } else {
-      this.backend = new LocalBackend(cfg.mode, { diff: cfg.diff, seed: (Math.random() * 1e9) | 0 }, cb); this.backend.spawn(p.name, skin);
+      this.backend = new LocalBackend(cfg.mode, { diff: cfg.diff, seed: cfg.seed ?? (Math.random() * 1e9) | 0 }, cb); this.backend.spawn(p.name, skin);
       if (cfg.mode === "time") this.stats.timeLeft = MODES.time.dur;
       if (this.M.dur && cfg.mode !== "time") this.stats.timeLeft = this.M.dur;
       this.hud.net(""); this.setupMode();
@@ -144,6 +146,7 @@ export class Game {
     if (this.mode === "koth") { this.hill = { x: 0, y: 0, r: 20, t: 0 }; this.moveHill(true); S.attractPt = { x: this.hill.x, y: this.hill.y, r: this.hill.r, w: 0.4 }; }
     if (this.mode === "team") { this.teamScore = [0, 0]; }
     if (this.mode === "boss") this.spawnBoss();
+    this.xm = XMODES[this.mode] || null; XT.start(this); this._xl = ""; if (this.xm && this.xm.setup) this.xm.setup(this); // Track B
   }
   spawnBoss() {
     const b = this.backend, S = b.sim; const s = S.addSnake("LEVIATHAN", BOSS_SKIN, { bot: true, diff: 3, m: 2400, pos: [0, -b.R * 0.4] });
@@ -252,6 +255,7 @@ export class Game {
     else if (!by && dist < 200) this.pushFeed("☠", s.name, false, cause === 6 ? "meteor" : cause === 3 && this.mode === "br" ? "storm" : "wall");
   }
   onAnyDeath(s, by) {
+    if (this.xm && this.xm.onAnyDeath) this.xm.onAnyDeath(this, s, by); { const me0 = this.backend && this.backend.me; if (by && me0 && by === me0.id && s !== me0) XT.kill(this, s); } // Track B
     if (by && this.backend && this.backend.sim) { const k = this.findSnake(by), me = this.backend.me; if (k && k.bot && k !== s && me && Math.hypot(k.x - me.x, k.y - me.y) < 45 && Math.random() < (s === me ? 0.75 : 0.3)) this.botEmote(k, s === me ? (Math.random() < 0.5 ? 1 : 5) : [3, 5, 4][(Math.random() * 3) | 0]); }
     if (this.mode === "team" && by) { const k = this.findSnake(by); if (k && k.team !== undefined && k.team !== s.team) { this.teamScore[k.team]++; this.hud.modeHud(this.modeHudData()); if (this.teamScore[k.team] >= this.M.target) this.endMatch(k.team === 0, "team"); } }
     if (this.mode === "br" && !this.ended) { const alive = this.backend.sim.snakes.filter((x) => x.alive).length; if (s !== this.backend.me) { if (alive === 1 && this.backend.me && this.backend.me.alive) this.endMatch(true, "br"); } }
@@ -277,7 +281,7 @@ export class Game {
     this.spectate = this.killer; A.input.enabled = false; A.input.reset(); this.streak = 0;
     const msg = by && this.killer ? t("killedBy", { n: this.killer.name }) : selfHit ? t("selfDeath") : cause === 6 ? t("meteorDeath") : cause === 3 && this.mode === "br" ? t("stormDeath") : cause === 1 ? t("hitWall") : t("eliminated");
     if (by && this.killer) this.pushFeed(this.killer.name, t("you"), false); else if (selfHit) this.pushFeed("☠", t("you"), false, "self"); this.hud.combo(0); this.hud.puClear();
-    const respawn = (this.mode === "time" && this.stats.timeLeft > 2) || this.mode === "koth" || this.mode === "team" || (this.mode === "boss" && --this.lives > 0);
+    const respawn = (this.mode === "time" && this.stats.timeLeft > 2) || this.mode === "koth" || this.mode === "team" || (this.mode === "boss" && --this.lives > 0) || !!(this.xm && this.xm.respawn && this.xm.respawn(this));
     if (respawn) { this.respawnAt = performance.now() + 1900; this.hud.banner(msg + (this.mode === "boss" ? " · " + t("livesN", { n: this.lives }) : ""), 1700); }
     else { if (this.mode === "br") this.place = this.backend.sim.snakes.filter((x) => x.alive).length + 1; this.endAt = performance.now() + 650; this.hud.banner(msg, 1200); // calm1: results almost straight away
       // replay1: freeze the last seconds as a clip; it plays after the short death beat, then results
@@ -313,6 +317,7 @@ export class Game {
     let score = mass; if (this.mode === "survival") score = Math.round(st.life * 10 + st.best); if (this.mode === "time") score = Math.round(st.endMass ?? mass);
     if (this.mode === "koth") score = Math.round(this.kothPts.get(me ? me.id : 0) || 0) * 10 + st.kills * 50; if (this.mode === "team") score = this.teamScore[0] * 100 + st.kills * 60; if (this.mode === "boss") score = (this.boss ? (this.boss.max - this.boss.hp) * 250 : 0) + (this.win ? 2000 : 0) + st.kills * 50; if (this.mode === "br") score = (this.win ? 3000 : Math.max(0, 25 - this.place) * 80) + st.kills * 100 + Math.round(st.best);
     if (this.mode !== "zen") score += Math.round(st.bonus || 0);
+    if (this.xm && this.xm.score) score = this.xm.score(this, score) + Math.round(st.bonus || 0); this.xres = xFinish(this, score); // Track B
     const diffMul = [0.75, 1, 1.25, 1.5][this.cfg.diff ?? 1] * (this.mode === "online" ? 1.3 : 1) * (this.mode === "zen" ? 0.4 : 1) * (this.win ? 1.5 : 1);
     const xp = Math.round((st.best / 8 + st.kills * 30 + Math.min(dur, 900) / 4 + (this.mode === "survival" ? st.wave * 25 : 0) + (this.win ? 150 : 0) + (st.pu || 0) * 6 + (st.bonus || 0) / 20) * diffMul) + 10;
     const coins = Math.round(xp / 4) + (st.bounty || 0) * 100;
@@ -401,9 +406,11 @@ export class Game {
     if (this.mode === "br") this.ruleBR(dt);
     if (this.mode === "koth") this.ruleKOTH(dt);
     if (this.mode === "boss") this.ruleBoss(dt);
+    XT.tick(this); if (this.xm && this.xm.rule && !this.ended) this.xm.rule(this, dt); // Track B
     if (this.endAt && now > this.endAt) { this.endAt = 0; if (this.rpPending && !this.ended) { this.rpPending = false; this.playReplay(false); } else this.finish("death"); }
   }
   timeUp() {
+    if (this.xm && this.xm.timeUp) return this.xm.timeUp(this); // Track B
     if (this.mode === "koth") { const ranking = [...this.kothPts.entries()].sort((a, c) => c[1] - a[1]); this.endMatch(ranking.length > 0 && ranking[0][0] === (this.backend.me && this.backend.me.id), "koth"); }
     else if (this.mode === "team") this.endMatch(this.teamScore[0] > this.teamScore[1], "team");
     else this.finish("time");
@@ -442,6 +449,7 @@ export class Game {
   }
   modeHudData() { const d = this.modeHudBase(), E = this.evNow; if (!E || performance.now() > E.until) return d; const b = E.k === "bounty" ? this.findSnake(E.id) : null; return { ...(d || {}), ev: { k: E.k, name: b ? b.name : "" } }; }
   modeHudBase() { if (this.mode === "zen") return { kind: "zen" };
+    if (this.xm && this.xm.hud) return this.xm.hud(this); // Track B
     const m = this.mode;
     if (m === "team") return { kind: "team", a: this.teamScore[0], b: this.teamScore[1], target: this.M.target };
     if (m === "boss" && this.boss) return { kind: "boss", hp: this.boss.hp, max: this.boss.max, phase: this.boss.phase, lives: this.lives };
@@ -471,6 +479,7 @@ export class Game {
     v.rain = this.rainFx && now < this.rainFx.until && b.me && b.me.alive ? b.me : null; v.goldRain = this.evNow && this.evNow.k === "rain" && now < this.evNow.until && b.me ? b.me : null;
     v.zone = this.zone && this.mode === "br" ? this.zone : null; v.hill = this.hill && this.mode === "koth" ? { x: this.hill.x, y: this.hill.y, r: this.hill.r, c: this.hill.mine ? [0.3, 1, 0.5] : this.hill.contested ? [1, 0.3, 0.3] : [1, 0.8, 0.2] } : null;
     v.cores = this.boss && this.boss.s.alive ? this.boss.cores : null;
+    if (this.xm && this.xm.view) this.xm.view(this, v); // Track B
     // camera
     const me = b.me; let tx = this.camX, ty = this.camY, zoom = 1; const cam = v.cam;
     cam.title = undefined; cam.intro = undefined; cam.kill = null; cam.victory = undefined; cam.orbit = undefined; v.letterbox = false; v.hideNames = false;
@@ -494,6 +503,7 @@ export class Game {
     if (me && me.alive && !b.sim) all.push(me);
     all.sort((a, c) => c.m - a.m); const rank = me && me.alive ? all.indexOf(me) + 1 : 0; if (rank > 0) st.rankBest = Math.min(st.rankBest, rank);
     let top = all.slice(0, 5), scoreList = null;
+    if (this.xm && this.xm.lb) scoreList = this.xm.lb(this); // Track B
     if (this.mode === "koth") scoreList = [...this.kothPts.entries()].sort((a, c) => c[1] - a[1]).slice(0, 5).map(([id, v]) => ({ s: this.findSnake(id), v: Math.floor(v) })).filter((x) => x.s);
     this.hud.update({ mass: me && me.alive ? me.m : 0, rank, total: all.length, top, me, kills: st.kills, timeLeft: this.M && (this.mode === "time" || this.M.dur) ? st.timeLeft : null, wave: this.mode === "survival" ? st.wave : null, ping: b.online ? b.ping : null, humans: b.online ? b.humans : null, scoreList, kothMine: this.mode === "koth" && me ? Math.floor(this.kothPts.get(me.id) || 0) : null, target: this.M && this.M.target, alive: this.mode === "br" ? all.length : null, zone: this.zone && this.zone.phase === "wait" ? Math.ceil(this.zoneNext) : null, hill: this.hill });
     if (this.app.store.settings.minimap) this.hud.minimap(all, me, b.R || C.R, this.view.foodPalCss, this.zone, this.hill, this.boss && this.boss.s, b.pus);

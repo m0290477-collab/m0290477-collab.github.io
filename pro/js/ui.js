@@ -1,13 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=lux1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=lux1";
-import { WORLDS, worldAsset } from "./worlds.js?v=lux1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=lux1";
-import { haptic } from "./audio.js?v=lux1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=lux1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=lux1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=lux1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=modes1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=modes1";
+import { WORLDS, worldAsset } from "./worlds.js?v=modes1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=modes1";
+import { haptic } from "./audio.js?v=modes1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=modes1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=modes1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=modes1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=modes1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -23,11 +24,15 @@ const IC = {
   koth: '<svg viewBox="0 0 24 24"><path d="M3 20h18L14 8l-3 4-2-2-6 10Z"/><path d="M14 8V3l4 2-4 2"/></svg>',
   boss: '<svg viewBox="0 0 24 24"><path d="M5 9c0-4 3-6 7-6s7 2 7 6c0 3-1 4-2 5v3H7v-3c-1-1-2-2-2-5Z"/><path d="M9 11h.01M15 11h.01M10 17v3M14 17v3"/></svg>',
   team: '<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M12 15.5c1.1-1 2.5-1.5 4-1.5 3.3 0 6 2.7 6 6"/></svg>',
+  goldrush: '<svg viewBox="0 0 24 24"><path d="M12 3l8 5v8l-8 5-8-5V8l8-5Z"/><path d="M12 8l4 2.5v3L12 16l-4-2.5v-3L12 8Z"/></svg>',
+  infection: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 9V4M12 20v-5M9.4 13.5 5 16M19 8l-4.4 2.5M14.6 13.5 19 16M5 8l4.4 2.5"/><circle cx="12" cy="3.5" r="1"/><circle cx="12" cy="20.5" r="1"/><circle cx="4.5" cy="16.5" r="1"/><circle cx="19.5" cy="7.5" r="1"/><circle cx="19.5" cy="16.5" r="1"/><circle cx="4.5" cy="7.5" r="1"/></svg>',
+  duel: '<svg viewBox="0 0 24 24"><path d="M4 4l9 9M20 4l-9 9M6 14l4 4M18 14l-4 4M3 21l3-3M21 21l-3-3"/></svg>',
+  daily: '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 12.3l1.1 2.2 2.4.3-1.7 1.7.4 2.4-2.2-1.2-2.2 1.2.4-2.4-1.7-1.7 2.4-.3L12 12.3Z" fill="currentColor" stroke="none"/></svg>',
   crown: '<svg viewBox="0 0 24 24" class="crown"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 10H5L3 8Z" fill="currentColor" stroke="none"/></svg>',
   lock: '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
 };
-const MODE_LIST = ["classic", "br", "koth", "boss", "team", "time", "survival", "zen", "online"];
-const NEW_MODES = new Set(["br", "koth", "boss", "team"]);
+const MODE_LIST = ["classic", "daily", "goldrush", "infection", "duel", "br", "koth", "boss", "team", "time", "survival", "zen", "online"];
+const NEW_MODES = new Set(["daily", "goldrush", "infection", "duel"]);
 const fmtTime = (s) => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60), r = s % 60; return `${m}:${String(r).padStart(2, "0")}`; };
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const skinName = (i) => { const S = SKINS[i]; if (!S) return "?"; const k = "s_" + S.id; const v = t(k); return v === k ? cap(S.id) : v; };
@@ -38,8 +43,9 @@ export class Hud {
     $("hud").classList.remove("cine"); clearTimeout(this._cineT);
     $("hud").classList.remove("x-hide"); $("h-timer").classList.toggle("x-hide", !(mode === "time" || mode === "survival" || (MODES[mode] && MODES[mode].dur))); $("h-feed").innerHTML = ""; $("h-pop").innerHTML = ""; $("h-mode").innerHTML = "";
     $("h-mini").classList.toggle("x-hide", !this.app.store.settings.minimap); $("h-fps").classList.toggle("x-hide", !this.app.store.settings.showFps); this.storm(false); this.mode = mode; this.lastLb = "";
-    for (const id of ["h-cine", "h-kill", "h-count", "h-mission", "h-hint"]) $(id).classList.remove("on"); this.bannerClear(); this.combo(0); this.puClear(); this.spectate(null); requestAnimationFrame(() => this.layout());
+    for (const id of ["h-cine", "h-kill", "h-count", "h-mission", "h-hint"]) $(id).classList.remove("on"); this.bannerClear(); this.combo(0); this.puClear(); this.spectate(null); this.tracker(); requestAnimationFrame(() => this.layout());
   }
+  tracker() { const el = $("h-track"); if (!el) return; const p = this.app.store.p, c = wcCurrent(p); el.classList.toggle("x-hide", !c || this.app.game.mode === "zen"); if (c) el.innerHTML = `<i>⚡</i><span>${esc(t("wc_" + c.id))}</span>`; }
   hide() { $("hud").classList.add("x-hide"); $("h-emos").classList.add("x-hide"); this.storm(false); }
   update(d) {
     this.massShown = this.massShown == null ? d.mass : this.massShown + (d.mass - this.massShown) * 0.5; if (Math.abs(d.mass - this.massShown) < 1) this.massShown = d.mass; const tx = (id, v) => { v = String(v); const e = $(id); if (e._v !== v) { e._v = v; e.textContent = v; } }; tx("h-mass", fmtNum(this.massShown)); tx("h-rank", d.rank ? `#${d.rank}/${d.total}` : "–"); tx("h-kills", d.kills); // write only on change
@@ -299,11 +305,14 @@ export class UI {
       this.click(b, () => { if (!ok) { this.toast("🔒 " + t("unlockAt", { n: w.lv })); this.app.audio.play("error"); return; } p.last.world = i; S.save(); this.app.renderer.setWorld(i); this.app.audio.music(true, i, true); this.renderLobby(); }, "tab");
       wb.appendChild(b);
     });
-    const dd = $("l-diff"); dd.classList.toggle("x-hide", this.selMode === "online" || this.selMode === "zen");
+    const isDaily = this.selMode === "daily", DD = dailyDef(); wb.classList.toggle("x-hide", isDaily);
+    const dd = $("l-diff"); dd.classList.toggle("x-hide", this.selMode === "online" || this.selMode === "zen" || isDaily);
     dd.innerHTML = [0, 1, 2, 3].map((i) => `<button data-v="${i}" class="${p.last.diff === i ? "on" : ""} ${S.unlocked("diff", i) ? "" : "lock"}">${t("d" + i)}${S.unlocked("diff", i) ? "" : " " + IC.lock}</button>`).join("");
     dd.querySelectorAll("button").forEach((b) => this.click(b, () => { const i = +b.dataset.v; if (!S.unlocked("diff", i)) { this.toast("🔒 " + t("unlockAt", { n: 10 })); return; } p.last.diff = i; S.save(); this.renderLobby(); }, "tab"));
     $("l-room").classList.toggle("x-hide", this.selMode !== "online"); $("l-code").value = p.last.room || "";
-    $("l-playsub").textContent = `${t("m_" + this.selMode)} · ${t("w_" + WORLDS[p.last.world || 0].id)}`;
+    $("l-playsub").textContent = isDaily ? `${t("m_daily")} · ${t("w_" + WORLDS[DD.world].id)} · ${t("d" + DD.diff)}` : `${t("m_" + this.selMode)} · ${t("w_" + WORLDS[p.last.world || 0].id)}`;
+    const db = $("l-dailyinfo"); if (db) { const B = dailyBoard(p); db.classList.toggle("x-hide", !isDaily); db.innerHTML = isDaily ? `<span>${IC.daily}</span><b>${t("dailyBest", { n: B.list.length ? fmtNum(B.list[0].s) : "—" })}</b><small>${t("dailyAttempts", { n: B.n })}</small>` : ""; }
+    this.renderSkill();
     // daily missions: every line fully visible (wraps instead of clipping)
     const ms = S.daily();
     $("l-daily").innerHTML = ms.map((m, i) => { const done = m.p >= m.g;
@@ -313,6 +322,12 @@ export class UI {
     const lg = !S.loginState().claimed, sp = S.spinReady(); $("l-ldot").classList.toggle("x-hide", !lg); $("l-login").classList.toggle("ready", lg); $("l-spdot").classList.toggle("x-hide", !sp); $("l-spin").classList.toggle("ready", sp);
     this.a2hs(); this.renderBell(); this.updateShow();
   }
+  // Track B: weekly skill chain (3 tiers x 2 skill missions); compact block in the lobby side panel
+  skillHtml(full) { const W = wchain(this.p), cur = wcCurrent(this.p);
+    const tiers = W.m.map((set, k) => `<div class="wc-tier ${k < W.tier ? "done" : k === W.tier ? "cur" : "lock"}"><div class="wc-th"><b>${t("wcTier", { n: k + 1 })}</b><em>◆ ${fmtNum(WC_REWARD[k])}</em></div>${set.map((id) => `<div class="wc-m ${W.done.includes(id) ? "ok" : ""}"><i>${W.done.includes(id) ? "✓" : k > W.tier ? IC.lock : "•"}</i><span>${esc(t("wc_" + id))}</span></div>`).join("")}</div>`);
+    if (full) return `<h4 class="sub">${t("wcTitle")}</h4><div class="wc-grid">${tiers.join("")}</div>`;
+    return cur ? `<div class="wc-mini"><small>${t("wcTitle")} · ${t("wcTier", { n: cur.tier + 1 })}</small><b>${esc(t("wc_" + cur.id))}</b><div class="wc-dots">${[0, 1, 2].map((k) => `<i class="${k < W.tier ? "on" : k === W.tier ? "cur" : ""}"></i>`).join("")}</div></div>` : `<div class="wc-mini done"><small>${t("wcTitle")}</small><b>✓ ${t("wcAll")}</b></div>`; }
+  renderSkill() { const el = $("l-skill"); if (el) el.innerHTML = this.skillHtml(false); }
   // iPhone Safari has no Fullscreen API: suggest Add to Home Screen once (dismissible), only in Safari, never when already installed
   a2hs() {
     const el = $("l-a2hs"), ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
@@ -326,7 +341,8 @@ export class UI {
   play() {
     const p = this.p, mode = this.selMode; p.last.mode = mode; this.S.save();
     if (!this.S.unlocked("world", p.last.world)) p.last.world = 0;
-    const cfg = { mode, world: p.last.world, diff: mode === "zen" ? 0 : p.last.diff, room: mode === "online" ? p.last.room || "" : "" };
+    const D = mode === "daily" ? dailyDef() : null;
+    const cfg = D ? { mode, world: D.world, diff: D.diff, seed: D.seed, room: "" } : { mode, world: p.last.world, diff: mode === "zen" ? 0 : p.last.diff, room: mode === "online" ? p.last.room || "" : "" };
     if (!p.tut) { this.tutStart(cfg); return; }
     this.launch(cfg);
   }
@@ -456,7 +472,7 @@ export class UI {
         h += `<div class="tier ${got ? "ok" : ""} ${cl ? "claimed" : ""} ${r.skin ? "leg" : ""} ${k === tier + 1 ? "cur" : ""}"><span class="tn2">${t("tier")} ${k}</span><div class="rwd">${r.skin ? `<div><div class="sw" style="background:${swatchCss({ k: "skin", i })}"></div><span class="rar legendary">${t("rar_legendary")}</span><br>${esc(skinName(i))}</div>` : `<div><div class="bigc">${r.chest ? "🎁" : "◆"} ${fmtNum(r.coins)}</div>${r.chest ? t("chest") : t("coins")}</div>`}</div>${cl ? `<button class="btn ghost" disabled>✓</button>` : got ? `<button class="btn gold" data-tier="${k}">${t("claim")}</button>` : `<button class="btn ghost" disabled>${IC.lock}</button>`}</div>`; }
       h += `</div><p class="fine">${t("seasonNote")}</p>`;
     } else if (tab === "weekly") {
-      const W = S.weekly(); h = `<h4 class="sub">${t("weekly")} · ${t("weeklyDone", { n: Math.min(3, p.weekly.done || 0) })}</h4>` + W.map((m, i) => { const done = m.p >= m.g; return `<div class="mis ${done ? "done" : ""}"><span>${t("wk_" + m.id, { n: fmtNum(m.g) })} · ${fmtNum(m.p)}/${fmtNum(m.g)}</span>${done ? (m.c ? `<span class="rw">✓ ${t("claimed")}</span>` : `<button class="btn gold claim" data-wk="${i}">${t("claim")} ◆${m.r}</button>`) : `<span class="rw">◆${m.r}</span>`}<div class="pb"><i style="width:${Math.round((m.p / m.g) * 100)}%"></i></div></div>`; }).join("");
+      const W = S.weekly(); h = this.skillHtml(true) + `<h4 class="sub">${t("weekly")} · ${t("weeklyDone", { n: Math.min(3, p.weekly.done || 0) })}</h4>` + W.map((m, i) => { const done = m.p >= m.g; return `<div class="mis ${done ? "done" : ""}"><span>${t("wk_" + m.id, { n: fmtNum(m.g) })} · ${fmtNum(m.p)}/${fmtNum(m.g)}</span>${done ? (m.c ? `<span class="rw">✓ ${t("claimed")}</span>` : `<button class="btn gold claim" data-wk="${i}">${t("claim")} ◆${m.r}</button>`) : `<span class="rw">◆${m.r}</span>`}<div class="pb"><i style="width:${Math.round((m.p / m.g) * 100)}%"></i></div></div>`; }).join("");
       h += `<h4 class="sub">${t("daily")}</h4>` + S.daily().map((m, i) => { const done = m.p >= m.g; return `<div class="mis ${done ? "done" : ""}"><span>${t("mi_" + m.id, { n: m.g })} · ${fmtNum(m.p)}/${fmtNum(m.g)}</span>${done ? (m.c ? `<span class="rw">✓</span>` : `<button class="btn gold claim" data-i2="${i}">${t("claim")} ◆${m.r}</button>`) : `<span class="rw">◆${m.r}</span>`}<div class="pb"><i style="width:${Math.round((m.p / m.g) * 100)}%"></i></div></div>`; }).join("");
     } else {
       for (const id in CHAINS) { const C = CHAINS[id], c = S.chain(id), i = SKINS.findIndex((s) => s.id === C.reward), done = c.s >= C.steps.length;
@@ -497,7 +513,7 @@ export class UI {
       const got = Object.keys(p.ach).length; h = `<p class="fine" style="margin-bottom:8px">${got}/${Store.ACH.length} · ${t("pinHint")}</p><div class="achs">` + Store.ACH.map(([id, ic, , r]) => achCard(id, ic, r, p.pins.includes(id))).join("") + `</div>`;
     } else if (tab === "hist") {
       const H = p.hist; h = `<h4 class="sub">${t("history")}</h4>` + (H.length ? `<table class="lb hist"><tr><th></th><th>${t("mode")}</th><th>${t("bests")}</th><th>${t("r_rank")}</th><th>${t("r_kills")}</th><th>${t("r_mass")}</th><th>${t("r_time")}</th><th>RP</th><th></th></tr>` + H.map((e) => `<tr><td class="${e.w ? "w" : "l"}">${e.w ? t("hWin") : t("hLoss")}</td><td>${t("m_" + e.m)}</td><td>${fmtNum(e.s)}</td><td>${e.r ? "#" + e.r : "—"}</td><td>${e.k}</td><td>${fmtNum(e.ms || 0)}</td><td>${fmtTime(e.t || 0)}</td><td class="${(e.rp || 0) >= 0 ? "w" : "l"}">${(e.rp || 0) >= 0 ? "+" : ""}${e.rp || 0}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<div class="lx-empty"><svg viewBox="0 0 24 24"><path d="M4 16c3-6 6 2 9-3s4-6 7-4"/><circle cx="20" cy="9" r="1"/></svg><span>${t("noHistory")}</span></div>`);
-      const modes = ["classic", "br", "koth", "boss", "team", "time", "survival", "online", "zen"]; this.bMode = this.bMode || "classic";
+      const modes = ["classic", "daily", "goldrush", "infection", "duel", "br", "koth", "boss", "team", "time", "survival", "online", "zen"]; this.bMode = this.bMode || "classic";
       h += `<h4 class="sub">${t("bests")}</h4><div class="seg small" id="b-modes" style="margin-bottom:8px">` + modes.map((m) => `<button data-v="${m}" class="${m === this.bMode ? "on" : ""}">${t("m_" + m)}</button>`).join("") + `</div>`;
       const L = p.bests[this.bMode] || [];
       h += L.length ? `<table class="lb"><tr><th>#</th><th>${t("bests")}</th><th>${t("r_mass")}</th><th>${t("r_kills")}</th><th>${t("world")}</th><th></th></tr>` + L.map((e, i) => `<tr><td>${i + 1}</td><td>${fmtNum(e.s)}</td><td>${fmtNum(e.m || 0)}</td><td>${e.k}</td><td>${t("w_" + (WORLDS[e.w] || WORLDS[0]).id)}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<div class="lx-empty"><svg viewBox="0 0 24 24"><path d="M4 16c3-6 6 2 9-3s4-6 7-4"/><circle cx="20" cy="9" r="1"/></svg><span>${t("noBests")}</span></div>`;
@@ -638,6 +654,7 @@ export class UI {
     const ex = []; if (r.lv.up) ex.push("⭐ " + t("levelUp", { n: r.lv.level })); if (r.tiers) ex.push("✦ " + t("tierUp", { n: this.S.seasonTier() }));
     for (const ms of r.missions) ex.push("✓ " + t("missionDone", { n: t("mi_" + ms.id, { n: ms.g }) })); for (const w of (r.mp && r.mp.weekly) || []) ex.push("✓ " + t("wk_" + w.id, { n: fmtNum(w.g) }));
     for (const c of (r.mp && r.mp.chains) || []) ex.push("⛓ " + t("ch_" + c.id) + " " + c.step + "/4"); for (const a of r.ach) ex.push(a.ic + " " + t(a.id));
+    const X = this.app.game.xres; if (X) { for (const id of X.wc.done) ex.push("⚡ " + t("wc_" + id)); for (const tr of X.wc.tiers) { ex.push("🏆 " + t("wcTierDone", { n: tr.n, x: fmtNum(tr.coins) })); this.note(t("wcTierDone", { n: tr.n, x: fmtNum(tr.coins) }), "🏆"); } if (X.daily) { ex.unshift("★ " + t("dailyRank", { n: X.daily.pos, x: X.daily.n })); if (X.daily.bonus) ex.push("◆ " + t("dailyFirst", { n: X.daily.bonus })); } }
     $("r-extra").innerHTML = ex.map((x, i) => `<span>${esc(x)}</span>`).join("");
     for (const a of r.ach) this.toast(`${a.ic} ${t("achUnlocked", { n: t(a.id) })} · ◆${a.r}`, "gold", 3500);
     if (r.tiers) this.note(t("tierUp", { n: this.S.seasonTier() }), "✦");
