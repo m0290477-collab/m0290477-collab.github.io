@@ -28,7 +28,7 @@ const run = (S, sec) => { for (let i = 0; i < sec * 60; i++) S.step(null); };
   ok(!a.alive && cause === 6, "meteor kills (cause 6)"); ok(b.alive && b.pu[PU.SHIELD] === 0, "shield absorbs a meteor");
 }
 { // events cycle: rain drops gold near the human, power-up drops + bounty run (drops1: meteor shower removed), bounty claim announced
-  const S = new Sim({ dt: 1 / 60, R: 200, seed: 8, /* long1: seed 9 now starts rain as the 3rd event, so the loop exits before any rain gold; seed 8 rolls all three with rain first */  powerups: false, events: true, evtFirst: 1 }); const me = S.addSnake("Me", {}, { pos: [0, 0], m: 60 }); me.god = true;
+  const S = new Sim({ dt: 1 / 60, R: 200, seed: 9, /* feast1: bot food-rush changes RNG order; seed 8 now starts drops last (loop exits before counting). Was:  long1: seed 9 now starts rain as the 3rd event, so the loop exits before any rain gold; seed 8 rolls all three with rain first */  powerups: false, events: true, evtFirst: 1 }); const me = S.addSnake("Me", {}, { pos: [0, 0], m: 60 }); me.god = true;
   for (let i = 0; i < 12; i++) S.addSnake("Bot" + i, {}, { bot: true, m: 80 + i * 10, diff: 1 });
   const seen = new Set(); let gold = 0, mets = 0, drops = 0, claim = null; S.powerups = true; S.puTarget = 0; S.puNear = 0;
   for (let i = 0; i < 60 * 400 && seen.size < 3; i++) { S.step(null); for (const e of S.evEvt) { if (e.ph === "start") seen.add(e.k); if (e.ph === "claim") claim = e; if (e.k === "bounty" && e.ph === "start") { const bb = S.byId.get(e.id); if (bb) S.kill(bb, me.id, 2); } }

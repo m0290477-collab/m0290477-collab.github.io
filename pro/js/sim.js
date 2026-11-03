@@ -193,7 +193,7 @@ export class Sim {
     if (this.powerups) for (let i = 0; i < Math.ceil(this.puTarget * 0.6); i++) this.spawnPu();
     // arena events (opt.events = list of allowed kinds). evEvt = {k, ph, ...} announcements, evMet = new meteors, evImpact = impacts
     this.events = Array.isArray(opt.events) ? opt.events.filter((k) => EVENTS.includes(k)) : opt.events === true ? EVENTS.slice() : [];
-    this.evt = null; this.evtNext = opt.evtFirst ?? 40; this.evtLast = ""; this.mets = []; this.metSeq = 1; this.evEvt = []; this.evMet = []; this.evImpact = []; this.bountyId = 0;
+    this.evt = null; this.evtNext = opt.evtFirst ?? 40; this.evtLast = ""; this.mets = []; this.feasts = []; this.metSeq = 1; this.evEvt = []; this.evMet = []; this.evImpact = []; this.bountyId = 0;
     this.feed(true);
   }
   randPos(rr) { const a = this.rand() * TAU, d = Math.sqrt(this.rand()) * rr; return [Math.cos(a) * d, Math.sin(a) * d]; }
@@ -254,6 +254,8 @@ export class Sim {
     if (s.bounty) { s.bounty = false; this.bountyId = 0; // the golden bounty drops a pile of gold and announces who claimed it
       for (let j = 0; j < 36; j++) { const a = this.rand() * TAU, d = 1 + this.rand() * 7; if (this.fCount < this.FM - 60) this.spawnFood(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d, 5 + this.rand() * 3, GOLD_FC); }
       this.evEvt.push({ k: "bounty", ph: "claim", id: s.id, by: k && k !== s ? k.id : 0 }); if (this.evt && this.evt.k === "bounty") { this.evt = null; this.evtNext = 55 + this.rand() * 30; } }
+    // feast1: remember where the body fell (head, middle, tail) so nearby bots race to eat it
+    if (n > 0 && s.m > 14) { const F = this.feasts, mid = (n >> 1) * 2, tl = (n - 1) * 2; F.push({ x: pts[0], y: pts[1], m: s.m, t: this.tick, id: s.id }, { x: pts[mid], y: pts[mid + 1], m: s.m, t: this.tick, id: s.id }, { x: pts[tl], y: pts[tl + 1], m: s.m, t: this.tick, id: s.id }); if (F.length > 18) F.splice(0, F.length - 18); }
     this.evDie.push(s.id, killerId || 0, cause || 0);
   }
 
@@ -295,9 +297,16 @@ export class Sim {
     if (want === null && this.pus.length) { let bp = null, bd = 12 + D.hunt * 8; for (const p of this.pus) { const d = Math.hypot(p.x - s.x, p.y - s.y); if (d < bd) { bd = d; bp = p; } } if (bp) { want = Math.atan2(bp.y - s.y, bp.x - s.x); ai.mode = 6; boost = bd > 12 && s.m > 45 && this.rand() < D.boost ? 1 : 0; } }
     if (want === null && this.zone) { const z = this.zone, dz = Math.hypot(s.x - z.x, s.y - z.y); if (dz > z.r * 0.78) { want = Math.atan2(z.y - s.y, z.x - s.x); ai.mode = 4; boost = dz > z.r && s.m > 30 ? 1 : 0; } }
     if (want === null && this.attractPt && this.rand() < this.attractPt.w) { const Ap = this.attractPt, da = Math.hypot(s.x - Ap.x, s.y - Ap.y); if (da > Ap.r * 0.55) { want = Math.atan2(Ap.y - s.y, Ap.x - s.x) + (this.rand() - 0.5) * 0.5; ai.mode = 5; } }
+    // feast1: a snake died nearby -> rush to its body before the food is gone (the bigger the corpse, the farther they come)
+    if (want === null && this.feasts.length && !(ai.mode === 3 && ai.commit > 0)) { let bf = null, bs = 0;
+      for (let i = this.feasts.length - 1; i >= 0; i--) { const F = this.feasts[i]; if (this.tick - F.t > (7 + Math.min(6, F.m / 60)) / this.dt) { this.feasts.splice(i, 1); continue; }
+        const d = Math.hypot(F.x - s.x, F.y - s.y), reach = 45 + s.r * 8 + Math.min(60, F.m * 0.25) + D.hunt * 25; if (d > reach || d < 6) continue; const sc = F.m / (d + 8); if (sc > bs) { bs = sc; bf = F; } }
+      // challenge: a rival bot racing for the same body gets cut off instead (bots fight over the food)
+      if (bf && near && near.bot && !near.boss && nd < 16 + s.r * 3 && this.rand() < (0.2 + D.hunt * 0.35) * A) { ai.mode = 3; ai.commit = 5 + ((this.rand() * 5) | 0); bf = null; }
+      if (bf) { const d = Math.hypot(bf.x - s.x, bf.y - s.y); want = Math.atan2(bf.y - s.y, bf.x - s.x); ai.mode = 7; boost = d > 14 && s.m > 30 && this.rand() < D.boost * 1.2 ? 1 : 0; } }
     // aggression, slither-style: keep committing to an attack for a while once started
     const range = 22 + s.r * 6 + D.hunt * 14;
-    if (want === null && near && nd < range && (ai.mode === 3 && ai.commit > 0 || this.rand() < (0.04 + D.hunt * 0.4) * A * Math.min(1, 3 / (1 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11)))) {
+    if (want === null && near && nd < range && (ai.mode === 3 && ai.commit > 0 || this.rand() < (0.04 + D.hunt * 0.4) * A * (near.bot ? 2.2 : 1) * Math.min(1, 3 / (1 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11)))) {
       const o = near; ai.commit = ai.mode === 3 ? (ai.commit || 0) - 1 : 6 + ((this.rand() * 8) | 0); ai.mode = 3; risky = true;
       const big = s.m > o.m * 2.2 && s.len > nd * 2.5;
       const ca = Math.cos(o.a), sa = Math.sin(o.a);

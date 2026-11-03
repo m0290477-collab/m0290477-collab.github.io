@@ -1,14 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=prof2";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=prof2";
-import { WORLDS, worldAsset } from "./worlds.js?v=prof2";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=prof2";
-import { haptic } from "./audio.js?v=prof2";
-import { skinFn, MODES, EMOTES } from "./game.js?v=prof2";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=prof2";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=prof2";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=prof2";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=feast1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=feast1";
+import { WORLDS, worldAsset } from "./worlds.js?v=feast1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=feast1";
+import { haptic } from "./audio.js?v=feast1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=feast1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=feast1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=feast1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=feast1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
