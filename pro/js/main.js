@@ -1,13 +1,13 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=replay1";
-import { Store, KV } from "./store.js?v=replay1";
-import { setLang, applyI18n, t } from "./i18n.js?v=replay1";
-import { Audio, haptic } from "./audio.js?v=replay1";
-import { Input } from "./input.js?v=replay1";
-import { Game } from "./game.js?v=replay1";
-import { UI, Hud } from "./ui.js?v=replay1";
-import { Renderer2D } from "./render2d.js?v=replay1";
+import { guard } from "./guard.js?v=lux1";
+import { Store, KV } from "./store.js?v=lux1";
+import { setLang, applyI18n, t } from "./i18n.js?v=lux1";
+import { Audio, haptic } from "./audio.js?v=lux1";
+import { Input } from "./input.js?v=lux1";
+import { Game } from "./game.js?v=lux1";
+import { UI, Hud } from "./ui.js?v=lux1";
+import { Renderer2D } from "./render2d.js?v=lux1";
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -45,7 +45,7 @@ async function makeRenderer(kind, quality) {
   const old = $("gl"), cv = document.createElement("canvas"); cv.id = "gl"; cv.setAttribute("aria-hidden", "true"); old.replaceWith(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=replay1");
+      const m = await import("./render3d.js?v=lux1");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 3500); }, onRestored: () => { clearTimeout(app._lostT); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
@@ -80,7 +80,7 @@ app.applySetting = (k) => {
     case "boostSize": $("boost").style.setProperty("--bs", s.boostSize); break;
     case "boostPos": $("boost").style.setProperty("--bp", s.boostPos); break;
     case "haptics": haptic.on = s.haptics; if (s.haptics && app.ready) haptic.tap(20); break;
-    case "vMaster": case "vSfx": case "vMusic": app.audio.setVol({ master: s.vMaster, sfx: s.vSfx, music: s.vMusic }); break;
+    case "vMaster": case "vSfx": case "vMusic": case "vUi": app.audio.setVol({ master: s.vMaster, sfx: s.vSfx, music: s.vMusic, ui: s.vUi ?? 0.8 }); break;
     case "cb": app.game.palettes(); H.classList.toggle("cb", s.cb); break;
     case "bigText": H.classList.toggle("big", s.bigText); break;
     case "lang": app.applyLang(); break;
@@ -111,7 +111,8 @@ async function boot() {
   const unlock = () => { app.audio.unlock(); if (!app.audio.musicOn) app.audio.music(true, app.game.world || 0, app.game.mode !== "attract" ? true : true); }; // iOS Safari only lets audio start inside touchend/click (pointerdown alone is not always a valid gesture), and an "interrupted"
   // context (call, Siri, app switch) must be resumed by the next gesture: listen to all of them, unlock() is idempotent and cheap
   for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, unlock, { passive: true, capture: true });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden && app.audio.ctx && app.audio.ctx.state !== "running") try { app.audio.ctx.resume(); } catch (_) {} });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) app.audio.duck(true); else { app.audio.duck(false); if (app.audio.ctx && app.audio.ctx.state !== "running") try { app.audio.ctx.resume(); } catch (_) {} } });
+  addEventListener("pageshow", () => { if (app.audio.ctx && app.audio.ctx.state !== "running") try { app.audio.ctx.resume(); } catch (_) {} });
   if (!KV.ok) setTimeout(() => app.ui.toast(t("noStorage"), "warn", 6000), 1200);
   if (app.noWebgl) setTimeout(() => app.ui.toast(t("noWebgl"), "warn", 5000), 1500);
   app.ready = true;

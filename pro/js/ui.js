@@ -1,13 +1,13 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=replay1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=replay1";
-import { WORLDS, worldAsset } from "./worlds.js?v=replay1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=replay1";
-import { haptic } from "./audio.js?v=replay1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=replay1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=replay1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=replay1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=lux1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=lux1";
+import { WORLDS, worldAsset } from "./worlds.js?v=lux1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=lux1";
+import { haptic } from "./audio.js?v=lux1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=lux1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=lux1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=lux1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -126,7 +126,7 @@ export class Hud {
   count(txt) { const c = $("h-count"); c.textContent = txt; c.classList.remove("on"); void c.offsetWidth; c.classList.add("on"); }
   killBanner(a, b) { this.banner(b ? `⚔ ${a} · ${b}` : "⚔ " + a, 1300, "kill"); }
   cinematic(a, b, lose) { const hud = $("hud"); if (hud) { hud.classList.add("cine"); clearTimeout(this._cineT); this._cineT = setTimeout(() => hud.classList.remove("cine"), 3800); } const k = $("h-cine"); k.querySelector("b").textContent = a; k.querySelector("small").textContent = b || ""; k.classList.toggle("lose", !!lose); k.classList.remove("on"); void k.offsetWidth; k.classList.add("on"); }
-  storm(on) { $("storm-vig").classList.toggle("on", !!on); if (on && !this._stormMsg) { this._stormMsg = 1; this.banner(t("outZone"), 1200); } if (!on) this._stormMsg = 0; }
+  storm(on) { this.app.audio.storm(!!on); $("storm-vig").classList.toggle("on", !!on); if (on && !this._stormMsg) { this._stormMsg = 1; this.banner(t("outZone"), 1200); } if (!on) this._stormMsg = 0; }
   // floating text over the world is gone (it piled up on the head); milestones go through the single banner channel
   popup(txt, kind) { if (kind === "rank" || kind === "kill") this.banner(txt, 1200, "sub"); }
   popupOld(txt, kind, pos, col) { const p = document.createElement("div"); p.className = "pop " + (kind || ""); p.textContent = txt; if (col) p.style.color = col; if (pos && pos[2]) { p.style.left = pos[0] + "px"; p.style.top = pos[1] + "px"; } const box = $("h-pop"); box.appendChild(p); while (box.children.length > 6) box.firstChild.remove(); setTimeout(() => p.remove(), 1000); }
@@ -177,7 +177,7 @@ export class UI {
     G.show = { d: { s: { id: -1, r: 0.5, m: 50, len: 46, x: 0, y: 0 }, fn: skinFn(d), eye: d.e | 0, trail: d.t | 0, fx, name: "" }, idle: L ? L.idle : "sway", glow: L ? L.glow : "#ffc845", x, zoom: this.cur === "lobby" ? 1.2 : 1, orbit: Math.sin(performance.now() / 9000) * 0.25 };
     if (this.cur === "lobby") { const i = d.k === "skin" ? d.i : -1, rar = i >= 0 ? SKINS[i].rar : d.k === "flag" ? "rare" : "epic"; $("l-showtag").innerHTML = `<span class="rar ${rar}">${t("rar_" + rar)}</span><b>${esc(d.k === "flag" ? flagName(FLAGS[d.i], LANG) : d.k === "custom" ? t("custom") : skinName(d.i))}</b>`; }
   }
-  goLobby() { ["m-pause", "m-results"].forEach((m) => $(m).classList.add("x-hide")); this.app.hud.hide(); this.app.game.startShow(this.p.last.world || 0); this.app.audio.music(true, this.p.last.world || 0, true); this.go("lobby", "fade"); setTimeout(() => this.nextReveal(), 900); }
+  goLobby() { this.matchIntroHide(); ["m-pause", "m-results"].forEach((m) => $(m).classList.add("x-hide")); this.app.hud.hide(); this.app.game.startShow(this.p.last.world || 0); this.app.audio.music(true, this.p.last.world || 0, true); this.go("lobby", "fade"); setTimeout(() => this.nextReveal(), 900); }
   toast(msg, kind = "", ms = 2800) {
     const el = document.createElement("div"); el.className = "toast " + kind; el.textContent = msg; const box = $("toasts"); box.appendChild(el); while (box.children.length > 3) box.firstChild.remove();
     if (kind === "gold" || kind === "good") { this.note(msg, kind === "gold" ? "★" : "✓"); this.app.audio.play("toast"); }
@@ -186,6 +186,10 @@ export class UI {
   note(msg, ic) { this.notes.unshift({ msg, ic, t: Date.now(), seen: false }); if (this.notes.length > 20) this.notes.pop(); this.renderBell(); }
   renderBell() { const n = this.notes.filter((x) => !x.seen).length; $("l-bdg").textContent = n; $("l-bdg").classList.toggle("x-hide", !n); }
   confirm(text) { return new Promise((res) => { $("cf-text").textContent = text; const m = $("m-confirm"); m.classList.remove("x-hide"); const done = (v) => { m.classList.add("x-hide"); $("cf-yes").onclick = $("cf-no").onclick = null; res(v); }; $("cf-yes").onclick = () => done(true); $("cf-no").onclick = () => done(false); }); }
+  // lux1: number count-up (ease-out cubic, tabular figures) and a small floating reward label at a point
+  countUp(el, to, fmt = (v) => fmtNum(v), ms = 900, from = 0) { if (!el) return; el.classList.add("lx-up"); if (this.S.settings.reduceMotion || to === from) { el.textContent = fmt(to); return; } const t0 = performance.now(); const step = () => { const k = Math.min(1, (performance.now() - t0) / ms), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(Math.round(from + (to - from) * e)); if (k < 1) requestAnimationFrame(step); }; step(); }
+  fly(el, txt) { if (!el || this.S.settings.reduceMotion) return; const r = el.getBoundingClientRect(), f = document.createElement("div"); f.className = "lx-fly"; f.textContent = txt; f.style.left = r.left + r.width / 2 + "px"; f.style.top = r.top - 4 + "px"; document.body.appendChild(f); setTimeout(() => f.remove(), 950); }
+  glow(el) { if (!el) return; el.classList.remove("lx-glow"); void el.offsetWidth; el.classList.add("lx-glow"); }
   coins(target) { // animated currency counter
     document.querySelectorAll(".coinsv").forEach((el) => { const from = +(el.dataset.v || target), to = target; el.dataset.v = to; if (from === to || this.S.settings.reduceMotion) { el.textContent = fmtNum(to); return; }
       const t0 = performance.now(), step = () => { const k = Math.min(1, (performance.now() - t0) / 900), e = 1 - Math.pow(1 - k, 3); el.textContent = fmtNum(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); }; step(); const c = el.closest(".chip"); if (c && to > from) { c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); this.app.audio.play("coin"); } });
@@ -262,6 +266,8 @@ export class UI {
     return new Promise((res) => {
       const el = $("title"); const w = this.p.last.world || 0; this.app.game.startAttract(w, true); this.app.audio.music(true, w, true); el.classList.remove("x-hide");
       let done = false; const fin = () => { if (done) return; done = true; this.app.audio.unlock(); this.app.audio.play("go"); el.classList.add("out"); setTimeout(() => { el.classList.add("x-hide"); el.classList.remove("out"); res(); }, 450); };
+      const tipEl = $("t-tip"); let ti = (Math.random() * 10) | 0; const tipShow = () => { if (done) return; tipEl.classList.add("fade"); setTimeout(() => { tipEl.innerHTML = `<b>${esc(t("tip"))}</b>${esc(t("tip" + ((ti++ % 10) + 1)))}`; tipEl.classList.remove("fade"); }, 300); };
+      if (tipEl) { tipEl.innerHTML = `<b>${esc(t("tip"))}</b>${esc(t("tip" + ((ti++ % 10) + 1)))}`; this._tipIv = setInterval(() => (done ? clearInterval(this._tipIv) : tipShow()), 5200); }
       $("t-start").onclick = fin; el.addEventListener("pointerdown", (e) => { if (e.target === el || e.target.closest(".t-logo")) fin(); });
     });
   }
@@ -315,7 +321,7 @@ export class UI {
     if (!this._a2shown) { this._a2shown = 1; this.S.settings.a2hs = 1; this.S.save(); } // one-time: shown this session only
     $("l-a2hs-t").textContent = t("a2hs"); if (!this._a2b) { this._a2b = 1; this.click($("l-a2hs-x"), () => { this._a2off = 1; el.classList.add("x-hide"); }, "back"); }
   }
-  claim(i) { const r = this.S.claimMission(i); if (!r) return; this.toast(`◆ +${r.coins} · +${r.coins} XP`, "gold"); this.coins(this.p.coins); if (r.lv.up) { this.toast(t("levelUp", { n: r.lv.level }), "gold"); this.app.audio.play("level"); } this.checkAch(); if (this.cur === "lobby") this.renderLobby(); else if (this.cur === "season") this.renderSeason(); }
+  claim(i) { const bt = document.querySelector(`[data-i2="${i}"]`); const r = this.S.claimMission(i); if (!r) return; this.fly(bt, "+◆" + fmtNum(r.coins)); this.app.audio.play("chime"); document.querySelectorAll(".chip.coins").forEach((c) => this.glow(c)); this.toast(`◆ +${r.coins} · +${r.coins} XP`, "gold"); this.coins(this.p.coins); if (r.lv.up) { this.toast(t("levelUp", { n: r.lv.level }), "gold"); this.app.audio.play("level"); } this.checkAch(); if (this.cur === "lobby") this.renderLobby(); else if (this.cur === "season") this.renderSeason(); }
   checkAch() { for (const a of this.S.checkAch()) { this.toast(`${a.ic} ${t("achUnlocked", { n: t(a.id) })} · ◆${a.r}`, "gold", 3500); this.app.audio.play("ach"); } }
   play() {
     const p = this.p, mode = this.selMode; p.last.mode = mode; this.S.save();
@@ -328,15 +334,35 @@ export class UI {
   async launch(cfg) {
     // calm1: no wipe and no minimum loading time. The loading screen only appears when the world still has to stream
     // in or its shaders have never been compiled for this renderer/quality; a repeat match starts straight away.
-    const A = this.app, R = A.renderer; this.hideScreens(); $("m-results").classList.add("x-hide"); $("title").classList.add("x-hide"); $("m-reveal").classList.add("x-hide");
+    const A = this.app, R = A.renderer; A.audio.zen = cfg.mode === "zen"; this.hideScreens(); $("m-results").classList.add("x-hide"); $("title").classList.add("x-hide"); $("m-reveal").classList.add("x-hide");
     const w = WORLDS[cfg.world] || WORLDS[0]; R.setWorld(cfg.world);
     const wk = (R.is2D ? "2d" : "3d") + ":" + R.qName + ":" + cfg.world, warm = this._warm || (this._warm = new Set()), ready = () => (R.worldReady ? R.worldReady() : true);
     const slow = !ready() || (!R.is2D && R.prewarm && !warm.has(wk));
-    if (slow) { this.loading(true, `${t("m_" + cfg.mode)}<b>${esc(t("w_" + w.id))}</b>`); this.progress(20, t("loading")); for (let k = 0; k < 60 && !ready(); k++) await new Promise((r) => setTimeout(r, 100)); this.progress(90); }
+    if (slow) { this.loading(true, `<span class="ld-mic">${IC[cfg.mode] || ""}</span>${t("m_" + cfg.mode)}<b>${esc(t("w_" + w.id))}</b><em class="ld-rule">${esc(t("m_" + cfg.mode + "_d"))}</em>`); this.progress(20, t("loading")); for (let k = 0; k < 60 && !ready(); k++) await new Promise((r) => setTimeout(r, 100)); this.progress(90); }
     A.game.start(cfg);
     if (slow && R.prewarm && !R.is2D && !warm.has(wk)) { this.progress(96, t("loadShaders")); await new Promise((r) => requestAnimationFrame(() => r())); await Promise.race([R.prewarm(), new Promise((r) => setTimeout(r, 8000))]); }
     warm.add(wk); if (slow) { this.progress(100); this.loading(false); }
+    this.matchIntro(cfg, cfg.mode === "online" ? 1500 : 1600);
   }
+  // cine1: match card shown over the start beat (mode, world art, rules, progress); never adds time, never blocks input
+  matchFacts(mode) { const M = MODES[mode] || {}; const f = [];
+    const ic = (d) => `<svg viewBox="0 0 24 24">${d}</svg>`;
+    if (M.dur) f.push(ic('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/>') + fmtTime(M.dur));
+    if (M.lives) f.push(ic('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/>') + "×" + M.lives);
+    if (M.target) f.push(ic('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>') + M.target);
+    if (M.bots !== undefined && mode !== "online") f.push(ic('<path d="M4 16c3-6 6 2 9-3s4-6 7-4"/><circle cx="20" cy="9" r="1"/>') + (M.bots + 1));
+    return f; }
+  matchIntro(cfg, ms) {
+    const el = $("m-intro"); if (!el) return; const w = WORLDS[cfg.world] || WORLDS[0];
+    $("mi-art").style.backgroundImage = `url(${worldAsset(w, "sky", true)})`; $("mi-art").innerHTML = `<span class="mi-ic">${IC[cfg.mode] || ""}</span>`;
+    $("mi-world").textContent = t("w_" + w.id) + (cfg.mode !== "zen" && cfg.mode !== "online" && cfg.diff !== undefined ? " · " + t("d" + cfg.diff) : "");
+    $("mi-mode").textContent = t("m_" + cfg.mode); $("mi-desc").textContent = t("m_" + cfg.mode + "_d");
+    $("mi-chips").innerHTML = this.matchFacts(cfg.mode).map((x) => `<span>${x}</span>`).join("");
+    const bar = $("mi-bar"); bar.style.animation = "none"; void bar.offsetWidth; bar.style.animation = `miBar ${ms}ms linear forwards`;
+    el.classList.remove("x-hide", "out"); clearTimeout(this._miT); clearTimeout(this._miT2);
+    this._miT = setTimeout(() => el.classList.add("out"), Math.max(200, ms - 180)); this._miT2 = setTimeout(() => el.classList.add("x-hide"), ms + 60);
+  }
+  matchIntroHide() { const el = $("m-intro"); if (el) el.classList.add("x-hide"); clearTimeout(this._miT); clearTimeout(this._miT2); }
   // ---------- tutorial ----------
   tutStart(cfg) { this.tutCfg = cfg; this.tutI = 0; $("m-tut").classList.remove("x-hide"); this.tutRender(); const loop = () => { if ($("m-tut").classList.contains("x-hide")) return; this.tutDraw(); requestAnimationFrame(loop); }; loop(); }
   tutRender() { $("t-text").textContent = t("tut" + (this.tutI + 1)); $("t-dots").innerHTML = [0, 1, 2, 3].map((i) => `<i class="${i === this.tutI ? "on" : ""}"></i>`).join(""); $("t-next").textContent = this.tutI === 3 ? t("gotIt") : t("next"); }
@@ -470,11 +496,11 @@ export class UI {
     } else if (tab === "ach") {
       const got = Object.keys(p.ach).length; h = `<p class="fine" style="margin-bottom:8px">${got}/${Store.ACH.length} · ${t("pinHint")}</p><div class="achs">` + Store.ACH.map(([id, ic, , r]) => achCard(id, ic, r, p.pins.includes(id))).join("") + `</div>`;
     } else if (tab === "hist") {
-      const H = p.hist; h = `<h4 class="sub">${t("history")}</h4>` + (H.length ? `<table class="lb hist"><tr><th></th><th>${t("mode")}</th><th>${t("bests")}</th><th>${t("r_rank")}</th><th>${t("r_kills")}</th><th>${t("r_mass")}</th><th>${t("r_time")}</th><th>RP</th><th></th></tr>` + H.map((e) => `<tr><td class="${e.w ? "w" : "l"}">${e.w ? t("hWin") : t("hLoss")}</td><td>${t("m_" + e.m)}</td><td>${fmtNum(e.s)}</td><td>${e.r ? "#" + e.r : "—"}</td><td>${e.k}</td><td>${fmtNum(e.ms || 0)}</td><td>${fmtTime(e.t || 0)}</td><td class="${(e.rp || 0) >= 0 ? "w" : "l"}">${(e.rp || 0) >= 0 ? "+" : ""}${e.rp || 0}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<p class="fine">${t("noHistory")}</p>`);
+      const H = p.hist; h = `<h4 class="sub">${t("history")}</h4>` + (H.length ? `<table class="lb hist"><tr><th></th><th>${t("mode")}</th><th>${t("bests")}</th><th>${t("r_rank")}</th><th>${t("r_kills")}</th><th>${t("r_mass")}</th><th>${t("r_time")}</th><th>RP</th><th></th></tr>` + H.map((e) => `<tr><td class="${e.w ? "w" : "l"}">${e.w ? t("hWin") : t("hLoss")}</td><td>${t("m_" + e.m)}</td><td>${fmtNum(e.s)}</td><td>${e.r ? "#" + e.r : "—"}</td><td>${e.k}</td><td>${fmtNum(e.ms || 0)}</td><td>${fmtTime(e.t || 0)}</td><td class="${(e.rp || 0) >= 0 ? "w" : "l"}">${(e.rp || 0) >= 0 ? "+" : ""}${e.rp || 0}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<div class="lx-empty"><svg viewBox="0 0 24 24"><path d="M4 16c3-6 6 2 9-3s4-6 7-4"/><circle cx="20" cy="9" r="1"/></svg><span>${t("noHistory")}</span></div>`);
       const modes = ["classic", "br", "koth", "boss", "team", "time", "survival", "online", "zen"]; this.bMode = this.bMode || "classic";
       h += `<h4 class="sub">${t("bests")}</h4><div class="seg small" id="b-modes" style="margin-bottom:8px">` + modes.map((m) => `<button data-v="${m}" class="${m === this.bMode ? "on" : ""}">${t("m_" + m)}</button>`).join("") + `</div>`;
       const L = p.bests[this.bMode] || [];
-      h += L.length ? `<table class="lb"><tr><th>#</th><th>${t("bests")}</th><th>${t("r_mass")}</th><th>${t("r_kills")}</th><th>${t("world")}</th><th></th></tr>` + L.map((e, i) => `<tr><td>${i + 1}</td><td>${fmtNum(e.s)}</td><td>${fmtNum(e.m || 0)}</td><td>${e.k}</td><td>${t("w_" + (WORLDS[e.w] || WORLDS[0]).id)}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<p class="fine">${t("noBests")}</p>`;
+      h += L.length ? `<table class="lb"><tr><th>#</th><th>${t("bests")}</th><th>${t("r_mass")}</th><th>${t("r_kills")}</th><th>${t("world")}</th><th></th></tr>` + L.map((e, i) => `<tr><td>${i + 1}</td><td>${fmtNum(e.s)}</td><td>${fmtNum(e.m || 0)}</td><td>${e.k}</td><td>${t("w_" + (WORLDS[e.w] || WORLDS[0]).id)}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<div class="lx-empty"><svg viewBox="0 0 24 24"><path d="M4 16c3-6 6 2 9-3s4-6 7-4"/><circle cx="20" cy="9" r="1"/></svg><span>${t("noBests")}</span></div>`;
     }
     el.innerHTML = h;
     const done = (msg) => { S.save(); this.renderProfile(); if (msg) this.toast("✓ " + msg, "good", 1600); };
@@ -507,7 +533,7 @@ export class UI {
   pickCos() { const L = lockedCosmetics(this.S); return L.length ? L[(Math.random() * L.length) | 0] : null; }
   segLabel(sg) { return sg.c ? `◆ ${fmtNum(sg.c)}` : sg.x ? t("xpN", { n: sg.x }) : "🎁"; }
   openSpin() {
-    const w = $("sp-wheel"), n = SPIN.length, cols = ["#3a2a7a", "#1d4f8a", "#7a2a5a", "#1f6b52", "#8a5a12", "#25307a", "#7a1f2f", "#9a7a10"];
+    const w = $("sp-wheel"), n = SPIN.length, cols = ["#151c2c", "#3a2c12", "#1b2336", "#4a3815"]; // lux1: deep navy / bronze alternation
     w.style.background = `conic-gradient(${SPIN.map((_, i) => `${cols[i % cols.length]} ${(i / n) * 360}deg ${((i + 1) / n) * 360}deg`).join(",")})`;
     w.innerHTML = SPIN.map((sg, i) => `<div class="sg" style="transform:rotate(${(i + 0.5) / n * 360 - 90}deg)"><span>${this.segLabel(sg)}</span></div>`).join("");
     if (!this._spinning) { w.style.transition = "none"; w.style.transform = `rotate(${this._spinRot || 0}deg)`; void w.offsetWidth; w.style.transition = ""; }
@@ -545,7 +571,7 @@ export class UI {
       { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), { ...tog("showFps", "showFps"), sub: "debug" }, tog("calmFx", "calmFx", t("calmFxSub")), tog("replay", "deathReplay", t("deathReplaySub")), tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
     if (tab === "controls") rows = [seg("ctrl", [["joy", t("c_joy")], ["follow", t("c_follow")], ["swipe", t("c_swipe")]], "ctrlType"), rng("sens", "sens", 0.5, 2, 0.05, (v) => v.toFixed(2) + "×"), tog("left", "leftHand"),
       rng("boostSize", "boostSize", 0.7, 1.4, 0.05, (v) => Math.round(v * 100) + "%"), rng("boostPos", "boostPos", 0, 1, 0.05, (v) => Math.round(v * 100) + "%"), { ...tog("haptics", "haptics"), sub: navigator.vibrate ? "" : t("hapticsNo") }];
-    if (tab === "audio") rows = [rng("vMaster", "vMaster", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vSfx", "vSfx", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vMusic", "vMusic", 0, 1, 0.01, (v) => Math.round(v * 100) + "%")];
+    if (tab === "audio") rows = [rng("vMaster", "vMaster", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vSfx", "vSfx", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vUi", "vUi", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vMusic", "vMusic", 0, 1, 0.01, (v) => Math.round(v * 100) + "%")];
     if (tab === "access") rows = [tog("cb", "cbMode"), tog("reduceMotion", "reduceMotion"), tog("bigText", "bigText"), { type: "btn", label: "tutorial", act: "tut" }];
     if (tab === "lang") rows = [{ type: "lang" }];
     if (tab === "account") rows = [{ type: "acct" }];
@@ -569,7 +595,7 @@ export class UI {
     el.querySelectorAll("[data-t]").forEach((b) => this.click(b, () => { const k = b.dataset.t; s[k] = !s[k]; this.S.save(); this.app.applySetting(k); this.renderSettings(); }, "toggle"));
     el.querySelectorAll("[data-r]").forEach((inp) => { const k = inp.dataset.r, row = rows.find((r) => r.k === k);
       inp.addEventListener("input", () => { s[k] = +inp.value; inp.style.setProperty("--p", ((s[k] - row.min) / (row.max - row.min)) * 100 + "%"); el.querySelector(`[data-rv="${k}"]`).textContent = row.fmt(s[k]); this.app.applySetting(k); });
-      inp.addEventListener("change", () => { this.S.save(); if (k.startsWith("v")) { this.app.audio.unlock(); this.app.audio.play("eat"); } }); });
+      inp.addEventListener("change", () => { this.S.save(); if (k.startsWith("v")) { this.app.audio.unlock(); this.app.audio.play(k === "vUi" ? "click" : k === "vMusic" ? "chime" : "eat"); } }); });
     el.querySelectorAll("[data-lang]").forEach((b) => this.click(b, () => { s.lang = b.dataset.lang; this.S.save(); this.app.applyLang(); this.renderSettings(); }, "toggle"));
     const gc = $("g-code"); if (gc) gc.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); const b = el.querySelector('[data-act="redeem"]'); b && b.click(); } });
     el.querySelectorAll("[data-act]").forEach((b) => this.click(b, async () => {
@@ -608,7 +634,7 @@ export class UI {
     $("r-grid").innerHTML = cells.map(([a, b]) => `<div><small>${a === "wave" ? t("wave", { n: "" }).trim() : t(a)}</small><b>${b}</b></div>`).join("");
     const lv = lvInfo(this.p.xp); $("r-lv").textContent = lv.n; $("r-xpbar").style.width = "0"; setTimeout(() => ($("r-xpbar").style.width = (lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)) + "%"), 60);
     this.lastResults = r; $("r-watch").classList.toggle("x-hide", !r.killer); $("r-replay").classList.toggle("x-hide", !r.replay); $("r-season").textContent = "✦ " + t("seasonXp", { n: r.seasonXp || r.xp }) + (r.pu ? " · " + t("puUsed", { n: r.pu }) : "");
-    $("r-xp").textContent = t("xpGain", { n: r.xp }); $("r-coins").textContent = "◆ " + t("coinGain", { n: r.coins });
+    this.countUp($("r-xp"), r.xp, (v) => t("xpGain", { n: fmtNum(v) }), 1100); this.countUp($("r-coins"), r.coins, (v) => "◆ " + t("coinGain", { n: fmtNum(v) }), 1100);
     const ex = []; if (r.lv.up) ex.push("⭐ " + t("levelUp", { n: r.lv.level })); if (r.tiers) ex.push("✦ " + t("tierUp", { n: this.S.seasonTier() }));
     for (const ms of r.missions) ex.push("✓ " + t("missionDone", { n: t("mi_" + ms.id, { n: ms.g }) })); for (const w of (r.mp && r.mp.weekly) || []) ex.push("✓ " + t("wk_" + w.id, { n: fmtNum(w.g) }));
     for (const c of (r.mp && r.mp.chains) || []) ex.push("⛓ " + t("ch_" + c.id) + " " + c.step + "/4"); for (const a of r.ach) ex.push(a.ic + " " + t(a.id));

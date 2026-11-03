@@ -17,7 +17,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2305070d'/%3E%3Cpath d='M14 40c6-14 14 4 20-10s12-6 16-2' stroke='%23ffc845' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="preload" href="assets/fonts/oxanium.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/keyart_lo.webp" as="image" />
-<link rel="stylesheet" href="css/app.css?v=replay1" />
+<link rel="stylesheet" href="css/app.css?v=lux1" />
 <link rel="modulepreload" href="js/vendor/three.module.min.js" />
 </head>
 <body>
@@ -47,8 +47,10 @@
 
 <!-- TITLE -->
 <div id="title" class="x-hide">
+  <div class="t-art" aria-hidden="true"><i class="ta-bg"></i><i class="ta-glow"></i><i class="ta-motes m1"></i><i class="ta-motes m2"></i><i class="ta-shade"></i></div>
   <div class="t-logo"><img src="assets/emblem.webp" alt="" class="t-emb" /><div class="wm big"><span class="w1">SUPER</span><span class="w2">SNAKE</span><span class="pro">PRO</span></div><p class="t-tag" data-i="tagline"></p></div>
   <button class="t-start" id="t-start"><span data-i="tapStart">Tap to start</span></button>
+  <p class="t-tip" id="t-tip"></p>
   <p class="t-ver" data-i="version"></p>
 </div>
 
@@ -183,6 +185,7 @@
 </div>
 
 <!-- MODALS -->
+<div id="m-intro" class="x-hide" aria-live="polite"><div class="mi-card"><div class="mi-art" id="mi-art"></div><div class="mi-txt"><small id="mi-world"></small><b id="mi-mode"></b><p id="mi-desc"></p><div class="mi-chips" id="mi-chips"></div></div><div class="mi-bar"><i id="mi-bar"></i></div></div></div>
 <div id="m-pause" class="modal x-hide" role="dialog" aria-modal="true"><div class="glass mcard">
   <h2 data-i="pause"></h2><p class="fine x-hide" id="pz-online"></p>
   <button class="btn gold wide" id="pz-resume" data-i="resume"></button>
@@ -223,6 +226,6 @@
 
 <div id="wipe" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="toasts" aria-live="polite"></div>
-<script type="module" src="js/main.js?v=replay1"></script>
+<script type="module" src="js/main.js?v=lux1"></script>
 </body>
 </html>

@@ -1,14 +1,14 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=replay1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=replay1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=replay1";
-import { NetBackend } from "./net.js?v=replay1";
-import { t, fmtNum } from "./i18n.js?v=replay1";
-import { haptic } from "./audio.js?v=replay1";
-import { rankOf, rpDelta } from "./profile.js?v=replay1";
-import { Replay } from "./replay.js?v=replay1";
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=lux1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=lux1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=lux1";
+import { NetBackend } from "./net.js?v=lux1";
+import { t, fmtNum } from "./i18n.js?v=lux1";
+import { haptic } from "./audio.js?v=lux1";
+import { rankOf, rpDelta } from "./profile.js?v=lux1";
+import { Replay } from "./replay.js?v=lux1";
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };

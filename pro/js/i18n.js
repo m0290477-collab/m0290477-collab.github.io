@@ -296,6 +296,9 @@ const S = {
   rpStorm: ["Caught by the storm", "ابتلعتك العاصفة", "Fırtınaya yakalandın", "Pris par la tempête", "Atrapado por la tormenta", "तूफ़ान में फँसे"], rpHow: ["How you went down", "كيف خسرت", "Nasıl elendin", "Comment vous êtes tombé", "Cómo caíste", "आप कैसे हारे"],
   deathReplay: ["Death replay", "إعادة لحظة الخسارة", "Ölüm tekrarı", "Replay de la mort", "Repetición de la muerte", "मौत का रीप्ले"], deathReplaySub: ["A 5-second replay of how you were knocked out", "إعادة 5 ثوانٍ لكيف خسرت", "Nasıl elendiğinin 5 saniyelik tekrarı", "Un replay de 5 secondes de votre élimination", "Una repetición de 5 segundos de cómo caíste", "आप कैसे हारे, उसका 5 सेकंड का रीप्ले"],
   meteorDeath: ["Hit by a meteor", "أصابك نيزك", "Meteor çarptı", "Touché par un météore", "Golpeado por un meteorito", "उल्का से टकराए"], feed_meteor: ["{y} was hit by a meteor", "أصاب نيزك {y}", "{y} meteora yakalandı", "{y} touché par un météore", "{y} fue golpeado por un meteorito", "{y} को उल्का लगा"],
+  // ---- Track B (lux/cine/audio/modes) ----
+  s_phoenix: ["Phoenix", "العنقاء", "Anka", "Phénix", "Fénix", "फ़ीनिक्स"],
+  vUi: ["Interface sounds", "أصوات الواجهة", "Arayüz sesleri", "Sons de l'interface", "Sonidos de interfaz", "इंटरफ़ेस ध्वनियाँ"],
 };
 const AD = {
   a_first: ["Eat your first orb", "كُل أول كرة"], a_hunter: ["Defeat 10 snakes", "اهزم 10 ثعابين"], a_predator: ["Defeat 100 snakes", "اهزم 100 ثعبان"], a_glutton: ["Eat 5,000 orbs", "كُل 5000 كرة"],
