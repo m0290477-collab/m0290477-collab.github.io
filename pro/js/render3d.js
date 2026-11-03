@@ -2,20 +2,20 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=drops1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=drops1";
+import * as THREE from "./vendor/three.module.min.js?v=tidy1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=tidy1";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=drops1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=drops1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=drops1";
-import { World, prefetchWorld } from "./gfx/env.js?v=drops1";
-import { Post } from "./gfx/post.js?v=drops1";
-import { Studio } from "./gfx/showcase.js?v=drops1";
-import { SoftFx } from "./gfx/fx.js?v=drops1";
-import { on as onEv } from "./events.js?v=drops1";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=drops1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=tidy1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=tidy1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=tidy1";
+import { World, prefetchWorld } from "./gfx/env.js?v=tidy1";
+import { Post } from "./gfx/post.js?v=tidy1";
+import { Studio } from "./gfx/showcase.js?v=tidy1";
+import { SoftFx } from "./gfx/fx.js?v=tidy1";
+import { on as onEv } from "./events.js?v=tidy1";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=tidy1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -603,7 +603,7 @@ export class Renderer3D {
     const lob = document.getElementById("s-lobby");
     if (lob && lob.classList.contains("on")) {
       const R = this.canvas.getBoundingClientRect(), H = R.height || innerHeight, q = (id) => { const e = document.getElementById(id); return e && e.offsetWidth ? e.getBoundingClientRect() : null; };
-      const tag = q("l-showtag"), act = q("l-locker"), wr = q("l-worlds") || q("l-diff");
+      const tag = q("l-showtag"), act = q("l-locker"), wr = q("l-worlds") || q("l-dailyinfo") || q("l-diff") || q("l-room"); /* tidy1: Daily hides worlds + difficulty; fit above its info chip */
       const top = Math.max(tag ? tag.bottom : 0, act ? act.bottom : 0) - R.top + 4, bot = (wr ? wr.top : H * 0.86) - R.top - 2;
       const SPAN0 = 0.56, C0 = 0.64, box = Math.max(40, bot - top);
       k = Math.max(1, Math.min(2.2, (SPAN0 * H) / box)); const cNow = H * (0.5 + (C0 - 0.5) / k); dy = (top + bot) / 2 - cNow;

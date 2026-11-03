@@ -715,6 +715,8 @@ input[type="range"] { height: 44px; background-color: transparent; background-si
 .play small { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pb-opts { display: grid; justify-items: end; grid-template-rows: auto 44px; }
 #l-diff, #l-room { grid-row: 2; grid-column: 1; align-self: center; }
+/* tidy1: iOS Safari stretched the difficulty bar to the worlds row width (empty dark strip left of Easy); keep it tight, right-aligned */
+#l-diff { justify-self: end; width: max-content; max-width: 100%; flex-wrap: nowrap; }
 /* short landscape phones: the results card fits without scrolling so its buttons are never cut off */
 @media (max-height: 440px) { .results { gap: 4px; padding-top: 10px; padding-bottom: 10px; } .results .r-score { line-height: 1; } }
 

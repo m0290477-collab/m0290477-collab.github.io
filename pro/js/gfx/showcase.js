@@ -1,6 +1,6 @@
 // Studio showcase: the player's snake coiled on a lit pedestal (lobby, locker, rarity reveals).
-import * as THREE from "../vendor/three.module.min.js?v=drops1";
-import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=drops1";
+import * as THREE from "../vendor/three.module.min.js?v=tidy1";
+import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=tidy1";
 
 const AURA_VS = /* glsl */ `
 uniform float uT, uK, uScale; uniform vec3 uC1, uC2; attribute vec4 seed; varying vec3 vC; varying float vA;
@@ -34,7 +34,7 @@ export class Studio {
       fragmentShader: `uniform float uT; uniform vec3 uA,uB,uG; varying vec3 vD; void main(){ float y=vD.y; vec3 c=mix(uB,uA,smoothstep(-0.2,0.6,y)*0.7); float glow=pow(max(0.0,dot(normalize(vD),normalize(vec3(0.0,0.25,-1.0)))),6.0); c+=uG*glow*0.18;
         float rays=pow(max(0.0,sin(atan(vD.x,-vD.z)*9.0+uT*0.15)),12.0)*smoothstep(-0.1,0.5,y)*0.05; c+=uA*rays; gl_FragColor=vec4(c,1.0);\n#include <colorspace_fragment>\n}` }));
     this.bg = bg; S.add(bg);
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(40, 64).rotateX(-Math.PI / 2), new THREE.MeshPhysicalMaterial({ color: 0x0a0d16, roughness: 0.32, metalness: 0.2, clearcoat: 0.8, clearcoatRoughness: 0.2 }));
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(40, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x0a0d16, roughness: 0.9, metalness: 0 }) /* tidy1: matte floor, no big cyan/white rim-light glare behind the UI */);
     floor.position.y = -0.62; floor.receiveShadow = true; S.add(floor); this.floor = floor;
     // pedestal: dark metal base, glossy top, emissive gold rings
     const ped = (this.ped = new THREE.Group());
