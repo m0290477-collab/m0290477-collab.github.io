@@ -1,13 +1,13 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=sharp1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=sharp1";
-import { WORLDS, worldAsset } from "./worlds.js?v=sharp1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=sharp1";
-import { haptic } from "./audio.js?v=sharp1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=sharp1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=sharp1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=sharp1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=replay1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=replay1";
+import { WORLDS, worldAsset } from "./worlds.js?v=replay1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=replay1";
+import { haptic } from "./audio.js?v=replay1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=replay1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=replay1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=replay1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -231,6 +231,7 @@ export class UI {
     this.click($("r-again"), () => { $("m-results").classList.add("x-hide"); if (A.game.mode === "online") A.game.again(); else this.launch(A.game.cfg); });
     this.click($("r-lobby"), () => { A.game.stopMatch(); this.goLobby(); });
     this.click($("r-watch"), () => { if (!A.game.watchKiller()) this.toast(t("killerGone")); });
+    this.click($("r-replay"), () => A.game.playReplay(true)); this.click($("rp-skip"), () => A.game.endReplay()); this.click($("rp-again"), () => A.game.replayAgain());
     this.click($("h-spec-back"), () => A.game.stopWatch());
     this.click($("t-next"), () => this.tutNext()); this.click($("t-skip"), () => this.tutDone());
     this.click($("rv-close"), () => this.closeReveal()); this.click($("rv-equip"), () => { const i = this.revealing; if (i >= 0 && this.S.unlocked("skin", i)) { this.p.skin = { k: "skin", i }; this.S.save(); this.toast("✓ " + t("equipped"), "good"); } this.closeReveal(); });
@@ -541,7 +542,7 @@ export class UI {
     const R = this.app.renderer;
     if (tab === "graphics") rows = [seg("quality", [["auto", t("q_auto")], ["low", t("q_low")], ["medium", t("q_medium")], ["high", t("q_high")], ["ultra", t("q_ultra")]], "quality", R && s.quality === "auto" ? "→ " + t("q_" + R.qName) : ""),
       seg("res", [["auto", t("res_auto")], ["high", t("res_high")], ["max", t("res_max")]], "resolution", t("resSub") + (R && !R.is2D && R.dyn && R.dyn < 0.99 ? ` · ${t("dynRes")} ${Math.round(R.dyn * 100)}%` : "")),
-      { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), { ...tog("showFps", "showFps"), sub: "debug" }, tog("calmFx", "calmFx", t("calmFxSub")), tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
+      { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), { ...tog("showFps", "showFps"), sub: "debug" }, tog("calmFx", "calmFx", t("calmFxSub")), tog("replay", "deathReplay", t("deathReplaySub")), tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
     if (tab === "controls") rows = [seg("ctrl", [["joy", t("c_joy")], ["follow", t("c_follow")], ["swipe", t("c_swipe")]], "ctrlType"), rng("sens", "sens", 0.5, 2, 0.05, (v) => v.toFixed(2) + "×"), tog("left", "leftHand"),
       rng("boostSize", "boostSize", 0.7, 1.4, 0.05, (v) => Math.round(v * 100) + "%"), rng("boostPos", "boostPos", 0, 1, 0.05, (v) => Math.round(v * 100) + "%"), { ...tog("haptics", "haptics"), sub: navigator.vibrate ? "" : t("hapticsNo") }];
     if (tab === "audio") rows = [rng("vMaster", "vMaster", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vSfx", "vSfx", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vMusic", "vMusic", 0, 1, 0.01, (v) => Math.round(v * 100) + "%")];
@@ -584,6 +585,15 @@ export class UI {
   }
 
   // ---------- pause & results ----------
+  // replay1: cinematic overlay (letterbox bars, REPLAY title + progress, killed-by card, Skip / Watch again)
+  replayShow(o) {
+    const el = $("replay"), card = $("rp-card"); let h;
+    if (o.killer) h = `${avatarHtml(o.killer.avt || "p0", o.killer.fr | 0, "xl")}<div class="rp-who"><small>${t("rpKilledBy")}</small><b>${esc(o.killer.name)}</b></div>`;
+    else { const k = o.self ? ["↺", t("rpSelf")] : o.cause === 1 ? ["▥", t("rpWall")] : o.cause === 3 && o.mode === "br" ? ["☁", t("rpStorm")] : o.cause === 6 ? ["☄", t("meteorDeath")] : ["✕", t("eliminated")]; h = `<span class="rp-ic">${k[0]}</span><div class="rp-who"><small>${t("rpHow")}</small><b>${esc(k[1])}</b></div>`; }
+    card.innerHTML = h; $("rp-prog").style.transform = "scaleX(0)"; this._rpP = -1; el.classList.remove("x-hide"); void el.offsetWidth; el.classList.add("on");
+  }
+  replayProg(p) { const q = Math.round(p * 200) / 200; if (q === this._rpP) return; this._rpP = q; $("rp-prog").style.transform = `scaleX(${q})`; }
+  replayHide() { const el = $("replay"); if (!el) return; el.classList.remove("on"); el.classList.add("x-hide"); }
   hideResults() { $("m-results").classList.add("x-hide"); this.app.hud.show(this.app.game.mode); }
   reshowResults() { const m = $("m-results"); m.classList.remove("x-hide"); this.app.hud.hide(); $("r-watch").classList.toggle("x-hide", !(this.app.game.killer && this.app.game.killer.alive)); }
   showPause(online) { $("m-pause").classList.remove("x-hide"); $("pz-online").classList.toggle("x-hide", !online); $("pz-online").textContent = online ? t("m_online_d") : ""; $("pz-restart").classList.toggle("x-hide", online); $("pz-share").classList.toggle("x-hide", !online); }
@@ -597,7 +607,7 @@ export class UI {
     const cells = [["r_mass", fmtNum(r.mass)], ["r_kills", r.kills], ["r_rank", r.rank === "—" ? "—" : "#" + r.rank], ["r_time", fmtTime(r.time)]]; if (r.mode === "survival") cells[2] = ["wave", r.wave];
     $("r-grid").innerHTML = cells.map(([a, b]) => `<div><small>${a === "wave" ? t("wave", { n: "" }).trim() : t(a)}</small><b>${b}</b></div>`).join("");
     const lv = lvInfo(this.p.xp); $("r-lv").textContent = lv.n; $("r-xpbar").style.width = "0"; setTimeout(() => ($("r-xpbar").style.width = (lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)) + "%"), 60);
-    this.lastResults = r; $("r-watch").classList.toggle("x-hide", !r.killer); $("r-season").textContent = "✦ " + t("seasonXp", { n: r.seasonXp || r.xp }) + (r.pu ? " · " + t("puUsed", { n: r.pu }) : "");
+    this.lastResults = r; $("r-watch").classList.toggle("x-hide", !r.killer); $("r-replay").classList.toggle("x-hide", !r.replay); $("r-season").textContent = "✦ " + t("seasonXp", { n: r.seasonXp || r.xp }) + (r.pu ? " · " + t("puUsed", { n: r.pu }) : "");
     $("r-xp").textContent = t("xpGain", { n: r.xp }); $("r-coins").textContent = "◆ " + t("coinGain", { n: r.coins });
     const ex = []; if (r.lv.up) ex.push("⭐ " + t("levelUp", { n: r.lv.level })); if (r.tiers) ex.push("✦ " + t("tierUp", { n: this.S.seasonTier() }));
     for (const ms of r.missions) ex.push("✓ " + t("missionDone", { n: t("mi_" + ms.id, { n: ms.g }) })); for (const w of (r.mp && r.mp.weekly) || []) ex.push("✓ " + t("wk_" + w.id, { n: fmtNum(w.g) }));

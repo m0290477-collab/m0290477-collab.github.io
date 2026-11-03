@@ -2,9 +2,9 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=sharp1";
-import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=sharp1";
-import { EYES } from "./skins.js?v=sharp1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=replay1";
+import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=replay1";
+import { EYES } from "./skins.js?v=replay1";
 
 const TAU = Math.PI * 2;
 const CSS = new Array(32768); // 15-bit quantised rgb -> "rgb(...)" (no string building per segment)
@@ -99,7 +99,7 @@ export class Renderer2D {
     if (v.scene === "show") { this._show(v); return; }
     if (!v.food) return;
     const g = this.g, dt = Math.min(0.05, v.dt), t = v.t, W = this.W;
-    const k = 1 - Math.exp(-dt * 9); this.camX += (v.cam.x - this.camX) * k; this.camY += (v.cam.y - this.camY) * k;
+    const k = v.cam.snap ? 1 : 1 - Math.exp(-dt * 9); this.camX += (v.cam.x - this.camX) * k; this.camY += (v.cam.y - this.camY) * k;
     this.scale += ((Math.min(this.w, this.h) / (24 * v.cam.zoom)) - this.scale) * k;
     let sx = 0, sy = 0; if (this.shakeA > 0.01) { sx = (Math.random() - 0.5) * this.shakeA * 8; sy = (Math.random() - 0.5) * this.shakeA * 8; this.shakeA *= Math.exp(-dt * 7); }
     g.setTransform(this.kx, 0, 0, this.ky, 0, 0);
@@ -186,5 +186,6 @@ export class Renderer2D {
     for (let i = this.rings.length - 1; i >= 0; i--) { const q = this.rings[i]; q.t += dt * 1.6; if (q.t >= 1) { this.rings.splice(i, 1); continue; } g.globalAlpha = (1 - q.t) * 0.5; g.strokeStyle = q.c || "#fff"; g.lineWidth = 0.22; g.beginPath(); g.arc(q.x, q.y, 1 + q.t * Math.min(q.R, 8), 0, TAU); g.stroke(); }
     g.globalAlpha = 1; g.restore();
   }
+  clearFx() { for (const p of this.parts) this.pPool.push(p); this.parts.length = 0; this.rings.length = 0; } // replay1: a clean stage for the replay
   dispose() {}
 }

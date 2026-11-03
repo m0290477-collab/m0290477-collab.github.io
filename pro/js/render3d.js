@@ -2,15 +2,15 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=sharp1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=sharp1";
+import * as THREE from "./vendor/three.module.min.js?v=replay1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=replay1";
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D } from "./worlds.js?v=sharp1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=sharp1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=sharp1";
-import { World, prefetchWorld } from "./gfx/env.js?v=sharp1";
-import { Post } from "./gfx/post.js?v=sharp1";
-import { Studio } from "./gfx/showcase.js?v=sharp1";
+import { WORLDS, W3D } from "./worlds.js?v=replay1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=replay1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=replay1";
+import { World, prefetchWorld } from "./gfx/env.js?v=replay1";
+import { Post } from "./gfx/post.js?v=replay1";
+import { Studio } from "./gfx/showcase.js?v=replay1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -326,6 +326,7 @@ export class Renderer3D {
     }
   }
   ring(x, y, rgb, maxR = 8) { const m = this.rings.find((r) => !r.visible) || this.rings[0]; m.visible = true; m.userData.t = 0; m.userData.R = maxR; m.position.set(x, 0.15, y); m.material.color.setRGB(rgb[0] * 2.2, rgb[1] * 2.2, rgb[2] * 2.2); }
+  clearFx() { for (const m of this.rings) { m.visible = false; m.userData.t = 1; } this.shakeA = 0; } // replay1
   shake(a) { if (this.juice && !this.reduceMotion && !this.calm) this.shakeA = Math.min(1.4, this.shakeA + a); }
   kick(ca, flashRgb, flashA = 0.18) { if (this.reduceMotion || this.calm) return; this.ca = Math.min(1.5, this.ca + ca); if (flashRgb) { this.flash.set(flashRgb[0], flashRgb[1], flashRgb[2], Math.max(this.flash.w, flashA)); } }
   light(x, y, rgb, k = 1) { if (!this.Q.post || this.calm) return; this.fxLight.position.set(x, 3, y); this.fxLight.color.setRGB(rgb[0], rgb[1], rgb[2]); this.fxLight.intensity = 32 * k; }

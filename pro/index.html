@@ -17,7 +17,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2305070d'/%3E%3Cpath d='M14 40c6-14 14 4 20-10s12-6 16-2' stroke='%23ffc845' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="preload" href="assets/fonts/oxanium.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/keyart_lo.webp" as="image" />
-<link rel="stylesheet" href="css/app.css?v=sharp1" />
+<link rel="stylesheet" href="css/app.css?v=replay1" />
 <link rel="modulepreload" href="js/vendor/three.module.min.js" />
 </head>
 <body>
@@ -191,6 +191,8 @@
   <button class="btn wide x-hide" id="pz-share" data-i="shareRoom"></button>
   <button class="btn ghost wide" id="pz-quit" data-i="quit"></button></div></div>
 
+<div id="replay" class="x-hide" aria-live="polite"><div class="rp-bar top"><div class="rp-tt"><b data-i="replay"></b><div class="rp-prog"><i id="rp-prog"></i></div></div></div>
+  <div class="rp-bar bot"><div class="rp-card" id="rp-card"></div><div class="rp-btns"><button class="btn ghost rp-b" id="rp-skip"><span data-i="rpSkip"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5l8 7-8 7zM16 5v14"/></svg></button><button class="btn gold rp-b" id="rp-again"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg><span data-i="rpAgain"></span></button></div></div></div>
 <div id="m-results" class="modal x-hide" role="dialog" aria-modal="true"><div class="glass mcard results">
   <div class="r-who" id="r-who"></div>
   <div class="r-head"><h2 id="r-title"></h2><p id="r-sub"></p><div class="r-best x-hide" id="r-best" data-i="newBest"></div></div>
@@ -198,7 +200,7 @@
   <div class="r-grid" id="r-grid"></div>
   <div class="r-xp"><div class="r-lv"><span data-i="level"></span> <b id="r-lv">1</b></div><div class="xpbar big"><i id="r-xpbar"></i></div><div class="r-gain"><span id="r-xp"></span> · <span id="r-coins"></span></div><div class="r-season" id="r-season"></div></div>
   <div class="r-extra" id="r-extra"></div>
-  <div class="r-btns"><button class="btn ghost" id="r-lobby" data-i="lobby"></button><button class="btn ghost x-hide" id="r-watch" data-i="watchKiller"></button><button class="btn gold" id="r-again" data-i="playAgain"></button></div>
+  <div class="r-btns"><button class="btn ghost" id="r-lobby" data-i="lobby"></button><button class="btn ghost x-hide" id="r-watch" data-i="watchKiller"></button><button class="btn ghost x-hide" id="r-replay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg><span data-i="watchReplay"></span></button><button class="btn gold" id="r-again" data-i="playAgain"></button></div>
 </div></div>
 
 <div id="m-tut" class="modal x-hide" role="dialog" aria-modal="true"><div class="glass mcard tut">
@@ -221,6 +223,6 @@
 
 <div id="wipe" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="toasts" aria-live="polite"></div>
-<script type="module" src="js/main.js?v=sharp1"></script>
+<script type="module" src="js/main.js?v=replay1"></script>
 </body>
 </html>

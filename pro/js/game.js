@@ -1,13 +1,14 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=sharp1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=sharp1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=sharp1";
-import { NetBackend } from "./net.js?v=sharp1";
-import { t, fmtNum } from "./i18n.js?v=sharp1";
-import { haptic } from "./audio.js?v=sharp1";
-import { rankOf, rpDelta } from "./profile.js?v=sharp1";
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=replay1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=replay1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=replay1";
+import { NetBackend } from "./net.js?v=replay1";
+import { t, fmtNum } from "./i18n.js?v=replay1";
+import { haptic } from "./audio.js?v=replay1";
+import { rankOf, rpDelta } from "./profile.js?v=replay1";
+import { Replay } from "./replay.js?v=replay1";
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
@@ -114,6 +115,7 @@ export class Game {
     this.stats = { kills: 0, food: 0, boost: 0, life: 0, best: 0, rankBest: 99, t0: performance.now(), lifeT0: performance.now(), deaths: 0, score: 0, timeLeft: 0, wave: 1 };
     this.combo = 0; this.comboT = 0; this.gainAcc = 0; this.gainT = 0; this.rankShown = 99; this.massMile = 0; this.liveMs = new Set(); this.puLast = null; this.hintI = 0; this.hintT = 4; this.stats.bonus = 0; this.stats.pu = 0; this.stats.bounty = 0; this.watching = false; this.killer = null; this.selfHit = false; this.deathCause = 0; this.emoT = 0; this.rainFx = null; this.evNow = null; // no stale killer from the last match
     this.matchT0 = performance.now(); this.slowWins = 0; this.goodWins = 0; this.slowQ = 0; this.qRose = false; this.ft.fill(1000 / (this.app.store.settings.fpsCap || 60)); this.ended = false; this.paused = false; this.deathT = 0; this.spectate = null; this.feed = []; this.lastLb = 0; this.killcam = null; this.victory = null; this.streak = 0; this.streakT = 0; this.endAt = 0; this.respawnAt = 0;
+    if (!this.rec) this.rec = new Replay(); this.rec.reset(); this.rec.clip = null; this.rec.meRef = null; this.replay = null; this.rpPending = false; this.recMs = 0; this.recN = 0; this.app.ui.replayHide && this.app.ui.replayHide();
     this.zone = null; this.hill = null; this.boss = null; this.teamScore = [0, 0]; this.kothPts = new Map(); this.lives = this.M.lives || 0; this.win = false; this.place = 0;
     const skin = this.mySkin();
     const cb = {
@@ -151,7 +153,7 @@ export class Game {
   }
   moveHill(first) { const R = this.backend.R, a = Math.random() * 6.283, d = first ? R * 0.15 : R * (0.2 + Math.random() * 0.4); this.hill.x = Math.cos(a) * d; this.hill.y = Math.sin(a) * d; this.hill.t = 0; if (this.backend.sim.attractPt) { this.backend.sim.attractPt.x = this.hill.x; this.backend.sim.attractPt.y = this.hill.y; } if (!first) { this.hud.banner(t("hillMoved"), 1400); this.app.audio.play("warn"); } }
   mySkin() { const p = this.app.store.p; const sk = p.skin.k === "custom" ? { k: "custom", p: p.custom.p, c: p.custom.c } : { k: p.skin.k, i: p.skin.i }; return { ...sk, e: p.eye, t: p.trail, n: p.nc, av: p.av, fr: p.frame }; }
-  stopMatch() { if (this.backend && this.backend.close) this.backend.close(); this.backend = null; this.app.input && (this.app.input.enabled = false); this.app.audio.boost(false); this.killcam = null; this.victory = null; }
+  stopMatch() { if (this.backend && this.backend.close) this.backend.close(); this.backend = null; this.app.input && (this.app.input.enabled = false); this.app.audio.boost(false); this.killcam = null; this.victory = null; if (this.replay) { this.replay = null; this.app.ui.replayHide(); } }
   pause(on) {
     if (!this.mode || this.mode === "attract" || this.mode === "show" || this.ended) return;
     this.paused = on; this.app.audio.boost(false); this.app.input.reset();
@@ -277,7 +279,9 @@ export class Game {
     if (by && this.killer) this.pushFeed(this.killer.name, t("you"), false); else if (selfHit) this.pushFeed("☠", t("you"), false, "self"); this.hud.combo(0); this.hud.puClear();
     const respawn = (this.mode === "time" && this.stats.timeLeft > 2) || this.mode === "koth" || this.mode === "team" || (this.mode === "boss" && --this.lives > 0);
     if (respawn) { this.respawnAt = performance.now() + 1900; this.hud.banner(msg + (this.mode === "boss" ? " · " + t("livesN", { n: this.lives }) : ""), 1700); }
-    else { if (this.mode === "br") this.place = this.backend.sim.snakes.filter((x) => x.alive).length + 1; this.endAt = performance.now() + 650; this.hud.banner(msg, 1200); } // calm1: results almost straight away
+    else { if (this.mode === "br") this.place = this.backend.sim.snakes.filter((x) => x.alive).length + 1; this.endAt = performance.now() + 650; this.hud.banner(msg, 1200); // calm1: results almost straight away
+      // replay1: freeze the last seconds as a clip; it plays after the short death beat, then results
+      this.rpPending = false; if (this.rec && this.mode !== "zen" && A.store.settings.replay !== false) { if (this.rec.meRef === me) this.rec.record(performance.now(), this.view, me, true); this.rpPending = this.rec.freeze({ cause, self: selfHit, killer: this.killer ? this.killer.id : 0 }); } else if (this.rec) this.rec.clip = null; }
   }
   onNet(st, n) {
     const A = this.app;
@@ -327,7 +331,7 @@ export class Game {
     const ach = S.checkAch(); S.save();
     const title = this.win ? t("victory") : reason === "time" ? t("timeUp") : this.mode === "zen" ? t("zenDone") : t("gameOver");
     const sub = this.win ? t("vic_" + this.mode) : this.killer ? t("killedBy", { n: this.killer.name }) : this.selfHit ? t("selfDeath") : this.deathCause === 6 ? t("meteorDeath") : this.deathCause === 3 && this.mode === "br" ? t("stormDeath") : this.deathCause === 1 ? t("hitWall") : "";
-    this.watching = false; A.ui.showResults({ killer: this.killer && this.killer.alive && !this.win ? this.killer : null, seasonXp: xp, pu: st.pu || 0, title, sub, score, mass: Math.round(st.best), kills: st.kills, rank, time: dur, xp, coins: coins + lv.coins, lv, newBest: pos === 0 && score > 0, missions, ach, mode: this.mode, wave: st.wave, win: this.win, tiers, mp, rp, rankUp });
+    this.watching = false; A.ui.showResults({ replay: !!(this.rec && this.rec.clip), killer: this.killer && this.killer.alive && !this.win ? this.killer : null, seasonXp: xp, pu: st.pu || 0, title, sub, score, mass: Math.round(st.best), kills: st.kills, rank, time: dur, xp, coins: coins + lv.coins, lv, newBest: pos === 0 && score > 0, missions, ach, mode: this.mode, wave: st.wave, win: this.win, tiers, mp, rp, rankUp });
     if (lv.up) A.audio.play("level"); else if (ach.length) A.audio.play("ach");
     if (pos === 0 && score > 0 && this.r.confetti && me) this.r.confetti(me.x, me.y, 120);
   }
@@ -350,8 +354,9 @@ export class Game {
     if (this.mode === "show") { const v = this.view; v.t = this.t; v.dt = dt; v.scene = "show"; v.show = this.show; v.fpsTarget = set.fpsCap || 60; this.r.frame(v); return; }
     const b = this.backend; if (!b) return; this.view.scene = "world";
     // calm1: behind the results card or the pause menu the last frame stays on screen; nothing is re-rendered
-    if ((this.ended && !this.watching) || (this.paused && this.mode !== "online")) { if (this._frozen) return; this._frozen = true; } else this._frozen = false;
+    if ((this.ended && !this.watching && !this.replay) || (this.paused && this.mode !== "online")) { if (this._frozen) return; this._frozen = true; } else this._frozen = false;
     const me = b.me; const now = performance.now();
+    if (this.replay) { if (b.online && !this.ended) b.update(dt); this.replayTick(dt, now); return; }
     const cine = this.killcam || this.victory;
     if (this.mode !== "attract" && !this.paused && !this.ended && me && me.alive && !this.victory) {
       const ang = A.input.poll(me.ta ?? me.a, dt); let boost = A.input.boost;
@@ -373,6 +378,9 @@ export class Game {
     if (this.mode !== "attract" && !this.ended && !this.paused && !(this.countdown > 0)) this.rules(dt * this.timeScale, dt);
     if (this.watching && (!this.spectate || !this.spectate.alive)) this.stopWatch();
     this.build(dt); this.view.fpsTarget = set.fpsCap || 60; this.r.frame(this.view);
+    // replay1: ring buffer of the last 5 s near the player (20 Hz, typed arrays, no allocation per sample)
+    if (this.rec && me && me.alive && !this.ended && !this.victory && this.mode !== "attract" && this.mode !== "zen" && !(this.countdown > 0) && set.replay !== false) {
+      if (this.rec.meRef !== me) { this.rec.reset(); this.rec.meRef = me; } const r0 = performance.now(), c0 = this.rec.count, h0 = this.rec.head; this.rec.record(now, this.view, me, false); if (this.rec.head !== h0 || this.rec.count !== c0) { this.recMs += performance.now() - r0; this.recN++; } }
     if (this.r.setListener !== undefined) {} A.audio.setListener(this.camX, this.camY);
     if (this.mode !== "attract" && this.mode !== "show") this.gainTick(now);
     if (this.mode !== "attract" && ts - this.lastLb > 250) { this.lastLb = ts; this.hudTick(); }
@@ -393,7 +401,7 @@ export class Game {
     if (this.mode === "br") this.ruleBR(dt);
     if (this.mode === "koth") this.ruleKOTH(dt);
     if (this.mode === "boss") this.ruleBoss(dt);
-    if (this.endAt && now > this.endAt) { this.endAt = 0; this.finish("death"); }
+    if (this.endAt && now > this.endAt) { this.endAt = 0; if (this.rpPending && !this.ended) { this.rpPending = false; this.playReplay(false); } else this.finish("death"); }
   }
   timeUp() {
     if (this.mode === "koth") { const ranking = [...this.kothPts.entries()].sort((a, c) => c[1] - a[1]); this.endMatch(ranking.length > 0 && ranking[0][0] === (this.backend.me && this.backend.me.id), "koth"); }
@@ -516,6 +524,28 @@ export class Game {
   hint() {
     const p = this.app.store.p; if ((p.stats.games || 0) > 3 || this.mode === "online") return; this.hintT -= 0.25; if (this.hintT > 0) return;
     const H = ["hint_steer", "hint_boost", "hint_eat", "hint_pu", "hint_cut", "hint_dead"]; if (this.hintI >= H.length) return; this.hud.hint(t(H[this.hintI++])); this.hintT = 9;
+  }
+  // ---------- replay1: death replay ----------
+  playReplay(fromResults) {
+    const R = this.rec; if (!R || !R.clip || !this.backend || !this.r) return false; R.start(); const A = this.app;
+    const k = R.clip.killer ? this.findSnake(R.clip.killer) || (this.killer && this.killer.id === R.clip.killer ? this.killer : null) : null;
+    this.replay = { from: !!fromResults, killer: R.clip.killer, kname: k ? k.name : (R.meta.get(R.clip.killer) || {}).name || "" };
+    A.input.enabled = false; A.audio.boost(false); this.hud.hide(); this.hud.bannerClear && this.hud.bannerClear(); this.r.clearFx && this.r.clearFx();
+    if (fromResults) document.getElementById("m-results").classList.add("x-hide");
+    const M = R.meta.get(R.clip.killer) || {}; A.ui.replayShow({ killer: R.clip.killer ? { name: this.replay.kname, avt: (k && k.avt) || M.avt, fr: (k ? k.fr : M.fr) | 0 } : null, cause: R.clip.cause, self: R.clip.self, mode: this.mode });
+    this._frozen = false; this.startLoop(); return true;
+  }
+  replayAgain() { if (this.replay && this.rec && this.rec.clip) { this.rec.start(); this.r.clearFx && this.r.clearFx(); } }
+  replayTick(dt, now) {
+    const R = this.rec, Rp = this.replay; R.advance(dt);
+    const v = R.view(this.view, dt, this.t, Rp.killer); v.fpsTarget = this.app.store.settings.fpsCap || 60; this.r.frame(v); R.cam.snap = false;
+    if (!R.impactFired && R.c >= R.clip.t1) { R.impactFired = true; this.r.ring(R.clip.ix, R.clip.iy, [1, 0.5, 0.38], 6); }
+    this.app.ui.replayProg(R.progress());
+    if (R.done) this.endReplay();
+  }
+  endReplay() {
+    const Rp = this.replay; if (!Rp) return; this.replay = null; this.app.ui.replayHide(); this.r.clearFx && this.r.clearFx();
+    if (Rp.from || this.ended) { this._frozen = false; this.app.ui.reshowResults(); } else this.finish("death");
   }
   // after a game over: follow the killer for a while
   watchKiller() {
