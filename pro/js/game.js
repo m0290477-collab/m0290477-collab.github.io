@@ -1,16 +1,16 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=candy1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=candy1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=candy1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=candy1";
-import { NetBackend } from "./net.js?v=candy1";
-import { t, fmtNum } from "./i18n.js?v=candy1";
-import { haptic } from "./audio.js?v=candy1";
-import { rankOf, rpDelta } from "./profile.js?v=candy1";
-import { Replay } from "./replay.js?v=candy1";
-import { emit } from "./events.js?v=candy1"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=noself1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=noself1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=noself1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=noself1";
+import { NetBackend } from "./net.js?v=noself1";
+import { t, fmtNum } from "./i18n.js?v=noself1";
+import { haptic } from "./audio.js?v=noself1";
+import { rankOf, rpDelta } from "./profile.js?v=noself1";
+import { Replay } from "./replay.js?v=noself1";
+import { emit } from "./events.js?v=noself1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -46,7 +46,7 @@ class LocalBackend {
     const i = this.botSeq++, r = this.sim.rand; const d = diff ?? (this.mode === "zen" ? 0 : this.opts.diff);
     const legend = r() < 0.12; const pool = SKINS.map((s, k) => k).filter((k) => !!SKINS[k].fx === legend);
     const skin = r() < 0.3 ? { k: "flag", i: (r() * FLAGS.length) | 0 } : { k: "skin", i: pool[(r() * pool.length) | 0] };
-    const s = this.sim.addSnake(pickBotName(this.sim.snakes, i * 7 + ((r() * 40) | 0)), { ...skin, e: (r() * 4) | 0, t: 0, n: 0 }, { bot: true, diff: d, m: C.START_M + r() * 60 });
+    const s = this.sim.addSnake(pickBotName(this.sim.snakes, i * 7 + ((r() * 40) | 0)), { ...skin, e: (r() * 4) | 0, t: 0, n: 0 }, { bot: true, diff: d, m: C.START_M }); // noself1 fairness: bots spawn at the player's start mass
     s.avt = skin.k === "flag" && r() < 0.6 ? "f" + skin.i : "p" + ((r() * 16) | 0); s.fr = r() < 0.5 ? 0 : 1 + ((r() * 4) | 0);
     if (this.mode === "team") { s.team = team ?? (this.teamN[0] < Math.floor(this.M.bots / 2) ? 0 : 1); this.teamN[s.team]++; }
     return s;
@@ -283,10 +283,10 @@ export class Game {
     A.audio.play("die"); A.audio.boost(false); haptic.pattern([40, 30, 80]); this.r.shake(1.2); this.r.kick && this.r.kick(1.2, [0.6, 0, 0], 0.35);
     const f = skinFn(this.mySkin()), lin = this.colOf({ skin: this.mySkin() });
     const calm = A.store.settings.calmFx; if (!calm) { this.r.shatter(me, f, 40); this.r.burst(me.x, me.y, lin, 16, 9, 0.8, 0.7, 6); this.hud.flash(); } this.r.ring(me.x, me.y, [1, 1, 1], 6); // calm1: short, cheap death beat, no slow-motion
-    me.alive = false; me.deadAt = performance.now(); this.deathT = performance.now(); this.killer = by && by !== me.id ? this.findSnake(by) : null; if (this.killer === me) this.killer = null; const selfHit = (this.selfHit = !!by && !this.killer && by === me.id); this.deathCause = cause;
+    me.alive = false; me.deadAt = performance.now(); this.deathT = performance.now(); this.killer = by && by !== me.id ? this.findSnake(by) : null; if (this.killer === me) this.killer = null; const selfHit = (this.selfHit = false); /* noself1: own body never kills */ this.deathCause = cause;
     this.spectate = this.killer; A.input.enabled = false; A.input.reset(); this.streak = 0;
-    const msg = by && this.killer ? t("killedBy", { n: this.killer.name }) : selfHit ? t("selfDeath") : cause === 6 ? t("meteorDeath") : cause === 3 && this.mode === "br" ? t("stormDeath") : cause === 1 ? t("hitWall") : t("eliminated");
-    if (by && this.killer) this.pushFeed(this.killer.name, t("you"), false); else if (selfHit) this.pushFeed("☠", t("you"), false, "self"); this.hud.combo(0); this.hud.puClear();
+    const msg = by && this.killer ? t("killedBy", { n: this.killer.name }) : cause === 6 ? t("meteorDeath") : cause === 3 && this.mode === "br" ? t("stormDeath") : cause === 1 ? t("hitWall") : t("eliminated");
+    if (by && this.killer) this.pushFeed(this.killer.name, t("you"), false); this.hud.combo(0); this.hud.puClear();
     const respawn = (this.mode === "time" && this.stats.timeLeft > 2) || this.mode === "koth" || this.mode === "team" || (this.mode === "boss" && --this.lives > 0) || !!(this.xm && this.xm.respawn && this.xm.respawn(this));
     if (respawn) { this.respawnAt = performance.now() + 1900; this.hud.banner(msg + (this.mode === "boss" ? " · " + t("livesN", { n: this.lives }) : ""), 1700); }
     else { if (this.mode === "br") this.place = this.backend.sim.snakes.filter((x) => x.alive).length + 1; this.endAt = performance.now() + 650; this.hud.banner(msg, 1200); // calm1: results almost straight away
@@ -341,7 +341,7 @@ export class Game {
     S.pushHistory({ m: this.mode, s: score, k: st.kills, r: typeof rank === "number" ? rank : 0, w: this.win ? 1 : 0, ms: Math.round(st.best), t: Math.round(dur), d: Date.now(), rp });
     const ach = S.checkAch(); S.save();
     const title = this.win ? t("victory") : reason === "time" ? t("timeUp") : this.mode === "zen" ? t("zenDone") : t("gameOver");
-    const sub = this.win ? t("vic_" + this.mode) : this.killer ? t("killedBy", { n: this.killer.name }) : this.selfHit ? t("selfDeath") : this.deathCause === 6 ? t("meteorDeath") : this.deathCause === 3 && this.mode === "br" ? t("stormDeath") : this.deathCause === 1 ? t("hitWall") : "";
+    const sub = this.win ? t("vic_" + this.mode) : this.killer ? t("killedBy", { n: this.killer.name }) : this.deathCause === 6 ? t("meteorDeath") : this.deathCause === 3 && this.mode === "br" ? t("stormDeath") : this.deathCause === 1 ? t("hitWall") : "";
     this.watching = false; A.ui.showResults({ replay: !!(this.rec && this.rec.clip), killer: this.killer && this.killer.alive && !this.win ? this.killer : null, seasonXp: xp, pu: st.pu || 0, title, sub, score, mass: Math.round(st.best), kills: st.kills, rank, time: dur, xp, coins: coins + lv.coins, lv, newBest: pos === 0 && score > 0, missions, ach, mode: this.mode, wave: st.wave, win: this.win, tiers, mp, rp, rankUp });
     if (lv.up) A.audio.play("level"); else if (ach.length) A.audio.play("ach");
     if (pos === 0 && score > 0 && this.r.confetti && me) this.r.confetti(me.x, me.y, 120);

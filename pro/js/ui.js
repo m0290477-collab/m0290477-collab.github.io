@@ -1,14 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=candy1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=candy1";
-import { WORLDS, worldAsset } from "./worlds.js?v=candy1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=candy1";
-import { haptic } from "./audio.js?v=candy1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=candy1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=candy1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=candy1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=candy1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=noself1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=noself1";
+import { WORLDS, worldAsset } from "./worlds.js?v=noself1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=noself1";
+import { haptic } from "./audio.js?v=noself1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=noself1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=noself1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=noself1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=noself1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -648,7 +648,7 @@ export class UI {
   replayShow(o) {
     const el = $("replay"), card = $("rp-card"); let h;
     if (o.killer) h = `${avatarHtml(o.killer.avt || "p0", o.killer.fr | 0, "xl")}<div class="rp-who"><small>${t("rpKilledBy")}</small><b>${esc(o.killer.name)}</b></div>`;
-    else { const k = o.self ? ["↺", t("rpSelf")] : o.cause === 1 ? ["▥", t("rpWall")] : o.cause === 3 && o.mode === "br" ? ["☁", t("rpStorm")] : o.cause === 6 ? ["☄", t("meteorDeath")] : ["✕", t("eliminated")]; h = `<span class="rp-ic">${k[0]}</span><div class="rp-who"><small>${t("rpHow")}</small><b>${esc(k[1])}</b></div>`; }
+    else { const k = o.cause === 1 ? ["▥", t("rpWall")] : o.cause === 3 && o.mode === "br" ? ["☁", t("rpStorm")] : o.cause === 6 ? ["☄", t("meteorDeath")] : ["✕", t("eliminated")]; h = `<span class="rp-ic">${k[0]}</span><div class="rp-who"><small>${t("rpHow")}</small><b>${esc(k[1])}</b></div>`; }
     card.innerHTML = h; $("rp-prog").style.transform = "scaleX(0)"; this._rpP = -1; el.classList.remove("x-hide"); void el.offsetWidth; el.classList.add("on");
   }
   replayProg(p) { const q = Math.round(p * 200) / 200; if (q === this._rpP) return; this._rpP = q; $("rp-prog").style.transform = `scaleX(${q})`; }

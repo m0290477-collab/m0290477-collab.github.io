@@ -4,10 +4,10 @@
 //   infection · two sides; anyone the infected kill comes back infected (you too); humans survive 2:30 to win
 //   duel      · best of three rounds against one champion-level bot in a small arena
 //   daily     · the same seed, world and difficulty for everyone on a given day, 3:00, local leaderboard
-import { t, fmtNum } from "./i18n.js?v=candy1";
-import { GOLD_FC, C } from "./sim.js?v=candy1";
-import { SKINS } from "./skins.js?v=candy1";
-import { haptic } from "./audio.js?v=candy1";
+import { t, fmtNum } from "./i18n.js?v=noself1";
+import { GOLD_FC, C } from "./sim.js?v=noself1";
+import { SKINS } from "./skins.js?v=noself1";
+import { haptic } from "./audio.js?v=noself1";
 
 export const XMODE_CFG = {
   goldrush: { bots: 18, R: 200, dur: 180, target: 30 },
@@ -33,6 +33,7 @@ const GR = {
   setup(g) {
     const S = g.backend.sim; g.gr = { bank: new Map(), carry: new Map(), chk: 0 };
     g.hill = { x: 0, y: 0, r: 15, t: 0 }; S.attractPt = { x: 0, y: 0, r: 15, w: 0.16 }; GR.move(g, true);
+    S.goldCoins = true; // noself1: gold is drawn as a coin, so its pickup radius is the coin's (sim COIN_VIS), not a candy's
     const orig = S.removeFood.bind(S); // count gold orbs as they are eaten (by = eater id)
     S.removeFood = (i, by) => { if (by && S.fa[i] && S.fc[i] === GOLD_FC && g.gr) { g.gr.carry.set(by, (g.gr.carry.get(by) || 0) + 1); const me = g.backend.me; if (me && by === me.id) g.app.audio.play("coin"); } orig(i, by); };
     GR.top(g, 26); g.hud.banner("◆ " + t("grStart"), 2200);
@@ -63,7 +64,7 @@ const GR = {
 const INF = {
   setup(g) {
     const S = g.backend.sim, me = g.backend.me; S.teams = true; S.botAggro = 1.25; g.inf = { me: false, mine: 0, turned: 0, humanT: 0 };
-    let k = 0; for (const s of S.snakes) { if (s === me) { s.team = 0; continue; } s.team = k++ < 3 ? 1 : 0; if (s.team === 1) s.setMass(C.START_M + 70); }
+    let k = 0; for (const s of S.snakes) { if (s === me) { s.team = 0; continue; } s.team = k++ < 3 ? 1 : 0; } // noself1 fairness: the infected start at the normal mass (no hidden +70)
     g.hud.banner("☣ " + t("infStart"), 2400);
   },
   rule(g, dt) {
@@ -87,7 +88,7 @@ const DUEL = {
   setup(g) { g.duel = { me: 0, riv: 0, round: 1, rival: null, at: 0, skin: LEG() }; DUEL.rival(g); g.hud.banner(t("duelRound", { n: 1 }), 1600); },
   rival(g) {
     const b = g.backend, S = b.sim, me = b.me, a = Math.random() * 6.283;
-    const s = S.addSnake(t("duelRival"), { k: "skin", i: g.duel.skin, e: 5, t: 0, n: 0 }, { bot: true, diff: 3, m: C.START_M + 30, pos: me ? [-me.x * 0.2 + Math.cos(a) * b.R * 0.5, -me.y * 0.2 + Math.sin(a) * b.R * 0.5] : undefined });
+    const s = S.addSnake(t("duelRival"), { k: "skin", i: g.duel.skin, e: 5, t: 0, n: 0 }, { bot: true, diff: 3, m: C.START_M, /* noself1 fairness: same start mass as the player */ pos: me ? [-me.x * 0.2 + Math.cos(a) * b.R * 0.5, -me.y * 0.2 + Math.sin(a) * b.R * 0.5] : undefined });
     s.avt = "p" + ((Math.random() * 16) | 0); s.fr = 3; s.rival = true; if (s.ai && me) s.ai.prey = me.id; g.duel.rival = s;
   },
   rule(g) {

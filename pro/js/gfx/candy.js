@@ -2,7 +2,7 @@
 // Six types, one InstancedMesh each in 3D: wrapped twist sweet, lollipop, gummy bear, macaron, round hard candy,
 // mint swirl disc. Stripes/swirls/white parts are computed in the fragment shader from a per-vertex pattern coordinate
 // (crisp at any poly count, antialiased with fwidth); the instance colour is the candy's palette colour.
-// Visual only: the sim's food value, pickup radius, count and network sync are untouched.
+// candy1 was visual only; noself1 made the sim's pickup radius follow this drawing (sim.js foodVisR).
 
 export const CANDY_N = 6; // 0 wrapped, 1 lollipop, 2 gummy, 3 macaron, 4 hard candy, 5 mint
 export const T_WRAP = 0, T_LOLLY = 1, T_GUMMY = 2, T_MAC = 3, T_HARD = 4, T_MINT = 5;
@@ -18,10 +18,11 @@ export function candyBig(v) { return v >= 4 || (v !== (v | 0) && v !== 1.5); }
 export function candyType(v, c, big) { const h = (c * 7 + Math.round(v * 10) * 3) >>> 0; return big ? BIG_T[h % 2] : NORMAL_T[h % NORMAL_T.length]; }
 // half-size in world units. fix1 drew food at radius 0.11 + sqrt(v) * 0.075 (3D) / 0.15 + sqrt(v) * 0.1 (2D);
 // candy is ~2.3x that, rich food ~1.3x more on top (with a floor so small death drops still read as the rich kind).
-export const CANDY_K = 2.5, BIG_K = 1.3;
-export function candySize(v, big) { const s = (0.11 + Math.sqrt(v) * 0.075) * CANDY_K; return big ? Math.min(1.02, Math.max(0.66, s * BIG_K)) : s; }
+// noself1: everything 1.4x bigger again (CANDY_SCALE, same constant as sim.js, which sizes the pickup radius to the drawing)
+export const CANDY_K = 2.5, BIG_K = 1.3, CANDY_SCALE = 1.4;
+export function candySize(v, big) { const s = (0.11 + Math.sqrt(v) * 0.075) * CANDY_K * CANDY_SCALE; return big ? Math.min(1.02 * CANDY_SCALE, Math.max(0.66 * CANDY_SCALE, s * BIG_K)) : s; }
 
-export function candySize2(v, big) { const s = (0.15 + Math.sqrt(v) * 0.1) * 2.2; return big ? Math.min(1.25, Math.max(0.82, s * BIG_K)) : s; } // 2D (fix1 2D dots were larger than 3D)
+export function candySize2(v, big) { const s = (0.15 + Math.sqrt(v) * 0.1) * 2.2 * CANDY_SCALE; return big ? Math.min(1.25 * CANDY_SCALE, Math.max(0.82 * CANDY_SCALE, s * BIG_K)) : s; } // 2D (fix1 2D dots were larger than 3D)
 // candy palette: the hue order of the game's food palette (worlds.js FOOD_COLORS: cherry, orange, lemon, green, mint, sky,
 // blue, grape, magenta, peach, white->pink, lime, [12] gold), softened (12% toward grey, x0.92) so it reads as candy, not neon.
 // The world palettes are near-grey pastels (fix1) and made every candy look the same; the colour-blind palette is used as is.
@@ -105,11 +106,19 @@ export function candyMaterial(T, tier, gummy) {
     sh.fragmentShader = fs;
   };
   m.customProgramCacheKey = () => "candy" + (gummy ? "g" : "") + tier;
-  return m;
+  return underSnakes(m, "candy" + (gummy ? "g" : "") + tier);
+}
+// noself1: food always draws UNDER snake bodies. The candy keeps its shape and shading, but its depth is pulled down to the
+// ground under each vertex (y = 0.04) with only 5% of its own relief kept (so a candy still sorts its own faces), so any snake
+// body above the ground is nearer and covers it, while the candy still covers the ground.
+const DEPTH_VS = "\n#ifdef USE_INSTANCING\n{ vec4 wq = modelMatrix * instanceMatrix * vec4(transformed, 1.0); wq.y = 0.04; vec4 cq = projectionMatrix * viewMatrix * wq; float dg = cq.z / cq.w, dv = gl_Position.z / gl_Position.w; gl_Position.z = (dg + (dv - dg) * 0.05) * gl_Position.w; }\n#endif\n";
+export function underSnakes(m, key) {
+  const prev = m.onBeforeCompile; m.onBeforeCompile = (sh, r) => { if (prev) prev(sh, r); sh.vertexShader = sh.vertexShader.replace("#include <project_vertex>", "#include <project_vertex>" + DEPTH_VS); };
+  m.customProgramCacheKey = () => key + "u"; return m;
 }
 export function coinMaterial(T, tier) {
-  return tier === "lambert" ? new T.MeshPhongMaterial({ color: 0xf2c14a, specular: 0xfff0b0, shininess: 90, emissive: 0x2a1a00 })
-    : new T.MeshStandardMaterial({ color: 0xffc640, roughness: 0.32, metalness: 0.4, emissive: 0x4a3000, envMapIntensity: 1 });
+  return underSnakes(tier === "lambert" ? new T.MeshPhongMaterial({ color: 0xf2c14a, specular: 0xfff0b0, shininess: 90, emissive: 0x2a1a00 })
+    : new T.MeshStandardMaterial({ color: 0xffc640, roughness: 0.32, metalness: 0.4, emissive: 0x4a3000, envMapIntensity: 1 }), "coin" + tier);
 }
 
 // ---------------- 2D ----------------

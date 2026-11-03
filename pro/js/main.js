@@ -1,13 +1,13 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=candy1";
-import { Store, KV } from "./store.js?v=candy1";
-import { setLang, applyI18n, t } from "./i18n.js?v=candy1";
-import { Audio, haptic } from "./audio.js?v=candy1";
-import { Input } from "./input.js?v=candy1";
-import { Game } from "./game.js?v=candy1";
-import { UI, Hud } from "./ui.js?v=candy1";
-import { Renderer2D } from "./render2d.js?v=candy1";
+import { guard } from "./guard.js?v=noself1";
+import { Store, KV } from "./store.js?v=noself1";
+import { setLang, applyI18n, t } from "./i18n.js?v=noself1";
+import { Audio, haptic } from "./audio.js?v=noself1";
+import { Input } from "./input.js?v=noself1";
+import { Game } from "./game.js?v=noself1";
+import { UI, Hud } from "./ui.js?v=noself1";
+import { Renderer2D } from "./render2d.js?v=noself1";
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -45,7 +45,7 @@ async function makeRenderer(kind, quality) {
   const old = $("gl"), cv = document.createElement("canvas"); cv.id = "gl"; cv.setAttribute("aria-hidden", "true"); old.replaceWith(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=candy1");
+      const m = await import("./render3d.js?v=noself1");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 3500); }, onRestored: () => { clearTimeout(app._lostT); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }

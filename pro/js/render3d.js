@@ -2,20 +2,20 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=candy1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=candy1";
+import * as THREE from "./vendor/three.module.min.js?v=noself1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=noself1";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=candy1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=candy1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=candy1";
-import { World, prefetchWorld } from "./gfx/env.js?v=candy1";
-import { Post } from "./gfx/post.js?v=candy1";
-import { Studio } from "./gfx/showcase.js?v=candy1";
-import { SoftFx } from "./gfx/fx.js?v=candy1";
-import { on as onEv } from "./events.js?v=candy1";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=candy1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=noself1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=noself1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=noself1";
+import { World, prefetchWorld } from "./gfx/env.js?v=noself1";
+import { Post } from "./gfx/post.js?v=noself1";
+import { Studio } from "./gfx/showcase.js?v=noself1";
+import { SoftFx } from "./gfx/fx.js?v=noself1";
+import { on as onEv } from "./events.js?v=noself1";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=noself1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },

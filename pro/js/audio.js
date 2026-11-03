@@ -18,7 +18,7 @@ const TH = [
 const ZEN = { root: 60, sc: [0, 2, 4, 6, 7, 9, 11], prog: [0, 3, 5, 3], bpm: 62, lead: "sine", pad: "triangle", kit: "none" };
 // SFX that belong to the interface bus (own volume slider)
 const UI_SND = new Set(["hover", "click", "tab", "toggle", "back", "toast", "coin", "chime", "reward", "ach", "error", "spin", "pause", "reveal", "level", "mission"]);
-import { on as onEvt } from "./events.js?v=candy1";
+import { on as onEvt } from "./events.js?v=noself1";
 const LOBBY = { root: 57, sc: [0, 2, 4, 7, 9, 11, 14], prog: [0, 5, 3, 4], bpm: 80, lead: "triangle", pad: "sawtooth", kit: "soft" };
 
 export class Audio {

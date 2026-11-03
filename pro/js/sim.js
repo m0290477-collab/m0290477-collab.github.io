@@ -17,7 +17,7 @@ export const MASK = C.CAP - 1;
 export const radiusOf = (m) => Math.min(3.4, 0.55 + 0.034 * Math.sqrt(m));
 export const lengthOf = (m) => Math.min(190, 5 + 2.25 * Math.sqrt(m));
 export const turnOf = (r) => C.TURN / (1 + Math.max(0, r - 0.6) * 0.6);
-const botTurnOf = (r) => 4.6 / (1 + (r - 0.6) * 0.75); // fix1: bots keep the pre-fix1 steering response (their tuning / kill rate is unchanged)
+// noself1 (fairness): bots steer with exactly the player's physics (turnOf, TURN_GAIN, ANG_ACC); fix1 had left bots on the old, slower response.
 export const boostCost = (m, dt) => C.BOOST_COST * (1 + m / 1500) * dt;
 // ---- body shape shared by collision AND both renderers (gfx/snake.js mirrors these numbers in GLSL) ----
 // half-width of the body at fraction u (0 = head, 1 = tail tip) is r * taperAt(u); the head is a disc of r * HEAD_K.
@@ -25,9 +25,18 @@ export const HEAD_K = 1.12;
 export const HIT_K = 0.98; // contact = edges touch (2% slack for the polyline sagitta between samples)
 export const taperAt = (u) => { const t = Math.max(0, Math.min(1, (u - 0.58) / 0.42)); return 1 - 0.74 * t * t * (3 - 2 * t); };
 export const sampleSp = (r) => Math.max(0.3, r * 0.4); // collision sample spacing: no visible gaps between discs
-// fix1: own-body samples closer than this arc length to the head never count (a held max-rate turn at the slowest speed must
-// not touch the neck); past it, curling into your own body kills. Chord of an arc s on the tightest circle rho: 2 rho sin(s / 2 rho).
-export function selfNeck(s) { const rho = C.SPEED * 0.55 / turnOf(s.r), need = s.r * (1 + HEAD_K) * 1.08; if (2 * rho <= need) return Math.PI * rho + s.r * 2; return Math.max(s.r * 2.6, 2 * rho * Math.asin(need / (2 * rho))); }
+// noself1: candy is drawn 1.4x bigger than candy1 (CANDY_SCALE, used by gfx/candy.js too) and the pickup radius follows the
+// drawing: a food is eaten as soon as its visible outline touches the visible head disc (r * HEAD_K). foodVisR(v) = outer edge
+// of the largest 2D candy sprite (2D candy is drawn larger than 3D, so it bounds both). Gold Rush coins keep COIN_VIS.
+// Mirrors gfx/candy.js candyBig / candySize2 * SPR_K * 1.09 (measured sprite extent); test/noself1.test.mjs checks they agree.
+// noself1 head-on: true = snake a (relative depth da, mass ma, id ia) dies, false = it survives (b dies instead)
+export const headOnLoses = (da, ma, ia, db, mb, ib) => { if (Math.abs(da - db) > 1e-6) return da > db; if (ma !== mb) return ma < mb; return ia > ib; };
+export const CANDY_SCALE = 1.4, FOOD_EDGE = 1.35 * 1.09, COIN_VIS = 0.95, FOOD_VIS_MAX = 1.25 * 1.4 * 1.35 * 1.09;
+export const foodBig = (v) => v >= 4 || (v !== (v | 0) && v !== 1.5);
+export const foodVisR = (v) => { const s = (0.15 + Math.sqrt(v) * 0.1) * 2.2 * CANDY_SCALE; return (foodBig(v) ? Math.min(1.25 * CANDY_SCALE, Math.max(0.82 * CANDY_SCALE, s * 1.3)) : s) * FOOD_EDGE; };
+// noself1: ambient food spawns in clusters of 6..14 candies (loose blob 3..6 head widths across); <= ~8% stays as sparse singles.
+// A cluster whose food is mostly gone (< 25% left) is retired; its leftovers count as singles and a new cluster spawns elsewhere.
+export const CL_MIN = 6, CL_MAX = 14, CL_SINGLE = 0.07, CL_RETIRE = 0.25;
 // power-ups: magnet, shield, speed, x2 score, (4 retired: ghost), freeze, mega-orb burst, dash, (8 retired: invisibility), giant, food rain
 // fix1: ghost and invisibility removed for good (never spawn, no effect if an old peer sends them); their slots stay so kind ids keep their meaning online.
 export const PU = { MAG: 0, SHIELD: 1, SPEED: 2, X2: 3, GHOST: 4, FREEZE: 5, MEGA: 6, DASH: 7, INVIS: 8, GIANT: 9, RAIN: 10, N: 11 };
@@ -103,9 +112,9 @@ export class Snake {
 
 // Move one snake one tick: turn with inertia toward ta, advance, record a path sample. Deterministic given (state, ta, boost, dt).
 export function moveSnake(s, dt, canBoost) {
-  const bot = s.bot, tm = bot ? botTurnOf(s.r) : turnOf(s.r), d = angDiff(s.ta, s.a);
-  const want = Math.max(-tm, Math.min(tm, d * (bot ? 9 : C.TURN_GAIN)));
-  const acc = (bot ? 34 : C.ANG_ACC) * dt;
+  const tm = turnOf(s.r), d = angDiff(s.ta, s.a);
+  const want = Math.max(-tm, Math.min(tm, d * C.TURN_GAIN));
+  const acc = C.ANG_ACC * dt;
   s.av += Math.max(-acc, Math.min(acc, want - s.av));
   if (Math.abs(s.av * dt) > Math.abs(d) && Math.sign(s.av) === Math.sign(d)) s.av = d / dt; // no overshoot
   s.lastA = s.a;
@@ -169,6 +178,7 @@ export class Sim {
     this.fx = new Float32Array(FM); this.fy = new Float32Array(FM); this.fv = new Float32Array(FM); this.fc = new Uint8Array(FM); this.fa = new Uint8Array(FM);
     this.fid = new Uint16Array(FM); this.fFree = []; for (let i = FM - 1; i >= 0; i--) this.fFree.push(i); this.fCount = 0; this.fSeq = 1;
     this.fBorn = new Uint32Array(FM);
+    this.fcl = new Int32Array(FM); this.clu = new Map(); this.cluSeq = 0; this.singles = 0; this.ambN = 0; // noself1: ambient cluster id per food (0 = not ambient, -2 = single)
     // events since last drain (for net + effects); plain arrays reused
     this.evEat = []; this.evSpawn = []; this.evDie = []; this.evNew = [];
     this.tmp = new Float32Array(1200);
@@ -182,16 +192,18 @@ export class Sim {
     // arena events (opt.events = list of allowed kinds). evEvt = {k, ph, ...} announcements, evMet = new meteors, evImpact = impacts
     this.events = Array.isArray(opt.events) ? opt.events.filter((k) => EVENTS.includes(k)) : opt.events === true ? EVENTS.slice() : [];
     this.evt = null; this.evtNext = opt.evtFirst ?? 40; this.evtLast = ""; this.mets = []; this.metSeq = 1; this.evEvt = []; this.evMet = []; this.evImpact = []; this.bountyId = 0;
-    for (let i = 0; i < this.foodTarget; i++) this.spawnFood(...this.randPos(this.R - 3), 1 + (this.rand() * 2.2) | 0, (this.rand() * 12) | 0);
+    this.feed(true);
   }
   randPos(rr) { const a = this.rand() * TAU, d = Math.sqrt(this.rand()) * rr; return [Math.cos(a) * d, Math.sin(a) * d]; }
   spawnFood(x, y, v, c) {
     if (!this.fFree.length) return -1;
-    const i = this.fFree.pop(); this.fx[i] = x; this.fy[i] = y; this.fv[i] = v; this.fc[i] = c; this.fa[i] = 1; this.fCount++;
+    const i = this.fFree.pop(); this.fx[i] = x; this.fy[i] = y; this.fv[i] = v; this.fc[i] = c; this.fa[i] = 1; this.fCount++; this.fcl[i] = 0;
     this.fid[i] = this.fSeq; this.fSeq = (this.fSeq % 65000) + 1; this.fBorn[i] = this.tick;
     this.evSpawn.push(i); return i;
   }
-  removeFood(i, by) { if (!this.fa[i]) return; this.fa[i] = 0; this.fCount--; this.fFree.push(i); this.evEat.push(i, by); }
+  removeFood(i, by) { if (!this.fa[i]) return; this.fa[i] = 0; this.fCount--; this.fFree.push(i); this.evEat.push(i, by); this._unclu(i); }
+  _unclu(i) { const id = this.fcl[i]; if (!id) return; this.fcl[i] = 0; this.ambN--; if (id === -2) { this.singles--; return; } const q = this.clu.get(id); if (!q) { this.singles--; return; } // leftover of a retired cluster = single
+    if (--q.n < q.n0 * CL_RETIRE) { this.clu.delete(id); this.singles += q.n; } }
 
   addSnake(name, skin, opt = {}) {
     const s = new Snake(this.nextId++); s.name = name; s.skin = skin;
@@ -228,7 +240,7 @@ export class Sim {
   removeSnake(s) { const i = this.snakes.indexOf(s); if (i >= 0) this.snakes.splice(i, 1); this.byId.delete(s.id); }
 
   kill(s, killerId, cause) {
-    if (!s.alive) return; s.alive = false; s.diedTick = this.tick;
+    if (!s.alive) return; s.alive = false; s.diedTick = this.tick; s.killedBy = killerId || 0;
     const k = killerId ? this.byId.get(killerId) : null; if (k && k !== s) k.kills++;
     // body becomes food (≈55% of mass), spread along the corpse
     const pts = this.tmp, sp = Math.max(0.9, s.r * 0.9), n = bodyPoints(s, 0, 0, sp, s.len, pts, 590);
@@ -350,19 +362,7 @@ export class Sim {
       if (s.rainT > 0) { s.rainT -= dt; s.rainAcc = (s.rainAcc || 0) + dt * 48; while (s.rainAcc >= 1) { s.rainAcc -= 1; const a = s.a + (this.rand() - 0.5) * 3.2, d = 3 + this.rand() * 16; if (this.fCount < this.FM - 80) this.spawnFood(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d, 1.6 + this.rand() * 1.8, (this.rand() * 12) | 0); } }
       if (s.bot) { if ((this.tick + s.id) % 3 === 0 && s.ai.t > 1) this.botReflex(s); if (--s.ai.t <= 0) { this.botThink(s); const D = DIFF[Math.max(0, Math.min(3, s.ai.diff))]; s.ai.t = Math.max(1, Math.round(D.react * reactScale * (0.7 + this.rand() * 0.6))); } }
       else if (inputs) { const inp = inputs(s); if (inp === false) continue; }
-      const canBoost = s.m > C.MIN_BOOST_M;
-      moveSnake(s, dt, canBoost);
-      if (s.boosting && !(s.pu[2] > 0) && !(s.pu[7] > 0)) {
-        const cost = boostCost(s.m, dt); s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - cost)); s.dropAcc += cost;
-        if (s.dropAcc > 2.2) { s.dropAcc -= 2.2; const o = Math.min(s.n - 1, Math.round(s.len / (C.SPEED * dt))); this.spawnFood(s.sx(o) + (this.rand() - 0.5), s.sy(o) + (this.rand() - 0.5), 1.5, (s.id * 5) % 12); }
-      }
-      if (this.walls) {
-        const d2 = s.x * s.x + s.y * s.y, lim = this.R - s.r * 0.6;
-        if (d2 > lim * lim) {
-          if (s.god || s.bot && !this.walls) { const d = Math.sqrt(d2); s.x *= lim / d; s.y *= lim / d; s.a = s.ta = Math.atan2(-s.y, -s.x); s.av = 0; this.fixHead(s); }
-          else this.kill(s, 0, 1);
-        }
-      }
+      this.moveOne(s, dt);
     }
     if (this.zone) { const z = this.zone; for (const s of this.snakes) { if (!s.alive || s.god) continue; const dx = s.x - z.x, dy = s.y - z.y; if (dx * dx + dy * dy > z.r * z.r) { s.storm = (s.storm || 0) + dt; s.setMass(s.m - (2.5 + s.m * 0.07) * dt * (z.dmg || 1)); if (s.m < 10) this.kill(s, 0, 3); } else s.storm = 0; } }
     this.buildGrid();
@@ -371,8 +371,29 @@ export class Sim {
     if (this.powerups) this.puStep();
     if (this.events.length || this.mets.length) this.eventStep(dt);
     // keep the world fed
-    let need = this.foodTarget - this.fCount, sp = 0;
-    while (need-- > 0 && sp++ < 6) { const [x, y] = this.randPos(this.R - 3); this.spawnFood(x, y, 1 + (this.rand() * 2.2) | 0, (this.rand() * 12) | 0); }
+    this.feed(false);
+  }
+  // one move of one snake with its per-move rules: turn + advance, boost cost + boost drop, arena wall
+  moveOne(s, dt) {
+    const canBoost = s.m > C.MIN_BOOST_M;
+    moveSnake(s, dt, canBoost);
+    if (s.boosting && !(s.pu[2] > 0) && !(s.pu[7] > 0)) {
+      const cost = boostCost(s.m, dt); s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - cost)); s.dropAcc += cost;
+      if (s.dropAcc > 2.2) { s.dropAcc -= 2.2; const o = Math.min(s.n - 1, Math.round(s.len / (C.SPEED * dt))); this.spawnFood(s.sx(o) + (this.rand() - 0.5), s.sy(o) + (this.rand() - 0.5), 1.5, (s.id * 5) % 12); }
+    }
+    if (this.walls) {
+      const d2 = s.x * s.x + s.y * s.y, lim = this.R - s.r * 0.6;
+      if (d2 > lim * lim) {
+        if (s.god || s.bot && !this.walls) { const d = Math.sqrt(d2); s.x *= lim / d; s.y *= lim / d; s.a = s.ta = Math.atan2(-s.y, -s.x); s.av = 0; this.fixHead(s); }
+        else this.kill(s, 0, 1);
+      }
+    }
+  }
+  // noself1b: the server's catch-up move (a lagging human's extra queued input applied before step) runs the same rules as step:
+  // move + boost cost + wall, then body collision and eating for THAT snake at the intermediate position (head-on rule included)
+  extraMove(s) {
+    if (!s.alive) return; this.moveOne(s, this.dt); if (!s.alive) return;
+    this.buildGrid(); this.collide(s); if (s.alive) this.eat(s);
   }
   puStep() {
     if (this.pus.length < this.puTarget && --this.puNext <= 0) { this.spawnPu(); this.puNext = Math.round((4 + this.rand() * 4) / this.dt); }
@@ -439,61 +460,96 @@ export class Sim {
     for (let i = 0; i < this.FM; i++) if (this.fa[i]) f.add(this.fx[i], this.fy[i], this.fv[i], i, 0);
   }
 
-  // head (disc r*HEAD_K) vs every other snake's body discs (heads included -> head-on kills both). Contact = rendered edges touch.
+  // head (disc r*HEAD_K) vs every other snake's body discs (heads included). Contact = rendered edges touch.
   // Body crossing body is harmless (only heads are tested). Dash = pass through other bodies; shield absorbs one hit.
-  // fix1: a player's head also dies on its OWN body past the neck (selfNeck); bots keep slither rules (no self-collision).
-  collide() {
-    const g = this.grid, dim = g.dim;
+  // noself1: slither rules for everyone: a snake can NEVER die on its own body (no self-collision, offline or online).
+  // noself1 head-on rule: two snakes whose heads are each in the other's discs on the same tick -> only ONE dies: the one
+  // whose head went in deeper, depth relative to its own head radius ((rr - d) / (r * HEAD_K)); exact tie -> smaller mass
+  // (then the higher id) dies. The survivor gets the kill + the drop. Same rule in Sim.hitTest (client) via headOnLoses().
+  collide(only = null) {
+    const g = this.grid, dim = g.dim, H = this._hits || (this._hits = new Map()); H.clear();
     for (const s of this.snakes) {
-      if (!s.alive || s.god || s.inv > 0) continue;
-      const pass = s.pu[7] > 0, self = !s.bot, hr = s.r * HEAD_K, c0 = g.ci(s.x, s.y); let killer = 0;
-      if (pass && !self) continue;
-      const kNeck = self ? Math.ceil(selfNeck(s) / sampleSp(s.r)) : 1e9;
+      if (!s.alive || s.god || s.inv > 0 || s.pu[7] > 0) continue;
+      const hr = s.r * HEAD_K, c0 = g.ci(s.x, s.y); let killer = 0, best = -1, seg = 0;
       const rx = Math.max(1, Math.ceil((hr + 6.6) / g.cell));
-      for (let oy = -rx; oy <= rx && !killer; oy++) for (let ox = -rx; ox <= rx && !killer; ox++) {
+      for (let oy = -rx; oy <= rx; oy++) for (let ox = -rx; ox <= rx; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= g.head.length) continue; let j = g.head[c];
         while (j >= 0) {
-          const own = g.o[j] === s.id;
-          if (own ? g.k[j] >= kNeck : !pass) { const dx = g.x[j] - s.x, dy = g.y[j] - s.y, rr = (g.r[j] + hr) * HIT_K; if (dx * dx + dy * dy < rr * rr) { const o = own ? s : this.byId.get(g.o[j]); if (!own && this.teams && o && o.team === s.team) { j = g.next[j]; continue; } killer = g.o[j]; this.lastHitSeg = g.k[j]; break; } }
+          if (g.o[j] !== s.id) { const dx = g.x[j] - s.x, dy = g.y[j] - s.y, rr = (g.r[j] + hr) * HIT_K, d2 = dx * dx + dy * dy;
+            if (d2 < rr * rr) { const o = this.byId.get(g.o[j]); if (!(this.teams && o && o.team === s.team)) { const dep = (rr - Math.sqrt(d2)) / hr; if (dep > best) { best = dep; killer = g.o[j]; seg = g.k[j]; } } } }
           j = g.next[j];
         }
       }
-      if (killer) { const k = killer === s.id ? null : this.byId.get(killer); if (k && k.god && !k.boss) continue;
-        if (s.pu[1] > 0) { s.pu[1] = 0; s.inv = 1.2; this.evShield.push(s.id, killer); continue; }
-        this.kill(s, killer, 2); }
+      if (killer) H.set(s.id, { k: killer, dep: best, seg });
     }
-  }
-  // fix1: own-body test (same discs as collide) for the online client's instant self-reported death; returns true on contact
-  static selfHit(s, tmp, o = 0, f = 0) {
-    const H = s.r * HEAD_K, sp = sampleSp(s.r), n = bodyPoints(s, o, f, sp, s.len, tmp, 590), L = Math.max(sp, (n - 1) * sp), k0 = Math.ceil(selfNeck(s) / sp), hx = tmp[0], hy = tmp[1];
-    for (let j = k0; j < n; j++) { const rr = (s.r * taperAt(j * sp / L) + H) * HIT_K, dx = tmp[j * 2] - hx, dy = tmp[j * 2 + 1] - hy; if (dx * dx + dy * dy < rr * rr) return true; }
-    return false;
+    for (const [id, h] of H) {
+      const s = this.byId.get(id), k = this.byId.get(h.k); if (!s || !s.alive || !k || k === s || (only && s !== only)) continue;
+      const back = H.get(h.k); // mutual contact this tick (head-on, or each head inside the other): only the deeper one dies
+      if (back && back.k === id && headOnLoses(h.dep, s.m, s.id, back.dep, k.m, k.id) === false) continue;
+      if (k.god && !k.boss) continue;
+      if (s.pu[1] > 0) { s.pu[1] = 0; s.inv = 1.2; this.evShield.push(s.id, h.k); continue; }
+      this.lastHitSeg = h.seg; this.kill(s, h.k, 2);
+    }
   }
   // exported so the client can run the same test against what it renders (instant self-reported death)
-  static hitTest(hx, hy, hr, others, tmp) {
-    const H = hr * HEAD_K;
+  static hitTest(hx, hy, hr, others, tmp, me = null, tmp2 = null) {
+    const H = hr * HEAD_K; let id = 0, best = -1, mut = false;
     for (const o of others) {
-      if (!o.alive) continue; const sp = sampleSp(o.r), n = bodyPoints(o, o._ro || 0, o._rf || 0, sp, o.len, tmp, 590), L = Math.max(sp, (n - 1) * sp);
+      if (!o.alive || o === me) continue; const sp = sampleSp(o.r), n = bodyPoints(o, o._ro || 0, o._rf || 0, sp, o.len, tmp, 590), L = Math.max(sp, (n - 1) * sp);
       const qx = tmp[0] - hx, qy = tmp[1] - hy; if (qx * qx + qy * qy > (o.len + H + 8) ** 2) continue;
-      for (let j = 0; j < n; j++) { const rb = j ? o.r * taperAt(j * sp / L) : o.r * HEAD_K, rr = (rb + H) * HIT_K; const dx = tmp[j * 2] - hx, dy = tmp[j * 2 + 1] - hy; if (dx * dx + dy * dy < rr * rr) return o.id; }
+      let dep = -1; for (let j = 0; j < n; j++) { const rb = j ? o.r * taperAt(j * sp / L) : o.r * HEAD_K, rr = (rb + H) * HIT_K; const dx = tmp[j * 2] - hx, dy = tmp[j * 2 + 1] - hy, d2 = dx * dx + dy * dy; if (d2 < rr * rr) { const e = (rr - Math.sqrt(d2)) / H; if (e > dep) dep = e; } }
+      if (dep < 0) continue;
+      // noself1 head-on rule (same as collide): when o's head is also inside my body, only the deeper head dies
+      let mu = false; if (me) { const od = Sim.headDepth(tmp[0], tmp[1], o.r, me, tmp2 || (Sim._t2 || (Sim._t2 = new Float32Array(1200)))); if (od >= 0) { if (headOnLoses(dep, me.m, me.id, od, o.m, o.id) === false) continue; mu = true; } }
+      if (dep > best) { best = dep; id = o.id; mut = mu; }
     }
-    return 0;
+    Sim.mutual = mut; // the returned hit was a mutual head-on (the other head is inside me too)
+    return id;
+  }
+  // deepest relative depth of a head (hx, hy, radius r*HEAD_K) inside snake t's discs (as rendered at t._ro/_rf); -1 = no contact
+  static headDepth(hx, hy, r, t, tmp) {
+    const H = r * HEAD_K, sp = sampleSp(t.r), n = bodyPoints(t, t._ro || 0, t._rf || 0, sp, t.len, tmp, 590), L = Math.max(sp, (n - 1) * sp); let dep = -1;
+    for (let j = 0; j < n; j++) { const rb = j ? t.r * taperAt(j * sp / L) : t.r * HEAD_K, rr = (rb + H) * HIT_K, dx = tmp[j * 2] - hx, dy = tmp[j * 2 + 1] - hy, d2 = dx * dx + dy * dy; if (d2 < rr * rr) { const e = (rr - Math.sqrt(d2)) / H; if (e > dep) dep = e; } }
+    return dep;
   }
 
-  eat() {
-    const f = this.fgrid, dim = f.dim;
+
+  eat(only = null) {
+    const f = this.fgrid, dim = f.dim, gold = !!this.goldCoins;
     for (const s of this.snakes) {
-      if (!s.alive) continue;
-      const mag = s.pu[0] > 0, reach = mag ? magReach(s.r) : s.r + 0.9, x2 = s.pu[3] > 0 ? 2 : 1, c0 = f.ci(s.x, s.y), rx = Math.ceil(reach / f.cell);
+      if (!s.alive || (only && s !== only)) continue;
+      // noself1: head disc (r * HEAD_K) vs the candy's visible outline; the magnet ring (magReach) reaches the outline too
+      const mag = s.pu[0] > 0, hr = mag ? magReach(s.r) : s.r * HEAD_K, x2 = s.pu[3] > 0 ? 2 : 1, c0 = f.ci(s.x, s.y), rx = Math.ceil((hr + FOOD_VIS_MAX) / f.cell);
       for (let oy = -rx; oy <= rx; oy++) for (let ox = -rx; ox <= rx; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= f.head.length) continue; let j = f.head[c];
         while (j >= 0) {
           const i = f.o[j];
-          if (this.fa[i]) { const dx = this.fx[i] - s.x, dy = this.fy[i] - s.y; const d2 = dx * dx + dy * dy; if (d2 < reach * reach) { s.setMass(s.m + this.fv[i] * x2); s.foodEaten++; this.removeFood(i, s.id); } }
+          if (this.fa[i]) { const dx = this.fx[i] - s.x, dy = this.fy[i] - s.y, d2 = dx * dx + dy * dy, reach = hr + (gold && this.fc[i] === GOLD_FC ? COIN_VIS : foodVisR(this.fv[i])); if (d2 < reach * reach) { s.setMass(s.m + this.fv[i] * x2); s.foodEaten++; this.removeFood(i, s.id); } }
           j = f.next[j];
         }
       }
     }
+  }
+  // noself1: ambient food. One cluster = 6..14 candies in a loose blob (Poisson-ish rejection, min spacing 1.5) whose
+  // diameter is 3..6 head widths of a starting snake (scaled up a little for bigger clusters so they never stack).
+  spawnCluster(n) {
+    const hw = 2 * radiusOf(C.START_M) * HEAD_K; let cx = 0, cy = 0, best = -1;
+    for (let k = 0; k < 6; k++) { const [x, y] = this.randPos(this.R - 8); let md = 1e9; for (const q of this.clu.values()) { const d = (q.x - x) ** 2 + (q.y - y) ** 2; if (d < md) md = d; } if (md > best) { best = md; cx = x; cy = y; } if (md > 400) break; }
+    const id = this.cluSeq = (this.cluSeq % 2000000000) + 1, rad = hw * (1.5 + this.rand() * 1.5) * Math.max(1, Math.sqrt(n / 10)), q = { x: cx, y: cy, n0: n, n: 0 };
+    this.clu.set(id, q); const px = [], py = [];
+    for (let k = 0; k < n; k++) { let x = cx, y = cy;
+      for (let t = 0; t < 8; t++) { const a = this.rand() * TAU, d = Math.sqrt(this.rand()) * rad; x = cx + Math.cos(a) * d; y = cy + Math.sin(a) * d; let ok = true; for (let m = 0; m < px.length; m++) if ((px[m] - x) ** 2 + (py[m] - y) ** 2 < 2.25) { ok = false; break; } if (ok) break; }
+      px.push(x); py.push(y); const i = this.spawnFood(x, y, 1 + (this.rand() * 2.2) | 0, (this.rand() * 12) | 0); if (i < 0) break; this.fcl[i] = id; q.n++; }
+    this.ambN += q.n; return q.n;
+  }
+  spawnSingle() { const [x, y] = this.randPos(this.R - 3); const i = this.spawnFood(x, y, 1 + (this.rand() * 2.2) | 0, (this.rand() * 12) | 0); if (i >= 0) { this.fcl[i] = -2; this.singles++; this.ambN++; } }
+  // keep the field fed: retire spent clusters, then top up (at most one new cluster + one single per tick)
+  feed(initial) {
+    const T = this.foodTarget, maxS = Math.max(1, Math.round(T * CL_SINGLE));
+    if (initial) { while (this.fCount < T - CL_MAX && this.fFree.length > CL_MAX) this.spawnCluster(CL_MIN + ((this.rand() * (CL_MAX - CL_MIN + 1)) | 0)); while (this.fCount < T && this.singles < maxS) this.spawnSingle(); return; }
+    const need = T - this.fCount; if (need <= 0) return;
+    if (need >= CL_MIN && this.fCount < this.FM - 80) { this.spawnCluster(Math.min(need, CL_MIN + ((this.rand() * (CL_MAX - CL_MIN + 1)) | 0))); return; }
+    if (this.singles < maxS) this.spawnSingle();
   }
   drain() { this.evEvt.length = 0; this.evMet.length = 0; this.evImpact.length = 0; this.evPu.length = 0; this.evPuNew.length = 0; this.evShield.length = 0; this.evEat.length = 0; this.evSpawn.length = 0; this.evDie.length = 0; this.evNew.length = 0; }
   leaderboard(n) { return this.snakes.filter((s) => s.alive).sort((a, b) => b.m - a.m).slice(0, n); }
