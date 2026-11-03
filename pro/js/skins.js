@@ -10,7 +10,7 @@ export function flagName(f, lang) {
 }
 
 // pattern ids
-export const PATTERNS = ["solid", "stripes", "bands", "gradient", "spots", "tiger", "diamond", "rainbow", "pulse", "galaxy", "scales", "split"];
+export const PATTERNS = ["solid", "stripes", "bands", "gradient", "spots", "tiger", "diamond", "rainbow", "pulse", "galaxy", "scales", "split", "chevron", "dots", "wave", "checker"];
 export const FLAG_PRICE = 300;
 
 // premium named skins: p pattern, c colours, lv unlock level
@@ -68,6 +68,22 @@ export const SKINS = [
   { id: "emperor", p: 11, c: ["#ffd700", "#7a0019", "#fff1b8"], lv: 1, rar: "legendary", fx: 25, src: "coins:2500" },
   { id: "jadedragon", p: 10, c: ["#00a86b", "#004d32", "#c9ffe5"], lv: 1, rar: "legendary", fx: 26, src: "coins:3500" },
   { id: "sandstorm", p: 8, c: ["#d9a35b", "#6b4423", "#fff0c9"], lv: 1, rar: "legendary", fx: 27, src: "coins:1800" },
+  // lk1: new named skins (appended so saved indices stay valid)
+  { id: "peacock", p: 3, c: ["#0a9396", "#005f73", "#94d2bd"], lv: 9 },
+  { id: "sunset", p: 3, c: ["#ff5f6d", "#ffc371", "#6a3093"], lv: 11 },
+  { id: "camo", p: 4, c: ["#4b5320", "#2e3317", "#8a8f5a"], lv: 13 },
+  { id: "zebra", p: 1, c: ["#f5f5f5", "#151515", "#f5f5f5"], lv: 15 },
+  { id: "candy", p: 1, c: ["#ff8fc7", "#ffffff", "#ff8fc7"], lv: 17 },
+  { id: "steel", p: 10, c: ["#9aa3ad", "#4a525c", "#e6ebf0"], lv: 21 },
+  { id: "berry", p: 2, c: ["#7b2cbf", "#c77dff", "#ff4d6d"], lv: 26 },
+  { id: "ocean", p: 13, c: ["#0077b6", "#00b4d8", "#caf0f8"], lv: 30 },
+  { id: "bronze", p: 10, c: ["#cd7f32", "#7a4a1c", "#ffd1a1"], lv: 35 },
+  { id: "nightsky", p: 9, c: ["#0b132b", "#3a506b", "#ffffff"], lv: 40 },
+  // lk1: new legendaries (own shader branch 28-31)
+  { id: "lapislion", p: 10, c: ["#1d3fb5", "#0a1d5c", "#f2c14e"], lv: 1, rar: "legendary", fx: 28, src: "level:16" },
+  { id: "ronin", p: 1, c: ["#b3001b", "#14070a", "#b3001b"], lv: 1, rar: "legendary", fx: 29, src: "level:28" },
+  { id: "koi", p: 4, c: ["#ff7b3a", "#ffffff", "#ff7b3a"], lv: 1, rar: "legendary", fx: 30, src: "coins:3000" },
+  { id: "titan", p: 11, c: ["#151018", "#ff4d00", "#ffb000"], lv: 1, rar: "legendary", fx: 31, src: "coins:5000" },
 ];
 // rarity of every named skin (legendary ones carry their own)
 export const RARITY = ["common", "rare", "epic", "legendary"];
@@ -102,6 +118,10 @@ export const LEGEND = {
   25: { tr: ["#ffd700", "#fff1b8"], tk: "glint", death: "nova", idle: "rear", glow: "#ffc845", au: 6, hn: 1 },
   26: { tr: ["#7affc4", "#ffd76a"], tk: "ribbon", death: "aurora", idle: "rear", glow: "#00d68f", au: 10, hn: 1 },
   27: { tr: ["#fff0c9", "#d9a35b"], tk: "smoke", death: "implode", idle: "coil", glow: "#e0a860", au: 9 },
+  28: { tr: ["#f2c14e", "#3a6bff"], tk: "glint", death: "shatter", idle: "rear", glow: "#f2c14e", au: 6, hn: 1 },
+  29: { tr: ["#ff2a3d", "#ffffff"], tk: "sparks", death: "thunder", idle: "charge", glow: "#ff2a3d", au: 5 },
+  30: { tr: ["#ffb38a", "#ffffff"], tk: "rings", death: "aurora", idle: "wave", glow: "#ff7b3a", au: 10 },
+  31: { tr: ["#ff6a00", "#ffd000"], tk: "ember", death: "eruption", idle: "breathe", glow: "#ff4d00", au: 1, hn: 1 },
 };
 export const skinFx = (d) => (d && d.k === "skin" && SKINS[d.i] && SKINS[d.i].fx) || 0;
 export const EYES = [
@@ -112,13 +132,23 @@ export const EYES = [
   { id: "sleepy", lv: 9, s: 1, p: 0.6, pc: "#0a0a0a", ec: "#ffffff", n: 2, lid: 1 },
   { id: "cyclops", lv: 13, s: 1.7, p: 0.5, pc: "#0a0a0a", ec: "#ffffff", n: 1 },
   { id: "demon", lv: 22, s: 1, p: 0.35, pc: "#000000", ec: "#ff1a1a", n: 2, glow: 1 },
+  { id: "golden", lv: 15, s: 1.05, p: 0.5, pc: "#2a1600", ec: "#ffd34d", n: 2 },
+  { id: "viper", lv: 18, s: 0.95, p: 0.24, pc: "#050505", ec: "#c6ff3a", n: 2 },
+  { id: "frost", lv: 27, s: 1, p: 0.55, pc: "#0a3d66", ec: "#d9f4ff", n: 2, glow: 1 },
+  { id: "starry", lv: 31, s: 1.35, p: 0.8, pc: "#2a1460", ec: "#ffffff", n: 2 },
+  { id: "royal", lv: 36, s: 1.05, p: 0.5, pc: "#4a0f7a", ec: "#ffd700", n: 2, glow: 1 },
 ];
 export const TRAILS = [
   { id: "none", lv: 1 }, { id: "sparkle", lv: 2, c: ["#fff7c2", "#ffd700"] }, { id: "ember", lv: 5, c: ["#ff7a00", "#ff2a00"] },
   { id: "frost", lv: 8, c: ["#e9fbff", "#7fd8ff"] }, { id: "neon", lv: 12, c: ["#ff2bd6", "#00e5ff"] }, { id: "bubbles", lv: 16, c: ["#bff3ff", "#ffffff"] },
   { id: "stardust", lv: 25, c: ["#c9a7ff", "#ffffff"] },
+  { id: "goldrush", lv: 18, c: ["#ffd700", "#fff1a8"] }, { id: "sakura", lv: 22, c: ["#ffb7d5", "#ffffff"] }, { id: "toxic", lv: 28, c: ["#9dff00", "#39ff14"] },
+  { id: "ocean", lv: 32, c: ["#00b4d8", "#caf0f8"] }, { id: "aurora", lv: 38, c: ["#00ffa3", "#7a2cff"] }, { id: "inferno", lv: 44, c: ["#ff2a00", "#ffb000"] },
 ];
-export const NAME_COLORS = ["#ffffff", "#ffd700", "#39ff88", "#00e5ff", "#ff6fae", "#ff7a3d", "#b18cff", "#ff3355", "#c0c7d6", "#9dff00"];
+export const NAME_COLORS = ["#ffffff", "#ffd700", "#39ff88", "#00e5ff", "#ff6fae", "#ff7a3d", "#b18cff", "#ff3355", "#c0c7d6", "#9dff00",
+  "#e9c46a", "#2ec4b6", "#ffb7d5", "#7fb2ff", "#ffd1a1", "#c6ff3a", "#ff9e00", "#e0aaff", "#90e0ef", "#f15bb5"];
+// lk1: editor palette quick-picks
+export const PALETTES = [["#1d3fb5", "#0a1d5c", "#f2c14e"], ["#ff5f6d", "#ffc371", "#6a3093"], ["#0a9396", "#005f73", "#94d2bd"], ["#151515", "#ffd700", "#ffffff"], ["#7b2cbf", "#c77dff", "#ff4d6d"], ["#2ec4b6", "#0b5563", "#cbf3f0"], ["#ff7a00", "#3a0a00", "#ffd000"], ["#e6ebf0", "#4a525c", "#9aa3ad"]];
 
 const hexRgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -151,6 +181,10 @@ function makePattern(p, c) {
     case "pulse": return (i, n, t, o) => { const w = 0.5 + 0.5 * Math.sin(i * 0.45 - t * 6); o[0] = lerp(a[0], b[0], w); o[1] = lerp(a[1], b[1], w); o[2] = lerp(a[2], b[2], w); };
     case "galaxy": return (i, n, t, o) => { const w = 0.5 + 0.5 * Math.sin(i * 0.3 + t * 2); o[0] = lerp(a[0], c[2][0], w); o[1] = lerp(a[1], c[2][1], w); o[2] = lerp(a[2], c[2][2], w); if (i % 9 === 0) { o[0] = o[1] = o[2] = 0.95; } };
     case "scales": return (i, n, t, o) => { const k = i % 3 === 0 ? 0.78 : (i % 3 === 1 ? 1 : 0.9), s = i % 12 === 6 ? e : a; o[0] = s[0] * k; o[1] = s[1] * k; o[2] = s[2] * k; };
+    case "chevron": return (i, n, t, o) => { const m = i % 6, s = m < 2 ? a : m < 4 ? b : e, k = m % 2 ? 0.86 : 1; o[0] = s[0] * k; o[1] = s[1] * k; o[2] = s[2] * k; };
+    case "dots": return (i, n, t, o) => { const s = i % 4 === 1 ? b : a; o[0] = s[0]; o[1] = s[1]; o[2] = s[2]; };
+    case "wave": return (i, n, t, o) => { const w = 0.5 + 0.5 * Math.sin(i * 0.5), A = w > 0.5 ? b : a, x = Math.abs(w - 0.5) * 2; o[0] = lerp(e[0], A[0], x); o[1] = lerp(e[1], A[1], x); o[2] = lerp(e[2], A[2], x); };
+    case "checker": return (i, n, t, o) => { const s = ((i >> 1) & 1) ? b : a; o[0] = s[0]; o[1] = s[1]; o[2] = s[2]; };
     case "split": return (i, n, t, o) => { const s = i % 8 < 4 ? a : (i % 2 ? b : e); o[0] = s[0]; o[1] = s[1]; o[2] = s[2]; };
     default: return (i, n, t, o) => { const k = i % 2 ? 0.9 : 1; o[0] = a[0] * k; o[1] = a[1] * k; o[2] = a[2] * k; };
   }

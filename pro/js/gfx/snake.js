@@ -4,7 +4,7 @@
 // cross-section with a sculpted head, neck, tail taper, lateral undulation, head bob, eat squash and a
 // growth pulse running down the body. Fragment stage = PBR (clearcoat/iridescence/sheen) + procedural
 // scales + 12 legendary shader effects. All snakes = 1 instanced draw (+1 for ghost/transparent skins).
-import * as THREE from "../vendor/three.module.min.js?v=anim1";
+import * as THREE from "../vendor/three.module.min.js?v=lk1";
 
 export const SW = 176; // spine samples per snake (2 texels each)
 export const MAXS = 56; // snake rows (last row reserved for the showcase)
@@ -127,6 +127,10 @@ const FRAG_COLOR = /* glsl */ `
   } else if(fx==25){ sMetal=0.85; sRough=0.2; bumpK=1.3; sIrid=0.1;                                                    // emperor: gold and crimson
   } else if(fx==26){ base*=0.85; sRough=0.14; sCC=1.0; sIrid=0.2; bumpK=1.0;                                           // jade dragon
   } else if(fx==27){ base*=0.85+0.25*fbm(q*1.2+vec2(uT*0.6,0.0)); sRough=0.75; sCC=0.2; sIrid=0.0; bumpK=1.5;          // sandstorm: drifting grains
+  } else if(fx==28){ float gd=step(0.3,vCol.r-vCol.b); base=mix(vCol,vCol*1.15+0.03,sh); sMetal=mix(0.1,1.0,gd); sRough=mix(0.12,0.2,gd); sCC=1.0; bumpK=1.3; // lapis lion: glazed lapis, gold mane bands
+  } else if(fx==29){ sRough=0.06; sCC=1.0; sMetal=0.2; bumpK=0.7;                                                     // ronin: lacquered armour plates
+  } else if(fx==30){ sRough=0.05; sCC=1.0; sIrid=0.35; bumpK=0.5;                                                     // koi: pearl scales
+  } else if(fx==31){ float cr=fbm(q*0.9); float seam=smoothstep(0.05,0.0,abs(cr-0.5)); base=mix(vec3(0.035,0.025,0.04),vec3(0.6,0.15,0.02),seam); sRough=0.6; sCC=0.3; bumpK=1.6; // titan: obsidian with lava seams
   }
 #endif
   diffuseColor.rgb=base;
@@ -180,6 +184,10 @@ const FRAG_EMIT = /* glsl */ `
     else if(fx==25){ em=vec3(1.0,0.75,0.25)*pow(fres,1.4)*0.6+vec3(1.0,0.9,0.6)*pow(0.5+0.5*sin(q.x*0.5-uT*1.0),14.0)*0.5; }
     else if(fx==26){ float n=fbm(q*0.6+vec2(uT*0.3,0.0)); em=vec3(0.1,0.9,0.5)*smoothstep(0.45,0.8,n)*0.35+vec3(1.0,0.8,0.3)*smoothstep(0.52,0.62,sd)*0.35+vec3(0.3,1.0,0.7)*pow(fres,1.8)*0.45; }
     else if(fx==27){ float s2=fbm(q*vec2(0.6,1.5)+vec2(uT*2.0,0.0)); em=vec3(1.0,0.8,0.5)*smoothstep(0.6,0.85,s2)*0.45+vec3(1.0,0.7,0.35)*pow(fres,1.8)*0.35; }
+    else if(fx==28){ float gd=step(0.3,vCol.r-vCol.b); em=vec3(1.0,0.78,0.3)*gd*pow(0.5+0.5*sin(q.x*0.45-uT*1.5),10.0)*0.6+vec3(0.25,0.45,1.0)*pow(fres,1.8)*0.4; }
+    else if(fx==29){ em=vec3(1.0,0.15,0.2)*pow(fres,2.0)*0.55+vec3(1.0,0.4,0.4)*pow(0.5+0.5*sin(vSk.x*0.6-uT*3.0),20.0)*smoothstep(0.2,0.0,abs(cos(vSk.y)))*0.8; }
+    else if(fx==30){ float w=0.5+0.5*sin(q.x*0.5-uT*1.2+cos(vSk.y)*2.0); em=vec3(1.0,0.7,0.5)*pow(fres,1.8)*0.4+vec3(1.0,0.95,0.9)*pow(w,14.0)*0.4; }
+    else if(fx==31){ float cr=fbm(q*0.9); float fl=fbm(q*0.5+vec2(uT*0.8,0.0)); em=mix(vec3(1.0,0.25,0.0),vec3(1.0,0.7,0.1),fl)*smoothstep(0.05,0.0,abs(cr-0.5))*(0.9+fl*1.2)+vec3(1.0,0.35,0.05)*pow(fres,1.6)*0.35; }
     else
 #endif
     { em=vCol*fres*0.2+vec3(0.55,0.65,0.8)*pow(fres,2.2)*0.14; }

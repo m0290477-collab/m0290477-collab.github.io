@@ -570,9 +570,9 @@ export function sanitizeSkin(d) {
   const o = { k: "skin", i: 0, p: 0, c: ["#18c964", "#0b7a3b", "#b8ffcf"], e: 0, t: 0, n: 0 };
   if (!d || typeof d !== "object") return o;
   if (d.k === "flag" || d.k === "skin" || d.k === "custom") o.k = d.k;
-  o.i = Math.max(0, Math.min(400, d.i | 0)); o.p = Math.max(0, Math.min(11, d.p | 0));
+  o.i = Math.max(0, Math.min(400, d.i | 0)); o.p = Math.max(0, Math.min(15, d.p | 0));
   if (Array.isArray(d.c)) o.c = d.c.slice(0, 3).map((h) => (typeof h === "string" && /^#[0-9a-fA-F]{6}$/.test(h) ? h : "#18c964"));
-  o.e = Math.max(0, Math.min(6, d.e | 0)); o.t = Math.max(0, Math.min(6, d.t | 0)); o.n = Math.max(0, Math.min(9, d.n | 0));
+  o.e = Math.max(0, Math.min(11, d.e | 0)); o.t = Math.max(0, Math.min(12, d.t | 0)); o.n = Math.max(0, Math.min(19, d.n | 0));
   if (typeof d.av === "string" && /^(p([0-9]|1[0-9]|2[0-3])|f\d{1,3})$/.test(d.av)) o.av = d.av; o.fr = Math.max(0, Math.min(14, d.fr | 0)); // profile avatar + frame (HUD rows)
   return o;
 }

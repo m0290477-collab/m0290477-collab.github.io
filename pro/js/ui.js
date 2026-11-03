@@ -1,14 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=anim1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=anim1";
-import { WORLDS, worldAsset } from "./worlds.js?v=anim1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=anim1";
-import { haptic } from "./audio.js?v=anim1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=anim1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=anim1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=anim1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=anim1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=lk1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=lk1";
+import { WORLDS, worldAsset } from "./worlds.js?v=lk1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=lk1";
+import { haptic } from "./audio.js?v=lk1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=lk1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=lk1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=lk1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=lk1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -416,25 +416,37 @@ export class UI {
   // ---------- locker ----------
   renderCustom() {
     const p = this.p, S = this.S, el = $("c-content"); this.coins(p.coins);
-    const tab = this.cTab; let h = "";
-    const card = (i) => { const s = SKINS[i], ok = S.unlocked("skin", i), on = p.skin.k === "skin" && p.skin.i === i, sel = this.sel && this.sel.k === "skin" && this.sel.i === i;
-      return `<button class="item r-${s.rar} ${on ? "on" : ""} ${sel ? "sel" : ""} ${ok ? "" : "lock"}" data-k="skin" data-v="${i}"><div class="sw" style="background:${swatchCss({ k: "skin", i })}"></div><span class="rar ${s.rar} rtag">${t("rar_" + s.rar)}</span>${ok ? "" : `<span class="lkic">${IC.lock}</span>`}<b>${esc(skinName(i))}</b><small>${on ? t("equipped") : ok ? t("equip") : s.src ? this.srcText(i) : t("lockedLv", { n: s.lv })}</small></button>`; };
-    if (tab === "legend") h = `<div class="grid">` + SKINS.map((s, i) => (s.fx ? card(i) : "")).join("") + `</div>`;
-    else if (tab === "skins") h = `<div class="grid">` + SKINS.map((s, i) => (s.fx ? "" : card(i))).join("") + `</div>`;
-    else if (tab === "flags") {
-      const q = this.flagQ.toLowerCase(); const list = FLAGS.filter((f) => !q || flagName(f, LANG).toLowerCase().includes(q) || f.en.toLowerCase().includes(q) || f.c.toLowerCase() === q);
+    const tab = this.cTab; let h = ""; const NEWSK = 51; // lk1: skins from this index on are new
+    const ok_ = (i) => S.unlocked("skin", i);
+    const st = (on, ok, lockTxt) => on ? `<small class="st on">${IC.check || "✓"} ${t("equipped")}</small>` : ok ? `<small class="st">${t("equip")}</small>` : `<small class="st lk">${IC.lock}<span>${lockTxt}</span></small>`;
+    const card = (i) => { const s = SKINS[i], ok = ok_(i), on = p.skin.k === "skin" && p.skin.i === i, sel = this.sel && this.sel.k === "skin" && this.sel.i === i;
+      return `<button class="item lk2 r-${s.rar} ${on ? "on" : ""} ${sel ? "sel" : ""} ${ok ? "" : "lock"}" data-k="skin" data-v="${i}"><div class="sw" style="background:${swatchCss({ k: "skin", i })}">${i >= NEWSK ? `<span class="nw">${t("lk_new")}</span>` : ""}</div><div class="meta"><b>${esc(skinName(i))}</b><i class="rd ${s.rar}" title="${t("rar_" + s.rar)}"></i></div>${st(on, ok, s.src ? this.srcText(i) : t("lockedLv", { n: s.lv }))}</button>`; };
+    const head = (title, own, tot, chips) => `<div class="lk-head"><h4 class="sub">${title}</h4><span class="cnt"><b>${own}</b>/${tot}</span>${chips || ""}</div>`;
+    const fchips = (cur) => `<div class="lk-chips seg">` + ["all", "owned"].map((v) => `<button data-f="${v}" class="${cur === v ? "on" : ""}">${t("lk_" + v)}</button>`).join("") + `</div>`;
+    const flt = this.lkF || "all";
+    if (tab === "legend" || tab === "skins") {
+      let ids = SKINS.map((s, i) => i).filter((i) => (tab === "legend") === !!SKINS[i].fx);
+      if (tab === "skins") ids.sort((x, y) => SKINS[x].lv - SKINS[y].lv || x - y);
+      const own = ids.filter(ok_).length; if (flt === "owned") ids = ids.filter(ok_);
+      h = head(t(tab === "legend" ? "legendary" : "skins"), own, ids.length && flt === "owned" ? SKINS.filter((s) => (tab === "legend") === !!s.fx).length : ids.length, fchips(flt)) + `<div class="grid">` + ids.map(card).join("") + `</div>`;
+    } else if (tab === "flags") {
+      const q = this.flagQ.toLowerCase(); let list = FLAGS.filter((f) => !q || flagName(f, LANG).toLowerCase().includes(q) || f.en.toLowerCase().includes(q) || f.c.toLowerCase() === q);
+      if (flt === "owned") list = list.filter((f) => p.flags.includes(f.i));
       list.sort((a, b) => (p.flags.includes(b.i) - p.flags.includes(a.i)));
-      h = `<div class="searchbar"><input type="search" id="c-fq" placeholder="${t("search")}" value="${esc(this.flagQ)}" /><span class="fine">${p.flags.length}/${FLAGS.length}</span></div><div class="grid">` +
-        list.map((f) => { const own = p.flags.includes(f.i), on = p.skin.k === "flag" && p.skin.i === f.i; return `<button class="item ${on ? "on" : ""}" data-k="flag" data-v="${f.i}"><div class="sw" style="background:${swatchCss({ k: "flag", i: f.i })}"></div><b>${flagEmoji(f.c)} ${esc(flagName(f, LANG))}</b><small>${on ? t("equipped") : own ? t("equip") : "◆ " + FLAG_PRICE}</small></button>`; }).join("") + `</div>`;
+      h = head(t("flags"), p.flags.length, FLAGS.length, fchips(flt)) + `<div class="searchbar"><input type="search" id="c-fq" placeholder="${t("search")}" value="${esc(this.flagQ)}" /></div><div class="grid">` +
+        list.map((f) => { const own = p.flags.includes(f.i), on = p.skin.k === "flag" && p.skin.i === f.i; return `<button class="item lk2 ${on ? "on" : ""}" data-k="flag" data-v="${f.i}"><div class="sw" style="background:${swatchCss({ k: "flag", i: f.i })}"></div><div class="meta"><b>${flagEmoji(f.c)} ${esc(flagName(f, LANG))}</b></div>${on ? st(true) : own ? st(false, true) : `<small class="st buy"><span class="coin"></span>${FLAG_PRICE}</small>`}</button>`; }).join("") + `</div>`;
     } else if (tab === "editor") {
-      const c = p.custom; h = `<h4 class="sub">${t("pattern")}</h4><div class="pats">` + PATTERNS.map((pt, i) => `<button class="item ${c.p === i ? "on" : ""}" data-k="pat" data-v="${i}"><div class="sw" style="background:${swatchCss({ k: "custom", p: i, c: c.c })}"></div><b>${cap(pt)}</b></button>`).join("") + `</div>
+      const c = p.custom; h = head(t("pattern"), PATTERNS.length, PATTERNS.length) + `<div class="pats">` + PATTERNS.map((pt, i) => `<button class="item lk2 ${c.p === i ? "on" : ""}" data-k="pat" data-v="${i}"><div class="sw" style="background:${swatchCss({ k: "custom", p: i, c: c.c })}">${i >= 12 ? `<span class="nw">${t("lk_new")}</span>` : ""}</div><div class="meta"><b>${cap(pt)}</b></div></button>`).join("") + `</div>
+        <h4 class="sub">${t("lk_pal")}</h4><div class="pals">` + PALETTES.map((pl, i) => `<button class="pal" data-pal="${i}" aria-label="${t("lk_pal")} ${i + 1}">${pl.map((x) => `<i style="background:${x}"></i>`).join("")}</button>`).join("") + `</div>
         <div class="ed-row"><label>${t("color1")}<input type="color" data-ci="0" value="${c.c[0]}"></label><label>${t("color2")}<input type="color" data-ci="1" value="${c.c[1]}"></label><label>${t("color3")}<input type="color" data-ci="2" value="${c.c[2]}"></label>
         <button class="btn gold" id="c-useed">${p.skin.k === "custom" ? "✓ " + t("equipped") : t("equip")}</button></div>`;
-    } else if (tab === "eyes") h = `<div class="grid">` + EYES.map((e, i) => { const ok = S.unlocked("eye", i), on = p.eye === i; return `<button class="item ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="eye" data-v="${i}"><div class="emo">${eyeIcon(e)}</div><b>${cap(e.id)}</b><small>${on ? t("equipped") : ok ? t("equip") : "🔒 " + t("lockedLv", { n: e.lv })}</small></button>`; }).join("") + `</div>`;
-    else if (tab === "trails") h = `<div class="grid">` + TRAILS.map((tr, i) => { const ok = S.unlocked("trail", i), on = p.trail === i; return `<button class="item ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="trail" data-v="${i}"><div class="sw" style="background:${tr.c ? `radial-gradient(circle at 30% 50%, ${tr.c[0]} 0 3px, transparent 4px), radial-gradient(circle at 60% 40%, ${tr.c[1]} 0 2px, transparent 3px), radial-gradient(circle at 80% 60%, ${tr.c[0]} 0 2px, transparent 3px), #10131b` : "#10131b"}"></div><b>${cap(tr.id)}</b><small>${on ? t("equipped") : ok ? t("equip") : "🔒 " + t("lockedLv", { n: tr.lv })}</small></button>`; }).join("") + `</div>`;
-    else if (tab === "name") h = `<h4 class="sub">${t("nameColor")}</h4><div class="namecols">` + NAME_COLORS.map((c, i) => `<button data-k="nc" data-v="${i}" class="${p.nc === i ? "on" : ""}" style="background:${c}" aria-label="${c}"></button>`).join("") + `</div>`;
+    } else if (tab === "eyes") { const own = EYES.filter((e, i) => S.unlocked("eye", i)).length; h = head(t("eyes"), own, EYES.length) + `<div class="grid">` + EYES.map((e, i) => { const ok = S.unlocked("eye", i), on = p.eye === i; return `<button class="item lk2 ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="eye" data-v="${i}"><div class="sw eyesw">${eyeSvg(e)}${i >= 7 ? `<span class="nw">${t("lk_new")}</span>` : ""}</div><div class="meta"><b>${cap(e.id)}</b></div>${st(on, ok, t("lockedLv", { n: e.lv }))}</button>`; }).join("") + `</div>`; }
+    else if (tab === "trails") { const own = TRAILS.filter((e, i) => S.unlocked("trail", i)).length; h = head(t("trails"), own, TRAILS.length) + `<div class="grid">` + TRAILS.map((tr, i) => { const ok = S.unlocked("trail", i), on = p.trail === i; return `<button class="item lk2 ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="trail" data-v="${i}"><div class="sw trsw" style="${tr.c ? `--a:${tr.c[0]};--b:${tr.c[1]}` : ""}">${tr.c ? "<i></i><i></i><i></i><i></i><i></i>" : ""}${i >= 7 ? `<span class="nw">${t("lk_new")}</span>` : ""}</div><div class="meta"><b>${cap(tr.id)}</b></div>${st(on, ok, t("lockedLv", { n: tr.lv }))}</button>`; }).join("") + `</div>`; }
+    else if (tab === "name") h = head(t("nameColor"), NAME_COLORS.length, NAME_COLORS.length) + `<div class="ncprev"><b style="color:${NAME_COLORS[p.nc] || "#fff"}">${esc(p.name || "Player")}</b></div><div class="namecols">` + NAME_COLORS.map((c, i) => `<button data-k="nc" data-v="${i}" class="${p.nc === i ? "on" : ""}" style="background:${c}" aria-label="${c}"></button>`).join("") + `</div>`;
     el.innerHTML = h;
     el.querySelectorAll("[data-k]").forEach((b) => this.click(b, () => this.pick(b.dataset.k, +b.dataset.v), "tab"));
+    el.querySelectorAll("[data-f]").forEach((b) => this.click(b, () => { this.lkF = b.dataset.f; this.renderCustom(); }, "tab"));
+    el.querySelectorAll("[data-pal]").forEach((b) => this.click(b, () => { p.custom.c = [...PALETTES[+b.dataset.pal]]; p.skin = { k: "custom", i: 0 }; S.save(); this.sel = null; this.renderCustom(); }, "tab"));
     const fq = $("c-fq"); if (fq) fq.addEventListener("input", (e) => { this.flagQ = e.target.value; const pos = e.target.selectionStart; this.renderCustom(); const n = $("c-fq"); n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} });
     el.querySelectorAll("[data-ci]").forEach((inp) => inp.addEventListener("input", (e) => { p.custom.c[+e.target.dataset.ci] = e.target.value; p.skin = { k: "custom", i: 0 }; S.save(); el.querySelectorAll(".pats .sw").forEach((sw, i) => (sw.style.background = swatchCss({ k: "custom", p: i, c: p.custom.c }))); this.sel = null; this.renderInfo(); this.updateShow(); }));
     const ue = $("c-useed"); if (ue) this.click(ue, () => { p.skin = { k: "custom", i: 0 }; S.save(); this.sel = null; this.renderCustom(); });
@@ -445,7 +457,7 @@ export class UI {
   renderInfo() {
     const p = this.p, S = this.S, d = this.sel || this.app.game.mySkin(); let h = "";
     if (d.k === "skin") { const s = SKINS[d.i], ok = S.unlocked("skin", d.i), on = p.skin.k === "skin" && p.skin.i === d.i, price = S.legendPrice(d.i), L = LEGEND[s.fx];
-      h = `<span class="rar ${s.rar}">${t("rar_" + s.rar)}</span><b>${esc(skinName(d.i))}</b>${L ? `<p>${t("legendPerks")}</p>` : ""}`;
+      h = `<span class="rar ${s.rar}">${t("rar_" + s.rar)}</span><b>${esc(skinName(d.i))}</b>${L ? `<div class="perks">${["lk_shader", "lk_trail", "lk_death", "lk_idle"].map((k) => `<span>${t(k)}</span>`).join("")}</div>` : `<p>${t("rar_" + s.rar)} · ${t("skins")}</p>`}`;
       h += on ? `<button class="btn ghost wide" disabled>✓ ${t("equipped")}</button>` : ok ? `<button class="btn gold wide" id="ci-eq">${t("equip")}</button>` : price ? `<button class="btn gold wide" id="ci-buy">${t("buy")} · ◆ ${fmtNum(price)}</button>` : `<p>${IC.lock} ${s.src ? this.srcText(d.i) : t("lockedLv", { n: s.lv })}</p>`; }
     else if (d.k === "flag") h = `<span class="rar rare">${t("rar_rare")}</span><b>${flagEmoji(FLAGS[d.i].c)} ${esc(flagName(FLAGS[d.i], LANG))}</b>`;
     else h = `<span class="rar epic">${t("rar_epic")}</span><b>${t("custom")}</b>`;
@@ -465,7 +477,7 @@ export class UI {
   }
   renderPresets() {
     const p = this.p, box = $("c-presets");
-    box.innerHTML = p.presets.map((pr, i) => pr ? `<div class="pre full"><div class="sw" style="background:${swatchCss(pr.skin.k === "custom" ? { k: "custom", p: pr.custom.p, c: pr.custom.c } : pr.skin)}"></div><div class="pre-act"><button data-pl="${i}">${t("load")}</button><button data-ps="${i}">${t("save")}</button></div></div>` : `<button class="pre" data-ps="${i}">+ ${t("save")}</button>`).join("");
+    box.innerHTML = p.presets.map((pr, i) => `<div class="pre2 ${pr ? "full" : ""}"><div class="pre-sw" style="${pr ? `background:${swatchCss(pr.skin.k === "custom" ? { k: "custom", p: pr.custom.p, c: pr.custom.c } : pr.skin)}` : ""}"><span>${i + 1}</span></div><div class="pre-act">${pr ? `<button data-pl="${i}">${t("load")}</button>` : ""}<button data-ps="${i}" class="${pr ? "" : "only"}">${pr ? t("save") : "+ " + t("save")}</button></div></div>`).join("");
     box.querySelectorAll("[data-ps]").forEach((b) => this.click(b, () => { p.presets[+b.dataset.ps] = { skin: { ...p.skin }, custom: { p: p.custom.p, c: [...p.custom.c] }, eye: p.eye, trail: p.trail, nc: p.nc }; this.S.save(); this.toast("✓ " + t("save"), "good"); this.checkAch(); this.renderPresets(); }));
     box.querySelectorAll("[data-pl]").forEach((b) => this.click(b, () => { const pr = p.presets[+b.dataset.pl]; if (!pr) return; Object.assign(p, { skin: { ...pr.skin }, custom: { p: pr.custom.p, c: [...pr.custom.c] }, eye: pr.eye, trail: pr.trail, nc: pr.nc }); this.S.save(); this.sel = null; this.renderCustom(); }));
   }
@@ -705,4 +717,6 @@ export class UI {
     this.coins(this.p.coins);
   }
 }
+function eyeSvg(e) { const one = e.n === 1, r = 9 * e.s, pr = r * e.p, eye = (cx) => `<circle cx="${cx}" cy="20" r="${r}" fill="${e.ec}" stroke="rgba(0,0,0,.35)" stroke-width="1.2"/>${e.id === "viper" ? `<ellipse cx="${cx}" cy="20" rx="${pr * 0.45}" ry="${r * 0.82}" fill="${e.pc}"/>` : `<circle cx="${cx + 1.5}" cy="21" r="${pr}" fill="${e.pc}"/>`}<circle cx="${cx - r * 0.3}" cy="${20 - r * 0.35}" r="${Math.max(1.4, r * 0.18)}" fill="#fff" opacity=".85"/>${e.lid ? `<path d="M${cx - r - 1} 20 A${r + 1} ${r + 1} 0 0 1 ${cx + r + 1} 20 Z" fill="#2a3a2a"/>` : ""}`;
+  return `<svg viewBox="0 0 80 40" class="eyeart ${e.glow ? "glow" : ""}" style="--g:${e.pc}">${one ? eye(40) : eye(27) + eye(53)}</svg>`; }
 function eyeIcon(e) { return { classic: "👀", cute: "🥺", fierce: "😠", cyber: "🤖", sleepy: "😪", cyclops: "👁️", demon: "😈" }[e.id] || "👀"; }
