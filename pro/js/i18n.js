@@ -284,6 +284,8 @@ const S = {
   pu_7: ["Dash", "اندفاع", "Atılma", "Ruée", "Embestida", "डैश"], pu_9: ["Giant", "عملاق", "Dev", "Géant", "Gigante", "विशाल"], pu_10: ["Food Rain", "مطر الطعام", "Yem Yağmuru", "Pluie de nourriture", "Lluvia de comida", "भोजन वर्षा"],
   ev_rain: ["Golden food rain!", "مطر طعام ذهبي!", "Altın yem yağmuru!", "Pluie dorée !", "¡Lluvia dorada!", "सुनहरी भोजन वर्षा!"],
   ev_meteor: ["Meteor shower! Watch the red circles", "زخة نيازك! انتبه للدوائر الحمراء", "Meteor yağmuru! Kırmızı dairelere dikkat", "Pluie de météores ! Gare aux cercles rouges", "¡Lluvia de meteoritos! Cuidado con los círculos rojos", "उल्का वर्षा! लाल घेरों से बचें"],
+  ev_drops: ["Power-up drops! Grab them", "إسقاط قوى! التقطها", "Güç yağmuru! Topla", "Pluie de bonus ! Attrape-les", "¡Lluvia de poderes! Agárralos", "पावर-अप बारिश! पकड़ो"],
+  evS_drops: ["Power drops", "إسقاط قوى", "Güç yağmuru", "Pluie de bonus", "Lluvia de poderes", "पावर-अप बारिश"],
   ev_bounty: ["Golden bounty on {n}!", "مكافأة ذهبية على {n}!", "{n} için altın ödül!", "Prime dorée sur {n} !", "¡Recompensa dorada por {n}!", "{n} पर सुनहरा इनाम!"],
   ev_bountyMe: ["You are the golden bounty: survive!", "أنت المكافأة الذهبية: انجُ!", "Altın ödül sensin: hayatta kal!", "Vous êtes la prime : survivez !", "¡Eres la recompensa: sobrevive!", "आप सुनहरा इनाम हैं: बचे रहें!"],
   bountyClaimed: ["{a} claimed the bounty on {b}", "{a} حصل على مكافأة {b}", "{a}, {b} ödülünü aldı", "{a} a pris la prime de {b}", "{a} cobró la recompensa de {b}", "{a} ने {b} का इनाम लिया"],

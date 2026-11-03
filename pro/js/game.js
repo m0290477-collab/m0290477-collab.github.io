@@ -1,23 +1,23 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=fit1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=fit1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=fit1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=fit1";
-import { NetBackend } from "./net.js?v=fit1";
-import { t, fmtNum } from "./i18n.js?v=fit1";
-import { haptic } from "./audio.js?v=fit1";
-import { rankOf, rpDelta } from "./profile.js?v=fit1";
-import { Replay } from "./replay.js?v=fit1";
-import { emit } from "./events.js?v=fit1"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=drops1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=drops1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=drops1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=drops1";
+import { NetBackend } from "./net.js?v=drops1";
+import { t, fmtNum } from "./i18n.js?v=drops1";
+import { haptic } from "./audio.js?v=drops1";
+import { rankOf, rpDelta } from "./profile.js?v=drops1";
+import { Replay } from "./replay.js?v=drops1";
+import { emit } from "./events.js?v=drops1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
 export const EMOTES = ["👋", "😂", "😡", "🔥", "👍", "GG"];
 // arena events allowed per mode (zen/koth: harmless gold rain only; boss: none)
-const MODE_EVENTS = { classic: true, time: true, online: true, survival: ["rain", "meteor"], zen: ["rain"], br: ["rain", "bounty"], team: ["rain", "bounty"], koth: ["rain"], boss: [] };
+const MODE_EVENTS = { classic: true, time: true, online: true, survival: ["rain", "drops"], zen: ["rain"], br: ["rain", "bounty"], team: ["rain", "bounty"], koth: ["rain"], boss: [] };
 export const MODES = {
   // slither-scale arenas (~3.4x the area of the first release); food scales with area in the sim, bots scale here
   classic: { bots: 30, R: 240 }, time: { bots: 26, R: 205, dur: 180 }, survival: { bots: 14, R: 200 }, zen: { bots: 16, R: 200 },
@@ -217,7 +217,7 @@ export class Game {
     if (e.ph === "start") {
       this.evNow = { k: e.k, until: performance.now() + (e.d || 12) * 1000, id: e.id || 0 };
       if (e.k === "rain") { this.hud.banner("✨ " + t("ev_rain"), 2200); A.audio.play("event"); }
-      if (e.k === "meteor") { this.hud.banner("☄ " + t("ev_meteor"), 2400); A.audio.play("siren"); }
+      if (e.k === "drops") { this.hud.banner("🎁 " + t("ev_drops"), 2400); }
       if (e.k === "bounty") { const b = this.findSnake(e.id); if (b) b.bounty = true; if (me && e.id === me.id) this.hud.banner("💰 " + t("ev_bountyMe"), 2400); else this.hud.banner("💰 " + t("ev_bounty", { n: b ? b.name : "?" }), 2400); A.audio.play("event"); }
       this.hud.modeHud(this.modeHudData());
     } else if (e.ph === "claim") {

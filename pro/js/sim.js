@@ -70,7 +70,7 @@ export const PU_SVG = [
 ];
 export const PU_COL = ["#d49ab6", "#4fc3ff", "#ffe14f", "#ffa13d", "#c6b8ff", "#9ff3ff", "#5dffb0", "#00ffd5", "#eef2ff", "#ff5a36", "#c3ff3d"];
 // arena events: golden food rain, meteor shower (warned impact circles), golden bounty bot
-export const EVENTS = ["rain", "meteor", "bounty"];
+export const EVENTS = ["rain", "drops", "bounty"]; // drops1: meteor shower removed -> power-up drops
 export const GOLD_FC = 12; // food colour index 12 = gold (both palettes carry it)
 export const angDiff = (a, b) => { let d = a - b; d -= Math.round(d / 6.283185307179586) * 6.283185307179586; return d; };
 const TAU = Math.PI * 2;
@@ -434,9 +434,8 @@ export class Sim {
       else if (e.k === "rain") { e.acc += dt; while (e.acc >= 0.2) { e.acc -= 0.2; // gold orbs land around every player (and a few anywhere)
           for (const h of this.humansAlive()) for (let q = 0; q < 3; q++) { const a = h.a + (this.rand() - 0.5) * 4, d = 4 + this.rand() * 26; if (this.fCount < this.FM - 80) this.spawnFood(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d, 4.5 + this.rand() * 2, GOLD_FC); }
           for (let q = 0; q < 2; q++) { const [x, y] = this.randPos(this.R - 4); if (this.fCount < this.FM - 80) this.spawnFood(x, y, 4.5, GOLD_FC); } } }
-      else if (e.k === "meteor") { e.acc += dt; while (e.acc >= 0.75) { e.acc -= 0.75; // warned impact circles near players, preferring the path ahead
-          for (const h of this.humansAlive()) { const a = h.a + (this.rand() - 0.5) * 2.4, d = 7 + this.rand() * 20; this.addMeteor(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d); }
-          const [x, y] = this.randPos(this.R * 0.9); this.addMeteor(x, y); } }
+      else if (e.k === "drops") { e.acc += dt; while (e.acc >= 1.6) { e.acc -= 1.6; // drops1: power-ups land near every player (never harmful)
+          if (this.powerups && this.pus.length < (this.puCap || 40) + 10) for (const h of this.humansAlive()) { for (let tr = 0; tr < 6; tr++) { const a = h.a + (this.rand() - 0.5) * 3, d = 9 + this.rand() * 22, x = h.x + Math.cos(a) * d, y = h.y + Math.sin(a) * d; if (Math.hypot(x, y) < this.R - 6 && this.puFree(x, y)) { this.spawnPu(undefined, x, y).life = 20; break; } } } } }
       else if (e.k === "bounty") { const b = this.byId.get(e.id); if (!b || !b.alive) { this.evt = null; this.evtNext = 50 + this.rand() * 30; } }
     }
     for (let i = this.mets.length - 1; i >= 0; i--) { const M = this.mets[i]; M.t -= dt; if (M.t > 0) continue; this.mets.splice(i, 1); this.impact(M); }

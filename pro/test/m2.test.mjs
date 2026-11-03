@@ -27,12 +27,12 @@ const run = (S, sec) => { for (let i = 0; i < sec * 60; i++) S.step(null); };
   a.vk = 0.0001; b.vk = 0.0001; S.addMeteor(a.x, a.y); S.addMeteor(b.x, b.y); let cause = -1; for (let i = 0; i < 150; i++) { S.step(null); for (let j = 0; j < S.evDie.length; j += 3) if (S.evDie[j] === a.id) cause = S.evDie[j + 2]; S.drain(); }
   ok(!a.alive && cause === 6, "meteor kills (cause 6)"); ok(b.alive && b.pu[PU.SHIELD] === 0, "shield absorbs a meteor");
 }
-{ // events cycle: rain drops gold near the human, meteor + bounty run, bounty claim announced
+{ // events cycle: rain drops gold near the human, power-up drops + bounty run (drops1: meteor shower removed), bounty claim announced
   const S = new Sim({ dt: 1 / 60, R: 200, seed: 8, /* long1: seed 9 now starts rain as the 3rd event, so the loop exits before any rain gold; seed 8 rolls all three with rain first */  powerups: false, events: true, evtFirst: 1 }); const me = S.addSnake("Me", {}, { pos: [0, 0], m: 60 }); me.god = true;
   for (let i = 0; i < 12; i++) S.addSnake("Bot" + i, {}, { bot: true, m: 80 + i * 10, diff: 1 });
-  const seen = new Set(); let gold = 0, mets = 0, claim = null;
+  const seen = new Set(); let gold = 0, mets = 0, drops = 0, claim = null; S.powerups = true; S.puTarget = 0; S.puNear = 0;
   for (let i = 0; i < 60 * 400 && seen.size < 3; i++) { S.step(null); for (const e of S.evEvt) { if (e.ph === "start") seen.add(e.k); if (e.ph === "claim") claim = e; if (e.k === "bounty" && e.ph === "start") { const bb = S.byId.get(e.id); if (bb) S.kill(bb, me.id, 2); } }
-    for (const fi of S.evSpawn) if (S.fc[fi] === GOLD_FC) gold++; mets += S.evMet.length; S.drain(); }
-  ok(seen.has("rain") && gold > 50, `gold rain (${gold} gold orbs)`); ok(seen.has("meteor") && mets > 10, `meteor shower (${mets} meteors)`); ok(seen.has("bounty") && claim && claim.by === me.id, "bounty started and claimed by the killer");
+    for (const fi of S.evSpawn) if (S.fc[fi] === GOLD_FC) gold++; mets += S.evMet.length; if (S.evt && S.evt.k === "drops") drops += S.evPuNew.length; S.drain(); }
+  ok(seen.has("rain") && gold > 50, `gold rain (${gold} gold orbs)`); ok(seen.has("drops") && drops >= 5 && mets === 0, `power-up drops (${drops} drops, ${mets} meteors)`); ok(seen.has("bounty") && claim && claim.by === me.id, "bounty started and claimed by the killer");
 }
 console.log(fail ? `${fail} FAILED` : "ALL PASS"); process.exit(fail ? 1 : 0);

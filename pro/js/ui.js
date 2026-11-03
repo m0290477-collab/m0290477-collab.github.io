@@ -1,14 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=fit1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=fit1";
-import { WORLDS, worldAsset } from "./worlds.js?v=fit1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=fit1";
-import { haptic } from "./audio.js?v=fit1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=fit1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=fit1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=fit1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=fit1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=drops1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=drops1";
+import { WORLDS, worldAsset } from "./worlds.js?v=drops1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=drops1";
+import { haptic } from "./audio.js?v=drops1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=drops1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=drops1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=drops1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=drops1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -81,7 +81,7 @@ export class Hud {
     if (d && d.kind === "boss") h = `<div class="boss-bar"><b>LEVIATHAN · ${t("phase")} ${d.phase}</b><div class="hb">${Array.from({ length: d.max }, (_, i) => `<i class="${i >= d.hp ? "gone" : ""}"></i>`).join("")}</div><small>${t("livesN", { n: d.lives })} · ${t("bossTip")}</small></div>`;
     if (d && d.kind === "zen") h = `<div class="mode-pill zen">☯ ${t("zenNoDeath")}</div>`;
     if (d && d.kind === "team") h += `<div class="mode-pill">${t("teamSafe")}</div>`;
-    if (d && d.ev) h += `<div class="mode-pill ev ev-${d.ev.k}">${d.ev.k === "rain" ? "✨ " + t("evS_rain") : d.ev.k === "meteor" ? "☄ " + t("evS_meteor") : "💰 " + t("evS_bounty") + " · " + esc(d.ev.name || "")}</div>`;
+    if (d && d.ev) h += `<div class="mode-pill ev ev-${d.ev.k}">${d.ev.k === "rain" ? "✨ " + t("evS_rain") : d.ev.k === "drops" ? "🎁 " + t("evS_drops") : "💰 " + t("evS_bounty") + " · " + esc(d.ev.name || "")}</div>`;
     this.modeTop = h; const el = $("h-mode"); el.innerHTML = h; el.dataset.k = ""; this.layout();
   }
   dot(s) { if (s.team === 0) return "#4da3ff"; if (s.team === 1) return "#ff4d5e"; const k = s.skin ? JSON.stringify(s.skin) : ""; this._dots = this._dots || new Map(); let c = this._dots.get(k); if (!c) { c = s.skin ? primaryColor(s.skin) : "#888"; this._dots.set(k, c); } return c; }
