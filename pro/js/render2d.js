@@ -2,10 +2,10 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG } from "./sim.js?v=aaa2a";
-import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=aaa2a";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=aaa2a";
-import { on as onEv } from "./events.js?v=aaa2a";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach } from "./sim.js?v=fix1";
+import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=fix1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=fix1";
+import { on as onEv } from "./events.js?v=fix1";
 const NO2 = 220;
 
 const TAU = Math.PI * 2;
@@ -135,7 +135,7 @@ export class Renderer2D {
     if (v.scene === "show") { this._show(v); return; }
     if (!v.food) return;
     const g = this.g, dt = Math.min(0.05, v.dt), t = v.t, W = this.W;
-    const k = v.cam.snap ? 1 : 1 - Math.exp(-dt * 9); this.camX += (v.cam.x - this.camX) * k; this.camY += (v.cam.y - this.camY) * k;
+    const k = v.cam.snap ? 1 : 1 - Math.exp(-dt * 16); this.camX += (v.cam.x - this.camX) * k; this.camY += (v.cam.y - this.camY) * k;
     this.scale += ((Math.min(this.w, this.h) / (24 * v.cam.zoom)) - this.scale) * k;
     let sx = 0, sy = 0; if (this.shakeA > 0.01) { sx = (Math.random() - 0.5) * this.shakeA * 8; sy = (Math.random() - 0.5) * this.shakeA * 8; this.shakeA *= Math.exp(-dt * 7); }
     g.setTransform(this.kx, 0, 0, this.ky, 0, 0);
@@ -177,8 +177,8 @@ export class Renderer2D {
       const n = bodyPoints(s, d.o, d.f, Math.max(0.3, r * 0.6), s.len, pts, 790);
       if (d.ox || d.oy) for (let j = 0; j < n; j++) { pts[j * 2] += d.ox; pts[j * 2 + 1] += d.oy; }
       this._fnMap.set(s, d.fn); if (d.me) { const H = this.meH || (this.meH = [0, 0, 0]); H[0] = pts[0]; H[1] = pts[1]; H[2] = r; d.fn(n >> 2, n, t, col); this.meC = css(Math.min(1, col[0] * 1.1 + 0.08), Math.min(1, col[1] * 1.1 + 0.08), Math.min(1, col[2] * 1.1 + 0.08)); this.meFa = n > 1 ? Math.atan2(pts[1] - pts[3], pts[0] - pts[2]) : 0; }
-      const P = s.pu || null, ghost = P && P[4] > 0, frozen = s.slow > 0, inv = d.inv;
-      d.alpha = d.alpha * (inv ? (d.me ? 0.42 : 0.12) : 1); g.globalAlpha = d.alpha * (ghost ? 0.5 : 1);
+      const P = s.pu || null, frozen = s.slow > 0, inv = false; // fix1: ghost / invisibility retired
+      d.alpha = d.alpha * (inv ? (d.me ? 0.42 : 0.12) : 1); g.globalAlpha = d.alpha;
       g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); for (let j = n - 1; j >= 0; j -= 2) { g.moveTo(pts[j * 2] + r * 1.45, pts[j * 2 + 1] + r * 0.45); g.arc(pts[j * 2] + r * 0.45, pts[j * 2 + 1] + r * 0.45, r * 1.02, 0, TAU); } g.fill(); // soft drop shadow
       if (n > 1) { g.strokeStyle = "rgba(0,0,0,0.38)"; g.lineWidth = r * 2.16; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.stroke(); } // dark rim so the body reads on any ground
       if (d.team) { g.strokeStyle = lin2css(d.team); g.lineWidth = r * 0.5; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.globalAlpha *= 0.55; g.lineWidth = r * 2.5; g.stroke(); g.globalAlpha = d.alpha; }
@@ -208,6 +208,7 @@ export class Renderer2D {
           const px = ex + Math.cos(la) * er * 0.38, py = ey + Math.sin(la) * er * 0.38; g.fillStyle = E.pc; g.beginPath(); g.arc(px, py, er * E.p, 0, TAU); g.fill(); g.fillStyle = "rgba(255,255,255,0.9)"; g.beginPath(); g.arc(px - er * 0.22, py - er * 0.25, er * 0.2, 0, TAU); g.fill(); }
         // power-up auras: shield bubble, magnet ring, speed streaks, x2 crown glow
         if (P) {
+          if (P[0] > 0) { const mr = magReach(s.r); g.strokeStyle = "rgba(235,225,205,0.9)"; g.lineWidth = 0.1; g.globalAlpha = 0.16 * d.alpha; g.beginPath(); g.arc(pts[0], pts[1], mr, 0, TAU); g.stroke(); } // fix1: magnet reach, one faint steady ring
           if (P[1] > 0) { g.strokeStyle = PU_COL[1]; g.lineWidth = 0.18; g.globalAlpha = 0.3; g.beginPath(); g.arc(pts[0], pts[1], r * 1.75, 0, TAU); g.stroke(); } // thin shield bubble; no big magnet / x2 / giant circles (the HUD chips show them)
 
 
@@ -218,7 +219,7 @@ export class Renderer2D {
         if (d.top1 && s.alive && !inv) { crown = d; d._x2 = pts[0]; d._y2 = pts[1]; d._r2 = r; }
         if (d.gold) { g.strokeStyle = "#ffd23a"; g.lineWidth = 0.25; g.globalAlpha = 0.45; g.beginPath(); g.arc(pts[0], pts[1], r * 2, 0, TAU); g.stroke(); g.globalAlpha = d.alpha; }
         if (d.emo) { g.save(); g.globalAlpha = 1; g.translate(pts[0], pts[1] - r * 2.2 - 2.2); g.scale(1 / S, 1 / S); g.fillStyle = "rgba(10,14,26,0.85)"; g.strokeStyle = "rgba(255,220,140,0.95)"; g.lineWidth = 2; g.beginPath(); g.arc(0, -16, 17, 0, TAU); g.fill(); g.stroke(); g.textAlign = "center"; g.textBaseline = "middle"; g.font = d.emo === "GG" ? "800 15px sans-serif" : "20px sans-serif"; g.fillStyle = "#ffd23a"; g.fillText(d.emo, 0, -15); g.restore(); }
-        if (d.name && !d.me && !inv) { g.save(); g.translate(pts[0], pts[1] - r * 2.3); g.scale(1 / S, 1 / S); g.font = "600 11.5px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.fillStyle = "rgba(0,0,0,0.5)"; g.fillText(d.name, 1, 1); g.globalAlpha = 0.85 * d.alpha; g.fillStyle = d.nc || "#fff"; g.fillText(d.name, 0, 0); g.restore(); } // own name tag hidden
+        if (d.name && !d.me && !inv && !v.hideNames) { g.save(); g.translate(pts[0], pts[1] - r * 2.3); g.scale(1 / S, 1 / S); g.font = "600 11.5px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.fillStyle = "rgba(0,0,0,0.5)"; g.fillText(d.name, 1, 1); g.globalAlpha = 0.85 * d.alpha; g.fillStyle = d.nc || "#fff"; g.fillText(d.name, 0, 0); g.restore(); } // own name tag hidden
       }
       g.globalAlpha = 1;
     }
@@ -257,7 +258,7 @@ export class Renderer2D {
       g.globalAlpha = a * 0.85; g.fillStyle = this.oC[w]; g.beginPath(); g.arc(x, y, S2[w] * (0.6 + 0.4 * a), 0, TAU); g.fill(); w++; }
     this.oN = w; g.globalAlpha = 1;
   }
-  _crown(g, x, y, r, t) { const s = Math.max(0.55, r * 0.8), by = y - r * 1.55 - s * 0.9 + Math.sin(t * 2.2) * 0.08 * s; g.save(); g.translate(x, by); g.scale(s, s);
+  _crown(g, x, y, r, t) { const s = Math.max(0.5, r * 0.7), by = y - r * HEAD_K - 0.12 - s * 0.5; /* fix1: centred on the head, resting just above it, no bob */ g.save(); g.translate(x, by); g.scale(s, s);
     g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); g.ellipse(0.06, 0.62, 1.0, 0.18, 0, 0, TAU); g.fill();
     g.fillStyle = "#e8b53a"; g.beginPath(); g.moveTo(-0.95, 0.5); g.lineTo(-1.0, -0.35); g.lineTo(-0.5, 0.05); g.lineTo(0, -0.6); g.lineTo(0.5, 0.05); g.lineTo(1.0, -0.35); g.lineTo(0.95, 0.5); g.closePath(); g.fill();
     g.fillStyle = "#ffe08a"; g.beginPath(); g.moveTo(-0.95, 0.5); g.lineTo(-1.0, -0.35); g.lineTo(-0.5, 0.05); g.lineTo(0, -0.6); g.lineTo(0, 0.5); g.closePath(); g.globalAlpha *= 0.55; g.fill(); g.globalAlpha /= 0.55;

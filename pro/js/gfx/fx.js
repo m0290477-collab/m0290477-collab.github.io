@@ -1,7 +1,7 @@
 // Soft epic VFX (aaa2): one pooled, instanced billboard-orb system + pooled soft ground rings + crown + light shaft.
 // Everything is allocated once; per frame only the live instances are written (compacted) and uploaded.
 // "Calm" (Reduce effects) keeps these soft, short, low-count and flash-free; no shake, no strobing.
-import * as THREE from "../vendor/three.module.min.js?v=aaa2a";
+import * as THREE from "../vendor/three.module.min.js?v=fix1";
 
 const NO = 480, NR = 12;
 const OVS = /* glsl */ `
@@ -11,12 +11,12 @@ void main(){ vC=aC; vUv=position.xy;
 const OFS = /* glsl */ `
 varying vec4 vC; varying vec2 vUv;
 void main(){ float d=length(vUv)*2.0; if(d>1.0) discard; float a=exp(-d*d*4.2)*(1.0-d); float core=exp(-d*d*28.0);
-  gl_FragColor=vec4(vC.rgb*(a+core*1.6), (a+core)*vC.a); }`;
+  gl_FragColor=vec4(vC.rgb*(a+core*0.35)*0.55, (a+core*0.35)*vC.a*0.7); }`; // fix1: soft, no hot core
 const RVS = /* glsl */ `attribute vec4 aP; attribute vec4 aC; varying vec4 vC; varying vec2 vUv; varying float vR;
 void main(){ vC=aC; vUv=position.xy; vR=aP.w; vec3 w=vec3(aP.x+position.x*aP.w, aP.y, aP.z+position.y*aP.w); gl_Position=projectionMatrix*viewMatrix*vec4(w,1.0); }`;
 const RFS = /* glsl */ `varying vec4 vC; varying vec2 vUv; varying float vR;
 void main(){ float r=length(vUv)*2.0; float w=clamp(0.9/max(vR,0.6),0.04,0.35); float e=smoothstep(1.0-w,1.0-w*0.3,r)*(1.0-smoothstep(1.0-w*0.15,1.0,r)); float fill=smoothstep(0.2,1.0,r)*0.18*(1.0-step(1.0,r));
-  float a=(e+fill)*vC.a; if(a<0.002) discard; gl_FragColor=vec4(vC.rgb*(e*1.2+fill), a); }`;
+  float a=(e+fill)*vC.a; if(a<0.002) discard; gl_FragColor=vec4(vC.rgb*(e*0.7+fill)*0.6, a*0.6); }`; // fix1: soft rings
 
 function quadGeo(n) {
   const g = new THREE.InstancedBufferGeometry(); const q = new THREE.PlaneGeometry(1, 1);
@@ -40,9 +40,9 @@ export class SoftFx {
     this.rgs = new THREE.Mesh(this.rgG, rm); this.rgs.frustumCulled = false; this.rgs.renderOrder = 4; this.group.add(this.rgs);
     this.rp = new Float32Array(NR * 3); this.rc = new Float32Array(NR * 3); this.rt = new Float32Array(NR).fill(1); this.rR = new Float32Array(NR); this.rd = new Float32Array(NR);
     // ---- crown (top-1) ----
-    const gold = new THREE.MeshStandardMaterial({ color: 0xffcf4a, metalness: 1, roughness: 0.22, emissive: 0x6a4000, emissiveIntensity: 0.5, envMapIntensity: 1.6, side: THREE.DoubleSide });
+    const gold = new THREE.MeshStandardMaterial({ color: 0xffcf4a, metalness: 1, roughness: 0.22, emissive: 0x3a2400, emissiveIntensity: 0.25, envMapIntensity: 1.0, side: THREE.DoubleSide });
     const cg = new THREE.Group(); const band = new THREE.Mesh(new THREE.CylinderGeometry(1, 0.92, 0.42, 20, 1, true), gold); cg.add(band);
-    const spk = new THREE.ConeGeometry(0.2, 0.62, 6); const gem = new THREE.MeshStandardMaterial({ color: 0xff3a5a, roughness: 0.1, metalness: 0.2, emissive: 0x8a0018, emissiveIntensity: 0.6 });
+    const spk = new THREE.ConeGeometry(0.2, 0.62, 6); const gem = new THREE.MeshStandardMaterial({ color: 0xff3a5a, roughness: 0.1, metalness: 0.2, emissive: 0x8a0018, emissiveIntensity: 0.15 });
     for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2, m = new THREE.Mesh(spk, gold); m.position.set(Math.cos(a) * 0.94, 0.46, Math.sin(a) * 0.94); cg.add(m);
       const b = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 6), i % 2 ? gem : gold); b.position.set(Math.cos(a) * 0.94, 0.8, Math.sin(a) * 0.94); cg.add(b); }
     cg.visible = false; this.crown = cg; this.group.add(cg); this.crownA = 0;
@@ -89,7 +89,7 @@ export class SoftFx {
     const hx = pts[0], hz = pts[1]; this.ring(hx, hz, g, 8, 0.85); this.ring(hx, hz, [1, 1, 1], 4.5, 0.55);
   }
   win(x, z) { this.shaftT = 0.0001; this.shaftX = x; this.shaftZ = z; this.shaft.visible = true; this.ring(x, z, [1.3, 1.0, 0.5], 12, 1.4); this.levelup(x, z, [1.2, 0.85, 0.3]); }
-  setCrown(x, z, y, r, on) { this.crownOn = on; if (on) { this.cx = x; this.cz = z; this.cy = y; this.cr = r; } }
+  setCrown(x, z, y, r, on) { this.crownOn = on; if (on) { if (this._cid !== undefined && Math.hypot(x - this.cx, z - this.cz) > 4) this._cwSnap = true; this._cid = 1; this.cx = x; this.cz = z; this.cy = y; this.cr = r; } }
   clear() { this.n = 0; this.rt.fill(1); this.shaftT = 0; this.shaft.visible = false; this.punch = 0; }
   // ---------- per frame ----------
   update(dt, t) {
@@ -116,7 +116,8 @@ export class SoftFx {
     this.rgG.instanceCount = nr; if (nr) { this.rgG.attributes.aP.needsUpdate = true; this.rgG.attributes.aC.needsUpdate = true; } this.rgs.visible = nr > 0;
     // crown: eases in/out, floats + slowly turns above the leader's head
     this.crownA += ((this.crownOn ? 1 : 0) - this.crownA) * (1 - Math.exp(-dt * 5));
-    const cw = this.crown; if (this.crownA > 0.02) { const s = Math.max(0.55, this.cr * 0.75) * (0.6 + 0.4 * this.crownA); cw.visible = true; cw.scale.setScalar(s); cw.position.set(this.cx, this.cy + s * 1.1 + Math.sin(t * 2.2) * 0.12 * s, this.cz); cw.rotation.y = t * 0.8; } else cw.visible = false;
+    // fix1: sits centred on the head top (no bob, no spin) and follows it tightly; snaps when it (re)appears
+    const cw = this.crown; if (this.crownA > 0.02) { const s = Math.max(0.42, this.cr * 0.55) * (0.7 + 0.3 * this.crownA), ty = this.cy + s * 0.24 + 0.04, k = !cw.visible || this._cwSnap ? 1 : 1 - Math.exp(-dt * 40); cw.visible = true; this._cwSnap = false; cw.scale.setScalar(s); cw.position.set(cw.position.x + (this.cx - cw.position.x) * k, cw.position.y + (ty - cw.position.y) * k, cw.position.z + (this.cz - cw.position.z) * k); cw.rotation.y = 0.31; } else { cw.visible = false; this._cwSnap = true; }
     // victory light shaft
     if (this.shaftT > 0) { this.shaftT += dt; const u = this.shaftT, a = Math.min(1, u * 1.6) * (u > 3.2 ? Math.max(0, 1 - (u - 3.2) / 0.8) : 1); this.shaft.material.uniforms.uA.value = a * 0.55; this.shaft.material.uniforms.uT.value = t; this.shaft.position.set(this.shaftX, 0, this.shaftZ); if (u > 4) { this.shaftT = 0; this.shaft.visible = false; } }
     this.punch *= Math.exp(-dt * 7);

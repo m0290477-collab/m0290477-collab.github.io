@@ -2,17 +2,19 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=aaa2a";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG } from "./sim.js?v=aaa2a";
+import * as THREE from "./vendor/three.module.min.js?v=fix1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach } from "./sim.js?v=fix1";
+const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
+function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D } from "./worlds.js?v=aaa2a";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=aaa2a";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=aaa2a";
-import { World, prefetchWorld } from "./gfx/env.js?v=aaa2a";
-import { Post } from "./gfx/post.js?v=aaa2a";
-import { Studio } from "./gfx/showcase.js?v=aaa2a";
-import { SoftFx } from "./gfx/fx.js?v=aaa2a";
-import { on as onEv } from "./events.js?v=aaa2a";
+import { WORLDS, W3D } from "./worlds.js?v=fix1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=fix1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=fix1";
+import { World, prefetchWorld } from "./gfx/env.js?v=fix1";
+import { Post } from "./gfx/post.js?v=fix1";
+import { Studio } from "./gfx/showcase.js?v=fix1";
+import { SoftFx } from "./gfx/fx.js?v=fix1";
+import { on as onEv } from "./events.js?v=fix1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -104,10 +106,10 @@ export class Renderer3D {
     return E;
   }
   _initFood() {
-    this.food = this._inst(this.scene, new THREE.IcosahedronGeometry(1, this.Q.food), new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x111111 }), MAX_FOOD, true); // calm1: lit, matte food (no overbright glow)
+    this.food = this._inst(this.scene, new THREE.IcosahedronGeometry(1, this.Q.food), new THREE.MeshLambertMaterial({ color: 0xffffff }), MAX_FOOD, true); // fix1: no emissive; calm1: lit, matte food (no overbright glow)
     this.halo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(255,255,255,0.95)"], [0.25, "rgba(255,255,255,0.35)"], [1, "rgba(255,255,255,0)"]]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false }), MAX_FOOD, true);
     this.halo.renderOrder = 3;
-    this.gem = this._inst(this.scene, new THREE.OctahedronGeometry(1, 0), this.Q.mat === "physical" ? new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.04, metalness: 0.2, clearcoat: 1, iridescence: 0.8, emissive: 0xffffff, emissiveIntensity: 0.25, flatShading: true, envMapIntensity: 2 }) : new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x444444, flatShading: true }), MAX_GEM, true);
+    this.gem = this._inst(this.scene, new THREE.OctahedronGeometry(1, 0), this.Q.mat === "physical" ? new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45, metalness: 0.1, flatShading: true, envMapIntensity: 0.6 }) : new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }), MAX_GEM, true);
   }
   _initParticles() {
     const N = 2600; this.pN = N; this.pMax = this.Q.particles;
@@ -153,6 +155,8 @@ export class Renderer3D {
     beam.position.y = 15; this.hillBeam = beam; this.hillRing = hr; this.hillDisc = hd; hd.material.opacity = 0.2; this.hill.add(hr, hd, beam); hr.position.y = 0.08; hd.position.y = 0.05; this.hill.visible = false; this.scene.add(this.hill);
     this.cores = this._inst(this.scene, new THREE.IcosahedronGeometry(1, 2), new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }), 16, true);
     this.coreHalo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(255,80,60,1)"], [0.4, "rgba(255,40,40,0.4)"], [1, "rgba(255,0,0,0)"]]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }), 16, false);
+    // fix1: magnet reach = one thin, faint, steady ring on the ground around the head (normal blending, no glow)
+    this.magRing = this._inst(this.scene, new THREE.RingGeometry(0.965, 1, 64).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xe8dcc4, transparent: true, opacity: 0.22, depthWrite: false }), MAXS, false);
     this.teamRing = this._inst(this.scene, new THREE.RingGeometry(0.75, 1, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false, toneMapped: false }), MAXS, true);
     this.mirrorCam = new THREE.PerspectiveCamera(); this.mirrorMat = new THREE.Matrix4();
     this._initPu(); this._initMet(); this._initEmo();
@@ -216,8 +220,8 @@ export class Renderer3D {
       const p = L[i], k = p.k, mesh = this.puMesh[k]; if (!mesh || cnt[k] >= 12) continue; const c = _c.set(PU_COL[k]);
       const age = p.b === undefined || v.tick === undefined ? 1 : Math.min(1, (v.tick - p.b) / 40); const sc = 0.72 * (0.3 + 0.7 * Math.min(1, age + 0.3)), hgt = 1.1 + Math.sin(t * 1.8 + p.id) * 0.18; // small in-world crystal, gentle bob
       _q.setFromEuler(_e.set(0.35 * Math.sin(t + p.id), t * 1.8 + p.id, 0)); _m2.compose(_v.set(p.x, hgt, p.y), _q, _s.set(sc, sc, sc)); _m2.toArray(mesh.instanceMatrix.array, cnt[k] * 16); cnt[k]++;
-      const o = nh * 16, hs = 2.6 + Math.sin(t * 2.5 + p.id) * 0.3; HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 3] = 0; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 7] = 0; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 11] = 0; HM[o + 12] = p.x; HM[o + 13] = hgt; HM[o + 14] = p.y; HM[o + 15] = 1;
-      HC[nh * 3] = c.r * 0.6; HC[nh * 3 + 1] = c.g * 0.6; HC[nh * 3 + 2] = c.b * 0.6;
+      const o = nh * 16, hs = 1.7; /* fix1: steady, small, dim halo (no pulse) */ HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 3] = 0; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 7] = 0; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 11] = 0; HM[o + 12] = p.x; HM[o + 13] = hgt; HM[o + 14] = p.y; HM[o + 15] = 1;
+      HC[nh * 3] = c.r * 0.25; HC[nh * 3 + 1] = c.g * 0.25; HC[nh * 3 + 2] = c.b * 0.25;
       _m2.makeTranslation(p.x, 0, p.y); _m2.toArray(PM, nh * 16); PC[nh * 3] = c.r; PC[nh * 3 + 1] = c.g; PC[nh * 3 + 2] = c.b;
       const sp = this.puSpr[nh]; sp.visible = true; if (sp.material.map !== this.puTex[k]) { sp.material.map = this.puTex[k]; sp.material.needsUpdate = true; } sp.position.set(p.x, hgt + 1.15, p.y); sp.scale.set(0.95, 0.95, 1); sp.material.opacity = 0.85;
       if (Math.random() < 0.06 && this.pMax) this.emit(p.x + (Math.random() - 0.5) * 1.6, 0.4, p.y + (Math.random() - 0.5) * 1.6, 0, 2 + Math.random() * 2, 0, [c.r, c.g, c.b], 0.9, 0.35, 1, -0.5);
@@ -359,7 +363,7 @@ export class Renderer3D {
       case "implode": for (let i = 0; i < 80; i++) { const a = Math.random() * 6.283, d = 8 + Math.random() * 6; this.emit(x + Math.cos(a) * d, 1 + Math.random() * 2, y + Math.sin(a) * d, -Math.cos(a) * d * 2.2, 0, -Math.sin(a) * d * 2.2, i % 2 ? c0 : c1, 0.45, 0.7, 0.2, 0); } this.ring(x, y, c0, 9); break;
     }
   }
-  ring(x, y, rgb, maxR = 8) { const m = this.rings.find((r) => !r.visible) || this.rings[0]; m.visible = true; m.userData.t = 0; m.userData.R = maxR; m.position.set(x, 0.15, y); m.material.color.setRGB(rgb[0] * 2.2, rgb[1] * 2.2, rgb[2] * 2.2); }
+  ring(x, y, rgb, maxR = 8) { const m = this.rings.find((r) => !r.visible) || this.rings[0]; m.visible = true; m.userData.t = 0; m.userData.R = maxR; m.position.set(x, 0.15, y); m.material.color.setRGB(rgb[0] * 0.9, rgb[1] * 0.9, rgb[2] * 0.9); } // fix1: soft, not neon
   clearFx() { for (const m of this.rings) { m.visible = false; m.userData.t = 1; } this.shakeA = 0; if (this.sfx) this.sfx.clear(); } // replay1
   shake(a) { if (this.juice && !this.reduceMotion && !this.calm) this.shakeA = Math.min(1.4, this.shakeA + a); }
   kick(ca, flashRgb, flashA = 0.18) { if (this.reduceMotion || this.calm) return; this.ca = Math.min(1.5, this.ca + ca); if (flashRgb) { this.flash.set(flashRgb[0], flashRgb[1], flashRgb[2], Math.max(this.flash.w, flashA)); } }
@@ -421,7 +425,7 @@ export class Renderer3D {
     const tph = (t * 0.45 + s.id * 0.37) % 1;
     if (tph < 0.1 && alpha > 0.9) { const ext = Math.sin((tph / 0.1) * Math.PI) * hr * 1.4, flick = Math.sin(t * 60) * 0.25, a = Math.atan2(fwz, fwx) + flick; const T2 = E.t.instanceMatrix.array, ti = cnt.t++;
       _q.setFromAxisAngle(_v.set(0, 1, 0), -a); _s.set(ext, hr * 0.9, hr * 0.9); _m.compose(_v2.set(hx + fwx * hr * 1.2, hy + r * 0.8 * alpha + bob + hr * 0.05, hz + fwz * hr * 1.2), _q, _s); _m.toArray(T2, ti * 16); }
-    d._hx = hx; d._hz = hz; d._hr = hr; d._n = n;
+    d._hx = hx; d._hz = hz; d._hr = hr; d._n = n; d._fx = fwx; d._fz = fwz;
     if (d.me && !show) { const H = this._meHead || (this._meHead = [0, 0, 0]); H[0] = hx; H[1] = hz; H[2] = hr; this._meCol = st.col; this._meFw = fwx; this._meFwz = fwz; if (d.boost && alpha > 0.5) { const tj = Math.max(1, n - 2); this.sfx.wake(pts[tj * 2], pts[tj * 2 + 1], st.col, r); } }
     // trails: legendary signature or equipped trail
     if (!show && this.pMax && alpha > 0.5) {
@@ -452,7 +456,7 @@ export class Renderer3D {
   _camera(v, dt) {
     const cam = this.cam, c = v.cam, zoom = c.zoom || 1, hgt = 17.5 * zoom, back = hgt * 0.68;
     const fov = 48 + (c.boost && !this.reduceMotion ? 8 : 0) + (c.fovAdd || 0) - (this.sfx ? this.sfx.punch * 4.5 : 0); if (Math.abs(cam.fov - fov) > 0.05) { cam.fov += (fov - cam.fov) * (1 - Math.exp(-dt * 6)); cam.updateProjectionMatrix(); this._ptScale(); }
-    const k = 1 - Math.exp(-dt * (c.snap ? 60 : 9));
+    const k = 1 - Math.exp(-dt * (c.snap ? 60 : 16)); // fix1: 9 -> 16, the view keeps up with a quick turn
     this.camLook.x += (c.x - this.camLook.x) * k; this.camLook.z += (c.y - this.camLook.z) * k;
     this.camPos.y += (hgt - this.camPos.y) * (1 - Math.exp(-dt * 3));
     // gameplay camera
@@ -482,7 +486,7 @@ export class Renderer3D {
     this.world.sky.position.copy(cam.position); const zk = Math.max(1, (v.cam.zoom || 1) * (far ? 1.6 : 1)); if (Math.abs((this._shZ || 0) - zk) > 0.05) { this._shZ = zk; const sc = this.sun.shadow.camera; sc.left = sc.bottom = -34 * zk; sc.right = sc.top = 34 * zk; sc.updateProjectionMatrix(); }
     this.sun.position.set(this.camLook.x + this.sunDir.x * 70, this.sunDir.y * 70, this.camLook.z + this.sunDir.z * 70); this.sun.target.position.set(this.camLook.x, 0, this.camLook.z);
     // snakes
-    const E = this.eyes, cnt = { e: 0, t: 0, h: 0 }; let ni = 0, ng = 0, nfx = 0, row = 0; const TR = this.teamRing.instanceMatrix.array, TRC = this.teamRing.instanceColor.array; let nt = 0;
+    const E = this.eyes, cnt = { e: 0, t: 0, h: 0 }; let ni = 0, ng = 0, nfx = 0, row = 0; const TR = this.teamRing.instanceMatrix.array, TRC = this.teamRing.instanceColor.array; let nt = 0; const MR = this.magRing.instanceMatrix.array; let nm = 0;
     for (const L of this.labels.values()) L.used = false; let ne = 0; let crown = null; this._pal = v.foodPal; this._eyeLook(v);
     for (const d of v.snakes) {
       if (row >= SHOW_ROW) break; const s = d.s; const hx0 = s.sx(d.o), hy0 = s.sy(d.o), dx0 = hx0 - vx, dz0 = hy0 - vz;
@@ -491,20 +495,21 @@ export class Renderer3D {
       const n = this._snake(d, row, slot, ghost, E, t, cnt, false); if (!n) continue; row++; if (ghost) ng++; else if (lf) nfx++; else ni++;
       if (d.top1 && d.s.alive && !d.inv) crown = d;
       if ((d.team || d.gold) && nt < MAXS) { const tc = d.gold ? GOLDC : d.team, rr = d._hr * (d.gold ? 3.2 + 0.3 * Math.sin(t * 6) : 2.3); _m.makeScale(rr, 1, rr).setPosition(d._hx, 0.07, d._hz); _m.toArray(TR, nt * 16); TRC[nt * 3] = tc[0] * 2; TRC[nt * 3 + 1] = tc[1] * 2; TRC[nt * 3 + 2] = tc[2] * 2; nt++; }
+      if (s.pu && s.pu[0] > 0 && s.alive && nm < MAXS) { const rr = magReach(s.r); _m.makeScale(rr, 1, rr).setPosition(d._hx, 0.06, d._hz); _m.toArray(MR, nm * 16); nm++; }
       if (d.emo && ne < this.emoSpr.length && !v.hideNames) { const sp = this.emoSpr[ne++], ti = d.emoI | 0; if (sp.material.map !== this.emoTex[ti]) { sp.material.map = this.emoTex[ti]; sp.material.needsUpdate = true; } const es = Math.max(3.4, d._hr * 3); sp.position.set(d._hx, d._hr * 2.6 + 1.0 + es * 0.75, d._hz - d._hr * 0.4); sp.scale.set(es, es, 1); sp.visible = true; }
       if (d.gold && this.pMax && Math.random() < 0.5) this.emit(d._hx + (Math.random() - 0.5) * d._hr * 3, d._hr * 2, d._hz + (Math.random() - 0.5) * d._hr * 3, 0, 1.5, 0, [1.6, 1.2, 0.3], 0.7, 0.3, 1, -0.3);
       if (d.name && !d.me && (Q.names > 1 || d.top) && !v.hideNames && !d.inv) { const L = this._label(s.id, d.name, d.nc || "#fff", d.me); L.sp.position.set(d._hx, d._hr * 2.6 + 1.0, d._hz - d._hr * 0.4); const sw = Math.max(5.5, d._hr * 4.5) * (d.me ? 1.05 : 0.9); L.sp.scale.set(sw, sw / 4, 1); L.sp.material.opacity = d.alpha ?? 1; L.sp.visible = true; }
     }
-    if (crown && !far) this.sfx.setCrown(crown._hx, crown._hz, crown._hr * 1.7 + 0.9, crown._hr, true); else this.sfx.setCrown(0, 0, 0, 0, false);
+    if (crown && !far) this.sfx.setCrown(crown._hx + (crown._fx || 0) * crown._hr * 0.3, crown._hz + (crown._fz || 0) * crown._hr * 0.3, crown._hr * 1.52, crown._hr, true); else this.sfx.setCrown(0, 0, 0, 0, false);
     for (const [id, L] of this.labels) if (!L.used) { this.scene.remove(L.sp); this.labels.delete(id); this.labelPool.push(L); }
     for (let i = ne; i < this.emoSpr.length; i++) this.emoSpr[i].visible = false;
-    this.snakes.commit(ni, nfx, ng); this._flushE(E, cnt); this._flush(this.teamRing, nt);
+    this.snakes.commit(ni, nfx, ng); this._flushE(E, cnt); this._flush(this.teamRing, nt); this._flush(this.magRing, nm);
     if (v.cam.title !== undefined) { this.food.count = this.halo.count = this.gem.count = 0; } else this._food(v, t, vx, vz, far ? 1e9 : vr2);
     this._modeFx(v, t); this._pus(v, t); this._meteors(v, t);
     if (this.pMax && v.rain) { const h = v.rain; for (let k = 0; k < 6; k++) { const a = Math.random() * 6.283, d = 3 + Math.random() * 16; this.emit(h.x + Math.cos(a) * d, 10 + Math.random() * 4, h.y + Math.sin(a) * d, 0, -18, 0, [0.8, 1.6, 0.3], 0.6, 0.35, 1, 0); } }
     if (this.pMax && v.goldRain) { const h = v.goldRain; for (let k = 0; k < 4; k++) { const a = Math.random() * 6.283, d = 2 + Math.random() * 28; this.emit(h.x + Math.cos(a) * d, 11 + Math.random() * 5, h.y + Math.sin(a) * d, 0, -16, 0, [1.8, 1.3, 0.3], 0.7, 0.4, 1, 0); } }
     this._particles(dt); this._bitsUpdate(dt); this.sfx.update(dt, t);
-    for (const rg of this.rings) if (rg.visible) { rg.userData.t += dt * 1.5; const u = rg.userData.t; if (u >= 1) { rg.visible = false; continue; } const s2 = 1 + (1 - Math.pow(1 - u, 3)) * rg.userData.R; rg.scale.set(s2, 1, s2); rg.material.uniforms.opacity.value = (1 - u) * 0.5; rg.material.uniforms.uS.value = s2; }
+    for (const rg of this.rings) if (rg.visible) { rg.userData.t += dt * 1.5; const u = rg.userData.t; if (u >= 1) { rg.visible = false; continue; } const s2 = 1 + (1 - Math.pow(1 - u, 3)) * rg.userData.R; rg.scale.set(s2, 1, s2); rg.material.uniforms.opacity.value = (1 - u) * (1 - u) * 0.32; rg.material.uniforms.uS.value = s2; }
     if (this.fxLight.intensity > 0.1) this.fxLight.intensity *= Math.exp(-dt * 6); else this.fxLight.intensity = 0;
     // post uniforms
     this.ca *= Math.exp(-dt * 5); this.flash.w *= Math.exp(-dt * 6); this.speed += ((v.cam.boost && !this.reduceMotion ? 1 : 0) - this.speed) * (1 - Math.exp(-dt * 5)); this.box += ((v.letterbox ? 1 : 0) - this.box) * (1 - Math.exp(-dt * 6));
@@ -534,25 +539,25 @@ export class Renderer3D {
     for (let i = 0; i < F.FM && nf < MAX_FOOD; i++) {
       if (!F.fa[i]) continue; const x = F.fx[i], y = F.fy[i], dx = x - vx, dz = y - vz; if (dx * dx + dz * dz > vr2) continue;
       const age = F.age ? F.age(i) : 1, grow = age < 1 ? age * age * (3 - 2 * age) : 1;
-      const val = F.fv[i], fr = (0.17 + Math.sqrt(val) * 0.12) * grow, bob = 0.42 + fr, cc = pal[F.fc[i] % pal.length];
+      const val = F.fv[i], fr = (0.11 + Math.sqrt(val) * 0.075) * grow, bob = fr * 0.9 + 0.06, c0 = pal[F.fc[i] % pal.length], cc = _mute(c0); // fix1: small, muted, resting on the ground
       const o = nf * 16;
-      if (val >= 4 && ng < MAX_GEM) { const go = ng * 16, gz = fr * 1.3; GM[go] = gc * gz; GM[go + 1] = 0; GM[go + 2] = -gs * gz; GM[go + 3] = 0; GM[go + 4] = 0; GM[go + 5] = gz * 1.5; GM[go + 6] = 0; GM[go + 7] = 0; GM[go + 8] = gs * gz; GM[go + 9] = 0; GM[go + 10] = gc * gz; GM[go + 11] = 0; GM[go + 12] = x; GM[go + 13] = bob + 0.2; GM[go + 14] = y; GM[go + 15] = 1;
+      if (val >= 4 && ng < MAX_GEM) { const go = ng * 16, gz = fr * 1.15; GM[go] = gc * gz; GM[go + 1] = 0; GM[go + 2] = -gs * gz; GM[go + 3] = 0; GM[go + 4] = 0; GM[go + 5] = gz * 1.5; GM[go + 6] = 0; GM[go + 7] = 0; GM[go + 8] = gs * gz; GM[go + 9] = 0; GM[go + 10] = gc * gz; GM[go + 11] = 0; GM[go + 12] = x; GM[go + 13] = bob + 0.08; GM[go + 14] = y; GM[go + 15] = 1;
         GC[ng * 3] = cc[0]; GC[ng * 3 + 1] = cc[1]; GC[ng * 3 + 2] = cc[2]; ng++; for (let q = 0; q < 16; q++) FM[o + q] = 0; FM[o + 15] = 1; }
       else { FM[o] = fr; FM[o + 5] = fr; FM[o + 10] = fr; FM[o + 1] = FM[o + 2] = FM[o + 3] = FM[o + 4] = FM[o + 6] = FM[o + 7] = FM[o + 8] = FM[o + 9] = FM[o + 11] = 0; FM[o + 12] = x; FM[o + 13] = bob; FM[o + 14] = y; FM[o + 15] = 1; }
       FC[nf * 3] = cc[0]; FC[nf * 3 + 1] = cc[1]; FC[nf * 3 + 2] = cc[2];
-      const hs = fr * (val >= 4 ? 6 : 4.4 + Math.sin(t * 4 + i * 1.7) * 0.6);
+      const hs = 0; // fix1: no halo sprites on food (no glow, no flicker)
       HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 3] = 0; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 7] = 0; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 11] = 0; HM[o + 12] = x; HM[o + 13] = bob; HM[o + 14] = y; HM[o + 15] = 1;
       HCc[nf * 3] = cc[0] * 0.5; HCc[nf * 3 + 1] = cc[1] * 0.5; HCc[nf * 3 + 2] = cc[2] * 0.5; nf++;
     }
     // swallowed food streams into the mouth, shedding sparkles (absorb effect)
     if (v.ghosts) for (const gh of v.ghosts) {
-      if (nf >= MAX_FOOD) break; const u = gh.t, e = u * u, x = gh.x + (gh.tx - gh.x) * e, y = gh.y + (gh.ty - gh.y) * e, fr = gh.r * (1 - u * 0.85), cc = pal[gh.c % pal.length], hgt = 0.6 + Math.sin(u * Math.PI) * 0.9;
+      if (nf >= MAX_FOOD) break; const u = gh.t, e = u * u, x = gh.x + (gh.tx - gh.x) * e, y = gh.y + (gh.ty - gh.y) * e, fr = gh.r * 0.65 * (1 - u * 0.85), cc = _mute(pal[gh.c % pal.length]), hgt = 0.3 + Math.sin(u * Math.PI) * 0.5;
       const o = nf * 16; FM[o] = fr; FM[o + 5] = fr; FM[o + 10] = fr; FM[o + 1] = FM[o + 2] = FM[o + 3] = FM[o + 4] = FM[o + 6] = FM[o + 7] = FM[o + 8] = FM[o + 9] = FM[o + 11] = 0; FM[o + 12] = x; FM[o + 13] = hgt; FM[o + 14] = y; FM[o + 15] = 1;
-      FC[nf * 3] = cc[0]; FC[nf * 3 + 1] = cc[1]; FC[nf * 3 + 2] = cc[2]; const hs = fr * 3; HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 3] = HM[o + 7] = HM[o + 11] = 0; HM[o + 12] = x; HM[o + 13] = hgt; HM[o + 14] = y; HM[o + 15] = 1;
+      FC[nf * 3] = cc[0]; FC[nf * 3 + 1] = cc[1]; FC[nf * 3 + 2] = cc[2]; const hs = 0; HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 3] = HM[o + 7] = HM[o + 11] = 0; HM[o + 12] = x; HM[o + 13] = hgt; HM[o + 14] = y; HM[o + 15] = 1;
       HCc[nf * 3] = cc[0]; HCc[nf * 3 + 1] = cc[1]; HCc[nf * 3 + 2] = cc[2]; nf++;
-      if (gh.mine && !this.calm && Math.random() < 0.4) this.emit(x, hgt, y, (Math.random() - 0.5) * 0.6, 0.2, (Math.random() - 0.5) * 0.6, cc, 0.35, 0.28, 2, 0);
+      if (false) this.emit(x, hgt, y, (Math.random() - 0.5) * 0.6, 0.2, (Math.random() - 0.5) * 0.6, cc, 0.35, 0.28, 2, 0);
     }
-    this._flush(this.food, nf); this._flush(this.halo, this.Q.halo ? nf : 0); this._flush(this.gem, ng);
+    this._flush(this.food, nf); this._flush(this.halo, 0); this._flush(this.gem, ng);
   }
   _modeFx(v, t) {
     const z = v.zone; this.storm.visible = this.stormOut.visible = !!z;

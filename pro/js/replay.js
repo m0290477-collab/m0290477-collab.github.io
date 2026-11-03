@@ -3,7 +3,7 @@
 // allocated once per match; recording a sample allocates nothing. On a match-ending death the clip is played back
 // through the existing 2D/3D renderers: Replay.view() fills a view object shaped exactly like Game.build()'s output,
 // with proxy snakes whose sx()/sy() read the interpolated recorded points, so no drawing code is duplicated.
-import { bodyPoints } from "./sim.js?v=aaa2a";
+import { bodyPoints } from "./sim.js?v=fix1";
 
 const HZ = 20, STEP = 1000 / HZ, NS = 104, MAXS = 24, MAXP = 96, MAXF = 360, MAXPU = 16, MAXM = 8;
 export const RP_CLIP = 3600, RP_SLOW = 800, RP_SLOWK = 0.4, RP_HOLD = 450; // ms of game time shown, slow tail, speed, end hold
@@ -48,7 +48,7 @@ export class Replay {
       const out = this.views[j], np = bodyPoints(s, e.o, e.f, sp, s.len, out, MAXP);
       if (e.ox || e.oy) for (let q = 0; q < np; q++) { out[q * 2] += e.ox; out[q * 2 + 1] += e.oy; }
       this.sid[j] = s.id; this.sr[j] = s.r; this.sp[j] = sp; this.sl[j] = Math.max(0.1, (np - 1) * sp); this.sa[j] = s.ta ?? s.a; this.sm[j] = s.m; this.snp[j] = np; this.sal[j] = e.alpha ?? 1;
-      const P = s.pu; this.sfl[j] = (e.boost ? 1 : 0) | (e.me ? 2 : 0) | (e.inv ? 4 : 0) | (P && P[1] > 0 ? 8 : 0) | (P && P[4] > 0 ? 16 : 0) | (e.dash ? 32 : 0) | (s.slow > 0 ? 64 : 0) | (e.gold ? 128 : 0);
+      const P = s.pu; this.sfl[j] = (e.boost ? 1 : 0) | (e.me ? 2 : 0) | (P && P[1] > 0 ? 8 : 0) | (P && P[0] > 0 ? 16 : 0) | (e.dash ? 32 : 0) | (s.slow > 0 ? 64 : 0) | (e.gold ? 128 : 0);
       if (!this.meta.has(s.id)) this.meta.set(s.id, { name: e.name, nc: e.nc, fn: e.fn, eye: e.eye, trail: e.trail, fx: e.fx, avt: s.avt, fr: s.fr | 0, team: e.team, glow: e.glow });
       else { const M = this.meta.get(s.id); M.name = e.name; M.nc = e.nc; }
       n++;
@@ -87,11 +87,11 @@ export class Replay {
   // fill and return the replay view for the current clip time (base = the live view, for world palette fields)
   view(base, dt, t, killerId) {
     const C = this.clip, v = this.v; for (const k in base) if (!(k in v) || k === "foodPal" || k === "foodPalCss" || k === "fpsTarget") v[k] = base[k];
-    v.t = t; v.dt = dt; v.scene = "world"; v.snakes.length = 0; v.ghosts = []; v.rain = v.goldRain = null; v.cores = null; v.letterbox = false; v.hideNames = false; v.tick = undefined;
+    v.t = t; v.dt = dt; v.scene = "world"; v.snakes.length = 0; v.ghosts = []; v.rain = v.goldRain = null; v.cores = null; v.letterbox = false; v.hideNames = true; v.tick = undefined; // fix1: no floating name tags (the card names the killer)
     // sample pair around the clip time
     let a = C.first, b = a; for (let i = 0; i < C.n - 1; i++) { const k = (C.first + i) % NS, k2 = (k + 1) % NS; if (this.t[k2] > this.c) { a = k; b = k2; break; } a = b = k2; }
     const ta = this.t[a], tb = this.t[b], f = b === a || tb <= ta ? 0 : Math.max(0, Math.min(1, (this.c - ta) / (tb - ta)));
-    const na = this.ns[a]; let meE = null;
+    const na = this.ns[a]; let meE = null, kE = null;
     for (let i = 0; i < na; i++) {
       const ja = a * MAXS + i, id = this.sid[ja], ib = b === a ? -1 : this._find(b, id), jb = ib >= 0 ? b * MAXS + ib : -1, P = this.prox[i], e = this.ents[i], M = this.meta.get(id) || {};
       const A = this.views[ja], npA = this.snp[ja]; let np = npA;
@@ -100,12 +100,12 @@ export class Replay {
         P.r = this.sr[ja] + (this.sr[jb] - this.sr[ja]) * f; P.m = this.sm[ja] + (this.sm[jb] - this.sm[ja]) * f; P.len = Math.min(this.sl[ja] + (this.sl[jb] - this.sl[ja]) * f, (np - 1) * this.sp[ja]);
         let da = this.sa[jb] - this.sa[ja]; da = Math.atan2(Math.sin(da), Math.cos(da)); P.ta = P.a = this.sa[ja] + da * f; }
       else { for (let q = 0; q < np; q++) { P.px[q] = A[q * 2]; P.py[q] = A[q * 2 + 1]; } P.r = this.sr[ja]; P.m = this.sm[ja]; P.len = this.sl[ja]; P.a = P.ta = this.sa[ja]; }
-      if (np < 2) continue; P.n = np; P.id = id; P.x = P.px[0]; P.y = P.py[0]; P.alive = true; const fl = this.sfl[ja]; P.boosting = !!(fl & 1); P.pu[1] = fl & 8 ? 1 : 0; P.pu[4] = fl & 16 ? 1 : 0; P.pu[7] = fl & 32 ? 1 : 0; P.slow = fl & 64 ? 1 : 0; P.name = M.name || ""; P.avt = M.avt; P.fr = M.fr;
-      e.fn = M.fn; e.eye = M.eye | 0; e.trail = M.trail | 0; e.fx = M.fx || 0; e.name = M.name || ""; e.nc = M.nc || "#fff"; e.me = !!(fl & 2); e.boost = P.boosting; e.inv = !!(fl & 4); e.dash = !!(fl & 32); e.gold = !!(fl & 128);
+      if (np < 2) continue; P.n = np; P.id = id; P.x = P.px[0]; P.y = P.py[0]; P.alive = true; const fl = this.sfl[ja]; P.boosting = !!(fl & 1); P.pu[1] = fl & 8 ? 1 : 0; P.pu[0] = fl & 16 ? 1 : 0; P.pu[7] = fl & 32 ? 1 : 0; P.slow = fl & 64 ? 1 : 0; P.name = M.name || ""; P.avt = M.avt; P.fr = M.fr;
+      e.fn = M.fn; e.eye = M.eye | 0; e.trail = M.trail | 0; e.fx = M.fx || 0; e.name = M.name || ""; e.nc = M.nc || "#fff"; e.me = !!(fl & 2); e.boost = P.boosting; e.inv = false; e.dash = !!(fl & 32); e.gold = !!(fl & 128);
       e.alpha = this.sal[ja]; e.scale = 1; e.look = P.ta; e.top = false; e.team = M.team || null; e.glow = M.glow || null; e.giant = false; e.hl = false;
       if (e.me && this.c >= C.t1) e.alpha = Math.max(0.25, 1 - this.hold / RP_HOLD * 0.75); // fade the player after impact
-      if (killerId && id === killerId) { e.team = HL; e.top = true; e.nc = "#ff7a66"; e.hl = true; e.inv = false; }
-      if (!e.fn) continue; v.snakes.push(e); if (e.me) meE = e;
+      if (killerId && id === killerId) { e.team = HL; e.top = false; e.nc = "#ff7a66"; e.hl = true; e.inv = false; kE = e; } // fix1: name tag + head ring on the killer only
+      if (!e.fn) { if (kE === e) kE = null; continue; } v.snakes.push(e); if (e.me) meE = e;
     }
     // food / pickups / storm / hill / meteors from the nearest sample (they barely move)
     const k = f < 0.5 ? a : b, F = this.food, nf = this.fn[k], fb = k * MAXF; F.FM = nf; F.fx.set(this.fx.subarray(fb, fb + nf)); F.fy.set(this.fy.subarray(fb, fb + nf)); F.fv.set(this.fv.subarray(fb, fb + nf)); F.fc.set(this.fc.subarray(fb, fb + nf)); v.food = F;
@@ -113,10 +113,14 @@ export class Replay {
     const zr = this.zn[a * 3 + 2]; if (zr >= 0) { const Z = this.zone, zb = this.zn[b * 3 + 2] >= 0 ? b : a; Z.x = this.zn[a * 3] + (this.zn[zb * 3] - this.zn[a * 3]) * f; Z.y = this.zn[a * 3 + 1] + (this.zn[zb * 3 + 1] - this.zn[a * 3 + 1]) * f; Z.r = zr + (this.zn[zb * 3 + 2] - zr) * f; v.zone = Z; } else v.zone = null;
     if (this.hl[k * 3 + 2] >= 0) { const H = this.hill; H.x = this.hl[k * 3]; H.y = this.hl[k * 3 + 1]; H.r = this.hl[k * 3 + 2]; v.hill = H; } else v.hill = null;
     this.mets.length = 0; for (let i = 0; i < this.mn[k]; i++) { const M = this._mt[i], o = (k * MAXM + i) * 4; M.x = this.mt[o]; M.y = this.mt[o + 1]; M.r = this.mt[o + 2]; M.T = 1; M.t = 1 - this.mt[o + 3]; this.mets.push(M); } v.mets = this.mets;
-    // camera: follow the player's head, then ease toward the impact and zoom in during the slow tail
+    // camera (fix1): normal gameplay zoom. Follow the player's head, then over the slow tail glide to the contact point
+    // (midway to the killer's head when there is one) and widen only as much as needed to keep both heads in frame.
     const cam = this.cam, z0 = this.cz[a] + (this.cz[b] - this.cz[a]) * f; let hx = meE ? meE.s.px[0] : this.cx[a] + (this.cx[b] - this.cx[a]) * f, hy = meE ? meE.s.py[0] : this.cy[a] + (this.cy[b] - this.cy[a]) * f;
-    const w = Math.max(0, Math.min(1, (this.c - (C.t1 - RP_SLOW - 300)) / (RP_SLOW + 300))), e2 = w * w * (3 - 2 * w); // smoothstep over the slow tail
-    cam.x = hx + (C.ix - hx) * e2 * 0.7; cam.y = hy + (C.iy - hy) * e2 * 0.7; cam.zoom = z0 * (1 - 0.26 * e2); cam.boost = false; cam.title = cam.intro = cam.victory = cam.orbit = undefined; cam.kill = null;
+    const w = Math.max(0, Math.min(1, (this.c - (C.t1 - RP_SLOW - 500)) / (RP_SLOW + 500))), e2 = w * w * (3 - 2 * w); // smoothstep over the slow tail
+    let fx = C.ix, fy = C.iy, need = 0; if (kE) { const kx = kE.s.px[0], ky = kE.s.py[0]; fx = (C.ix + kx) / 2; fy = (C.iy + ky) / 2; need = Math.hypot(kx - hx, ky - hy); }
+    cam.x = hx + (fx - hx) * e2; cam.y = hy + (fy - hy) * e2;
+    const zNeed = need / 15; this.zk = Math.max(1, Math.min(1.7, zNeed / Math.max(0.5, z0))); cam.zoom = z0 * (1 + (this.zk - 1) * e2);
+    cam.boost = false; cam.title = cam.intro = cam.victory = cam.orbit = undefined; cam.kill = null;
     v.cam = cam; return v;
   }
 }

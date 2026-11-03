@@ -3,7 +3,7 @@
 export class Input {
   constructor(el, boostEl, joyEl) {
     this.el = el; this.boostEl = boostEl; this.joyEl = joyEl; this.knob = joyEl.querySelector(".knob");
-    this.mode = "joy"; this.sens = 1; this.left = false; this.angle = null; this.boost = false; this.enabled = false;
+    this.mode = "joy"; this.world = false; this.sens = 1; this.left = false; this.angle = null; this.boost = false; this.enabled = false;
     this.steer = null; this.boostId = null; this.keys = new Set(); this.headScreen = () => [innerWidth / 2, innerHeight / 2];
     this.onPause = null; this.usedTouch = false; this.moved = 0;
     const opt = { passive: false };
@@ -36,26 +36,26 @@ export class Input {
     const x = e.clientX, y = e.clientY;
     if (this.mode === "joy") {
       const dx = x - s.x0, dy = y - s.y0, d = Math.hypot(dx, dy), max = 56, dead = 7 / this.sens;
-      if (d > dead) this.angle = Math.atan2(dy, dx);
+      if (d > dead) { this.angle = Math.atan2(dy, dx); this.world = false; }
       const k = Math.min(d, max) / (d || 1); this.knob.style.transform = `translate(${dx * k}px, ${dy * k}px)`;
       if (d > max * 1.6) { s.x0 = x - dx / d * max * 1.6; s.y0 = y - dy / d * max * 1.6; this.joyEl.style.left = s.x0 + "px"; this.joyEl.style.top = s.y0 + "px"; } // base follows a far finger
     } else if (this.mode === "follow") this.follow(x, y);
-    else { const dx = x - s.lx, dy = y - s.ly, d = Math.hypot(dx, dy); if (d > 6 / this.sens) { this.angle = Math.atan2(dy, dx); s.lx = x; s.ly = y; } }
+    else { const dx = x - s.lx, dy = y - s.ly, d = Math.hypot(dx, dy); if (d > 6 / this.sens) { this.angle = Math.atan2(dy, dx); this.world = false; s.lx = x; s.ly = y; } }
   }
   up(e) {
     if (e.pointerType === "mouse") { if (this.mouseBoost) { this.mouseBoost = false; if (!this.keys.has(" ") && !this.keys.has("shift")) this.boost = false; } return; }
     if (this.steer && e.pointerId === this.steer.id) { this.steer = null; this.hideJoy(); }
   }
-  follow(x, y) { const [hx, hy] = this.headScreen(); const dx = x - hx, dy = y - hy; if (Math.hypot(dx, dy) > 8 / this.sens) this.angle = Math.atan2(dy, dx); }
-  mouse(e) { const [hx, hy] = this.headScreen(); const dx = e.clientX - hx, dy = e.clientY - hy; if (Math.hypot(dx, dy) > 6) this.angle = Math.atan2(dy, dx); }
+  follow(x, y) { const [hx, hy] = this.headScreen(); const dx = x - hx, dy = y - hy; if (Math.hypot(dx, dy) > 8 / this.sens) { this.angle = Math.atan2(dy, dx); this.world = false; } }
+  mouse(e) { const [hx, hy] = this.headScreen(); const dx = e.clientX - hx, dy = e.clientY - hy; if (Math.hypot(dx, dy) > 6) { this.angle = Math.atan2(dy, dx); this.world = false; } }
   showJoy(x, y) { const j = this.joyEl; j.style.left = x + "px"; j.style.top = y + "px"; j.classList.add("on"); this.knob.style.transform = "translate(0,0)"; }
   hideJoy() { this.joyEl.classList.remove("on"); }
   // keyboard steering rotates the current heading
   poll(cur, dt) {
     const k = this.keys; let turn = 0;
     if (k.has("arrowleft") || k.has("a")) turn -= 1; if (k.has("arrowright") || k.has("d")) turn += 1;
-    if (turn) this.angle = cur + turn * 3.6 * dt * Math.max(1.5, 4 * this.sens);
-    else if (k.has("arrowup") || k.has("w")) this.angle = -Math.PI / 2; else if (k.has("arrowdown") || k.has("s")) this.angle = Math.PI / 2;
+    if (turn) { this.angle = cur + turn * 3.6 * dt * Math.max(1.5, 4 * this.sens); this.world = true; }
+    else if (k.has("arrowup") || k.has("w")) { this.angle = -Math.PI / 2; this.world = false; } else if (k.has("arrowdown") || k.has("s")) { this.angle = Math.PI / 2; this.world = false; }
     return this.angle;
   }
 }

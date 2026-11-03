@@ -27,9 +27,8 @@ for (const mB of [24, 300, 3000]) {
   S.buildGrid(); S.collide(); ok(A.alive && B.alive, 'body crossing body (no head contact) is harmless'); }
 // head-on: both die
 { const S = world(); const A = put(S, 'A', -0.5, 0, 0, 60); const B = put(S, 'B', 0.5, 0, Math.PI, 60); S.buildGrid(); S.collide(); ok(!A.alive && !B.alive, 'head-on -> both die'); }
-// ghost passes through, shield absorbs one hit
-{ const S = world(); const B = put(S, 'B', 0, 0, 0, 200); const { out } = rendered(B); const A = put(S, 'A', out[20], out[21], 1.57, 24); A.pu[4] = 3; S.buildGrid(); S.collide(); ok(A.alive, 'ghost power-up passes through bodies');
-  A.pu[4] = 0; A.pu[1] = 10; S.buildGrid(); S.collide(); ok(A.alive && A.pu[1] === 0 && S.evShield.length === 2, 'shield absorbs one hit');
+// fix1: the ghost power-up is gone (a stale pu[4] does nothing), shield absorbs one hit
+{ const S = world(); const B = put(S, 'B', 0, 0, 0, 200); const { out } = rendered(B); const A = put(S, 'A', out[20], out[21], 1.57, 24); A.pu[4] = 3; A.pu[1] = 10; S.buildGrid(); S.collide(); ok(A.alive && A.pu[1] === 0 && S.evShield.length === 2, 'shield absorbs one hit');
   A.inv = 0; S.buildGrid(); S.collide(); ok(!A.alive, 'second hit after shield is used -> death'); }
 // client-side hitTest (online self-report) agrees with the server collide
 { const S = world(); const B = put(S, 'B', 0, 0, 0, 300); const { out, n } = rendered(B); let agree = 0, tot = 0;

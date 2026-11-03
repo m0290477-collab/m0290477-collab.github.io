@@ -1,10 +1,10 @@
-// M2 sim checks: new power-ups (dash, invisibility, giant, food rain) and arena events (gold rain, meteors, bounty).
+// M2 sim checks: new power-ups (dash, giant, food rain; invisibility retired in fix1) and arena events (gold rain, meteors, bounty).
 import { Sim, PU, PU_DUR, GIANT_K, GOLD_FC, radiusOf } from "../js/sim.js";
 let fail = 0; const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fail++; };
 const run = (S, sec) => { for (let i = 0; i < sec * 60; i++) S.step(null); };
 
 { // dash: faster, free, passes through bodies
-  const S = new Sim({ dt: 1 / 60, R: 200, seed: 3, powerups: false, events: [] }); const a = S.addSnake("A", {}, { pos: [0, 0], m: 60 }); a.a = a.ta = 0;
+  const S = new Sim({ dt: 1 / 60, R: 200, seed: 3, powerups: false, events: [] }); const a = S.addSnake("A", {}, { pos: [0, 0], m: 60 }); a.reset(0, 0, 0, 60); /* fix1: heading and seeded tail agree (a bare a.a = 0 could point the head back into its own tail) */
   const x0 = a.x; run(S, 0.5); const v0 = (a.x - x0) / 0.5; S.applyPu(a, PU.DASH); const x1 = a.x, m1 = a.m; run(S, 0.5); const v1 = (a.x - x1) / 0.5;
   ok(v1 > v0 * 2.5, `dash speed ${v0.toFixed(1)} -> ${v1.toFixed(1)}`); ok(a.m >= m1 - 0.01, "dash costs no mass");
   run(S, 1.5); ok(a.pu[PU.DASH] === 0, "dash ends");
@@ -18,10 +18,9 @@ const run = (S, sec) => { for (let i = 0; i < sec * 60; i++) S.step(null); };
   const S = new Sim({ dt: 1 / 60, R: 200, seed: 5, powerups: false, events: [] }); const a = S.addSnake("A", {}, { pos: [0, 0], m: 60 }); a.god = true;
   const n0 = S.fCount; S.applyPu(a, PU.RAIN); run(S, 2.5); ok(S.fCount - n0 > 60, `food rain spawned ${S.fCount - n0}`);
 }
-{ // invisibility: bots do not pick an invisible snake as their hunting target
-  const S = new Sim({ dt: 1 / 60, R: 200, seed: 6, powerups: false, events: [] }); const me = S.addSnake("Me", {}, { pos: [0, 0], m: 40 }); const b = S.addSnake("Bot", {}, { pos: [8, 0], m: 300, bot: true, diff: 3 });
-  S.applyPu(me, PU.INVIS); let hunted = 0; for (let i = 0; i < 300; i++) { S.step(null); if (b.ai.mode === 3) hunted++; me.pu[PU.INVIS] = 5; }
-  ok(hunted === 0, `bot never hunts the invisible snake (${hunted})`);
+{ // fix1: invisibility retired: applying it does nothing, it never spawns
+  const S = new Sim({ dt: 1 / 60, R: 200, seed: 6, powerups: false, events: [] }); const me = S.addSnake("Me", {}, { pos: [0, 0], m: 40 });
+  S.applyPu(me, 8); ok(me.pu[8] === 0, "invisibility has no effect");
 }
 { // meteor: an impact kills a head inside the circle, shield saves, food drops
   const S = new Sim({ dt: 1 / 60, R: 200, seed: 7, powerups: false, events: [] }); const a = S.addSnake("A", {}, { pos: [10, 10], m: 60 }); const b = S.addSnake("B", {}, { pos: [-60, -60], m: 60 }); b.pu[PU.SHIELD] = 20;

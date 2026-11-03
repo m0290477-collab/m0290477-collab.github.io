@@ -95,7 +95,7 @@ export class Room {
     } else if (m.t === "die") { // the client saw its own head touch a body: accept at once (it can only hurt itself), credit the hit snake
       const s = c.snake; if (!s || !s.alive) return; const k = this.sim.byId.get(m.hit | 0);
       let by = 0; if (k && k.alive && k !== s) { const dx = k.x - s.x, dy = k.y - s.y; by = dx * dx + dy * dy < (k.len + 8) ** 2 ? k.id : 0; }
-      this.sim.kill(s, by, by ? 3 : 1);
+      if (k === s) this.sim.kill(s, s.id, 2); else this.sim.kill(s, by, by ? 3 : 1); // fix1: own body -> self death (no credit)
     } else if (m.t === "emo") { // quick emote: one per second per player, relayed to everyone else in the room
       const s = c.snake, e = m.e | 0; if (!s || !s.alive || e < 0 || e > 5 || now - (c.lastEmo || 0) < 1000) return; c.lastEmo = now;
       const msg = JSON.stringify({ t: "emo", id: s.id, e }); for (const o of this.clients) if (o !== c && o.joined) this.send(o, msg);

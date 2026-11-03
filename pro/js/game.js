@@ -1,16 +1,16 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=aaa2a"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=aaa2a";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=aaa2a";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=aaa2a";
-import { NetBackend } from "./net.js?v=aaa2a";
-import { t, fmtNum } from "./i18n.js?v=aaa2a";
-import { haptic } from "./audio.js?v=aaa2a";
-import { rankOf, rpDelta } from "./profile.js?v=aaa2a";
-import { Replay } from "./replay.js?v=aaa2a";
-import { emit } from "./events.js?v=aaa2a"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=fix1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=fix1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=fix1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=fix1";
+import { NetBackend } from "./net.js?v=fix1";
+import { t, fmtNum } from "./i18n.js?v=fix1";
+import { haptic } from "./audio.js?v=fix1";
+import { rankOf, rpDelta } from "./profile.js?v=fix1";
+import { Replay } from "./replay.js?v=fix1";
+import { emit } from "./events.js?v=fix1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -206,6 +206,7 @@ export class Game {
       if (k === PU.MEGA) { this.r.ring(me.x, me.y, col, 6); this.r.shake && this.r.shake(0.5); }
       if (k === PU.RAIN) { this.rainFx = { until: performance.now() + 2300 }; }
       if (k === PU.GIANT) { this.r.ring(me.x, me.y, col, 5); this.r.shake && this.r.shake(0.6); A.audio.play("roar"); }
+      if (k === PU.MAG) this.hud.banner(t("pu_0"), 1100); // fix1: calm name banner, the ring around the head shows the reach
       if (k === PU.DASH) { this.r.kick && this.r.kick(1.1, col, 0.1); A.audio.play("whoosh"); }
     } else if (s && near) A.audio.at && A.audio.at("big", p.x, p.y);
     if (me && hit && hit.includes(me.id)) { this.hud.banner("❄ " + t("frozen"), 1400); A.audio.play("warn"); haptic.tap(30); this.hud.frost(PU_DUR[5]); }
@@ -290,7 +291,7 @@ export class Game {
     if (respawn) { this.respawnAt = performance.now() + 1900; this.hud.banner(msg + (this.mode === "boss" ? " · " + t("livesN", { n: this.lives }) : ""), 1700); }
     else { if (this.mode === "br") this.place = this.backend.sim.snakes.filter((x) => x.alive).length + 1; this.endAt = performance.now() + 650; this.hud.banner(msg, 1200); // calm1: results almost straight away
       // replay1: freeze the last seconds as a clip; it plays after the short death beat, then results
-      this.rpPending = false; if (this.rec && this.mode !== "zen" && A.store.settings.replay !== false) { if (this.rec.meRef === me) this.rec.record(performance.now(), this.view, me, true); this.rpPending = this.rec.freeze({ cause, self: selfHit, killer: this.killer ? this.killer.id : 0 }); } else if (this.rec) this.rec.clip = null; }
+      this.rpPending = false; if (this.rec && this.mode !== "zen" && A.store.settings.replay !== false) { if (this.rec.meRef === me) { this.build(0); this.rec.record(performance.now(), this.view, me, true); /* fix1: last sample = the frame of the actual contact */ } this.rpPending = this.rec.freeze({ cause, self: selfHit, killer: this.killer ? this.killer.id : 0 }); } else if (this.rec) this.rec.clip = null; }
   }
   onNet(st, n) {
     const A = this.app;
@@ -370,7 +371,7 @@ export class Game {
     const cine = this.killcam || this.victory;
     if (this.mode !== "attract" && !this.paused && !this.ended && me && me.alive && !this.victory) {
       const ang = A.input.poll(me.ta ?? me.a, dt); let boost = A.input.boost;
-      if (ang !== null && ang !== undefined) b.setInput(ang, boost); else b.setInput(me.ta ?? me.a, boost);
+      if (ang !== null && ang !== undefined) b.setInput(A.input.world ? ang : this.screenToWorldAng(ang, me), boost); else b.setInput(me.ta ?? me.a, boost);
       const boosting = !!boost && me.m > C.MIN_BOOST_M; A.audio.boost(boosting); if (boosting) { this.stats.boost += dt; if (!this._wasBoost) { this.r.kick && this.r.kick(0.35); } } if (boosting !== !!this._wasBoost) { EV.boost.on = boosting; emit("fx.boost", EV.boost); } this._wasBoost = boosting;
       this.stats.best = Math.max(this.stats.best, me.m);
     }
@@ -471,7 +472,7 @@ export class Game {
       e.team = s.team !== undefined ? TEAM_COL[s.team] : null; if (s.team !== undefined) e.nc = TEAM_CSS[s.team]; if (s.boss) { e.nc = "#ff4040"; e.glow = [1, 0.1, 0.1]; e.team = null; } else e.glow = null;
       if (s.boss && this.boss && this.boss.phase === 3) e.glow = [1.6, 0.2, 0.05];
       if (s.bounty) { e.glow = [1.5, 1.05, 0.15]; e.nc = "#ffd23a"; e.name = "💰 " + s.name; }
-      e.inv = !!(s.pu && s.pu[8] > 0); e.giant = !!(s.pu && s.pu[9] > 0); e.dash = !!(s.pu && s.pu[7] > 0); if (e.dash) e.boost = true;
+      e.inv = false; e.giant = !!(s.pu && s.pu[9] > 0); e.dash = !!(s.pu && s.pu[7] > 0); if (e.dash) e.boost = true;
       e.emo = s.emoT && now - s.emoT < 2600 ? EMOTES[s.emo] || null : null; e.emoI = s.emo | 0; e.gold = !!s.bounty;
       list.push(e); return e;
     };
@@ -494,7 +495,7 @@ export class Game {
     } else {
       const foc = this.spectate && this.spectate.alive ? this.spectate : me;
       if (foc) { const head = foc === me && me.alive ? lerpHead(me, alpha) : (_LH[0] = foc.x, _LH[1] = foc.y, _LH); if (foc === me && b.vox) { head[0] += b.vox; head[1] += b.voy; }
-        const la = (foc.boosting ? 4.2 : 2.6) * (1 + Math.max(0, foc.r - 0.6) * 0.5); this.lookX = (this.lookX || 0) + (Math.cos(foc.a) * la - (this.lookX || 0)) * Math.min(1, dt * 3); this.lookY = (this.lookY || 0) + (Math.sin(foc.a) * la - (this.lookY || 0)) * Math.min(1, dt * 3);
+        const la = (foc.boosting ? 4.2 : 2.6) * (1 + Math.max(0, foc.r - 0.6) * 0.5); this.lookX = (this.lookX || 0) + (Math.cos(foc.a) * la - (this.lookX || 0)) * Math.min(1, dt * 5); this.lookY = (this.lookY || 0) + (Math.sin(foc.a) * la - (this.lookY || 0)) * Math.min(1, dt * 5);
         tx = head[0] + this.lookX; ty = head[1] + this.lookY; zoom = 1 + Math.max(0, foc.r - 0.6) * 0.55; cam.boost = !!foc.boosting && foc === me; }
       if (this.intro > 0 && this.introDur) cam.intro = this.intro / this.introDur;
       if (this.killcam) { const k = (now - this.killcam.t0) / this.killcam.dur, w = Math.min(1, k * 5, (1 - k) * 4); cam.kill = { x: this.killcam.x, y: this.killcam.y, t: k * this.killcam.dur / 1000, a0: this.killcam.a0, w: Math.max(0, w) * 0.85 }; v.letterbox = true; }
@@ -540,6 +541,15 @@ export class Game {
     const p = this.app.store.p; if ((p.stats.games || 0) > 3 || this.mode === "online") return; this.hintT -= 0.25; if (this.hintT > 0) return;
     const H = ["hint_steer", "hint_boost", "hint_eat", "hint_pu", "hint_cut", "hint_dead"]; if (this.hintI >= H.length) return; this.hud.hint(t(H[this.hintI++])); this.hintT = 9;
   }
+  // fix1: pointer/joystick angles are screen directions; the 3D camera is tilted, so screen up/down is foreshortened.
+  // Map the screen direction through the camera's local Jacobian at the head (identity in 2D) so the head points exactly
+  // where the finger points on screen, in 2D and 3D alike.
+  screenToWorldAng(a, me) {
+    const r = this.r; if (!r || !r.project || r.is2D) return a; const h = me.r || 0.6;
+    const p0 = r.project(me.x, me.y, h), px = r.project(me.x + 1, me.y, h), py = r.project(me.x, me.y + 1, h);
+    const ax = px[0] - p0[0], ay = px[1] - p0[1], bx = py[0] - p0[0], by = py[1] - p0[1], det = ax * by - ay * bx; if (!(Math.abs(det) > 1e-6)) return a;
+    const ux = Math.cos(a), uy = Math.sin(a), wx = (ux * by - uy * bx) / det, wy = (ax * uy - ay * ux) / det; return Math.atan2(wy, wx);
+  }
   // ---------- replay1: death replay ----------
   playReplay(fromResults) {
     const R = this.rec; if (!R || !R.clip || !this.backend || !this.r) return false; R.start(); const A = this.app;
@@ -554,7 +564,7 @@ export class Game {
   replayTick(dt, now) {
     const R = this.rec, Rp = this.replay; R.advance(dt);
     const v = R.view(this.view, dt, this.t, Rp.killer); v.fpsTarget = this.app.store.settings.fpsCap || 60; this.r.frame(v); R.cam.snap = false;
-    if (!R.impactFired && R.c >= R.clip.t1) { R.impactFired = true; this.r.ring(R.clip.ix, R.clip.iy, [1, 0.5, 0.38], 6); }
+    if (!R.impactFired && R.c >= R.clip.t1) { R.impactFired = true; this.r.ring(R.clip.ix, R.clip.iy, [0.55, 0.32, 0.28], 2.2); } // fix1: small, soft, centred on the contact
     this.app.ui.replayProg(R.progress());
     if (R.done) this.endReplay();
   }

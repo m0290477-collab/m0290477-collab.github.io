@@ -5,8 +5,9 @@
 export const C = {
   R: 240, // arena radius (world units): online rooms + default; offline modes set their own
   SPEED: 8.6, BOOST: 17.5,
-  TURN: 4.6, // max turn rate (rad/s) for the smallest snake
-  ANG_ACC: 34, // angular acceleration (rad/s²) = turn inertia
+  TURN: 6.2, // max turn rate (rad/s) for the smallest snake (fix1: 4.6 -> 6.2, high-precision steering)
+  ANG_ACC: 140, // angular acceleration (rad/s²) = turn inertia (fix1: 34 -> 140: no lag, no wobble)
+  TURN_GAIN: 30, // heading error -> turn rate gain (fix1: 9 -> 30: small corrections land in ~2 ticks)
   START_M: 24, MIN_BOOST_M: 18, BOOST_COST: 5.5, // mass per second while boosting
   FOOD_TARGET: 620, FOOD_MAX: 1300,
   CAP: 2048, // path ring capacity (samples, one per tick)
@@ -15,7 +16,8 @@ export const C = {
 export const MASK = C.CAP - 1;
 export const radiusOf = (m) => Math.min(3.4, 0.55 + 0.034 * Math.sqrt(m));
 export const lengthOf = (m) => Math.min(190, 5 + 2.25 * Math.sqrt(m));
-export const turnOf = (r) => C.TURN / (1 + (r - 0.6) * 0.75);
+export const turnOf = (r) => C.TURN / (1 + Math.max(0, r - 0.6) * 0.6);
+const botTurnOf = (r) => 4.6 / (1 + (r - 0.6) * 0.75); // fix1: bots keep the pre-fix1 steering response (their tuning / kill rate is unchanged)
 export const boostCost = (m, dt) => C.BOOST_COST * (1 + m / 1500) * dt;
 // ---- body shape shared by collision AND both renderers (gfx/snake.js mirrors these numbers in GLSL) ----
 // half-width of the body at fraction u (0 = head, 1 = tail tip) is r * taperAt(u); the head is a disc of r * HEAD_K.
@@ -23,17 +25,24 @@ export const HEAD_K = 1.12;
 export const HIT_K = 0.98; // contact = edges touch (2% slack for the polyline sagitta between samples)
 export const taperAt = (u) => { const t = Math.max(0, Math.min(1, (u - 0.58) / 0.42)); return 1 - 0.74 * t * t * (3 - 2 * t); };
 export const sampleSp = (r) => Math.max(0.3, r * 0.4); // collision sample spacing: no visible gaps between discs
-// power-ups: magnet, shield, speed, x2 score, ghost, freeze, mega-orb burst, dash, invisibility, giant, food rain
+// fix1: own-body samples closer than this arc length to the head never count (a held max-rate turn at the slowest speed must
+// not touch the neck); past it, curling into your own body kills. Chord of an arc s on the tightest circle rho: 2 rho sin(s / 2 rho).
+export function selfNeck(s) { const rho = C.SPEED * 0.55 / turnOf(s.r), need = s.r * (1 + HEAD_K) * 1.08; if (2 * rho <= need) return Math.PI * rho + s.r * 2; return Math.max(s.r * 2.6, 2 * rho * Math.asin(need / (2 * rho))); }
+// power-ups: magnet, shield, speed, x2 score, (4 retired: ghost), freeze, mega-orb burst, dash, (8 retired: invisibility), giant, food rain
+// fix1: ghost and invisibility removed for good (never spawn, no effect if an old peer sends them); their slots stay so kind ids keep their meaning online.
 export const PU = { MAG: 0, SHIELD: 1, SPEED: 2, X2: 3, GHOST: 4, FREEZE: 5, MEGA: 6, DASH: 7, INVIS: 8, GIANT: 9, RAIN: 10, N: 11 };
-export const PU_DUR = [10, 20, 6, 12, 5, 4, 0, 1.6, 8, 10, 0];
-export const PU_TIMED = [0, 1, 2, 3, 4, 5, 7, 8, 9]; // kinds with a countdown (HUD chips)
-const PU_W = [15, 13, 13, 13, 10, 10, 7, 9, 8, 8, 7]; // spawn weights
+export const PU_DUR = [6, 20, 6, 12, 0, 4, 0, 1.6, 0, 10, 0];
+export const PU_TIMED = [0, 1, 2, 3, 5, 7, 9]; // kinds with a countdown (HUD chips)
+const PU_W = [25, 13, 13, 13, 0, 10, 7, 9, 0, 8, 7]; // spawn weights (fix1: magnet 15 + ghost's 10; ghost/invisibility 0 = never)
+export const PU_RETIRED = (k) => k === 4 || k === 8;
+export const MAG_K = 2.5; // magnet: food within MAG_K x head radius (min r + 2.2) is pulled into the mouth
+export const magReach = (r) => Math.max(MAG_K * HEAD_K * r, r + 2.2);
 export const PU_ICON = ["🧲", "🛡", "⚡", "×2", "👻", "❄", "💎", "💨", "◌", "⬆", "☔"];
 export const GIANT_K = 1.6, DASH_V = 1.55; // giant radius multiplier, dash speed (× boost)
 // tick a snake's power-up timers; giant mode ends cleanly (radius back to normal)
 export function puTick(s, dt) { const P = s.pu; for (let i = 0; i < PU_TIMED.length; i++) { const q = PU_TIMED[i]; if (P[q] > 0) { P[q] -= dt; if (P[q] <= 0) { P[q] = 0; if (q === 9) { s.gk = 1; s.setMass(s.m); } } } } if (s.slow > 0) s.slow = Math.max(0, s.slow - dt); if (s.inv > 0) s.inv = Math.max(0, s.inv - dt); }
 // start a timed power-up on a snake (shared by the sim, the online client and its mirrors)
-export function puGive(s, k) { if (PU_DUR[k] > 0) s.pu[k] = PU_DUR[k]; if (k === 9) { s.gk = GIANT_K; s.setMass(s.m); } }
+export function puGive(s, k) { if (PU_RETIRED(k)) return; if (PU_DUR[k] > 0) s.pu[k] = PU_DUR[k]; if (k === 9) { s.gk = GIANT_K; s.setMass(s.m); } }
 // 24x24 vector glyphs (no emoji-font dependency): used by the HUD chips (inline SVG) and the 3D badges (Path2D)
 export const PU_SVG = [
   "M6 3h4v9a2 2 0 0 0 4 0V3h4v9a6 6 0 0 1-12 0Z", // magnet
@@ -48,7 +57,7 @@ export const PU_SVG = [
   "M3 3h7v2.4H7.1l4.1 4.1-1.7 1.7-4.1-4.1V10H3Zm18 18h-7v-2.4h2.9l-4.1-4.1 1.7-1.7 4.1 4.1V14H21ZM14 3h7v7h-2.4V7.1l-4.1 4.1-1.7-1.7 4.1-4.1H14ZM3 14h2.4v2.9l4.1-4.1 1.7 1.7-4.1 4.1H10V21H3Z", // giant (expand)
   "M7 14a4.5 4.5 0 0 1 .4-9A6 6 0 0 1 18.6 6.5 3.8 3.8 0 0 1 18 14Zm.5 2h2l-1.6 5.5h-2Zm5 0h2l-1.6 5.5h-2Zm5 0h2l-1.6 5.5h-2Z", // food rain (cloud + drops)
 ];
-export const PU_COL = ["#ff4fd8", "#4fc3ff", "#ffe14f", "#ffa13d", "#c6b8ff", "#9ff3ff", "#5dffb0", "#00ffd5", "#eef2ff", "#ff5a36", "#c3ff3d"];
+export const PU_COL = ["#d49ab6", "#4fc3ff", "#ffe14f", "#ffa13d", "#c6b8ff", "#9ff3ff", "#5dffb0", "#00ffd5", "#eef2ff", "#ff5a36", "#c3ff3d"];
 // arena events: golden food rain, meteor shower (warned impact circles), golden bounty bot
 export const EVENTS = ["rain", "meteor", "bounty"];
 export const GOLD_FC = 12; // food colour index 12 = gold (both palettes carry it)
@@ -94,9 +103,9 @@ export class Snake {
 
 // Move one snake one tick: turn with inertia toward ta, advance, record a path sample. Deterministic given (state, ta, boost, dt).
 export function moveSnake(s, dt, canBoost) {
-  const tm = turnOf(s.r), d = angDiff(s.ta, s.a);
-  const want = Math.max(-tm, Math.min(tm, d * 9));
-  const acc = C.ANG_ACC * dt;
+  const bot = s.bot, tm = bot ? botTurnOf(s.r) : turnOf(s.r), d = angDiff(s.ta, s.a);
+  const want = Math.max(-tm, Math.min(tm, d * (bot ? 9 : C.TURN_GAIN)));
+  const acc = (bot ? 34 : C.ANG_ACC) * dt;
   s.av += Math.max(-acc, Math.min(acc, want - s.av));
   if (Math.abs(s.av * dt) > Math.abs(d) && Math.sign(s.av) === Math.sign(d)) s.av = d / dt; // no overshoot
   s.lastA = s.a;
@@ -204,7 +213,7 @@ export class Sim {
   spawnPu(k, x, y) {
     if (k === undefined) { let w = 0; for (const x of PU_W) w += x; let r = this.rand() * w; k = 0; while (k < PU_W.length - 1 && (r -= PU_W[k]) >= 0) k++; }
     if (x === undefined) { for (let tr = 0; tr < 8; tr++) { [x, y] = this.randPos(this.R * 0.85); if (this.puFree(x, y)) break; } }
-    const p = { id: this.puSeq = (this.puSeq % 60000) + 1, k, x, y, b: this.tick }; this.pus.push(p); this.evPuNew.push(p); return p;
+    if (PU_RETIRED(k)) k = PU.MAG; const p = { id: this.puSeq = (this.puSeq % 60000) + 1, k, x, y, b: this.tick }; this.pus.push(p); this.evPuNew.push(p); return p;
   }
   puFree(x, y) { const g2 = this.PU_GAP * this.PU_GAP; for (const p of this.pus) { const dx = p.x - x, dy = p.y - y; if (dx * dx + dy * dy < g2) return false; } return true; }
   // apply a picked power-up to snake s; returns ids of snakes it froze
@@ -262,7 +271,7 @@ export class Sim {
     for (const o of this.snakes) if (o !== s && o.alive) {
       const dx = o.x - s.x, dy = o.y - s.y, d2 = dx * dx + dy * dy;
       if (d2 < lr2) { const H = this._heads[this._nh] || (this._heads[this._nh] = {}); H.x = o.x; H.y = o.y; H.a = o.a; H.v = o.boosting ? C.BOOST : C.SPEED; H.r = o.r; this._nh++; }
-      if (!o.god && !(o.pu[8] > 0) && !(this.teams && o.team === s.team) && d2 < nd) { nd = d2; near = o; }
+      if (!o.god && !(this.teams && o.team === s.team) && d2 < nd) { nd = d2; near = o; }
     }
     nd = Math.sqrt(nd);
     // scripted prey (boss / survival hunters)
@@ -412,7 +421,7 @@ export class Sim {
   addMeteor(x, y) { const L = Math.hypot(x, y), lim = this.R - 5; if (L > lim) { x *= lim / L; y *= lim / L; } const M = { id: this.metSeq = (this.metSeq % 60000) + 1, x, y, r: 4.6, t: 1.9, T: 1.9 }; this.mets.push(M); this.evMet.push(M); return M; }
   impact(M) {
     this.evImpact.push(M.x, M.y, M.r);
-    for (const s of this.snakes) { if (!s.alive || s.god || s.pu[4] > 0 || s.pu[7] > 0 || s.inv > 0) continue; const dx = s.x - M.x, dy = s.y - M.y, rr = M.r + s.r * HEAD_K;
+    for (const s of this.snakes) { if (!s.alive || s.god || s.pu[7] > 0 || s.inv > 0) continue; const dx = s.x - M.x, dy = s.y - M.y, rr = M.r + s.r * HEAD_K;
       if (dx * dx + dy * dy < rr * rr) { if (s.pu[1] > 0) { s.pu[1] = 0; s.inv = 1.2; this.evShield.push(s.id, 0); } else this.kill(s, 0, 6); } }
     for (let j = 0; j < 8; j++) { const a = this.rand() * TAU, d = 1 + this.rand() * M.r; if (this.fCount < this.FM - 60) this.spawnFood(M.x + Math.cos(a) * d, M.y + Math.sin(a) * d, 2 + this.rand() * 2, 9); }
   }
@@ -431,25 +440,34 @@ export class Sim {
   }
 
   // head (disc r*HEAD_K) vs every other snake's body discs (heads included -> head-on kills both). Contact = rendered edges touch.
-  // Body crossing body is harmless (only heads are tested). Ghost = pass through bodies; shield absorbs one hit.
+  // Body crossing body is harmless (only heads are tested). Dash = pass through other bodies; shield absorbs one hit.
+  // fix1: a player's head also dies on its OWN body past the neck (selfNeck); bots keep slither rules (no self-collision).
   collide() {
     const g = this.grid, dim = g.dim;
     for (const s of this.snakes) {
-      if (!s.alive || s.god) continue;
-      if (s.pu[4] > 0 || s.pu[7] > 0 || s.inv > 0) continue;
-      const hr = s.r * HEAD_K, c0 = g.ci(s.x, s.y); let killer = 0;
+      if (!s.alive || s.god || s.inv > 0) continue;
+      const pass = s.pu[7] > 0, self = !s.bot, hr = s.r * HEAD_K, c0 = g.ci(s.x, s.y); let killer = 0;
+      if (pass && !self) continue;
+      const kNeck = self ? Math.ceil(selfNeck(s) / sampleSp(s.r)) : 1e9;
       const rx = Math.max(1, Math.ceil((hr + 6.6) / g.cell));
       for (let oy = -rx; oy <= rx && !killer; oy++) for (let ox = -rx; ox <= rx && !killer; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= g.head.length) continue; let j = g.head[c];
         while (j >= 0) {
-          if (g.o[j] !== s.id) { const dx = g.x[j] - s.x, dy = g.y[j] - s.y, rr = (g.r[j] + hr) * HIT_K; if (dx * dx + dy * dy < rr * rr) { const o = this.byId.get(g.o[j]); if (this.teams && o && o.team === s.team) { j = g.next[j]; continue; } killer = g.o[j]; this.lastHitSeg = g.k[j]; break; } }
+          const own = g.o[j] === s.id;
+          if (own ? g.k[j] >= kNeck : !pass) { const dx = g.x[j] - s.x, dy = g.y[j] - s.y, rr = (g.r[j] + hr) * HIT_K; if (dx * dx + dy * dy < rr * rr) { const o = own ? s : this.byId.get(g.o[j]); if (!own && this.teams && o && o.team === s.team) { j = g.next[j]; continue; } killer = g.o[j]; this.lastHitSeg = g.k[j]; break; } }
           j = g.next[j];
         }
       }
-      if (killer) { const k = this.byId.get(killer); if (k && k.god && !k.boss) continue;
+      if (killer) { const k = killer === s.id ? null : this.byId.get(killer); if (k && k.god && !k.boss) continue;
         if (s.pu[1] > 0) { s.pu[1] = 0; s.inv = 1.2; this.evShield.push(s.id, killer); continue; }
         this.kill(s, killer, 2); }
     }
+  }
+  // fix1: own-body test (same discs as collide) for the online client's instant self-reported death; returns true on contact
+  static selfHit(s, tmp, o = 0, f = 0) {
+    const H = s.r * HEAD_K, sp = sampleSp(s.r), n = bodyPoints(s, o, f, sp, s.len, tmp, 590), L = Math.max(sp, (n - 1) * sp), k0 = Math.ceil(selfNeck(s) / sp), hx = tmp[0], hy = tmp[1];
+    for (let j = k0; j < n; j++) { const rr = (s.r * taperAt(j * sp / L) + H) * HIT_K, dx = tmp[j * 2] - hx, dy = tmp[j * 2 + 1] - hy; if (dx * dx + dy * dy < rr * rr) return true; }
+    return false;
   }
   // exported so the client can run the same test against what it renders (instant self-reported death)
   static hitTest(hx, hy, hr, others, tmp) {
@@ -466,7 +484,7 @@ export class Sim {
     const f = this.fgrid, dim = f.dim;
     for (const s of this.snakes) {
       if (!s.alive) continue;
-      const mag = s.pu[0] > 0, reach = mag ? s.r + 7.5 : s.r + 0.9, x2 = s.pu[3] > 0 ? 2 : 1, c0 = f.ci(s.x, s.y), rx = Math.ceil(reach / f.cell);
+      const mag = s.pu[0] > 0, reach = mag ? magReach(s.r) : s.r + 0.9, x2 = s.pu[3] > 0 ? 2 : 1, c0 = f.ci(s.x, s.y), rx = Math.ceil(reach / f.cell);
       for (let oy = -rx; oy <= rx; oy++) for (let ox = -rx; ox <= rx; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= f.head.length) continue; let j = f.head[c];
         while (j >= 0) {

@@ -1035,3 +1035,35 @@ html[lang="ar"] .wc-mini small { letter-spacing: 0; font-size: 11px; }
 .dinfo b { margin-inline-end: 4px; }
 .wc-mini small { padding-inline-end: 40px; }
 @media (max-height: 396px) { #l-skill { display: none; } }
+
+/* =====================================================================================================
+   fix1 (owner iPhone review): replay floats over a full-screen view; calm power-up chips
+   ===================================================================================================== */
+#replay .rp-bar { background: transparent; box-shadow: none; transition: opacity .2s ease; transform: none; opacity: 0; }
+#replay.on .rp-bar { opacity: 1; }
+#replay .rp-bar.top { top: 0; height: auto; box-shadow: none; transform: none; padding: calc(6px + var(--st)) 0 18px; background: linear-gradient(rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0)); }
+#replay .rp-bar.bot { bottom: 0; height: auto; box-shadow: none; transform: none; padding: 22px calc(12px + var(--sr)) calc(8px + var(--sb)) calc(12px + var(--sl)); gap: 10px; background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.42)); }
+#replay .rp-tt { gap: 4px; padding: 4px 12px 6px; border-radius: 10px; background: rgba(8, 10, 16, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); }
+#replay .rp-tt b { font-size: 12px; font-weight: 800; letter-spacing: 0.3em; text-shadow: none; }
+#replay .rp-tt b::before { width: 6px; height: 6px; margin-inline-end: 7px; vertical-align: 0.15em; box-shadow: none; }
+#replay .rp-prog { width: 110px; height: 3px; }
+#replay .rp-card { gap: 8px; padding: 4px 12px 4px 4px; border-radius: 12px; background: rgba(8, 10, 16, 0.62); border: 1px solid rgba(255, 255, 255, 0.08); border-inline-start: 3px solid #ff6b5a; min-width: 0; }
+html[dir="rtl"] #replay .rp-card { padding: 4px 4px 4px 12px; }
+#replay .rp-card .ava.xl { width: 36px; height: 36px; --fw: 2px; } #replay .rp-card .ava.xl .avf b { font-size: 20px; }
+#replay .rp-card small { font-size: 9.5px; letter-spacing: 0.12em; }
+#replay .rp-card b { font-size: 15px; line-height: 1.2; max-width: 34vw; }
+#replay .rp-card .rp-ic { width: 36px; height: 36px; font-size: 18px; border-width: 2px; }
+#replay .rp-btns { gap: 8px; }
+#replay .rp-b { height: 44px; min-width: 0; padding: 0 14px; border-radius: 12px; font-size: 14px; gap: 6px; }
+#replay .rp-b svg { width: 17px; height: 17px; }
+/* power-up chips: no glow, no blinking */
+.pu-chip { box-shadow: none; } .pu-chip.end { animation: none; }
+#pu-flash, #pu-flash.on { animation: none; opacity: 0; }
+/* fix1 HUD: kill feed top-centre between the score cluster and the leaderboard (max 3 lines); compact leaderboard when short */
+#hud .h-feed { top: var(--feedT, calc(8px + var(--st))); left: 50%; right: auto; transform: translateX(-50%); align-items: center; max-width: min(var(--feedW, 46vw), 420px); z-index: 3; pointer-events: none; }
+html[dir="rtl"] #hud .h-feed { left: 50%; transform: translateX(-50%); }
+#hud .h-feed div { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#hud .h-feed div:nth-child(n+4) { display: none; }
+@keyframes feedIn { from { opacity: 0; } } @keyframes feedInR { from { opacity: 0; } }
+#hud.lb-c .h-lb div:nth-child(4):not(.me), #hud.lb-c .h-lb div:nth-child(5):not(.me) { display: none; }
+#hud #h-mini, html.lefty #hud #h-mini { inset-inline-end: var(--miniE, calc(10px + var(--sr))); }

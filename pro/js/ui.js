@@ -1,14 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=aaa2a";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=aaa2a";
-import { WORLDS, worldAsset } from "./worlds.js?v=aaa2a";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=aaa2a";
-import { haptic } from "./audio.js?v=aaa2a";
-import { skinFn, MODES, EMOTES } from "./game.js?v=aaa2a";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=aaa2a";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=aaa2a";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=aaa2a";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=fix1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=fix1";
+import { WORLDS, worldAsset } from "./worlds.js?v=fix1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=fix1";
+import { haptic } from "./audio.js?v=fix1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=fix1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=fix1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=fix1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=fix1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -97,7 +97,7 @@ export class Hud {
     if (pus) for (const p of pus) { g.fillStyle = PU_COL[p.k]; g.beginPath(); const x = S / 2 + p.x * k, y = S / 2 + p.y * k; g.moveTo(x, y - 4); g.lineTo(x + 4, y); g.lineTo(x, y + 4); g.lineTo(x - 4, y); g.fill(); }
     const pulse = 0.5; // calm1: steady markers
     for (const s of all) { if (s === me || !me || !me.alive) continue; const d = Math.hypot(s.x - me.x, s.y - me.y); if (d < 40 && s.m > me.m * 1.2 && !(s.team !== undefined && s.team === me.team)) { g.strokeStyle = `rgba(255,60,70,${0.5 + pulse * 0.5})`; g.lineWidth = 2; g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, 7 + pulse * 3, 0, 6.283); g.stroke(); } }
-    for (const s of all) { if (s === me || (s.pu && s.pu[8] > 0)) continue; g.fillStyle = s.bounty ? "#ffd23a" : s.boss ? "#ff3040" : s.team === 0 ? "#4da3ff" : s.team === 1 ? "#ff4d5e" : s.bot ? "rgba(255,255,255,0.45)" : "rgba(120,200,255,0.9)"; const r = s.boss ? 8 : s.bounty ? 6 : Math.max(2.5, Math.min(7, s.r * 2.2)); g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, r, 0, 6.283); g.fill(); }
+    for (const s of all) { if (s === me) continue; g.fillStyle = s.bounty ? "#ffd23a" : s.boss ? "#ff3040" : s.team === 0 ? "#4da3ff" : s.team === 1 ? "#ff4d5e" : s.bot ? "rgba(255,255,255,0.45)" : "rgba(120,200,255,0.9)"; const r = s.boss ? 8 : s.bounty ? 6 : Math.max(2.5, Math.min(7, s.r * 2.2)); g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, r, 0, 6.283); g.fill(); }
     if (me && me.alive) { // you: the area your screen shows, a heading arrow and a pulsing gold marker
       const mx = S / 2 + me.x * k, my = S / 2 + me.y * k, vw = Math.max(10, 22 * k * (innerWidth / Math.max(1, innerHeight)) * 0.5 + 8), vh = Math.max(8, 12 * k + 6);
       g.strokeStyle = "rgba(255,255,255,0.55)"; g.lineWidth = 1.5; g.strokeRect(mx - vw, my - vh, vw * 2, vh * 2);
@@ -111,13 +111,30 @@ export class Hud {
   // left column: score cluster -> power-up chips -> kill feed (max 3); the centre banner sits under the top-centre pill
   layout() {
     const hud = $("hud"); if (!hud || hud.classList.contains("x-hide")) return;
-    let top = 0; for (const id of ["h-mode", "h-net"]) { const el = $(id); if (el && !el.classList.contains("x-hide") && el.offsetHeight) top = Math.max(top, el.getBoundingClientRect().bottom); }
-    hud.style.setProperty("--bannerT", Math.round(Math.max(top + 10, innerHeight * 0.2)) + "px");
-    const tl = document.querySelector(".h-tl"), pu = $("h-pu"); let fy = tl ? tl.getBoundingClientRect().bottom : 50; if (pu && pu.childElementCount) fy = Math.max(fy, pu.getBoundingClientRect().bottom);
-    hud.style.setProperty("--feedT", Math.round(fy + 6) + "px");
-    const lb = $("h-lb"), mm = $("h-mini"); if (lb && mm) hud.style.setProperty("--miniT", Math.round(lb.getBoundingClientRect().bottom + 8) + "px");
+    const W = innerWidth, cx = W / 2, vis = (el) => el && !el.classList.contains("x-hide") && el.offsetWidth > 0, R = (el) => el.getBoundingClientRect();
+    // fix1: minimap top-right under the leaderboard, never over the boost / emote buttons: shrink it, then show 3 leaderboard rows
+    const tl = document.querySelector(".h-tl"), pu = $("h-pu"), lb = $("h-lb"), mm = $("h-mini");
+    if (lb && mm) { hud.classList.remove("lb-c"); hud.style.removeProperty("--miniE"); mm.style.width = mm.style.height = "";
+    const fit = () => {
+      const lr = R(lb), miniT = Math.round(lr.bottom + 8); hud.style.setProperty("--miniT", miniT + "px"); if (mm.classList.contains("x-hide")) return true;
+      const m = R(mm); let lim = innerHeight - 6;
+      for (const id of ["boost", "h-emo"]) { const el = $(id); if (!vis(el)) continue; const r = R(el), pad = 8; if (r.left - pad < m.right && r.right + pad > m.left) lim = Math.min(lim, r.top - pad); }
+      const S = Math.min(70, lim - miniT); if (S >= 52) { if (S < 70) mm.style.width = mm.style.height = S + "px"; return true; } return false;
+    };
+    if (!fit()) { hud.classList.add("lb-c"); if (!fit()) { // very short screens (Safari toolbars): beside the leaderboard, level with its top, same size
+        const lr = R(lb), S = 56; mm.style.width = mm.style.height = S + "px"; hud.style.setProperty("--miniT", Math.round(lr.top) + "px");
+        hud.style.setProperty("--miniE", Math.round((document.documentElement.dir === "rtl" ? lr.right : W - lr.left) + 8) + "px"); } } }
+    // fix1: kill feed back at the top centre (max 3 lines), under the mode/timer pill, between the score cluster and the leaderboard
+    let top = 0; for (const id of ["h-mode", "h-net"]) { const el = $(id); if (vis(el) && el.offsetHeight) top = Math.max(top, R(el).bottom); }
+    let leftEdge = 0; if (tl) leftEdge = Math.max(leftEdge, document.documentElement.dir === "rtl" ? W - R(tl).left : R(tl).right); if (pu && pu.childElementCount) { const r = R(pu); leftEdge = Math.max(leftEdge, document.documentElement.dir === "rtl" ? W - r.left : r.right); }
+    let rightEdge = 0; for (const el of [lb, mm]) if (vis(el)) { const r = R(el); if (r.top > innerHeight * 0.45) continue; rightEdge = Math.max(rightEdge, document.documentElement.dir === "rtl" ? r.right : W - r.left); }
+    const half = Math.max(60, Math.min(cx - leftEdge, cx - rightEdge) - 10); // room either side of the centre line
+    const base = top ? top + 6 : tl ? R(tl).top : 8; // no pill: level with the score cluster (safe-area aware through its rect)
+    hud.style.setProperty("--feedT", Math.round(base) + "px"); hud.style.setProperty("--feedW", Math.round(half * 2) + "px");
+    const fe = $("h-feed"), fb = fe && fe.childElementCount ? R(fe).bottom : top;
+    hud.style.setProperty("--bannerT", Math.round(Math.max(fb + 8, top + 10, innerHeight * 0.2)) + "px");
   }
-  feed(list) { $("h-feed").innerHTML = list.slice(0, 3).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how === "bounty" ? `<b>💰</b> ${esc(f.b)}` : f.how ? `<b>${f.how === "storm" ? "🌀" : f.how === "self" ? "🔄" : f.how === "meteor" ? "☄" : "💥"}</b> ${esc(t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); this.layout(); clearTimeout(this.ft); this.ft = setTimeout(() => { $("h-feed").innerHTML = ""; this.layout(); }, 6500); }
+  feed(list) { $("h-feed").innerHTML = list.slice(0, 3).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how === "bounty" ? `<b>💰</b> ${esc(f.b)}` : f.how ? `<b>${f.how === "storm" ? "🌀" : f.how === "self" ? "🔄" : f.how === "meteor" ? "☄" : "💥"}</b> ${esc(f.how === "self" && f.b === t("you") ? t("selfDeath") : t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); this.layout(); clearTimeout(this.ft); this.ft = setTimeout(() => { $("h-feed").innerHTML = ""; this.layout(); }, 6500); }
   // ONE centre message channel: a short queue, one message at a time, small, in the upper third (never over the snake)
   banner(txt, ms, kind) {
     const q = this.bq || (this.bq = []); if (this.bCur === txt || q.some((x) => x.txt === txt)) return; q.push({ txt, ms: Math.min(ms || 1300, 1800), kind: kind || "" }); if (q.length > 3) q.splice(0, q.length - 3);
@@ -139,7 +156,7 @@ export class Hud {
   combo(mul) { const c = $("h-combo"); if (!mul || mul < 2) { if (c.dataset.k) { c.classList.add("x-hide"); c.dataset.k = ""; } return; } const k = "×" + mul; if (c.dataset.k !== k) { c.dataset.k = k; c.textContent = `${t("combo")} ${k}`; c.classList.remove("x-hide", "pump"); void c.offsetWidth; c.classList.add("pump"); } }
   pu(P, slow) {
     const box = $("h-pu"); if (!P) { if (box.innerHTML) box.innerHTML = ""; return; } let h = "";
-    for (const k of PU_TIMED) if (P[k] > 0) { const f = Math.max(0, Math.min(1, P[k] / PU_DUR[k])); h += `<div class="pu-chip ${P[k] < 2 ? "end" : ""}" style="--c:${PU_COL[k]};--f:${f.toFixed(3)}"><i>${puSvg(k)}</i><span>${k === 1 ? "1×" : Math.ceil(P[k]) + "s"}</span></div>`; }
+    for (const k of PU_TIMED) if (P[k] > 0) { const f = Math.max(0, Math.min(1, P[k] / PU_DUR[k])); h += `<div class="pu-chip" aria-label="${esc(t("pu_" + k))}" title="${esc(t("pu_" + k))}" style="--c:${PU_COL[k]};--f:${f.toFixed(3)}"><i>${puSvg(k)}</i><span>${k === 1 ? "1×" : Math.ceil(P[k]) + "s"}</span></div>`; }
     if (slow > 0) h += `<div class="pu-chip bad" style="--c:#9ff3ff;--f:${(slow / PU_DUR[5]).toFixed(3)}"><i>${puSvg(5)}</i><span>${Math.ceil(slow)}s</span></div>`;
     if (box.dataset.k !== h) { const n0 = box.childElementCount; box.innerHTML = h; box.dataset.k = h; if (n0 !== box.childElementCount) this.layout(); }
   }

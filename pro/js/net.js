@@ -2,7 +2,7 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=aaa2a";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=fix1";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
 function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && !(s.pu && (s.pu[2] > 0 || s.pu[7] > 0))) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
 export const SERVER = (typeof window !== "undefined" && window.__SSP_SERVER) || "wss://super-snake-online.molierk.workers.dev/ws";
@@ -145,7 +145,8 @@ export class NetBackend {
       if (this.batch.length >= 6) this.flush();
       // instant death: head vs bodies exactly as drawn this frame, and the wall
       this.prepareOthers();
-      let hit = s.pu[4] > 0 || s.inv > 0 ? 0 : Sim.hitTest(s.x, s.y, s.r, this._others, this.tmp);
+      let hit = s.inv > 0 ? 0 : s.pu[7] > 0 ? 0 : Sim.hitTest(s.x, s.y, s.r, this._others, this.tmp);
+      if (!hit && !(s.inv > 0) && Sim.selfHit(s, this.tmp)) hit = this.myId; // fix1: own body kills (the server credits nobody: cause wall/self)
       if (hit && s.pu[1] > 0) { s.pu[1] = 0; s.inv = 1.2; hit = 0; this.cb.onShield && this.cb.onShield(s); } // shield: the server sees the same touch and spends it too
       const wall = s.x * s.x + s.y * s.y > (this.R - s.r * 0.6) ** 2;
       if (hit || wall) { this.dead = true; this.stats.selfDeaths++; this.send(JSON.stringify({ t: "die", hit: hit || 0, seq: this.seq })); this.flush(); this.cb.onMyDeath(hit, hit ? 3 : 1, true); }
