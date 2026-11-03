@@ -14,8 +14,10 @@ export const C = {
   CELL: 4, MAXSEG: 60000,
 };
 export const MASK = C.CAP - 1;
-export const radiusOf = (m) => Math.min(3.4, 0.55 + 0.034 * Math.sqrt(m));
-export const lengthOf = (m) => Math.min(190, 5 + 2.25 * Math.sqrt(m));
+// long1: snakes grow LONG, not fat. Length ~ m^0.8 (was sqrt: 24->43 mass gave only +24% length); radius grows ~30% slower.
+// Start size unchanged (m=24: len 16.0, r 0.718). Cap 200 stays inside the 2048-sample path ring at normal speed (293 units).
+export const radiusOf = (m) => Math.min(2.6, 0.6 + 0.024 * Math.sqrt(m));
+export const lengthOf = (m) => Math.min(200, 16 * Math.pow(m / 24, 0.8));
 export const turnOf = (r) => C.TURN / (1 + Math.max(0, r - 0.6) * 0.6);
 // noself1 (fairness): bots steer with exactly the player's physics (turnOf, TURN_GAIN, ANG_ACC); fix1 had left bots on the old, slower response.
 export const boostCost = (m, dt) => C.BOOST_COST * (1 + m / 1500) * dt;

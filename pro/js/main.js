@@ -1,13 +1,13 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=noself1";
-import { Store, KV } from "./store.js?v=noself1";
-import { setLang, applyI18n, t } from "./i18n.js?v=noself1";
-import { Audio, haptic } from "./audio.js?v=noself1";
-import { Input } from "./input.js?v=noself1";
-import { Game } from "./game.js?v=noself1";
-import { UI, Hud } from "./ui.js?v=noself1";
-import { Renderer2D } from "./render2d.js?v=noself1";
+import { guard } from "./guard.js?v=fit1";
+import { Store, KV } from "./store.js?v=fit1";
+import { setLang, applyI18n, t } from "./i18n.js?v=fit1";
+import { Audio, haptic } from "./audio.js?v=fit1";
+import { Input } from "./input.js?v=fit1";
+import { Game } from "./game.js?v=fit1";
+import { UI, Hud } from "./ui.js?v=fit1";
+import { Renderer2D } from "./render2d.js?v=fit1";
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -45,8 +45,8 @@ async function makeRenderer(kind, quality) {
   const old = $("gl"), cv = document.createElement("canvas"); cv.id = "gl"; cv.setAttribute("aria-hidden", "true"); old.replaceWith(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=noself1");
-      const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 3500); }, onRestored: () => { clearTimeout(app._lostT); } });
+      const m = await import("./render3d.js?v=fit1");
+      const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); /* fit1: iOS drops the GL context whenever the tab is backgrounded; only a loss that lasts 6 s while the page is VISIBLE means 3D is broken. A background loss used to end in a silent switch to 2D for the session. */ const arm = () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (document.hidden) return; if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 6000); }; if (document.hidden) document.addEventListener("visibilitychange", function v() { if (document.hidden) return; document.removeEventListener("visibilitychange", v); if (app.renderer && app.renderer.lost) arm(); }); else arm(); }, onRestored: () => { clearTimeout(app._lostT); /* fit1: rebuild 3D from scratch after a restore (meshes/textures/targets all fresh) instead of trusting a half-restored GL state */ setTimeout(() => { if (app.renderer && !app.renderer.is2D) app.switchRenderer("3d"); }, 50); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
   }
@@ -119,8 +119,10 @@ async function boot() {
   await new Promise((r) => setTimeout(r, 250));
   app.game.startAttract(store.p.last.world || 0, true);
   $("boot").classList.add("out");
-  await app.ui.intro();
-  await app.ui.title();
+  // fit1: once this tab got past the title, a reload (iOS restores an evicted tab by reloading it) goes straight to the lobby:
+  // no studio intro, no second title screen flashing in over the restored page
+  let seen = false; try { seen = !!sessionStorage.getItem("ssp-title"); } catch (_) {}
+  if (!seen) { await app.ui.intro(); await app.ui.title(); try { sessionStorage.setItem("ssp-title", "1"); } catch (_) {} }
   if (store.cur) app.ui.afterLogin(); else app.ui.showAuth();
 }
 boot().catch((e) => { console.error(e); $("bootmsg").textContent = "Error: " + (e && e.message ? e.message : e); });

@@ -1,7 +1,7 @@
 // Player identity: avatars (16 portraits + every flag), frames, titles, banners, ranked tiers, daily login calendar
 // and the free lucky spin. Rewards are coins / XP / cosmetics only (never paid). Pure data + rules, no DOM.
-import { WORLDS, worldAsset } from "./worlds.js?v=noself1";
-import { FLAGS, flagEmoji } from "./skins.js?v=noself1";
+import { WORLDS, worldAsset } from "./worlds.js?v=fit1";
+import { FLAGS, flagEmoji } from "./skins.js?v=fit1";
 
 // requirement shapes: null = free · {lv} · {ach} · {stat:[key,n]} · {season} (tier) · {owner}
 export const AVATARS = [

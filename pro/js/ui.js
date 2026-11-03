@@ -1,14 +1,14 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=noself1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=noself1";
-import { WORLDS, worldAsset } from "./worlds.js?v=noself1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=noself1";
-import { haptic } from "./audio.js?v=noself1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=noself1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=noself1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=noself1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=noself1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=fit1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=fit1";
+import { WORLDS, worldAsset } from "./worlds.js?v=fit1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=fit1";
+import { haptic } from "./audio.js?v=fit1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=fit1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=fit1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=fit1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=fit1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -282,7 +282,7 @@ export class UI {
       const el = $("intro"); if (this.S.settings.reduceMotion || sessionStorage.getItem("ssp-intro")) { res(); return; }
       try { sessionStorage.setItem("ssp-intro", "1"); } catch (_) {}
       el.classList.remove("x-hide"); let done = false; const fin = () => { if (done) return; done = true; el.classList.add("out"); setTimeout(() => { el.classList.add("x-hide"); res(); }, 550); };
-      el.addEventListener("pointerdown", fin, { once: true }); setTimeout(fin, 2700);
+      el.addEventListener("pointerdown", fin, { once: true }); setTimeout(fin, 1400); // fit1: 2.7 s -> 1.4 s, entry must feel instant
     });
   }
   title() {

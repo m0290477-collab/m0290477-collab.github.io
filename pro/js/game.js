@@ -1,16 +1,16 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=noself1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=noself1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=noself1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=noself1";
-import { NetBackend } from "./net.js?v=noself1";
-import { t, fmtNum } from "./i18n.js?v=noself1";
-import { haptic } from "./audio.js?v=noself1";
-import { rankOf, rpDelta } from "./profile.js?v=noself1";
-import { Replay } from "./replay.js?v=noself1";
-import { emit } from "./events.js?v=noself1"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=fit1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=fit1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=fit1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=fit1";
+import { NetBackend } from "./net.js?v=fit1";
+import { t, fmtNum } from "./i18n.js?v=fit1";
+import { haptic } from "./audio.js?v=fit1";
+import { rankOf, rpDelta } from "./profile.js?v=fit1";
+import { Replay } from "./replay.js?v=fit1";
+import { emit } from "./events.js?v=fit1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);

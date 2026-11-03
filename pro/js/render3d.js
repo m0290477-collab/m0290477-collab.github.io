@@ -2,20 +2,20 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=noself1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=noself1";
+import * as THREE from "./vendor/three.module.min.js?v=fit1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=fit1";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=noself1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=noself1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=noself1";
-import { World, prefetchWorld } from "./gfx/env.js?v=noself1";
-import { Post } from "./gfx/post.js?v=noself1";
-import { Studio } from "./gfx/showcase.js?v=noself1";
-import { SoftFx } from "./gfx/fx.js?v=noself1";
-import { on as onEv } from "./events.js?v=noself1";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=noself1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=fit1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=fit1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=fit1";
+import { World, prefetchWorld } from "./gfx/env.js?v=fit1";
+import { Post } from "./gfx/post.js?v=fit1";
+import { Studio } from "./gfx/showcase.js?v=fit1";
+import { SoftFx } from "./gfx/fx.js?v=fit1";
+import { on as onEv } from "./events.js?v=fit1";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=fit1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -596,9 +596,24 @@ export class Renderer3D {
   _flush(m, n) { m.count = n; m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
 
   // ---------- studio showcase (lobby / locker / reveals) ----------
+  // fit1: at k=1 the snake + pedestal span SPAN0 of the canvas height centred at C0. In the lobby, shrink/move it into the box
+  // between the skin name / Locker button and the world thumbnails, so nothing overlaps on short (Safari-with-bars) screens.
+  _fitShow() {
+    const S = this.studio, F = S.fit || (S.fit = { k: 1, dy: 0 }); let k = 1, dy = 0;
+    const lob = document.getElementById("s-lobby");
+    if (lob && lob.classList.contains("on")) {
+      const R = this.canvas.getBoundingClientRect(), H = R.height || innerHeight, q = (id) => { const e = document.getElementById(id); return e && e.offsetWidth ? e.getBoundingClientRect() : null; };
+      const tag = q("l-showtag"), act = q("l-locker"), wr = q("l-worlds") || q("l-diff");
+      const top = Math.max(tag ? tag.bottom : 0, act ? act.bottom : 0) - R.top + 4, bot = (wr ? wr.top : H * 0.86) - R.top - 2;
+      const SPAN0 = 0.56, C0 = 0.64, box = Math.max(40, bot - top);
+      k = Math.max(1, Math.min(2.2, (SPAN0 * H) / box)); const cNow = H * (0.5 + (C0 - 0.5) / k); dy = (top + bot) / 2 - cNow;
+    }
+    if (Math.abs(F.k - k) > 0.01 || Math.abs(F.dy - dy) > 1) { F.k = k; F.dy = dy; S.resize(this.w, this.h); }
+  }
   _frameShow(v, t, dt) {
     const S = this.studio, sv = v.show || {}; S.update(t, dt); const ex0 = this.r.toneMappingExposure; this.r.toneMappingExposure = 0.8;
     if (sv.x !== undefined && Math.abs(S.view.x - sv.x) > 0.001) { S.view.x += (sv.x - S.view.x) * (1 - Math.exp(-dt * 5)); S.resize(this.w, this.h); }
+    if (!(this._fitN = (this._fitN || 0) + 1) || this._fitN % 15 === 1) this._fitShow();
     const spin = (sv.spin || 0) + (sv.idle === "spin" ? 0.9 : 0.12); S.rot = (S.rot || 0) + dt * spin + (sv.drag || 0); S.ped.rotation.y = S.rot * 0.25;
     const d = sv.d; const cnt = { e: 0, t: 0, h: 0 };
     if (d) { if (S._g !== sv.glow) { S._g = sv.glow; S.setGlow(sv.glow); } S.setLegend(d.fx || 0, d.fx ? LEGEND[d.fx] : null);

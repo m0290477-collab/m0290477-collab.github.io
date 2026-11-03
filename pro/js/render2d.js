@@ -2,11 +2,11 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=noself1";
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS } from "./gfx/candy.js?v=noself1";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=noself1";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=noself1";
-import { on as onEv } from "./events.js?v=noself1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=fit1";
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=fit1";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=fit1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=fit1";
+import { on as onEv } from "./events.js?v=fit1";
 const NO2 = 220;
 
 const TAU = Math.PI * 2;
@@ -42,7 +42,15 @@ export class Renderer2D {
     this.calm = false;
     // aaa2: pooled soft orbs (typed arrays, no per-frame allocation) + event-driven fx + top-1 crown
     this.oP = new Float32Array(NO2 * 4); this.oL = new Float32Array(NO2 * 2); this.oC = new Array(NO2).fill("#fff"); this.oH = new Float32Array(NO2 * 3); this.oN = 0; this.meH = null; this.meC = "#9fe8b0"; this._fnMap = new WeakMap(); this._subFx();
-    this.setWorld(0); this.resize();
+    this.setWorld(0); this.resize(); this._warmCandy();
+  }
+  // fit1: the ~78 candy sprites used to be drawn on the first match frame (a 200-300 ms freeze at every first match start on
+  // phones). Draw them in the background while the player is still on the title / lobby, a few per idle slice.
+  _warmCandy() {
+    const pal = CANDY_CSS, NP = pal.length, CS = this.candySpr, jobs = []; for (let ty = 0; ty < CANDY_N; ty++) for (let c = 0; c < NP; c++) jobs.push([ty, c]);
+    const idle = window.requestIdleCallback || ((f) => setTimeout(() => f({ timeRemaining: () => 8 }), 60));
+    const step = (d) => { let n = 0; while (jobs.length && (n++ < 2 || d.timeRemaining() > 4)) { const [ty, c] = jobs.shift(), key = ty * 64 + c; if (!CS.has(key)) { const im = drawCandySprite(ty, pal[c], ty === T_MAC || ty === T_LOLLY ? 224 : 144); im._css = pal[c]; CS.set(key, im); } } if (jobs.length) idle(step); else if (!this.coinSpr) this.coinSpr = drawCoinSprite(160); };
+    setTimeout(() => idle(step), 1500);
   }
   setQuality(q) { this.qName = q; }
   setOptions(o) { const lo = this.userLow; Object.assign(this, o); if (this.userLow !== lo) this.resize(); }
@@ -93,7 +101,12 @@ export class Renderer2D {
       const vg = x.createRadialGradient(W / 2, H / 2, H * 0.4, W / 2, H / 2, W * 0.7); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.4)"); x.fillStyle = vg; x.fillRect(0, 0, W, H); }
     g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(this.bd, 0, 0); g.setTransform(this.kx, 0, 0, this.ky, 0, 0);
     if (!sv || !sv.d || !sv.d.fn) return;
-    const cx = W * (0.5 + (sv.x || 0) * 0.55), cy = H * 0.43, R = Math.min(H * 0.2, W * 0.14) * (sv.zoom || 1), glow = sv.glow || "#ffc845";
+    let cx = W * (0.5 + (sv.x || 0) * 0.55), cy = H * 0.43, R = Math.min(H * 0.2, W * 0.14) * (sv.zoom || 1); const glow = sv.glow || "#ffc845";
+    // fit1: in the lobby, fit head..pedestal ring (cy - 0.5R .. cy + 1.4R) into the box between the Locker button and the world thumbnails
+    if (!(this._fitN = (this._fitN || 0) + 1) || this._fitN % 15 === 1) { const lob = document.getElementById("s-lobby"); this._fit = null;
+      if (lob && lob.classList.contains("on")) { const q = (id) => { const e = document.getElementById(id); return e && e.offsetWidth ? e.getBoundingClientRect() : null; }, Rc = this.canvas.getBoundingClientRect(), tag = q("l-showtag"), act = q("l-locker"), wr = q("l-worlds") || q("l-diff");
+        const top = Math.max(tag ? tag.bottom : 0, act ? act.bottom : 0) - Rc.top + 6, bot = (wr ? wr.top : H * 0.86) - Rc.top - 4; if (bot - top > 30) this._fit = { top, bot }; } }
+    if (this._fit && !sv.x) { const F = this._fit, box = F.bot - F.top; R = Math.min(R, box / 1.95); cy = F.top + 0.5 * R + (box - 1.9 * R) / 2; }
     // pedestal
     g.save(); g.translate(cx, cy + R * 0.95); g.scale(1, 0.32);
     const pg = g.createRadialGradient(0, 0, R * 0.2, 0, 0, R * 1.9); pg.addColorStop(0, glow + "aa"); pg.addColorStop(0.45, glow + "33"); pg.addColorStop(1, glow + "00"); g.fillStyle = pg; g.beginPath(); g.arc(0, 0, R * 1.9, 0, TAU); g.fill();
