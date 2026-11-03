@@ -33,6 +33,6 @@ const run = (S, sec) => { for (let i = 0; i < sec * 60; i++) S.step(null); };
   const seen = new Set(); let gold = 0, mets = 0, drops = 0, claim = null; S.powerups = true; S.puTarget = 0; S.puNear = 0;
   for (let i = 0; i < 60 * 400 && seen.size < 3; i++) { S.step(null); for (const e of S.evEvt) { if (e.ph === "start") seen.add(e.k); if (e.ph === "claim") claim = e; if (e.k === "bounty" && e.ph === "start") { const bb = S.byId.get(e.id); if (bb) S.kill(bb, me.id, 2); } }
     for (const fi of S.evSpawn) if (S.fc[fi] === GOLD_FC) gold++; mets += S.evMet.length; if (S.evt && S.evt.k === "drops") drops += S.evPuNew.length; S.drain(); }
-  ok(seen.has("rain") && gold > 50, `gold rain (${gold} gold orbs)`); ok(seen.has("drops") && drops >= 5 && mets === 0, `power-up drops (${drops} drops, ${mets} meteors)`); ok(seen.has("bounty") && claim && claim.by === me.id, "bounty started and claimed by the killer");
+  ok(seen.has("rain") && gold > 25 /* ai1: rain thinned on purpose */, `gold rain (${gold} gold orbs)`); ok(seen.has("drops") && drops >= 5 && mets === 0, `power-up drops (${drops} drops, ${mets} meteors)`); ok(seen.has("bounty") && claim && claim.by === me.id, "bounty started and claimed by the killer");
 }
 console.log(fail ? `${fail} FAILED` : "ALL PASS"); process.exit(fail ? 1 : 0);

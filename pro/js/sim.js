@@ -211,7 +211,7 @@ export class Sim {
     const s = new Snake(this.nextId++); s.name = name; s.skin = skin;
     const [x, y] = opt.pos || this.safeSpawn(); const a = Math.atan2(-y, -x) + (this.rand() - 0.5) * 1.2;
     s.reset(x, y, a, opt.m || C.START_M); s.bornTick = this.tick; s.bot = !!opt.bot; s.god = !!opt.god;
-    if (s.bot) s.ai = { t: 0, mode: 0, tgt: 0, wa: a, diff: opt.diff ?? this.diff, err: 0 };
+    if (s.bot) s.ai = { t: 0, mode: 0, tgt: 0, wa: a, diff: opt.diff ?? this.diff, err: 0, per: s.id % 3 }; // ai1: 0 fighter, 1 trickster, 2 builder
     this.snakes.push(s); this.byId.set(s.id, s); this.evNew.push(s.id);
     return s;
   }
@@ -300,15 +300,15 @@ export class Sim {
     // feast1: a snake died nearby -> rush to its body before the food is gone (the bigger the corpse, the farther they come)
     if (want === null && this.feasts.length && !(ai.mode === 3 && ai.commit > 0)) { let bf = null, bs = 0;
       for (let i = this.feasts.length - 1; i >= 0; i--) { const F = this.feasts[i]; if (this.tick - F.t > (7 + Math.min(6, F.m / 60)) / this.dt) { this.feasts.splice(i, 1); continue; }
-        const d = Math.hypot(F.x - s.x, F.y - s.y), reach = 45 + s.r * 8 + Math.min(60, F.m * 0.25) + D.hunt * 25; if (d > reach || d < 6) continue; const sc = F.m / (d + 8); if (sc > bs) { bs = sc; bf = F; } }
+        const d = Math.hypot(F.x - s.x, F.y - s.y), reach = 45 + s.r * 8 + Math.min(60, F.m * 0.25) + D.hunt * 25; if (d > reach || d < 6) continue; if (F.cl && F.cl.length >= 3 + Math.min(3, F.m / 90) && !F.cl.includes(s.id)) continue; const sc = F.m / (d + 8); if (sc > bs) { bs = sc; bf = F; } }
       // challenge: a rival bot racing for the same body gets cut off instead (bots fight over the food)
       if (bf && near && near.bot && !near.boss && nd < 16 + s.r * 3 && this.rand() < (0.2 + D.hunt * 0.35) * A) { ai.mode = 3; ai.commit = 5 + ((this.rand() * 5) | 0); bf = null; }
-      if (bf) { const d = Math.hypot(bf.x - s.x, bf.y - s.y); want = Math.atan2(bf.y - s.y, bf.x - s.x); ai.mode = 7; boost = d > 14 && s.m > 30 && this.rand() < D.boost * 1.2 ? 1 : 0; } }
+      if (bf) { (bf.cl || (bf.cl = [])).includes(s.id) || bf.cl.push(s.id); const d = Math.hypot(bf.x - s.x, bf.y - s.y); want = Math.atan2(bf.y - s.y, bf.x - s.x); ai.mode = 7; boost = d > 14 && s.m > 30 && this.rand() < D.boost * 1.2 ? 1 : 0; } }
     // aggression, slither-style: keep committing to an attack for a while once started
     const range = 22 + s.r * 6 + D.hunt * 14;
-    if (want === null && near && nd < range && (ai.mode === 3 && ai.commit > 0 || this.rand() < (0.04 + D.hunt * 0.4) * A * (near.bot ? 2.2 : 1) * Math.min(1, 3 / (1 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11)))) {
+    if (want === null && near && nd < range && (ai.mode === 3 && ai.commit > 0 || this.rand() < (0.04 + D.hunt * 0.4) * A * (near.bot ? 1 : 1.7) * (ai.per === 0 ? 1.35 : ai.per === 2 ? 0.7 : 1) * Math.min(1, 3 / (1 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11)))) {
       const o = near; ai.commit = ai.mode === 3 ? (ai.commit || 0) - 1 : 6 + ((this.rand() * 8) | 0); ai.mode = 3; risky = true;
-      const big = s.m > o.m * 2.2 && s.len > nd * 2.5;
+      const big = s.m > o.m * (ai.per === 2 ? 1.6 : 2.2) && s.len > nd * 2.5; // builder coils earlier
       const ca = Math.cos(o.a), sa = Math.sin(o.a);
       const rel = (s.x - o.x) * ca + (s.y - o.y) * sa; // >0: we are ahead of its head
       if (big && D.hunt > 0.3) { // encircle: orbit the smaller snake, tightening
@@ -317,10 +317,10 @@ export class Sim {
       } else { // cut off: race to a point ahead of its head, crossing its path from our side
         const lead = 5 + nd * (0.55 + D.hunt * 0.3) + o.r * 3;
         const px = -sa, py = ca, sd = ((s.x - o.x) * px + (s.y - o.y) * py) >= 0 ? 1 : -1; // which side of its path we are on
-        const cross = rel > 0 ? -sd * (2 + s.r * 2) : 0; // once ahead, swing across its nose
+        const cross = rel > 0 ? -sd * (2 + s.r * 2) : ai.per === 1 ? sd * (3 + s.r * 2) : 0; // once ahead, swing across its nose; trickster shadows alongside until then
         const tx = o.x + ca * lead + px * cross, ty = o.y + sa * lead + py * cross;
         want = Math.atan2(ty - s.y, tx - s.x);
-        boost = s.m > 32 && this.rand() < D.boost * 1.1 && nd < range * 0.8 ? 1 : 0;
+        boost = s.m > 32 && this.rand() < D.boost * (ai.per === 1 ? (rel > -2 ? 1.6 : 0.3) : 1.1) && nd < range * 0.8 ? 1 : 0; // trickster: sudden burst once level
       }
     } else if (ai.mode === 3 && want === null) ai.mode = 0;
     // feed: best value/distance food in range, preferring what lies ahead (corpse orbs are big and pull bots into fights)
@@ -340,7 +340,7 @@ export class Sim {
     }
     // safety: the path toward `want` (and straight ahead) must be clear, else take the clearest ray.
     // Attackers accept more risk (short look), and every bot sometimes misjudges -> real deaths, like real players.
-    const slip = D.err * (risky ? 8 : 1) * A * Math.min(1.3, 3.2 / (1.5 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11));
+    const slip = D.err * (risky ? 5 : 0.45) * A * Math.min(1.3, 3.2 / (1.5 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11));
     ai.slip = 1; if (this.rand() > slip) {
       ai.slip = 0; const lk = risky ? look * Math.min(1, 0.4 + 0.2 * D.look + 0.07 * this._nh) : look;
       const dw = this.rayDanger(s, want, lk), da = this.rayDanger(s, s.a, lk * 0.7);
@@ -359,8 +359,8 @@ export class Sim {
   // cheap per-tick reflex between decisions: only the ray straight ahead, short range
   botReflex(s) {
     this._nh = 0;
-    const D = DIFF[Math.max(0, Math.min(3, s.ai.diff))]; const look = (3 + s.r * 3) * D.look;
-    if (this.rayDanger(s, s.a, look) > 0) s.ai.t = 0;
+    const D = DIFF[Math.max(0, Math.min(3, s.ai.diff))]; const look = (4 + s.r * 4) * D.look;
+    if (this.rayDanger(s, s.a, look) > 0 || this.rayDanger(s, s.ta ?? s.a, look * 0.8) > 0) s.ai.t = 0; // ai1: also the way it is turning
   }
 
   // ---- one fixed step ----
@@ -371,7 +371,7 @@ export class Sim {
       if (!s.alive) continue;
       puTick(s, dt);
       if (s.rainT > 0) { s.rainT -= dt; s.rainAcc = (s.rainAcc || 0) + dt * 48; while (s.rainAcc >= 1) { s.rainAcc -= 1; const a = s.a + (this.rand() - 0.5) * 3.2, d = 3 + this.rand() * 16; if (this.fCount < this.FM - 80) this.spawnFood(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d, 1.6 + this.rand() * 1.8, (this.rand() * 12) | 0); } }
-      if (s.bot) { if ((this.tick + s.id) % 3 === 0 && s.ai.t > 1) this.botReflex(s); if (--s.ai.t <= 0) { this.botThink(s); const D = DIFF[Math.max(0, Math.min(3, s.ai.diff))]; s.ai.t = Math.max(1, Math.round(D.react * reactScale * (0.7 + this.rand() * 0.6))); } }
+      if (s.bot) { if ((this.tick + s.id) % 3 === 0 && s.ai.t > 1) this.botReflex(s); if (--s.ai.t <= 0) { this.botThink(s); const D = DIFF[Math.max(0, Math.min(3, s.ai.diff))]; s.ai.t = Math.max(1, Math.round(D.react * reactScale * (0.7 + this.rand() * 0.6))); if (s.ai.mode === 2) s.ai.t = Math.min(s.ai.t, Math.round(3 * reactScale)); } }
       else if (inputs) { const inp = inputs(s); if (inp === false) continue; }
       this.moveOne(s, dt);
     }
@@ -440,8 +440,8 @@ export class Sim {
     const e = this.evt;
     if (e) {
       e.t -= dt; if (e.t <= 0) this.endEvent();
-      else if (e.k === "rain") { e.acc += dt; while (e.acc >= 0.2) { e.acc -= 0.2; // gold orbs land around every player (and a few anywhere)
-          for (const h of this.humansAlive()) for (let q = 0; q < 3; q++) { const a = h.a + (this.rand() - 0.5) * 4, d = 4 + this.rand() * 26; if (this.fCount < this.FM - 80) this.spawnFood(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d, 4.5 + this.rand() * 2, GOLD_FC); }
+      else if (e.k === "rain") { e.acc += dt; while (e.acc >= 0.3) { e.acc -= 0.3; // gold orbs land around every player (and a few anywhere); ai1: fewer and wider
+          for (const h of this.humansAlive()) for (let q = 0; q < 2; q++) { const a = h.a + (this.rand() - 0.5) * 5, d = 10 + this.rand() * 36; if (this.fCount < this.FM - 80) this.spawnFood(h.x + Math.cos(a) * d, h.y + Math.sin(a) * d, 4.5 + this.rand() * 2, GOLD_FC); }
           for (let q = 0; q < 2; q++) { const [x, y] = this.randPos(this.R - 4); if (this.fCount < this.FM - 80) this.spawnFood(x, y, 4.5, GOLD_FC); } } }
       else if (e.k === "drops") { e.acc += dt; while (e.acc >= 1.6) { e.acc -= 1.6; // drops1: power-ups land near every player (never harmful)
           if (this.powerups && this.pus.length < (this.puCap || 40) + 10) for (const h of this.humansAlive()) { for (let tr = 0; tr < 6; tr++) { const a = h.a + (this.rand() - 0.5) * 3, d = 9 + this.rand() * 22, x = h.x + Math.cos(a) * d, y = h.y + Math.sin(a) * d; if (Math.hypot(x, y) < this.R - 6 && this.puFree(x, y)) { this.spawnPu(undefined, x, y).life = 20; break; } } } } }
