@@ -3,7 +3,7 @@ import {
 	Float32BufferAttribute,
 	OrthographicCamera,
 	Mesh
-} from './three.module.min.js?v=modes1';
+} from './three.module.min.js?v=modes1b';
 
 class Pass {
 

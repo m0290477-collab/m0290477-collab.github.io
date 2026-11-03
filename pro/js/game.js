@@ -1,15 +1,17 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=modes1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=modes1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=modes1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=modes1";
-import { NetBackend } from "./net.js?v=modes1";
-import { t, fmtNum } from "./i18n.js?v=modes1";
-import { haptic } from "./audio.js?v=modes1";
-import { rankOf, rpDelta } from "./profile.js?v=modes1";
-import { Replay } from "./replay.js?v=modes1";
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=modes1b"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=modes1b";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=modes1b";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=modes1b";
+import { NetBackend } from "./net.js?v=modes1b";
+import { t, fmtNum } from "./i18n.js?v=modes1b";
+import { haptic } from "./audio.js?v=modes1b";
+import { rankOf, rpDelta } from "./profile.js?v=modes1b";
+import { Replay } from "./replay.js?v=modes1b";
+import { emit } from "./events.js?v=modes1b"; // aaa2: fx.* hooks (renderers + audio subscribe)
+const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
 const hexLin = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
@@ -61,7 +63,7 @@ class LocalBackend {
       for (let i = 0; i < S.evEat.length; i += 2) {
         const fi = S.evEat[i], by = S.byId.get(S.evEat[i + 1]);
         if (by && this.ghosts.length < 150) this.ghosts.push({ x: S.fx[fi], y: S.fy[fi], tx: by.x, ty: by.y, t: 0, r: 0.22 + Math.sqrt(S.fv[fi]) * 0.16, c: S.fc[fi], e: by, mine: by === this.me });
-        if (by) this.cb.onEat(by === this.me, S.fx[fi], S.fy[fi], S.fv[fi]);
+        if (by) this.cb.onEat(by === this.me, S.fx[fi], S.fy[fi], S.fv[fi], S.fc[fi]);
       }
       for (let i = 0; i < S.evDie.length; i += 3) {
         const id = S.evDie[i], by = S.evDie[i + 1], cause = S.evDie[i + 2], s = S.byId.get(id); if (!s) continue; s.deadAt = performance.now();
@@ -121,7 +123,7 @@ export class Game {
     this.zone = null; this.hill = null; this.boss = null; this.teamScore = [0, 0]; this.kothPts = new Map(); this.lives = this.M.lives || 0; this.win = false; this.place = 0;
     const skin = this.mySkin();
     const cb = {
-      onEat: (me, x, y, v) => this.onEat(me, x, y, v), onDeath: (mr, by, cause) => this.onDeath(mr, by, cause), onMyDeath: (by, cause) => this.onMyDeath(by, cause),
+      onEat: (me, x, y, v, c) => this.onEat(me, x, y, v, c), onDeath: (mr, by, cause) => this.onDeath(mr, by, cause), onMyDeath: (by, cause) => this.onMyDeath(by, cause),
       onKill: (id) => this.onKill(id), onSpawnMe: (s) => { this.camX = s.x; this.camY = s.y; this.view.cam.snap = true; },
       onStatus: (st, n) => this.onNet(st, n), onAnyDeath: (s, by) => this.onAnyDeath(s, by),
       onPu: (s, k, hit, p) => this.onPu(s, k, hit, p), onShield: (s) => this.onShield(s),
@@ -175,7 +177,8 @@ export class Game {
   }
 
   // ---------- events ----------
-  onEat(me, x, y, v) {
+  onEat(me, x, y, v, c) {
+    { const E = EV.eat; E.me = !!me; E.x = x; E.y = y; E.v = v; E.c = c | 0; emit("fx.eat", E); }
     if (!me) return; this.stats.food++; const A = this.app;
     const now = performance.now(), mine = this.backend && this.backend.me, x2 = mine && mine.pu && mine.pu[3] > 0 ? 2 : 1;
     this.combo = now - this.comboT < 700 ? this.combo + 1 : 1; this.comboT = now;
@@ -246,6 +249,7 @@ export class Game {
   colOf(s) { const f = skinFn(s.skin || {}), col = [0, 0, 0]; f(2, 20, 0, col); return [toLin(col[0]), toLin(col[1]), toLin(col[2])]; }
   onDeath(mr, by, cause) {
     const s = mr.s; const f = skinFn(s.skin || {}), lin = this.colOf(s);
+    { const E = EV.kill, k0 = by && by !== s.id ? this.findSnake(by) : null; E.s = s; E.x = s.x; E.y = s.y; E.id = s.id; E.by = by || 0; E.hasK = !!(k0 && k0.alive); E.kx = k0 ? k0.x : 0; E.ky = k0 ? k0.y : 0; emit("fx.kill", E); }
     const me = this.backend && this.backend.me; const dist = me ? Math.hypot(s.x - me.x, s.y - me.y) : 999;
     if (dist < 45) { this.r.shatter(s, f, this.app.store.settings.juice ? 60 : 25); this.r.burst(s.x, s.y, lin, 26, 9, 0.9, 0.65, 6); this.r.burst(s.x, s.y, [1, 1, 1], 10, 5, 0.4, 0.5, 3); if (this.app.store.settings.juice) { this.r.ring(s.x, s.y, lin, 7); this.r.light && this.r.light(s.x, s.y, [lin[0] * 2 + 0.6, lin[1] * 2 + 0.6, lin[2] * 2 + 0.6], 0.9); } }
     if (dist < 80 && (!by || by !== (me && me.id))) this.app.audio.at("die", s.x, s.y);
@@ -261,7 +265,7 @@ export class Game {
     if (this.mode === "br" && !this.ended) { const alive = this.backend.sim.snakes.filter((x) => x.alive).length; if (s !== this.backend.me) { if (alive === 1 && this.backend.me && this.backend.me.alive) this.endMatch(true, "br"); } }
   }
   onKill(id) {
-    this.stats.kills++; const A = this.app, now = performance.now(); A.audio.play("kill"); haptic.pattern([15, 40, 25]); this.r.shake(0.7);
+    this.stats.kills++; const A = this.app, now = performance.now(); { const v0 = this.findSnake(id), E = EV.mykill; E.id = id; E.x = v0 ? v0.x : 0; E.y = v0 ? v0.y : 0; emit("fx.mykill", E); } A.audio.play("kill"); haptic.pattern([15, 40, 25]); this.r.shake(0.7);
     const v = this.findSnake(id); this.pushFeed(t("you"), v ? v.name : "?", true);
     this.streak = now - this.streakT < 4000 ? this.streak + 1 : 1; this.streakT = now;
     const label = this.streak >= 4 ? t("rampage") : this.streak === 3 ? t("tripleKill") : this.streak === 2 ? t("doubleKill") : t("eliminated");
@@ -273,6 +277,7 @@ export class Game {
   }
   onMyDeath(by, cause) {
     const A = this.app, me = this.backend.me; if (!me) return;
+    { const E = EV.death; E.x = me.x; E.y = me.y; E.cause = cause | 0; emit("fx.death", E); }
     this.stats.deaths++; const life = (performance.now() - this.stats.lifeT0) / 1000; this.stats.life = Math.max(this.stats.life, life);
     A.audio.play("die"); A.audio.boost(false); haptic.pattern([40, 30, 80]); this.r.shake(1.2); this.r.kick && this.r.kick(1.2, [0.6, 0, 0], 0.35);
     const f = skinFn(this.mySkin()), lin = this.colOf({ skin: this.mySkin() });
@@ -305,7 +310,7 @@ export class Game {
     if (this.ended || this.victory) return; this.win = win; const A = this.app, me = this.backend.me;
     if (win) {
       this.victory = { t0: performance.now(), dur: 3600, reason }; A.input.enabled = false; A.audio.boost(false); A.audio.play("victory"); haptic.pattern([30, 60, 30, 60, 90]);
-      this.hud.cinematic(t("victory"), t("vic_" + reason)); const p = me && me.alive ? me : { x: this.camX, y: this.camY };
+      this.hud.cinematic(t("victory"), t("vic_" + reason)); const p = me && me.alive ? me : { x: this.camX, y: this.camY }; { const E = EV.pos; E.x = p.x; E.y = p.y; E.reason = reason; emit("fx.win", E); }
       if (this.r.confetti) { this.r.confetti(p.x, p.y, 180); setTimeout(() => this.r.confetti && this.backend && this.r.confetti(p.x + 3, p.y - 2, 140), 700); }
       this.r.ring(p.x, p.y, [1, 0.85, 0.3], 20); this.r.kick && this.r.kick(0.4, [1, 0.95, 0.8], 0.25);
     } else { A.audio.play("defeat"); this.endAt = performance.now() + 600; this.hud.cinematic(t("defeat"), t("def_" + reason), true); A.input.enabled = false; }
@@ -366,7 +371,7 @@ export class Game {
     if (this.mode !== "attract" && !this.paused && !this.ended && me && me.alive && !this.victory) {
       const ang = A.input.poll(me.ta ?? me.a, dt); let boost = A.input.boost;
       if (ang !== null && ang !== undefined) b.setInput(ang, boost); else b.setInput(me.ta ?? me.a, boost);
-      const boosting = !!boost && me.m > C.MIN_BOOST_M; A.audio.boost(boosting); if (boosting) { this.stats.boost += dt; if (!this._wasBoost) { this.r.kick && this.r.kick(0.35); } } this._wasBoost = boosting;
+      const boosting = !!boost && me.m > C.MIN_BOOST_M; A.audio.boost(boosting); if (boosting) { this.stats.boost += dt; if (!this._wasBoost) { this.r.kick && this.r.kick(0.35); } } if (boosting !== !!this._wasBoost) { EV.boost.on = boosting; emit("fx.boost", EV.boost); } this._wasBoost = boosting;
       this.stats.best = Math.max(this.stats.best, me.m);
     }
     if (this.countdown > 0 && !this.paused) {
@@ -510,10 +515,10 @@ export class Game {
     if (me && me.alive && !this.ended) {
       this.hud.pu(me.pu, me.slow);
       // rank / mass milestones
-      if (rank > 0 && rank < this.rankShown && (rank === 1 || rank <= 3 || (rank <= 10 && this.rankShown > 10)) && performance.now() - st.t0 > 4000) { this.hud.popup(rank === 1 ? "👑 " + t("rankTop") : t("rankUp", { n: rank }), "rank", this.r.project(me.x, me.y, 3.5)); this.app.audio.play(rank === 1 ? "level" : "toast"); }
+      if (rank > 0 && rank < this.rankShown && (rank === 1 || rank <= 3 || (rank <= 10 && this.rankShown > 10)) && performance.now() - st.t0 > 4000) { this.hud.popup(rank === 1 ? "👑 " + t("rankTop") : t("rankUp", { n: rank }), "rank", this.r.project(me.x, me.y, 3.5)); this.app.audio.play(rank === 1 ? "level" : "toast"); if (rank === 1) { const E = EV.pos; E.x = me.x; E.y = me.y; emit("fx.rank1", E); } }
       if (rank > 0) this.rankShown = rank;
       const MILES = [100, 250, 500, 1000, 2500, 5000, 10000]; const mi = MILES.findIndex((x) => me.m < x); const reached = mi < 0 ? MILES.length : mi;
-      if (reached > this.massMile) { this.massMile = reached; this.hud.popup("⬆ " + t("massN", { n: fmtNum(MILES[reached - 1]) }), "rank", this.r.project(me.x, me.y, 4)); this.app.audio.play("ach"); haptic.tap(15); }
+      if (reached > this.massMile) { this.massMile = reached; this.hud.popup("⬆ " + t("massN", { n: fmtNum(MILES[reached - 1]) }), "rank", this.r.project(me.x, me.y, 4)); this.app.audio.play("ach"); haptic.tap(15); const E = EV.pos; E.x = me.x; E.y = me.y; E.n = reached; emit("fx.levelup", E); }
       this.liveMissions(); this.hint();
     }
     // adaptive music intensity: size, nearby threats, mode danger
