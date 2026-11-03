@@ -4,10 +4,10 @@
 //   infection · two sides; anyone the infected kill comes back infected (you too); humans survive 2:30 to win
 //   duel      · best of three rounds against one champion-level bot in a small arena
 //   daily     · the same seed, world and difficulty for everyone on a given day, 3:00, local leaderboard
-import { t, fmtNum } from "./i18n.js?v=fix1";
-import { GOLD_FC, C } from "./sim.js?v=fix1";
-import { SKINS } from "./skins.js?v=fix1";
-import { haptic } from "./audio.js?v=fix1";
+import { t, fmtNum } from "./i18n.js?v=candy1";
+import { GOLD_FC, C } from "./sim.js?v=candy1";
+import { SKINS } from "./skins.js?v=candy1";
+import { haptic } from "./audio.js?v=candy1";
 
 export const XMODE_CFG = {
   goldrush: { bots: 18, R: 200, dur: 180, target: 30 },

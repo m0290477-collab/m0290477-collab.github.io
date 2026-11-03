@@ -1,16 +1,16 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=fix1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=fix1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=fix1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=fix1";
-import { NetBackend } from "./net.js?v=fix1";
-import { t, fmtNum } from "./i18n.js?v=fix1";
-import { haptic } from "./audio.js?v=fix1";
-import { rankOf, rpDelta } from "./profile.js?v=fix1";
-import { Replay } from "./replay.js?v=fix1";
-import { emit } from "./events.js?v=fix1"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=candy1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=candy1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=candy1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=candy1";
+import { NetBackend } from "./net.js?v=candy1";
+import { t, fmtNum } from "./i18n.js?v=candy1";
+import { haptic } from "./audio.js?v=candy1";
+import { rankOf, rpDelta } from "./profile.js?v=candy1";
+import { Replay } from "./replay.js?v=candy1";
+import { emit } from "./events.js?v=candy1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -62,7 +62,7 @@ class LocalBackend {
       S.step(null);
       for (let i = 0; i < S.evEat.length; i += 2) {
         const fi = S.evEat[i], by = S.byId.get(S.evEat[i + 1]);
-        if (by && this.ghosts.length < 150) this.ghosts.push({ x: S.fx[fi], y: S.fy[fi], tx: by.x, ty: by.y, t: 0, r: 0.22 + Math.sqrt(S.fv[fi]) * 0.16, c: S.fc[fi], e: by, mine: by === this.me });
+        if (by && this.ghosts.length < 150) this.ghosts.push({ x: S.fx[fi], y: S.fy[fi], tx: by.x, ty: by.y, t: 0, r: 0.22 + Math.sqrt(S.fv[fi]) * 0.16, v: S.fv[fi], c: S.fc[fi], e: by, mine: by === this.me });
         if (by) this.cb.onEat(by === this.me, S.fx[fi], S.fy[fi], S.fv[fi], S.fc[fi]);
       }
       for (let i = 0; i < S.evDie.length; i += 3) {
@@ -484,7 +484,7 @@ export class Game {
     v.food = b; v.ghosts = b.ghosts; v.pus = b.pus || null; v.mets = b.mets || null; v.tick = b.sim ? b.sim.tick : undefined;
     v.rain = this.rainFx && now < this.rainFx.until && b.me && b.me.alive ? b.me : null; v.goldRain = this.evNow && this.evNow.k === "rain" && now < this.evNow.until && b.me ? b.me : null;
     v.zone = this.zone && this.mode === "br" ? this.zone : null; v.hill = this.hill && this.mode === "koth" ? { x: this.hill.x, y: this.hill.y, r: this.hill.r, c: this.hill.mine ? [0.3, 1, 0.5] : this.hill.contested ? [1, 0.3, 0.3] : [1, 0.8, 0.2] } : null;
-    v.cores = this.boss && this.boss.s.alive ? this.boss.cores : null;
+    v.cores = this.boss && this.boss.s.alive ? this.boss.cores : null; v.goldMode = this.mode === "goldrush"; // candy1: Gold Rush gold renders as coins
     if (this.xm && this.xm.view) this.xm.view(this, v); // Track B
     // camera
     const me = b.me; let tx = this.camX, ty = this.camY, zoom = 1; const cam = v.cam;

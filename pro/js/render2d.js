@@ -2,10 +2,11 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach } from "./sim.js?v=fix1";
-import { WORLDS, paintGround, worldAsset } from "./worlds.js?v=fix1";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=fix1";
-import { on as onEv } from "./events.js?v=fix1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=candy1";
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS } from "./gfx/candy.js?v=candy1";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=candy1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=candy1";
+import { on as onEv } from "./events.js?v=candy1";
 const NO2 = 220;
 
 const TAU = Math.PI * 2;
@@ -37,6 +38,7 @@ export class Renderer2D {
     this.camX = 0; this.camY = 0; this.scale = 14; this.qName = "low"; this.Q = { particles: 300 }; this.is2D = true;
     this.buckets = Array.from({ length: 16 }, () => []); this.puSpr = PU_COL.map((c, k) => this._puSprite(k)); this.bgImg = null; this.vig = null; this.vigK = "";
     this.glowSpr = new Map(); // food glow sprite per colour (additive)
+    this.candySpr = new Map(); this.coinSpr = null; // candy1: flat candy sprites, drawn once per (type, colour)
     this.calm = false;
     // aaa2: pooled soft orbs (typed arrays, no per-frame allocation) + event-driven fx + top-1 crown
     this.oP = new Float32Array(NO2 * 4); this.oL = new Float32Array(NO2 * 2); this.oC = new Array(NO2).fill("#fff"); this.oH = new Float32Array(NO2 * 3); this.oN = 0; this.meH = null; this.meC = "#9fe8b0"; this._fnMap = new WeakMap(); this._subFx();
@@ -158,10 +160,18 @@ export class Renderer2D {
     if (v.hill) { const h = v.hill, c = lin2css(h.c || [1, 0.8, 0.2]); g.globalAlpha = 0.14; g.fillStyle = c; g.beginPath(); g.arc(h.x, h.y, h.r, 0, TAU); g.fill(); g.globalAlpha = 0.6; g.strokeStyle = c; g.lineWidth = 0.3; g.stroke(); g.globalAlpha = 1; }
     if (v.zone) { const z = v.zone, zr = Math.max(0.5, z.r); g.save(); g.beginPath(); g.rect(cx - vr * 1.5, cy - vr * 1.5, vr * 3, vr * 3); g.arc(z.x, z.y, zr, 0, TAU, true); g.fillStyle = "rgba(40,24,64,0.45)"; g.fill("evenodd"); g.restore();
       g.strokeStyle = "#b9a6e0"; g.globalAlpha = 0.12; g.lineWidth = 2.2; g.beginPath(); g.arc(z.x, z.y, zr - 1, 0, TAU); g.stroke(); g.globalAlpha = 0.55; g.lineWidth = 0.3; g.beginPath(); g.arc(z.x, z.y, zr, 0, TAU); g.stroke(); g.globalAlpha = 1; }
-    // food: small soft dots, one path per colour, no glow, no twinkle
-    const F = v.food, pal = v.foodPalCss, B = this.buckets, NB = Math.min(B.length, pal.length); for (let b = 0; b < NB; b++) B[b].length = 0;
-    for (let i = 0; i < F.FM; i++) { if (!F.fa[i]) continue; const x = F.fx[i], y = F.fy[i]; if ((x - cx) * (x - cx) + (y - cy) * (y - cy) > vr2) continue; B[F.fc[i] % NB].push(i); }
-    for (let b = 0; b < NB; b++) { const L = B[b]; if (!L.length) continue; g.fillStyle = pal[b]; g.beginPath(); for (const i of L) { const r = 0.15 + Math.sqrt(F.fv[i]) * 0.1; g.moveTo(F.fx[i] + r, F.fy[i]); g.arc(F.fx[i], F.fy[i], r, 0, TAU); } g.fill(); }
+    // candy1: big flat candy sprites (one cached sprite per type + colour, no glow), coins in Gold Rush; eaten candy
+    // shrinks and slides into the eater's mouth (ghosts), drawn under the snakes
+    { const F = v.food, pal = v.foodPalCss === FOOD_COLORS_CB ? v.foodPalCss : CANDY_CSS, NP = pal.length, gold = !!v.goldMode, CS = this.candySpr;
+      const spr = (ty, c) => { const css = pal[c % NP], key = ty * 64 + (c % NP); let im = CS.get(key); if (!im || im._css !== css) { im = drawCandySprite(ty, css, ty === T_MAC || ty === T_LOLLY ? 224 : 144); im._css = css; CS.set(key, im); } return im; };
+      const coin = () => this.coinSpr || (this.coinSpr = drawCoinSprite(160));
+      for (let i = 0; i < F.FM; i++) { if (!F.fa[i]) continue; const x = F.fx[i], y = F.fy[i]; if ((x - cx) * (x - cx) + (y - cy) * (y - cy) > vr2) continue;
+        const c = F.fc[i], age = F.age ? F.age(i) : 1, gr = age < 1 ? age * age * (3 - 2 * age) : 1;
+        if (gold && c === GOLD_FC) { const h = 0.8 * SPR_K * gr; g.drawImage(coin(), x - h, y - h, h * 2, h * 2); continue; }
+        const val = F.fv[i], big = candyBig(val), ty = candyType(val, c, big), h = candySize2(val, big) * SPR_K * gr; g.drawImage(spr(ty, c), x - h, y - h, h * 2, h * 2); }
+      if (v.ghosts) for (const gh of v.ghosts) { const u = gh.t, e = u * u, x = gh.x + (gh.tx - gh.x) * e, y = gh.y + (gh.ty - gh.y) * e, k = 1 - u * 0.85, c = gh.c, val = gh.v ?? Math.max(1, ((gh.r - 0.22) / 0.16) ** 2);
+        if (gold && c === GOLD_FC) { const h = 0.8 * SPR_K * k; g.drawImage(coin(), x - h, y - h, h * 2, h * 2); continue; }
+        const big = candyBig(val), h = candySize2(val, big) * SPR_K * k; g.drawImage(spr(candyType(val, c, big), c), x - h, y - h, h * 2, h * 2); } }
     // power-up pickups: cached sprites, bobbing + pulsing so they read at a glance
     if (v.pus) for (const p of v.pus) { if ((p.x - cx) ** 2 + (p.y - cy) ** 2 > vr2) continue; const sz = 1.6; g.drawImage(this.puSpr[p.k] || this.puSpr[0], p.x - sz, p.y - sz, sz * 2, sz * 2); }
     // meteor warnings: red ring, filling disc, the falling rock and its shadow
@@ -171,7 +181,7 @@ export class Renderer2D {
     g.globalAlpha = 1;
     if ((v.rain || v.goldRain) && !this.calm) { const h = v.rain || v.goldRain; if (Math.random() < 0.3) this.burst(h.x + (Math.random() - 0.5) * 30, h.y + (Math.random() - 0.5) * 20, v.rain ? [0.8, 1, 0.3] : [1, 0.85, 0.2], 2, 1.5, 0.6); }
     // snakes
-    const pts = this.tmp, col = this.col; this._palCss = v.foodPalCss; let crown = null; this._look2d(v);
+    const pts = this.tmp, col = this.col; this._palCss = v.foodPalCss === FOOD_COLORS_CB ? v.foodPalCss : CANDY_CSS; let crown = null; this._look2d(v);
     for (const d of v.snakes) {
       const s = d.s, r = s.r * (d.scale || 1); if ((s.sx(d.o) - cx) ** 2 + (s.sy(d.o) - cy) ** 2 > (vr + s.len) ** 2) continue;
       const n = bodyPoints(s, d.o, d.f, Math.max(0.3, r * 0.6), s.len, pts, 790);

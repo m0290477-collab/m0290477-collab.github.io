@@ -2,7 +2,7 @@ import {
 	Matrix4,
 	Vector2,
 	Vector3,
-} from './three.module.min.js?v=fix1';
+} from './three.module.min.js?v=candy1';
 
 /**
  * References:

@@ -2,7 +2,7 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=fix1";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=candy1";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
 function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && !(s.pu && (s.pu[2] > 0 || s.pu[7] > 0))) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
 export const SERVER = (typeof window !== "undefined" && window.__SSP_SERVER) || "wss://super-snake-online.molierk.workers.dev/ws";
@@ -110,7 +110,7 @@ export class NetBackend {
       const fid = v.getUint16(o, true), by = v.getUint16(o + 2, true); o += 4; const i = this.fmap.get(fid); if (i === undefined) continue;
       this.fmap.delete(fid); this.fa[i] = 0; this.free.push(i);
       const eater = by === this.myId ? this.me : this.mirrors.get(by)?.s;
-      if (eater) { if (this.ghosts.length < 120) this.ghosts.push({ x: this.fx[i], y: this.fy[i], tx: eater.x, ty: eater.y, t: 0, r: 0.22 + Math.sqrt(this.fv[i]) * 0.16, c: this.fc[i], e: eater }); this.cb.onEat(by === this.myId, this.fx[i], this.fy[i], this.fv[i], this.fc[i]); }
+      if (eater) { if (this.ghosts.length < 120) this.ghosts.push({ x: this.fx[i], y: this.fy[i], tx: eater.x, ty: eater.y, t: 0, r: 0.22 + Math.sqrt(this.fv[i]) * 0.16, v: this.fv[i], c: this.fc[i], e: eater }); this.cb.onEat(by === this.myId, this.fx[i], this.fy[i], this.fv[i], this.fc[i]); }
     }
     const ns = v.getUint16(o, true); o += 2;
     for (let k = 0; k < ns; k++) { this.allocFood(v.getUint16(o, true), v.getFloat32(o + 2, true), v.getFloat32(o + 6, true), v.getUint8(o + 10) / 10, v.getUint8(o + 11), true); o += 12; }

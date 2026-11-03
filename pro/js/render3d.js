@@ -2,19 +2,20 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=fix1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach } from "./sim.js?v=fix1";
+import * as THREE from "./vendor/three.module.min.js?v=candy1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=candy1";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D } from "./worlds.js?v=fix1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=fix1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=fix1";
-import { World, prefetchWorld } from "./gfx/env.js?v=fix1";
-import { Post } from "./gfx/post.js?v=fix1";
-import { Studio } from "./gfx/showcase.js?v=fix1";
-import { SoftFx } from "./gfx/fx.js?v=fix1";
-import { on as onEv } from "./events.js?v=fix1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=candy1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=candy1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=candy1";
+import { World, prefetchWorld } from "./gfx/env.js?v=candy1";
+import { Post } from "./gfx/post.js?v=candy1";
+import { Studio } from "./gfx/showcase.js?v=candy1";
+import { SoftFx } from "./gfx/fx.js?v=candy1";
+import { on as onEv } from "./events.js?v=candy1";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=candy1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -63,7 +64,7 @@ export class Renderer3D {
   prewarm() {
     const G = this.snakes.G, saved = []; const force = (m, k) => { saved.push([m, k, m[k]]); };
     for (const n in G) { force(G[n].g, "instanceCount"); G[n].g.instanceCount = 1; }
-    for (const m of [this.bits, this.conf, this.cores, this.coreHalo, this.teamRing, this.food, this.halo, this.gem, this.eyes.w, this.eyes.p, this.eyes.h, this.eyes.t, this.eyes.hn, this.eyesS.w, this.eyesS.p, this.eyesS.h, this.eyesS.t, this.eyesS.hn]) { force(m, "count"); m.count = 1; }
+    for (const m of [this.bits, this.conf, this.cores, this.coreHalo, this.teamRing, ...this.candy, this.halo, this.gem, this.eyes.w, this.eyes.p, this.eyes.h, this.eyes.t, this.eyes.hn, this.eyesS.w, this.eyesS.p, this.eyesS.h, this.eyesS.t, this.eyesS.hn]) { force(m, "count"); m.count = 1; }
     if (this.sfx) { const X = this.sfx; force(X.og, "instanceCount"); X.og.instanceCount = 1; force(X.rgG, "instanceCount"); X.rgG.instanceCount = 1; for (const o of [X.orbs, X.rgs, X.crown, X.shaft]) { force(o, "visible"); o.visible = true; } }
     for (const m of this.snakes.shadowMeshes || []) { force(m, "visible"); m.visible = true; }
     for (const m of [this.metRing, this.metDisc, this.metRock]) if (m) { force(m, "count"); m.count = 1; }
@@ -105,11 +106,12 @@ export class Renderer3D {
     E.t = this._inst(scene, mergeGeos([tg, f1, f2]), M({ color: 0xff2a55, roughness: 0.3, clearcoat: 1, emissive: 0x3a0010 }), MAX_HEAD, false);
     return E;
   }
-  _initFood() {
-    this.food = this._inst(this.scene, new THREE.IcosahedronGeometry(1, this.Q.food), new THREE.MeshLambertMaterial({ color: 0xffffff }), MAX_FOOD, true); // fix1: no emissive; calm1: lit, matte food (no overbright glow)
-    this.halo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(255,255,255,0.95)"], [0.25, "rgba(255,255,255,0.35)"], [1, "rgba(255,255,255,0)"]]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false }), MAX_FOOD, true);
-    this.halo.renderOrder = 3;
-    this.gem = this._inst(this.scene, new THREE.OctahedronGeometry(1, 0), this.Q.mat === "physical" ? new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45, metalness: 0.1, flatShading: true, envMapIntensity: 0.6 }) : new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }), MAX_GEM, true);
+  _initFood() { // candy1: six procedural candy types (one InstancedMesh each) + soft contact shadows + Gold Rush coins
+    const tier = this.Q.mat, q = this.qName === "low" ? 0 : this.Q.food > 1 ? 2 : 1, geos = candyGeometries(THREE, q), mat = candyMaterial(THREE, tier, false), gm = candyMaterial(THREE, tier, true);
+    this.candy = geos.map((g, k) => this._inst(this.scene, g, k === T_GUMMY ? gm : mat, MAX_FOOD, true)); this.food = this.candy[0];
+    this.halo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(0,0,0,0.42)"], [0.45, "rgba(0,0,0,0.26)"], [1, "rgba(0,0,0,0)"]]), transparent: true, depthWrite: false, toneMapped: false, fog: false, color: 0xffffff }), MAX_FOOD, false); // contact shadows
+    this.halo.renderOrder = 1;
+    this.gem = this._inst(this.scene, coinGeometry(THREE, q), coinMaterial(THREE, tier), MAX_GEM, false); // Gold Rush gold: metallic coins, never candy
   }
   _initParticles() {
     const N = 2600; this.pN = N; this.pMax = this.Q.particles;
@@ -239,7 +241,7 @@ export class Renderer3D {
     this.sun.castShadow = Q.shadows > 0; const ms = Q.shadows > 1 ? 2048 : 512; // calm1: one small shadow map on low/medium (phones) if (this.sun.shadow.map && this.sun.shadow.mapSize.x !== ms) { this.sun.shadow.map.dispose(); this.sun.shadow.map = null; } this.sun.shadow.mapSize.set(ms, ms);
     this.fxLight.visible = true; // constant light count: toggling a light recompiles every lit material mid-match this.studio.key.castShadow = Q.shadows > 0; this.studio.setQuality(Q);
     if (!first) { this.snakes.build(Q); for (const m of this.snakes.worldMeshes) this.scene.add(m); for (const m of this.snakes.showMeshes) this.studio.scene.add(m); }
-    if (!first && this._matTier !== Q.mat + Q.food) { for (const E of [this.eyes, this.eyesS]) for (const k in E) { E[k].parent.remove(E[k]); E[k].geometry.dispose(); E[k].material.dispose(); } for (const m of [this.food, this.halo, this.gem]) { this.scene.remove(m); m.geometry.dispose(); m.material.dispose(); } this._initFood(); this.eyes = this._eyes(this.scene); this.eyesS = this._eyes(this.studio.scene); }
+    if (!first && this._matTier !== Q.mat + Q.food) { for (const E of [this.eyes, this.eyesS]) for (const k in E) { E[k].parent.remove(E[k]); E[k].geometry.dispose(); E[k].material.dispose(); } for (const m of [...this.candy, this.halo, this.gem]) { this.scene.remove(m); m.geometry.dispose(); m.material.dispose(); } this._initFood(); this.eyes = this._eyes(this.scene); this.eyesS = this._eyes(this.studio.scene); }
     this._matTier = Q.mat + Q.food;
     const w = this.worldI; if (!first) { this.worldI = -1; this.setWorld(w); }
     this._built = true; this._applyDpr(); this.warm = this.prewarm && this.studio ? this.prewarm() : null;
@@ -487,7 +489,7 @@ export class Renderer3D {
     this.sun.position.set(this.camLook.x + this.sunDir.x * 70, this.sunDir.y * 70, this.camLook.z + this.sunDir.z * 70); this.sun.target.position.set(this.camLook.x, 0, this.camLook.z);
     // snakes
     const E = this.eyes, cnt = { e: 0, t: 0, h: 0 }; let ni = 0, ng = 0, nfx = 0, row = 0; const TR = this.teamRing.instanceMatrix.array, TRC = this.teamRing.instanceColor.array; let nt = 0; const MR = this.magRing.instanceMatrix.array; let nm = 0;
-    for (const L of this.labels.values()) L.used = false; let ne = 0; let crown = null; this._pal = v.foodPal; this._eyeLook(v);
+    for (const L of this.labels.values()) L.used = false; let ne = 0; let crown = null; this._pal = v.foodPalCss === FOOD_COLORS_CB ? v.foodPal : CANDY_LIN; // candy1: eat sparkles match the candy this._eyeLook(v);
     for (const d of v.snakes) {
       if (row >= SHOW_ROW) break; const s = d.s; const hx0 = s.sx(d.o), hy0 = s.sy(d.o), dx0 = hx0 - vx, dz0 = hy0 - vz;
       if (dx0 * dx0 + dz0 * dz0 > (cullR + s.len) * (cullR + s.len)) continue;
@@ -504,7 +506,7 @@ export class Renderer3D {
     for (const [id, L] of this.labels) if (!L.used) { this.scene.remove(L.sp); this.labels.delete(id); this.labelPool.push(L); }
     for (let i = ne; i < this.emoSpr.length; i++) this.emoSpr[i].visible = false;
     this.snakes.commit(ni, nfx, ng); this._flushE(E, cnt); this._flush(this.teamRing, nt); this._flush(this.magRing, nm);
-    if (v.cam.title !== undefined) { this.food.count = this.halo.count = this.gem.count = 0; } else this._food(v, t, vx, vz, far ? 1e9 : vr2);
+    if (v.cam.title !== undefined) { for (const m of this.candy) m.count = 0; this.halo.count = this.gem.count = 0; } else this._food(v, t, vx, vz, far ? 1e9 : vr2);
     this._modeFx(v, t); this._pus(v, t); this._meteors(v, t);
     if (this.pMax && v.rain) { const h = v.rain; for (let k = 0; k < 6; k++) { const a = Math.random() * 6.283, d = 3 + Math.random() * 16; this.emit(h.x + Math.cos(a) * d, 10 + Math.random() * 4, h.y + Math.sin(a) * d, 0, -18, 0, [0.8, 1.6, 0.3], 0.6, 0.35, 1, 0); } }
     if (this.pMax && v.goldRain) { const h = v.goldRain; for (let k = 0; k < 4; k++) { const a = Math.random() * 6.283, d = 2 + Math.random() * 28; this.emit(h.x + Math.cos(a) * d, 11 + Math.random() * 5, h.y + Math.sin(a) * d, 0, -16, 0, [1.8, 1.3, 0.3], 0.7, 0.4, 1, 0); } }
@@ -531,33 +533,33 @@ export class Renderer3D {
     const prev = this.r.getRenderTarget(); this.r.setRenderTarget(this.mirrorRT); this.r.clear(); this.r.render(this.scene, mc); this.r.setRenderTarget(prev);
     this.r.shadowMap.autoUpdate = shadow; g.visible = true; if (w) w.visible = true; for (const s of vis) s.visible = true; this.pts.visible = true;
   }
+  // candy1: big candy. Each food -> its candy type mesh (rotY * uniform scale), a soft round contact shadow under it,
+  // a slow spin + bob of at most 0.045 (none with reduced motion). Gold Rush gold stays a metallic coin.
   _food(v, t, vx, vz, vr2) {
-    const F = v.food; if (!F) { this.food.count = 0; this.halo.count = 0; this.gem.count = 0; return; }
-    const FM = this.food.instanceMatrix.array, FC = this.food.instanceColor.array, HM = this.halo.instanceMatrix.array, HCc = this.halo.instanceColor.array;
-    const m = _m; m.makeRotationFromQuaternion(this.cam.quaternion); const me = m.elements;
-    let nf = 0, ng = 0; const pal = v.foodPal, GM = this.gem.instanceMatrix.array, GC = this.gem.instanceColor.array, gr = t * 1.8, gc = Math.cos(gr), gs = Math.sin(gr);
+    const F = v.food, CM = this.candy; if (!F) { for (const m of CM) m.count = 0; this.halo.count = 0; this.gem.count = 0; return; }
+    const cnt = this._cc || (this._cc = new Int32Array(CANDY_N)); cnt.fill(0);
+    const SM = this.halo.instanceMatrix.array, GM = this.gem.instanceMatrix.array, pal = v.foodPalCss === FOOD_COLORS_CB ? v.foodPal : CANDY_LIN, NP = pal.length, gold = !!v.goldMode, still = this.reduceMotion, rgb = _MC;
+    let nf = 0, ns = 0, ng = 0;
+    const put = (ty, x, y, h, S, a, c) => { const m = CM[ty], k = cnt[ty]++, o = k * 16, M = m.instanceMatrix.array, ca = Math.cos(a) * S, sa = Math.sin(a) * S;
+      M[o] = ca; M[o + 1] = 0; M[o + 2] = -sa; M[o + 3] = 0; M[o + 4] = 0; M[o + 5] = S; M[o + 6] = 0; M[o + 7] = 0; M[o + 8] = sa; M[o + 9] = 0; M[o + 10] = ca; M[o + 11] = 0; M[o + 12] = x; M[o + 13] = h; M[o + 14] = y; M[o + 15] = 1;
+      const C = m.instanceColor.array, q = pal[c % NP]; C[k * 3] = q[0]; C[k * 3 + 1] = q[1]; C[k * 3 + 2] = q[2]; };
+    const coin = (x, y, h, S, a) => { const o = ng * 16, ca = Math.cos(a) * S, sa = Math.sin(a) * S; GM[o] = ca; GM[o + 1] = 0; GM[o + 2] = -sa; GM[o + 3] = 0; GM[o + 4] = 0; GM[o + 5] = S; GM[o + 6] = 0; GM[o + 7] = 0; GM[o + 8] = sa; GM[o + 9] = 0; GM[o + 10] = ca; GM[o + 11] = 0; GM[o + 12] = x; GM[o + 13] = h; GM[o + 14] = y; GM[o + 15] = 1; ng++; };
+    const shad = (x, y, k) => { const o = ns * 16; SM[o] = k; SM[o + 1] = SM[o + 2] = SM[o + 3] = SM[o + 4] = 0; SM[o + 5] = 1; SM[o + 6] = SM[o + 7] = SM[o + 8] = SM[o + 9] = 0; SM[o + 10] = k; SM[o + 11] = 0; SM[o + 12] = x; SM[o + 13] = 0.03; SM[o + 14] = y; SM[o + 15] = 1; ns++; };
     for (let i = 0; i < F.FM && nf < MAX_FOOD; i++) {
       if (!F.fa[i]) continue; const x = F.fx[i], y = F.fy[i], dx = x - vx, dz = y - vz; if (dx * dx + dz * dz > vr2) continue;
-      const age = F.age ? F.age(i) : 1, grow = age < 1 ? age * age * (3 - 2 * age) : 1;
-      const val = F.fv[i], fr = (0.11 + Math.sqrt(val) * 0.075) * grow, bob = fr * 0.9 + 0.06, c0 = pal[F.fc[i] % pal.length], cc = _mute(c0); // fix1: small, muted, resting on the ground
-      const o = nf * 16;
-      if (val >= 4 && ng < MAX_GEM) { const go = ng * 16, gz = fr * 1.15; GM[go] = gc * gz; GM[go + 1] = 0; GM[go + 2] = -gs * gz; GM[go + 3] = 0; GM[go + 4] = 0; GM[go + 5] = gz * 1.5; GM[go + 6] = 0; GM[go + 7] = 0; GM[go + 8] = gs * gz; GM[go + 9] = 0; GM[go + 10] = gc * gz; GM[go + 11] = 0; GM[go + 12] = x; GM[go + 13] = bob + 0.08; GM[go + 14] = y; GM[go + 15] = 1;
-        GC[ng * 3] = cc[0]; GC[ng * 3 + 1] = cc[1]; GC[ng * 3 + 2] = cc[2]; ng++; for (let q = 0; q < 16; q++) FM[o + q] = 0; FM[o + 15] = 1; }
-      else { FM[o] = fr; FM[o + 5] = fr; FM[o + 10] = fr; FM[o + 1] = FM[o + 2] = FM[o + 3] = FM[o + 4] = FM[o + 6] = FM[o + 7] = FM[o + 8] = FM[o + 9] = FM[o + 11] = 0; FM[o + 12] = x; FM[o + 13] = bob; FM[o + 14] = y; FM[o + 15] = 1; }
-      FC[nf * 3] = cc[0]; FC[nf * 3 + 1] = cc[1]; FC[nf * 3 + 2] = cc[2];
-      const hs = 0; // fix1: no halo sprites on food (no glow, no flicker)
-      HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 3] = 0; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 7] = 0; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 11] = 0; HM[o + 12] = x; HM[o + 13] = bob; HM[o + 14] = y; HM[o + 15] = 1;
-      HCc[nf * 3] = cc[0] * 0.5; HCc[nf * 3 + 1] = cc[1] * 0.5; HCc[nf * 3 + 2] = cc[2] * 0.5; nf++;
+      const age = F.age ? F.age(i) : 1, grow = age < 1 ? age * age * (3 - 2 * age) : 1, val = F.fv[i], c = F.fc[i], ph = x * 1.7 + y * 2.3; // phase from position: stable in replays too
+      const bob = still ? 0.04 : 0.05 + 0.045 * Math.sin(t * 1.3 + ph);
+      if (gold && c === GOLD_FC) { if (ng < MAX_GEM) { coin(x, y, bob, 0.78 * grow, still ? ph : ph + t * 1.1); shad(x, y, 1.15 * grow); nf++; } continue; }
+      const big = candyBig(val), ty = candyType(val, c, big), S = candySize(val, big) * grow;
+      put(ty, x, y, bob, S, still ? ph : ph + t * ((i & 1) ? 0.32 : -0.32), c); shad(x, y, S * 2.15); nf++;
     }
-    // swallowed food streams into the mouth, shedding sparkles (absorb effect)
+    // swallowed candy shrinks and slides into the mouth (ghosts carry the eaten food's value + colour)
     if (v.ghosts) for (const gh of v.ghosts) {
-      if (nf >= MAX_FOOD) break; const u = gh.t, e = u * u, x = gh.x + (gh.tx - gh.x) * e, y = gh.y + (gh.ty - gh.y) * e, fr = gh.r * 0.65 * (1 - u * 0.85), cc = _mute(pal[gh.c % pal.length]), hgt = 0.3 + Math.sin(u * Math.PI) * 0.5;
-      const o = nf * 16; FM[o] = fr; FM[o + 5] = fr; FM[o + 10] = fr; FM[o + 1] = FM[o + 2] = FM[o + 3] = FM[o + 4] = FM[o + 6] = FM[o + 7] = FM[o + 8] = FM[o + 9] = FM[o + 11] = 0; FM[o + 12] = x; FM[o + 13] = hgt; FM[o + 14] = y; FM[o + 15] = 1;
-      FC[nf * 3] = cc[0]; FC[nf * 3 + 1] = cc[1]; FC[nf * 3 + 2] = cc[2]; const hs = 0; HM[o] = me[0] * hs; HM[o + 1] = me[1] * hs; HM[o + 2] = me[2] * hs; HM[o + 4] = me[4] * hs; HM[o + 5] = me[5] * hs; HM[o + 6] = me[6] * hs; HM[o + 8] = me[8]; HM[o + 9] = me[9]; HM[o + 10] = me[10]; HM[o + 3] = HM[o + 7] = HM[o + 11] = 0; HM[o + 12] = x; HM[o + 13] = hgt; HM[o + 14] = y; HM[o + 15] = 1;
-      HCc[nf * 3] = cc[0]; HCc[nf * 3 + 1] = cc[1]; HCc[nf * 3 + 2] = cc[2]; nf++;
-      if (false) this.emit(x, hgt, y, (Math.random() - 0.5) * 0.6, 0.2, (Math.random() - 0.5) * 0.6, cc, 0.35, 0.28, 2, 0);
+      if (nf >= MAX_FOOD) break; const u = gh.t, e = u * u, x = gh.x + (gh.tx - gh.x) * e, y = gh.y + (gh.ty - gh.y) * e, hgt = 0.12 + Math.sin(u * Math.PI) * 0.35, val = gh.v ?? Math.max(1, ((gh.r - 0.22) / 0.16) ** 2), c = gh.c, k = 1 - u * 0.85;
+      if (gold && c === GOLD_FC) { if (ng < MAX_GEM) coin(x, y, hgt, 0.78 * k, t * 6); nf++; continue; }
+      const big = candyBig(val); put(candyType(val, c, big), x, y, hgt, candySize(val, big) * k, u * 3, c); nf++;
     }
-    this._flush(this.food, nf); this._flush(this.halo, 0); this._flush(this.gem, ng);
+    for (let k = 0; k < CANDY_N; k++) this._flush(CM[k], cnt[k]); this._flush(this.halo, ns); this._flush(this.gem, ng);
   }
   _modeFx(v, t) {
     const z = v.zone; this.storm.visible = this.stormOut.visible = !!z;
