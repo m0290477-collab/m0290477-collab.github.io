@@ -5,6 +5,8 @@ import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName } fr
 
 const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 3; // v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
+// look1: bots never share a look with any live snake (players included)
+const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
 const BOT_SKINS = (i) => ({ k: i % 3 === 0 ? "flag" : "skin", i: i % 3 === 0 ? (i * 37) % 197 : i % 24, e: i % 4, t: 0, n: 0, av: i % 3 === 0 ? "f" + ((i * 37) % 197) : "p" + ((i * 7) % 24), fr: i % 5 === 0 ? 0 : 1 + (i % 4) });
 const cors = { "access-control-allow-origin": "*", "content-type": "application/json" };
 
@@ -38,7 +40,7 @@ export class Room {
   fill() {
     if (this.noBots) return;
     const alive = this.sim.snakes.filter((s) => s.alive).length; let want = TARGET_SNAKES - alive;
-    while (want-- > 0) { const i = this.botSeq++; this.sim.addSnake(pickBotName(this.sim.snakes, i), BOT_SKINS(i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5] }); }
+    while (want-- > 0) { const i = this.botSeq++; this.sim.addSnake(pickBotName(this.sim.snakes, i), uniqSkin(this.sim.snakes, i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5] }); }
   }
   async fetch(req) {
     const url = new URL(req.url);

@@ -1,16 +1,16 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=ai1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=ai1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=ai1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=ai1";
-import { NetBackend } from "./net.js?v=ai1";
-import { t, fmtNum } from "./i18n.js?v=ai1";
-import { haptic } from "./audio.js?v=ai1";
-import { rankOf, rpDelta } from "./profile.js?v=ai1";
-import { Replay } from "./replay.js?v=ai1";
-import { emit } from "./events.js?v=ai1"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=look1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=look1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=look1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=look1";
+import { NetBackend } from "./net.js?v=look1";
+import { t, fmtNum } from "./i18n.js?v=look1";
+import { haptic } from "./audio.js?v=look1";
+import { rankOf, rpDelta } from "./profile.js?v=look1";
+import { Replay } from "./replay.js?v=look1";
+import { emit } from "./events.js?v=look1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -42,17 +42,21 @@ class LocalBackend {
     this.FM = this.sim.FM; this.fx = this.sim.fx; this.fy = this.sim.fy; this.fv = this.sim.fv; this.fc = this.sim.fc; this.fa = this.sim.fa;
     this.age = (i) => (this.sim.fBorn[i] === 0 ? 1 : Math.min(1, (this.sim.tick - this.sim.fBorn[i]) / 18));
   }
+  // look1: if a bot already wears the player's look, give that bot an unused skin
+  _uniqVsMe(me) { const key = (o) => o.skin && o.skin.k + ":" + o.skin.i, mk = key(me); const used = new Set(this.sim.snakes.filter((o) => o.alive).map(key));
+    for (const o of this.sim.snakes) if (o !== me && o.bot && o.alive && key(o) === mk) { const free = SKINS.map((x, k) => k).filter((k) => !SKINS[k].fx && !used.has("skin:" + k)); if (!free.length) break; const i = free[(this.sim.rand() * free.length) | 0]; o.skin = { ...o.skin, k: "skin", i }; used.add("skin:" + i); } }
   addBot(diff, team) {
     const i = this.botSeq++, r = this.sim.rand; const d = diff ?? (this.mode === "zen" ? 0 : this.opts.diff);
-    const legend = r() < 0.12; const pool = SKINS.map((s, k) => k).filter((k) => !!SKINS[k].fx === legend);
-    const skin = r() < 0.3 ? { k: "flag", i: (r() * FLAGS.length) | 0 } : { k: "skin", i: pool[(r() * pool.length) | 0] };
+    const legend = r() < 0.12; const used = new Set(); for (const o of this.sim.snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); // look1: no two live snakes share a look
+    const pool0 = SKINS.map((s, k) => k).filter((k) => !!SKINS[k].fx === legend), pool = pool0.filter((k) => !used.has("skin:" + k)), fpool = FLAGS.map((f, k) => k).filter((k) => !used.has("flag:" + k));
+    const skin = r() < 0.3 && fpool.length ? { k: "flag", i: fpool[(r() * fpool.length) | 0] } : { k: "skin", i: (pool.length ? pool : pool0)[(r() * (pool.length || pool0.length)) | 0] };
     const s = this.sim.addSnake(pickBotName(this.sim.snakes, i * 7 + ((r() * 40) | 0)), { ...skin, e: (r() * 4) | 0, t: 0, n: 0 }, { bot: true, diff: d, m: C.START_M }); // noself1 fairness: bots spawn at the player's start mass
     s.avt = skin.k === "flag" && r() < 0.6 ? "f" + skin.i : "p" + ((r() * 16) | 0); s.fr = r() < 0.5 ? 0 : 1 + ((r() * 4) | 0);
     if (this.mode === "team") { s.team = team ?? (this.teamN[0] < Math.floor(this.M.bots / 2) ? 0 : 1); this.teamN[s.team]++; }
     return s;
   }
   spawn(name, skin) {
-    const s = this.sim.addSnake(name, skin, { god: this.mode === "zen" }); this.me = s; s.avt = skin.av; s.fr = skin.fr; this.dead = false; this.myId = s.id; if (this.mode === "team") s.team = 0; this.cb.onSpawnMe && this.cb.onSpawnMe(s); return s;
+    const s = this.sim.addSnake(name, skin, { god: this.mode === "zen" }); this.me = s; this._uniqVsMe(s); s.avt = skin.av; s.fr = skin.fr; this.dead = false; this.myId = s.id; if (this.mode === "team") s.team = 0; this.cb.onSpawnMe && this.cb.onSpawnMe(s); return s;
   }
   setInput(ta, boost) { if (this.me) { this.me.ta = ta; this.me.boost = boost ? 1 : 0; } }
   update(dt) {

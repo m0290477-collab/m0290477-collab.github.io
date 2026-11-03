@@ -2,11 +2,11 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=ai1";
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=ai1";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=ai1";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=ai1";
-import { on as onEv } from "./events.js?v=ai1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=look1";
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=look1";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=look1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=look1";
+import { on as onEv } from "./events.js?v=look1";
 const NO2 = 220;
 
 const TAU = Math.PI * 2;
@@ -202,6 +202,7 @@ export class Renderer2D {
       this._fnMap.set(s, d.fn); if (d.me) { const H = this.meH || (this.meH = [0, 0, 0]); H[0] = pts[0]; H[1] = pts[1]; H[2] = r; d.fn(n >> 2, n, t, col); this.meC = css(Math.min(1, col[0] * 1.1 + 0.08), Math.min(1, col[1] * 1.1 + 0.08), Math.min(1, col[2] * 1.1 + 0.08)); this.meFa = n > 1 ? Math.atan2(pts[1] - pts[3], pts[0] - pts[2]) : 0; }
       const P = s.pu || null, frozen = s.slow > 0, inv = false; // fix1: ghost / invisibility retired
       d.alpha = d.alpha * (inv ? (d.me ? 0.42 : 0.12) : 1); g.globalAlpha = d.alpha;
+      if (d.me && !v.showcase) { g.globalAlpha = 0.5 * d.alpha; g.strokeStyle = this.meC; g.lineWidth = r * 0.35; g.beginPath(); g.arc(pts[0], pts[1], r * 2.1, 0, TAU); g.stroke(); g.globalAlpha = d.alpha; } // look1: steady ring marks your own snake (no pulse, calm-safe)
       g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); for (let j = n - 1; j >= 0; j -= 2) { g.moveTo(pts[j * 2] + r * 1.45, pts[j * 2 + 1] + r * 0.45); g.arc(pts[j * 2] + r * 0.45, pts[j * 2 + 1] + r * 0.45, r * 1.02, 0, TAU); } g.fill(); // soft drop shadow
       if (n > 1) { g.strokeStyle = "rgba(0,0,0,0.38)"; g.lineWidth = r * 2.16; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.stroke(); } // dark rim so the body reads on any ground
       if (d.team) { g.strokeStyle = lin2css(d.team); g.lineWidth = r * 0.5; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.globalAlpha *= 0.55; g.lineWidth = r * 2.5; g.stroke(); g.globalAlpha = d.alpha; }

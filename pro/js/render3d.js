@@ -2,20 +2,20 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=ai1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=ai1";
+import * as THREE from "./vendor/three.module.min.js?v=look1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=look1";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=ai1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=ai1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=ai1";
-import { World, prefetchWorld } from "./gfx/env.js?v=ai1";
-import { Post } from "./gfx/post.js?v=ai1";
-import { Studio } from "./gfx/showcase.js?v=ai1";
-import { SoftFx } from "./gfx/fx.js?v=ai1";
-import { on as onEv } from "./events.js?v=ai1";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=ai1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=look1";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=look1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=look1";
+import { World, prefetchWorld } from "./gfx/env.js?v=look1";
+import { Post } from "./gfx/post.js?v=look1";
+import { Studio } from "./gfx/showcase.js?v=look1";
+import { SoftFx } from "./gfx/fx.js?v=look1";
+import { on as onEv } from "./events.js?v=look1";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=look1";
 
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
@@ -53,6 +53,7 @@ export class Renderer3D {
     this._initFood(); this._initParticles(); this._initBits(); this._initFx(); this.labels = new Map(); this.labelPool = [];
     this.eyes = this._eyes(this.scene); this.studio = new Studio(this); for (const m of this.snakes.showMeshes) this.studio.scene.add(m); this.eyesS = this._eyes(this.studio.scene);
     this.sfx = new SoftFx(this); this.scene.add(this.sfx.group); this._subFx();
+    this._meRing = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 48, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false, toneMapped: false, fog: false })); this._meRing.visible = false; this._meRing.renderOrder = 4; this.scene.add(this._meRing); // look1: steady ring marks your own snake
     this.post = new Post(this); this.worldI = -1; this.arenaR = 130; this.setWorld(opts.world || 0); this._applyQ(true);
     this.resize();
     canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); this.lost = true; opts.onLost && opts.onLost(); });
@@ -428,7 +429,7 @@ export class Renderer3D {
     if (tph < 0.1 && alpha > 0.9) { const ext = Math.sin((tph / 0.1) * Math.PI) * hr * 1.4, flick = Math.sin(t * 60) * 0.25, a = Math.atan2(fwz, fwx) + flick; const T2 = E.t.instanceMatrix.array, ti = cnt.t++;
       _q.setFromAxisAngle(_v.set(0, 1, 0), -a); _s.set(ext, hr * 0.9, hr * 0.9); _m.compose(_v2.set(hx + fwx * hr * 1.2, hy + r * 0.8 * alpha + bob + hr * 0.05, hz + fwz * hr * 1.2), _q, _s); _m.toArray(T2, ti * 16); }
     d._hx = hx; d._hz = hz; d._hr = hr; d._n = n; d._fx = fwx; d._fz = fwz;
-    if (d.me && !show) { const H = this._meHead || (this._meHead = [0, 0, 0]); H[0] = hx; H[1] = hz; H[2] = hr; this._meCol = st.col; this._meFw = fwx; this._meFwz = fwz; if (d.boost && alpha > 0.5) { const tj = Math.max(1, n - 2); this.sfx.wake(pts[tj * 2], pts[tj * 2 + 1], st.col, r); } }
+    if (d.me && !show) { const H = this._meHead || (this._meHead = [0, 0, 0]); H[0] = hx; H[1] = hz; H[2] = hr; { const R = this._meRing; R.visible = alpha > 0.3; R.position.set(hx, Math.max(0.05, hy - hr * 0.9), hz); R.scale.setScalar(hr * 2.2); R.material.color.setRGB(st.col[0], st.col[1], st.col[2]); this._meRingF = this._fno; } this._meCol = st.col; this._meFw = fwx; this._meFwz = fwz; if (d.boost && alpha > 0.5) { const tj = Math.max(1, n - 2); this.sfx.wake(pts[tj * 2], pts[tj * 2 + 1], st.col, r); } }
     // trails: legendary signature or equipped trail
     if (!show && this.pMax && alpha > 0.5) {
       const L = fx ? LEGEND[fx] : null; const tj = Math.max(1, n - 3), tx = pts[tj * 2], tz = pts[tj * 2 + 1];
@@ -447,6 +448,7 @@ export class Renderer3D {
 
   // ---------- frame ----------
   frame(v) {
+    this._fno = (this._fno || 0) + 1; if (this._meRing && this._meRingF !== this._fno - 1 && this._meRingF !== this._fno) this._meRing.visible = false; // hide when we were not drawn last frame
     if (this.lost) return;
     const t = v.t, dt = Math.min(0.05, v.dt); this.time = t; this.dt = dt; const Q = this.Q;
     this.snakes.uniforms.uT.value = t; this.snakes.uniforms.uSheen.value = this.calm || this.reduceMotion ? 0 : 1; this.stormU.uT.value = t;
