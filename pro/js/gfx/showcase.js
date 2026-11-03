@@ -1,6 +1,6 @@
 // Studio showcase: the player's snake coiled on a lit pedestal (lobby, locker, rarity reveals).
-import * as THREE from "../vendor/three.module.min.js?v=tidy1";
-import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=tidy1";
+import * as THREE from "../vendor/three.module.min.js?v=tidy2";
+import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=tidy2";
 
 const AURA_VS = /* glsl */ `
 uniform float uT, uK, uScale; uniform vec3 uC1, uC2; attribute vec4 seed; varying vec3 vC; varying float vA;
@@ -112,6 +112,6 @@ export class Studio {
   }
   update(t, dt) { this.t = t; this.bg.material.uniforms.uT.value = t; this.ticks.material.uniforms.uT.value = t; this.moteU.uT.value = t; this.auraU.uT.value = t; this.beamU.uT.value = t; if (this.aura.visible) this.aura.rotation.y = this.ped.rotation.y * 4; }
   // fit1: lobby framing fits the snake + pedestal into the free box the UI leaves (fit.k widens the FOV, fit.dy moves it in px)
-  resize(w, h) { const F = this.fit || (this.fit = { k: 1, dy: 0 }); this.cam.fov = 2 * Math.atan(Math.tan((32 * Math.PI) / 360) * F.k) * 180 / Math.PI; this.cam.aspect = w / h; const shift = this.view.x * w; this.cam.setViewOffset(w, h, -shift, -F.dy, w, h); this.cam.updateProjectionMatrix(); }
+  resize(w, h) { const F = this.fit || (this.fit = { k: 1, dy: 0 }); this.cam.fov = 2 * Math.atan(Math.tan((32 * Math.PI) / 360) * F.k) * 180 / Math.PI; this.cam.aspect = w / h; const shift = this.view.x * w + (F.dx || 0); this.cam.setViewOffset(w, h, -shift, -F.dy, w, h); this.cam.updateProjectionMatrix(); }
   dispose() { if (this.envRT) this.envRT.dispose(); this.scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
 }

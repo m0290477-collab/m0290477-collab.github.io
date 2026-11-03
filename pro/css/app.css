@@ -1072,3 +1072,10 @@ html[dir="rtl"] #hud .h-feed { left: 50%; transform: translateX(-50%); }
 
 /* fit1: lobby toasts sit in the top bar's empty middle, never over the skin name / showcase */
 body:has(#s-lobby.on) #toasts { top: calc(10px + var(--st)); }
+
+/* tidy2: foot row = options centred under the show column + Play exactly as wide as the right column, aligned under it */
+.lobby-body .playbox { display: grid; grid-template-columns: minmax(0, 1fr) 236px; align-items: end; gap: 10px; justify-content: stretch; }
+.lobby-body .playbox .pb-opts { justify-self: center; justify-items: center; }
+.lobby-body .playbox #l-diff { justify-self: center; }
+.lobby-body .playbox .btn.play { width: 100%; }
+@media (max-width: 760px) { .lobby-body .playbox { grid-template-columns: minmax(0, 1fr) 200px; } }
