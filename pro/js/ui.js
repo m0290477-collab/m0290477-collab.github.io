@@ -1,22 +1,22 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=coin1";
-import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=coin1"; // srv1
-import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=coin1"; // srv2
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=coin1"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=coin1";
-import { legalButtons, contactNote, openFeedback } from "./legal.js?v=coin1"; import { call as socialCall } from "./social.js?v=coin1"; // coin1
-import { GTRAILS } from "./skins.js?v=coin1"; import { gtCellUrl } from "./gfx/gtrail.js?v=coin1"; // trail1
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=coin1";
-import { WORLDS, worldAsset } from "./worlds.js?v=coin1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=coin1";
-import { haptic } from "./audio.js?v=coin1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=coin1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=coin1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=coin1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=coin1";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=coin1"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=coin1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=ops1";
+import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=ops1"; // srv1
+import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=ops1"; // srv2
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=ops1"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=ops1";
+import { legalButtons, contactNote, openFeedback } from "./legal.js?v=ops1"; import { call as socialCall } from "./social.js?v=ops1"; // coin1
+import { GTRAILS } from "./skins.js?v=ops1"; import { gtCellUrl } from "./gfx/gtrail.js?v=ops1"; // trail1
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=ops1";
+import { WORLDS, worldAsset } from "./worlds.js?v=ops1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=ops1";
+import { haptic } from "./audio.js?v=ops1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=ops1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=ops1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=ops1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=ops1";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=ops1"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=ops1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 

@@ -1,23 +1,23 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=coin1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=coin1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=coin1";
-import { GTrail } from "./gfx/gtrail.js?v=coin1"; // trail1: cosmetic ground trail decals (never in the sim)
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=coin1";
-import { NetBackend } from "./net.js?v=coin1";
-import { pidTier, PID_GLYPH } from "./pid.js?v=coin1"; // srv2
-import { onFind, findHide, accountMatchEnd } from "./account.js?v=coin1"; // srv2
-import { t, fmtNum } from "./i18n.js?v=coin1";
-import { haptic } from "./audio.js?v=coin1";
-import { rankOf, rpDelta } from "./profile.js?v=coin1";
-import { Replay } from "./replay.js?v=coin1";
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=coin1"; // comp1
-import { onServerTrophy } from "./compui.js?v=coin1";
-import { Governor } from "./gov.js?v=coin1"; // perf2: adaptive render governor
-import { claim, claimId } from "./wallet.js?v=coin1"; // coin1: offline match coins are claimed from the server wallet
-import { emit } from "./events.js?v=coin1"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=ops1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=ops1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=ops1";
+import { GTrail } from "./gfx/gtrail.js?v=ops1"; // trail1: cosmetic ground trail decals (never in the sim)
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=ops1";
+import { NetBackend } from "./net.js?v=ops1";
+import { pidTier, PID_GLYPH } from "./pid.js?v=ops1"; // srv2
+import { onFind, findHide, accountMatchEnd } from "./account.js?v=ops1"; // srv2
+import { t, fmtNum } from "./i18n.js?v=ops1";
+import { haptic } from "./audio.js?v=ops1";
+import { rankOf, rpDelta } from "./profile.js?v=ops1";
+import { Replay } from "./replay.js?v=ops1";
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=ops1"; // comp1
+import { onServerTrophy } from "./compui.js?v=ops1";
+import { Governor } from "./gov.js?v=ops1"; // perf2: adaptive render governor
+import { claim, claimId } from "./wallet.js?v=ops1"; // coin1: offline match coins are claimed from the server wallet
+import { emit } from "./events.js?v=ops1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
