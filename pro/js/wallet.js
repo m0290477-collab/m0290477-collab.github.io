@@ -2,9 +2,9 @@
 // this module shows the last balance the server sent (+ rewards still queued for it), queues reward claims (offline too,
 // each with a unique claim id so it can be paid only once), imports the device balance once on the first updated connect,
 // and buys only online. Nothing here can raise the balance: the server prices every claim itself.
-import { SEASON, UNLOCKS, COS_KEY } from "./econ.js?v=ops1";
+import { SEASON, UNLOCKS, COS_KEY } from "./econ.js?v=fix1";
 
-const KC = "ssp-wc", KQ = "ssp-wq", MAXQ = 200;
+const KC = "ssp-wc", KQ = "ssp-wq", MAXQ = 200, XPK = new Set(["match", "ms", "wk"]);
 export const WL = { S: null, ui: null, call: null, up: () => false, st: null, q: [], busy: null, migrating: false, kv: null, jp: null, onBal: null };
 const key = () => (WL.S && WL.S.p && /^[0-9a-f]{32}$/.test(WL.S.p.dev || "") ? WL.S.p.dev : "");
 const store = (k) => { const o = WL.jp(WL.kv.get(k) || "null"); return o && typeof o === "object" ? o : {}; };
@@ -22,6 +22,8 @@ export const claimId = () => rid();
 export function apply(w) {
   sync(); if (!w || !Number.isFinite(+w.bal)) return; const S = WL.S, p = S.p; WL.st = { ...(WL.st || {}), ...w, own: Array.isArray(w.own) ? w.own : (WL.st && WL.st.own) || [], t: Date.now() }; delete WL.st.w;
   p.coins = Math.max(0, Math.floor(+w.bal)) + pending();
+  // fix1: the server's XP is the level's truth; the device may run ahead only by what is still queued (+ a small slack)
+  if (Number.isFinite(+w.sx) && !WL.q.some((x) => XPK.has(x.k)) && p.xp > +w.sx + 3000) { console.info("wallet: xp set to the server's", p.xp, "->", +w.sx); p.xp = Math.max(0, Math.floor(+w.sx)); }
   for (const it of WL.st.own) { const s = String(it);
     if (/^fl:\d+$/.test(s)) { const i = +s.slice(3); if (!p.flags.includes(i)) p.flags.push(i); }
     else if (COS_KEY.test(s)) { if (!p.cos.includes(s)) p.cos.push(s); }

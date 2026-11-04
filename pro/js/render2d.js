@@ -2,15 +2,15 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { pidFill } from "./pid.js?v=ops1"; // srv2
-import { stageBox } from "./stage.js?v=ops1";
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=ops1";
+import { pidFill } from "./pid.js?v=fix1"; // srv2
+import { stageBox } from "./stage.js?v=fix1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=fix1";
 const TUBE_STEPS = [[1, 0.28], [0.9, 0.51], [0.78, 0.85], [0.66, 1]]; // tube1: [fraction of the spine from the head, half-width / r]
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=ops1";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=ops1";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=ops1";
-import { on as onEv } from "./events.js?v=ops1";
-import { gtAtlas, GT_CAP, GT_CELL } from "./gfx/gtrail.js?v=ops1"; // trail1: ground trails
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=fix1";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=fix1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=fix1";
+import { on as onEv } from "./events.js?v=fix1";
+import { gtAtlas, GT_CAP, GT_CELL } from "./gfx/gtrail.js?v=fix1"; // trail1: ground trails
 const NO2 = 220;
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle cap
 const GOV_PR = [3, 2, 1.5, 1.25], GOV_PC = [300, 180, 100, 50];

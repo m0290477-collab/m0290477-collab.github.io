@@ -1,9 +1,9 @@
 // coin1: the coin economy's single source of truth, shared by the game (display, optimistic amounts) and the worker (the
 // wallet decides). Pure data + rules: no DOM, no storage. The server never takes an amount from the client: it recomputes
 // every reward from these tables and every price from the catalogue (and this week's offers) before it moves a coin.
-import { SKINS, FLAGS, FLAG_PRICE, GTRAILS } from "./skins.js?v=ops1";
-import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=ops1";
-import { CONTESTS } from "./sim.js?v=ops1";
+import { SKINS, FLAGS, FLAG_PRICE, GTRAILS } from "./skins.js?v=fix1";
+import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=fix1";
+import { CONTESTS } from "./sim.js?v=fix1";
 
 export const DAY = 86400000;
 // ---------- daily login calendar + lucky wheel (were in profile.js) ----------
@@ -69,11 +69,12 @@ export function plausible(a) {
   if (o.mode === "online") { o.mode = "classic"; cut.push("mode"); } // online lives are paid by the room, never by a claim
   let c = dur < OFF.MIN_S ? 0 : matchCoins(o); if (dur < OFF.MIN_S && matchCoins(o) > 0) cut.push("short");
   if (c > OFF.PER_MATCH) { c = OFF.PER_MATCH; cut.push("cap"); }
-  return { c, cut, full: matchCoins({ ...a, dur }) };
+  return { c, cut, full: matchCoins({ ...a, dur }), o }; // fix1: o = the clamped numbers (server XP uses them)
 }
 export const ONLINE = { PER_LIFE: 800, PER_DAY: 30000 };
 // ---------- shop catalogue: what each item key costs at full price ----------
 // item keys: skin id ("phoenix"), "fl:<flag index>", "gt:<trail id>", cosmetics "av:/fr:/ti:/bn:/bd:", special ids "sid:<n>"
+export const gtPrice = (id) => { const G = GTRAILS.find((g) => g.id === id); return G ? G.price | 0 : -1; }; // fix1: -1 = unknown id
 export function catItem(k, i) {
   if (k === "skin") { const S = SKINS[i | 0]; if (!S || !S.src || !S.src.startsWith("coins:") || String(i | 0) !== String(i)) return null; return { key: S.id, base: +S.src.split(":")[1], it: { k: "skin", i: i | 0 } }; }
   if (k === "flag") { if (!FLAGS[i | 0] || String(i | 0) !== String(i)) return null; return { key: "fl:" + (i | 0), base: FLAG_PRICE, it: { k: "flag", i: i | 0 } }; }

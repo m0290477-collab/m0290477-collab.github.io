@@ -83,6 +83,7 @@ r = await cl(5, [{ k: "ach", ck: "ach:a_hunter", a: { id: "a_hunter", coins: 999
 { const rs = await Promise.all([1, 2, 3].map(() => cl(5, [{ k: "ach", ck: "ach:a_king", a: { id: "a_king" } }]))); ok(rs.filter((x) => x.res[0].c === 250).length === 1 && (await op(5, "w_get")).w.bal === 350, "a claim sent from three tabs at once is paid once"); }
 const ms = E.dailyMissions(today); r = await cl(5, [{ k: "ms", ck: "ms:" + today + ":1", a: { d: today, i: 1 } }]); ok(r.res[0].c === ms[1].r, "daily mission reward = that day's mission table (" + ms[1].r + ")");
 r = await cl(5, [{ k: "ms", ck: "ms:2020-01-01:0", a: { d: "2020-01-01", i: 0 } }]); ok(r.res[0].err === "bad", "a mission of a long-gone day is refused");
+q().exec("UPDATE wal SET sxp = ? WHERE pid = ?", W.cumXp(36), await pidOf(pk(5))); // fix1: level claims need server XP (here: earned already)
 r = await cl(5, [{ k: "lv", ck: "lv:3", a: { n: 3 } }, { k: "lv", ck: "lv:4", a: { n: 4 } }, { k: "lv", ck: "lv:10", a: { n: 10 } }]);
 ok(r.res[0].err === "old" && r.res[1].c === E.levelCoins(4) && r.res[2].c === E.levelCoins(10), "level-up coins: levels reached before the update pay nothing, new ones pay 25 x level (+500 every 10th)");
 { const L = []; for (let l = 11; l <= 35; l++) L.push({ k: "lv", ck: "lv:" + l, a: { n: l } }); r = await cl(5, L); ok(r.res.filter((x) => x.c).length === W.LV_DAY - 2 && r.res.filter((x) => x.err === "rate" && x.keep).length === 25 - (W.LV_DAY - 2), "at most " + W.LV_DAY + " level rewards per day (a forged jump to level 35 is held back, kept for later days)"); }

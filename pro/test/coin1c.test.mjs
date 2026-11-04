@@ -10,7 +10,7 @@ const S = new Store(), WS = await useServerWallet(S), W = WS.wl;
 S.p.coins = 500; S.p.xp = 0; await WS.online(); ok(WS.bal() === 500 && W.migrated(), "first connect: device balance (500) imported, wallet migrated");
 // daily bonus + login + an achievement + two level-ups + a mission, all earned on the device
 const b = S.claimDailyBonus(); const lg = S.claimLogin(E.LOGIN, () => null); S.p.stats.food = 5; const ach = S.checkAch();
-const lv = S.addXp(E.LV_MAX ? 400 : 0); const m = S.daily(); m[0].p = m[0].g; const ms = S.claimMission(0);
+const lv = S.addXp(E.LV_MAX ? 400 : 0); WS.so.wXp(WS.pid, 400, "test"); /* fix1: that XP came from a server-judged source */ const m = S.daily(); m[0].p = m[0].g; const ms = S.claimMission(0);
 const local = 500 + b + lg.coins + ach.reduce((a, x) => a + x.r, 0) + lv.coins + ms.coins + ms.lv.coins;
 ok(S.p.coins === local && W.pending() === local - 500, "rewards show at once on the device (" + local + ") and wait in the claim queue");
 await W.flush(); await W.flush();

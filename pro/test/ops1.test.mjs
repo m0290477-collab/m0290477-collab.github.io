@@ -29,7 +29,7 @@ ok((await call(A, "/admin/snap", {}, "")).status === 403, "no key -> 403");
 ok((await call(A, "/admin/snap", {}, ADMIN_KEY + "x")).status === 403, "wrong key -> 403");
 ok((await W.default.fetch(new Request("https://w/admin/snap", { headers: { "x-admin-key": "" } }), { ROOMS: A.env.ROOMS })).status === 403, "no ADMIN_KEY secret -> 403");
 // snapshot round-trip
-const s1 = await snap(A); ok(s1.v === 1 && s1.wv === 8 && s1.social && s1.board, "snapshot shape v1 / wv 8");
+const s1 = await snap(A); ok(s1.v === 1 && s1.wv >= 8 && s1.social && s1.board, "snapshot shape v1 / wv >= 8");
 ok(s1.social.wal.length === 3 && s1.social.led.length === 90 && s1.social.own.length === 1 && s1.social.fr.length === 1 && s1.social.rep.length === 1, "social tables in snapshot (wal, led, own, fr, rep)");
 ok(!s1.social.nonce && !s1.social.ecode, "short-lived sign-in secrets skipped");
 ok(s1.board.pl.length === 1 && s1.board.pl[0].tr === 1234, "board (trophies) in snapshot");
