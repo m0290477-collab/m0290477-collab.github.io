@@ -1,7 +1,7 @@
 // super-snake-online — Cloudflare Worker + Durable Object (one DO per room). No database, no payments, nothing stored.
 // The room runs the SAME sim.js as the client at 30 Hz and is authoritative for movement, food, mass, collisions and kills.
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
-import { periodId, Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP, EVENTS, MUTS, mutNow } from "./sim.js";
+import { periodId, Sim, C, radiusOf, lengthOf, angDiff, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP, EVENTS, MUTS, mutNow } from "./sim.js";
 import { DAY, LOGIN, LOGIN_NOCOS, SPIN, SPIN_NOCOS, spinPick, RANDOM_COS, SEASON, seasonReward, UNLOCKS, ACH_COINS, levelCoins, bonusCoins, dailyMissions, weeklyCoins, WC_REWARD, DAILY_MODE_BONUS,
   leagueSeasonReward, CONQ_REWARD, rankReward, mileReward, CONTESTS, matchCoins, matchXp, plausible, OFF, ONLINE, catItem, validKey, offerCandidates, gtPrice, SHOP_TRAILS, BOUNTY, btyVal } from "./econ.js"; // coin1: shared economy tables
 import { SKINS, EYES, TRAILS, FLAG_PRICE, FLAG_PRICE0, setFlagPrice } from "./skins.js";
@@ -29,7 +29,7 @@ export function verifySkin(sk, V) {
 export const XP = { MATCH: 4 * OFF.PER_MATCH, LIFE: 4 * ONLINE.PER_LIFE, DAY: 60000, SLACK: 3000, MIG_LV: 20 };
 export const cumXp = (L) => { let x = 0; for (let n = 1; n < Math.min(L, LV_MAX); n++) x += xpNeed(n); return x; };
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 12; // v12 (play2): crown bounty on #1 in public rooms, weekend mutators (owner override a_mut), offline claims refused for switched-off modes, flag price editable; v11 (admin2): owner admin (coins/items/level/ids, announcement, gift-all, promo codes, maintenance, modes/events, prices, rooms + kick, chat delete, trophies, stats, backup now); warm rooms fast-forward; v10 (grow1): ids first seen after coin1 import 0 coins / level 1; challenge links (/c);  v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 13; // v13 (warm2): public rooms start as a world ~2-3 min old (seeded grown bots, curved bodies, corpse trails, steady-state food) + 45-tick settle instead of a 240-tick fast-forward; bounty restarts at base after any warm-up; v12 (play2): crown bounty on #1 in public rooms, weekend mutators (owner override a_mut), offline claims refused for switched-off modes, flag price editable; v11 (admin2): owner admin (coins/items/level/ids, announcement, gift-all, promo codes, maintenance, modes/events, prices, rooms + kick, chat delete, trophies, stats, backup now); warm rooms fast-forward; v10 (grow1): ids first seen after coin1 import 0 coins / level 1; challenge links (/c);  v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 // look1: bots never share a look with any live snake (players included)
 const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
@@ -52,7 +52,42 @@ export const bracketOf = (tr, cq) => (cq ? "cq" : tr >= 2800 ? "dc" : tr >= 1000
 export const MM_CFG = { WAIT: 5000, LOW: 3, HB_MS: 30000, LIVE_MS: 75000, WARM_MS: 8 * 60000, LINGER_MS: 30000, MAX: MAX_HUMANS };
 // admin2: modes the owner can switch off (ids = client MODE_LIST) and the warm-room fast-forward (headless ticks, no humans)
 export const ADM_MODES = ["classic", "daily", "goldrush", "infection", "duel", "br", "koth", "boss", "team", "time", "survival", "zen", "online"];
-export const FF = { TICKS: 240, RESUME: 240 }; // 240 ticks = 8 s of world time (~0.3 ms/tick); plus aged spawn sizes/kills = a match a few minutes in
+// warm2: a new public room is SEEDED as if ~2-3 min old (no CPU spent simulating those minutes), then settles for SIM ticks.
+// MQ = bot mass quantiles 0,5,..,100 % measured from 8 cold 30-bot rooms after 60/120/180 s of play (work/warm2/calib.mjs);
+// kills ~ Poisson(0.3 + m/180) (same calibration); FRESH whole corpses + OLD half-eaten ones; food total = target x FOOD_K,
+// corpse food replacing ambient food (steady state ~ half the food is remains). Seeded bots are ordinary bots (same rules).
+export const WARM2 = { SIM: 45, RESUME: 45, MQ: [24, 29, 31, 32, 32, 32, 32, 34, 36, 40, 46, 55, 64, 81, 94, 111, 133, 158, 196, 249, 439], FRESH: 4, OLD: 14, FOOD_K: 1.01, TRY: 10 };
+export const FF = { TICKS: WARM2.SIM, RESUME: WARM2.RESUME }; // admin2 names kept (tests / owner view); warm2: short settle only
+export const warmMass = (u) => { const Q = WARM2.MQ, x = Math.max(0, Math.min(0.9999, u)) * (Q.length - 1), i = x | 0; return Q[i] + (Q[i + 1] - Q[i]) * (x - i); };
+// warm2: one natural body: a head away from the wall and from other bodies, a heading, and a gently curving path walked backwards.
+// occ = coarse grid of placed body samples (null = no clearance check, used for corpses). Returns {xs, ys, a} head-first or null.
+let warmSeq = 0;
+function warmBody(S, m, occ) { const R = S.R, r = radiusOf(m), len = lengthOf(m), sp = C.SPEED * S.dt, N = Math.min(C.CAP - 8, Math.ceil(len / sp) + 6), rnd = S.rand, G = 6;
+  const key = (x, y) => (Math.floor(x / G) + 512) * 4096 + Math.floor(y / G) + 512;
+  const free = (x, y, rr, own, idx) => { if (!occ) return true; const cx = Math.floor(x / G), cy = Math.floor(y / G);
+    for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) { const L = occ.get((cx + i + 512) * 4096 + cy + j + 512); if (!L) continue;
+      for (let k = 0; k < L.length; k += 5) { const dx = L[k] - x, dy = L[k + 1] - y, need = own === L[k + 3] ? (Math.abs(idx - L[k + 4]) * sp > 6 * rr + 4 ? 2 * rr + 1.5 : -1) : rr + L[k + 2] + 2.5; if (need > 0 && dx * dx + dy * dy < need * need) return false; } }
+    return true; };
+  for (let t = 0; t < WARM2.TRY; t++) { const [hx, hy] = S.randPos(R * 0.8), d0 = Math.hypot(hx, hy);
+    const a = d0 > R * 0.5 ? Math.atan2(-hy, -hx) + (rnd() - 0.5) * 2.4 : rnd() * 6.283185307179586;
+    let ok = true; for (let k = 1; k <= 6 && ok; k++) { const px = hx + Math.cos(a) * k * 2, py = hy + Math.sin(a) * k * 2; if (px * px + py * py > (R * 0.9) ** 2 || !free(px, py, r, -1, 0)) ok = false; } // room ahead
+    if (!ok) continue;
+    const xs = new Float32Array(N), ys = new Float32Array(N), me = ++warmSeq; let x = hx, y = hy, th = a + Math.PI, w = (rnd() - 0.5) * 0.12; xs[0] = x; ys[0] = y; const mine = [];
+    const add = (px, py, i) => { const k = key(px, py); let L = occ.get(k); if (!L) occ.set(k, (L = [])); L.push(px, py, r, me, i); mine.push(L); };
+    for (let i = 1; i < N; i++) { w += (rnd() - 0.5) * 0.026 - w * 0.008; if (w > 0.16) w = 0.16; else if (w < -0.16) w = -0.16; th += w * sp;
+      const dd = x * x + y * y; if (dd > (R * 0.84) ** 2) th += angDiff(Math.atan2(-y, -x), th) * 0.06; // the tail bends away from the wall
+      x += Math.cos(th) * sp; y += Math.sin(th) * sp; xs[i] = x; ys[i] = y;
+      if (x * x + y * y > (R - r - 2) ** 2) { ok = false; break; }
+      if (occ && i % 3 === 0) { if (!free(x, y, r, me, i)) { ok = false; break; } add(x, y, i); } } // own samples go in as we walk (self-crossing check)
+    if (occ && ok && !free(hx, hy, r, me, 0)) ok = false;
+    if (!ok) { for (let q = mine.length - 1; q >= 0; q--) mine[q].length -= 5; continue; } // drop this attempt's samples
+    if (occ) add(hx, hy, 0);
+    return { xs, ys, a }; }
+  return null; }
+// write a head-first path into a snake's ring buffer (tail pushed first)
+function warmApply(s, B) { s.h = 0; s.n = 0; for (let i = B.xs.length - 1; i >= 0; i--) s.push(B.xs[i], B.ys[i]); s.x = B.xs[0]; s.y = B.ys[0];
+  const a = Math.atan2(B.ys[0] - B.ys[1], B.xs[0] - B.xs[1]); s.a = s.ta = s.lastA = a; s.av = 0; if (s.ai) s.ai.wa = a; }
+const poisson = (rnd, lam) => { let k = 0, p = Math.exp(-lam), c = p, u = rnd(); while (u > c && k < 12) { k++; p *= lam / k; c += p; } return k; };
 const PX0 = new Map(); // admin2: catalogue prices before any owner override
 export function applyPx(px) { px = px || {};
   for (const S of SKINS) { if (!S.src || !/^coins:/.test(S.src)) continue; if (!PX0.has(S.id)) PX0.set(S.id, +S.src.split(":")[1]); const v = px[S.id] | 0; S.src = "coins:" + (v > 0 ? v : PX0.get(S.id)); }
@@ -240,7 +275,10 @@ export class Room {
     this.room = params.get("name_room") || "pub-1"; const mb = /^pub-(bs|gp|dc|cq)-(\d{1,2})$/.exec(this.room); this.br = mb ? mb[1] : ""; this.bi = mb ? +mb[2] : 0; // srv2: bracket room
     this.sim = new Sim({ dt: TICK, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true, powerups: true, events: true, evtFirst: 35 });
     this.sim.diff = 1; this.errs = this.errs || 0; this.t0 = Date.now(); this.mutOv = this.mutOv || "auto"; this.sim.mut = mutNow(this.mutOv, Date.now()); this.bty = null; // play2
-    this.wOff = (Math.random() * WARM_MASS.length) | 0; this.fill(true); this.ffMs = this.warmUp(this.room.startsWith("pub-") ? FF.TICKS : WARM_TICKS); // admin2: warm start = aged spawn + headless fast-forward
+    this.wOff = (Math.random() * WARM_MASS.length) | 0;
+    if (this.room.startsWith("pub-") && !this.noBots) { const t0 = performance.now(); this.seedWarm(); this.seedMs = Math.round((performance.now() - t0) * 10) / 10; this.ffMs = this.warmUp(FF.TICKS); } // warm2: seeded ~2-3 min old world + short settle
+    else { this.fill(true); this.ffMs = this.warmUp(WARM_TICKS); } // admin2: other rooms unchanged
+    this.btyReset(); // warm2: the crown bounty starts at its base value; seeded / simulated time never counts
     this.last = Date.now(); this.acc = 0;
   }
   fill(warm) {
@@ -249,6 +287,22 @@ export class Room {
     // srv2: a fresh public room starts mid-game: bots spawn at mixed sizes (same rules as every other snake), later refills start small
     while (want-- > 0) { const i = this.botSeq++; const m = warm && !this.noBots ? Math.round(WARM_MASS[(i + (this.wOff | 0)) % WARM_MASS.length] * (0.8 + Math.random() * 0.4)) : undefined; const b = this.sim.addSnake(pickBotName(this.sim.snakes, i), uniqSkin(this.sim.snakes, i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5], m }); if (b) { b.tr = botTrophies(i); if (m) b.kills = Math.floor(Math.sqrt(m) / 6 * Math.random()); } } // admin2: aged bots carry some kills (leaderboard looks mid-match)
   }
+  // warm2: build the world of a public room that has been running for ~2-3 minutes, without simulating those minutes
+  seedWarm() { const S = this.sim, rnd = S.rand, n = TARGET_SNAKES, occ = new Map(), bs = S.mut === "bs" ? 2 * C.START_M : 0;
+    const us = []; for (let i = 0; i < n; i++) us.push((i + rnd()) / n); for (let i = n - 1; i > 0; i--) { const j = (rnd() * (i + 1)) | 0; [us[i], us[j]] = [us[j], us[i]]; } // stratified: every room gets a full spread
+    // biggest first, so the long bodies find room; each bot is an ordinary bot (same rules as any other snake)
+    const ord = us.map((u, i) => [u, i]).sort((p, q) => q[0] - p[0]);
+    for (const [u] of ord) { const i = this.botSeq++, m = Math.round(warmMass(u) * (0.92 + rnd() * 0.16)) + bs, B = warmBody(S, m, occ);
+      const b = S.addSnake(pickBotName(S.snakes, i), uniqSkin(S.snakes, i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5], m, pos: B ? [B.xs[0], B.ys[0]] : undefined });
+      if (!b) continue; if (B) warmApply(b, B); b.tr = botTrophies(i); b.kills = Math.min(9, poisson(rnd, 0.3 + m / 180)); }
+    // remains: a few fresh corpses (bots race to them) and older half-eaten trails; they replace ambient food so the total stays at steady state
+    for (let k = 0; k < WARM2.FRESH + WARM2.OLD; k++) { const old = k >= WARM2.FRESH, m = Math.round(warmMass(0.45 + rnd() * 0.53)), B = warmBody(S, m, null); if (!B) continue;
+      const c = S.addSnake("", null, { bot: true, m, pos: [B.xs[0], B.ys[0]] }); if (!c) continue; warmApply(c, B); const e0 = S.evSpawn.length; S.kill(c, 0, 2); S.removeSnake(c);
+      if (old) { const keep = 0.35 + rnd() * 0.35; for (let j = e0; j < S.evSpawn.length; j++) if (rnd() > keep) S.removeFood(S.evSpawn[j], 0); S.feasts = S.feasts.filter((f) => f.id !== c.id); } }
+    const want = Math.round(S.foodTarget * WARM2.FOOD_K); let over = S.fCount - want;
+    if (over > 0) { const amb = []; for (let i = 0; i < S.FM; i++) if (S.fa[i] && S.fcl[i]) amb.push(i); for (let i = amb.length - 1; i > 0 && over > 0; i--) { const j = (rnd() * (i + 1)) | 0; S.removeFood(amb[j], 0); amb[j] = amb[i]; over--; } }
+    S.drain(); this.fill(); S.drain(); }
+  btyReset() { this.bty = null; if (!this.sim) return; const top = this.sim.snakes.filter((s) => s.alive).sort((a, b2) => b2.m - a.m)[0]; this.btyTrack(top, Date.now()); }
   // admin2: headless fast-forward (no humans, nothing sent): bots move, eat, die and respawn; returns the CPU ms it took
   warmUp(n) { const S = this.sim, t0 = performance.now(); for (let k = 0; k < n; k++) { S.step(() => true); S.drain(); if (k % 30 === 29) { for (const d of S.snakes.filter((x) => !x.alive)) S.removeSnake(d); this.fill(); } }
     S.drain(); for (const d of S.snakes.filter((x) => !x.alive)) S.removeSnake(d); this.fill(); S.drain(); return Math.round((performance.now() - t0) * 10) / 10; }
@@ -284,7 +338,7 @@ export class Room {
       return J2({ err: "op" }); }
     if (url.pathname === "/r/info" || url.pathname === "/r/kick") { // admin2: owner room view / kick (only the social object builds these requests; never inits a room)
       const cl = [...this.clients].filter((c) => c.joined);
-      if (url.pathname === "/r/info") return J({ room: this.room || "", live: this.timer ? 1 : 0, br: this.br || "", h: cl.length, b: this.sim ? this.sim.snakes.filter((s) => s.alive && s.bot).length : 0, ff: this.ffMs || 0, pl: cl.map((c) => ({ u: c.uid || "", n: c.name, m: c.snake && c.snake.alive ? Math.round(c.snake.m) : 0 })) });
+      if (url.pathname === "/r/info") return J({ room: this.room || "", live: this.timer ? 1 : 0, br: this.br || "", h: cl.length, b: this.sim ? this.sim.snakes.filter((s) => s.alive && s.bot).length : 0, ff: this.ffMs || 0, sd: this.seedMs || 0, pl: cl.map((c) => ({ u: c.uid || "", n: c.name, m: c.snake && c.snake.alive ? Math.round(c.snake.m) : 0 })) });
       const u = url.searchParams.get("u") || "", all = url.searchParams.get("all") === "1", why = (url.searchParams.get("k") || "kick").slice(0, 8); let n = 0;
       for (const c of [...this.clients]) if (all ? c.uid !== "1" : u && c.uid === u) { n++; this.send(c, JSON.stringify({ t: "kick", k: why, m: (url.searchParams.get("m") || "").slice(0, 200) })); if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4); try { c.ws.close(4012, why); } catch (_) {} this.drop(c); }
       return J({ ok: 1, n }); }
@@ -296,7 +350,7 @@ export class Room {
     if (url.pathname.startsWith("/m/")) return this.mmHttp(req, url); // srv2: this instance is the matchmaker
     // srv2: a room kept in memory while empty resumes where it was; after WARM_MS it starts a fresh warm world
     if (this.sim && !this.clients.size && this.idleAt && Date.now() - this.idleAt > MM_CFG.WARM_MS) this.sim = null;
-    else if (this.sim && !this.clients.size && !this.timer && this.idleAt && this.room.startsWith("pub-")) this.ffMs = this.warmUp(Math.min(FF.RESUME, Math.round((Date.now() - this.idleAt - MM_CFG.LINGER_MS) / 1000 * 30))); // admin2: a paused room catches up (bounded)
+    else if (this.sim && !this.clients.size && !this.timer && this.idleAt && this.room.startsWith("pub-")) { this.ffMs = this.warmUp(Math.min(FF.RESUME, Math.round((Date.now() - this.idleAt - MM_CFG.LINGER_MS) / 1000 * 30))); this.btyReset(); } // admin2: a paused room catches up (bounded); warm2: 45 ticks max, bounty back to base (paused time never pays)
     if (!this.sim) this.init(url.searchParams); this.idleAt = 0; clearTimeout(this.lingerT); this.lingerT = 0;
     const humans = [...this.clients].length;
     const pair = new WebSocketPair(); const [client, server] = Object.values(pair); server.accept();

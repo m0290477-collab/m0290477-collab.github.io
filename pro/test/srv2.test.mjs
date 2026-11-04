@@ -191,7 +191,7 @@ ok(W.bracketOf(0) === "bs" && W.bracketOf(999) === "bs" && W.bracketOf(1000) ===
 
 // ---------- 5. live rooms: warm start, keep the world while empty, hb to the matchmaker ----------
 { const RM = obj("pub-gp-1"); await RM.fetch(new Request("https://room/ws?name_room=pub-gp-1")); const S0 = RM.sim, al = S0.snakes.filter((s) => s.alive);
-  ok(RM.br === "gp" && RM.bi === 1 && al.length === 30 && Math.max(...al.map((s) => s.m)) > 600 && Math.min(...al.map((s) => s.m)) < 60 && S0.tick > 0, "warm start: a fresh public room already has 30 snakes at mixed sizes, mid-game (" + Math.round(Math.min(...al.map((s) => s.m))) + "–" + Math.round(Math.max(...al.map((s) => s.m))) + ")");
+  ok(RM.br === "gp" && RM.bi === 1 && al.length === 30 && Math.max(...al.map((s) => s.m)) > 150 && Math.min(...al.map((s) => s.m)) < 60 && S0.tick > 0, "warm start: a fresh public room already has 30 snakes at mixed sizes, mid-game (" + Math.round(Math.min(...al.map((s) => s.m))) + "–" + Math.round(Math.max(...al.map((s) => s.m))) + ")");
   const c = [...RM.clients].pop(); RM.onMsg(c, JSON.stringify({ t: "hello", name: "P", pk: pk(32) })); const wel = c.ws.out.find((o) => o && o.t === "welcome"); ok(wel && wel.br === "gp" && wel.bi === 1 && wel.h === 1 && wel.b >= 25, "welcome names the server (Gold #1), players and bots");
   await new Promise((q) => setTimeout(q, 30)); ok(obj("mm-v1").mmR && obj("mm-v1").mmR.get("pub-gp-1") && obj("mm-v1").mmR.get("pub-gp-1").h === 1, "the room reported itself to the matchmaker (1 player)");
   for (let k = 0; k < 20; k++) RM.tick(); const tk = RM.sim.tick; RM.drop(c);

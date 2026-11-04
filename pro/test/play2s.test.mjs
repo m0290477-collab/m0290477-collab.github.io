@@ -55,7 +55,7 @@ await A(1, "a_mut", { k: "auto", why: "back to auto" }); ok(S().cfgPub().mut ===
 // 4) crown bounty
 ok(E.btyVal(0) === E.BOUNTY.BASE && E.btyVal(25) === E.BOUNTY.BASE + 2 * E.BOUNTY.STEP && E.btyVal(1e6) === E.BOUNTY.MAX, "bounty grows with time at #1, capped at " + E.BOUNTY.MAX);
 { const R = new W.Room({ storage: { sql: new Sql() } }, env); R.init(new URLSearchParams("name_room=pub-8")); const srt = R.sim.snakes.filter((s) => s.alive).sort((a, b) => b.m - a.m);
-  R.btyTrack(srt[0], Date.now() - 40000); const bt = JSON.parse(R.lbMsg()).bt; ok(bt && bt[0] === srt[0].id && bt[1] === E.btyVal(40), "public room: #1 carries the bounty in the leaderboard (" + JSON.stringify(bt) + ")");
+  R.bty = null; R.btyTrack(srt[0], Date.now() - 40000); const bt = JSON.parse(R.lbMsg()).bt; ok(bt && bt[0] === srt[0].id && bt[1] === E.btyVal(40), "public room: #1 carries the bounty in the leaderboard (" + JSON.stringify(bt) + ")");
   R.btyTrack(srt[0], Date.now()); ok(JSON.parse(R.lbMsg()).bt[1] === E.btyVal(40), "staying #1 keeps the clock");
   R.btyTrack(srt[1], Date.now()); ok(JSON.parse(R.lbMsg()).bt[0] === srt[1].id && JSON.parse(R.lbMsg()).bt[1] === E.BOUNTY.BASE, "new #1: bounty restarts");
   const P = new W.Room({ storage: { sql: new Sql() } }, env); P.init(new URLSearchParams("name_room=priv-x&bots=0")); P.btyTrack(srt[0], Date.now()); ok(!JSON.parse(P.lbMsg()).bt, "private rooms: no bounty");
