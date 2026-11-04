@@ -1,12 +1,12 @@
 // comp1: Competitions screen (League · Weekly · Monthly · Badges), lobby chip, results trophy row, profile league card,
 // HUD league tags. Works offline (own progress + milestones); the online boards load from the server when reachable.
-import { pidHtml, pidTier } from "./pid.js?v=coin1"; // srv2
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=coin1";
-import { fmtLeft } from "./offers.js?v=coin1";
-import { FRAMES, TITLES, avatarHtml } from "./profile.js?v=coin1";
+import { pidHtml, pidTier } from "./pid.js?v=ops1"; // srv2
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=ops1";
+import { fmtLeft } from "./offers.js?v=ops1";
+import { FRAMES, TITLES, avatarHtml } from "./profile.js?v=ops1";
 import { LEAGUES, TROPHY, leagueOf, CONTESTS, botTrophies, leagueBadge, leagueName, trophyIcon, badgeImg, trophies, myLeague, ROMAN, SEASON_COINS, CONQ_REWARD, rankReward, MILE, MILE_COINS, BADGE_OF, BADGES,
-  localVal, mileKey, claimMilestone, contestTick, seasonTick, syncMe, top, lastMe, nowMs, contestEnds, applyServer } from "./league.js?v=coin1";
-import { periodEnd } from "./sim.js?v=coin1";
+  localVal, mileKey, claimMilestone, contestTick, seasonTick, syncMe, top, lastMe, nowMs, contestEnds, applyServer } from "./league.js?v=ops1";
+import { periodEnd } from "./sim.js?v=ops1";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

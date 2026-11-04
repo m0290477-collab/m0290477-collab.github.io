@@ -5,7 +5,7 @@ import { periodId, Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBo
 import { DAY, LOGIN, LOGIN_NOCOS, SPIN, SPIN_NOCOS, spinPick, RANDOM_COS, SEASON, seasonReward, UNLOCKS, ACH_COINS, levelCoins, bonusCoins, dailyMissions, weeklyCoins, WC_REWARD, DAILY_MODE_BONUS,
   leagueSeasonReward, CONQ_REWARD, rankReward, mileReward, CONTESTS, matchCoins, plausible, OFF, ONLINE, catItem, validKey, offerCandidates } from "./econ.js"; // coin1: shared economy tables
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 7; // v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 8; // v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 // look1: bots never share a look with any live snake (players included)
 const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
@@ -99,6 +99,47 @@ const cfgOf = (env) => ({ g: (env && env.GOOGLE_CLIENT_ID) || "", a: (env && env
 const pre = (req) => { const origin = req.headers.get("Origin"); return origin && !ORIGINS.some((r) => r.test(origin)) ? new Response("origin not allowed", { status: 403 }) : null; };
 const opts = (m) => new Response(null, { headers: { ...cors, "access-control-allow-methods": m, "access-control-allow-headers": "content-type", "access-control-max-age": "86400" } });
 
+// ops1: owner-only backup API. Auth = header x-admin-key equal to the ADMIN_KEY secret (no CORS: scripts only).
+// GET /admin/snap streams {v, wv, t, social:{table:[rows]}, board:{...}}; POST /admin/restore[?dry=1] merges a snapshot
+// back (INSERT OR REPLACE, so a second run changes nothing); POST /admin/trim?days=60 summarises old ledger rows per player.
+const keyEq = (a, b) => { a = String(a || ""); b = String(b || ""); if (!b || a.length !== b.length) return false; let x = 0; for (let i = 0; i < a.length; i++) x |= a.charCodeAt(i) ^ b.charCodeAt(i); return x === 0; };
+async function adminHttp(req, env, url) {
+  if (!env.ADMIN_KEY || !keyEq(req.headers.get("x-admin-key"), env.ADMIN_KEY)) return new Response('{"err":"auth"}', { status: 403, headers: { "content-type": "application/json" } });
+  const so = env.ROOMS.get(env.ROOMS.idFromName(SOCIAL)), bo = env.ROOMS.get(env.ROOMS.idFromName(BOARD)), jh = { "content-type": "application/json" };
+  if (url.pathname === "/admin/snap" && req.method === "GET") {
+    const { readable, writable } = new TransformStream(), w = writable.getWriter(), te = new TextEncoder();
+    (async () => { try { await w.write(te.encode('{"v":1,"wv":' + VERSION + ',"t":' + Date.now() + ',"social":'));
+      for (const [o, nm, last] of [[so, "s", 0], [bo, "b", 1]]) { const r = await o.fetch("https://ops/x/snap?o=" + nm); if (!r.ok) throw new Error("snap " + nm);
+        const rd = r.body.getReader(); for (;;) { const { done, value } = await rd.read(); if (done) break; await w.write(value); } await w.write(te.encode(last ? "}" : ',"board":')); }
+      await w.close(); } catch (e) { try { await w.abort(e); } catch (_) {} } })();
+    return new Response(readable, { headers: { ...jh, "cache-control": "no-store" } });
+  }
+  if (url.pathname === "/admin/restore" && req.method === "POST") { let B; try { B = JSON.parse(await req.text()); } catch (_) { return new Response('{"err":"json"}', { status: 400, headers: jh }); }
+    if (!B || B.v !== 1) return new Response('{"err":"format"}', { status: 400, headers: jh }); const dry = url.searchParams.get("dry") === "1" ? "&dry=1" : "", out = {};
+    for (const [o, nm, k] of [[so, "s", "social"], [bo, "b", "board"]]) if (B[k]) out[k] = await (await o.fetch("https://ops/x/restore?o=" + nm + dry, { method: "POST", body: JSON.stringify(B[k]) })).json();
+    return new Response(JSON.stringify(out), { headers: jh }); }
+  if (url.pathname === "/admin/trim" && req.method === "POST") return so.fetch("https://ops/x/trim?days=" + Math.max(30, Math.min(3650, +url.searchParams.get("days") || 60)), { method: "POST" });
+  return new Response('{"err":"op"}', { status: 404, headers: jh });
+}
+export const OPS_SKIP = ["nonce", "ecode"]; // short-lived sign-in secrets: not worth keeping in a backup
+export function opsSnap(q) { const out = {};
+  for (const { name } of q.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name").toArray()) if (!OPS_SKIP.includes(name)) out[name] = q.exec(`SELECT * FROM "${name}"`).toArray();
+  return out; }
+export function opsRestore(q, D, dry) { const have = new Set(q.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").toArray().map((r) => r.name)), res = {};
+  for (const [t, rows] of Object.entries(D || {})) { if (!/^[a-z0-9_]{1,32}$/.test(t) || !have.has(t) || OPS_SKIP.includes(t) || !Array.isArray(rows)) { res[t] = { skip: 1 }; continue; }
+    const r = { rows: rows.length, live: q.exec(`SELECT COUNT(*) AS n FROM "${t}"`).one().n, put: 0, bad: 0 };
+    if (!dry) for (const row of rows) { const ks = Object.keys(row || {}).filter((k) => /^[a-z0-9_]{1,32}$/.test(k)); if (!ks.length) { r.bad++; continue; }
+      try { q.exec(`INSERT OR REPLACE INTO "${t}" (${ks.map((k) => '"' + k + '"').join(", ")}) VALUES (${ks.map(() => "?").join(", ")})`, ...ks.map((k) => row[k])); r.put++; } catch (_) { r.bad++; } }
+    res[t] = r; }
+  return res; }
+// ledger trim: per player, rows older than the cutoff collapse into ONE row (kept under the id of the newest old row, k "sum", d = their
+// total, bal = that row's balance), so the sum of d, every balance and the newest rows stay exact; restoring an older snapshot puts the detail back.
+export function opsTrim(q, days = 60, now = Date.now()) { const cut = now - days * 86400000; let pl = 0, rm = 0;
+  for (const g of q.exec("SELECT pid, COUNT(*) AS n, MAX(id) AS mx, SUM(d) AS sd FROM led WHERE t < ? GROUP BY pid HAVING n > 1", cut).toArray()) {
+    const keep = q.exec("SELECT id, k FROM led WHERE id = ?", g.mx).one(); const n0 = g.n - 1;
+    q.exec("DELETE FROM led WHERE pid = ? AND t < ? AND id < ?", g.pid, cut, g.mx); q.exec("UPDATE led SET k = 'sum', d = ?, ref = '', note = ? WHERE id = ?", g.sd, ("trim " + g.n + " rows" + (keep && keep.k === "sum" ? " (incl. earlier sum)" : "")).slice(0, 60), g.mx); pl++; rm += n0; }
+  return { ok: 1, players: pl, removed: rm, cut }; }
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -150,6 +191,7 @@ export default {
       const pid = await pidOf(url.searchParams.get("pk") || ""); if (!pid) return J({ err: "pk" }, 400);
       return env.ROOMS.get(env.ROOMS.idFromName(MM)).fetch(new Request("https://mm/m/pick?pid=" + pid + "&w=" + (Math.max(0, Math.min(60000, +url.searchParams.get("w") || 0)) | 0) + "&x=" + encodeURIComponent((url.searchParams.get("x") || "").slice(0, 24))));
     }
+    if (url.pathname.startsWith("/admin/")) return adminHttp(req, env, url); // ops1: owner-only backups (ADMIN_KEY secret, never from a browser)
     return new Response("Super Snake online server", { headers: { "content-type": "text/plain" } });
   },
 };
@@ -177,6 +219,12 @@ export class Room {
     try { const r = this.env.ROOMS.get(this.env.ROOMS.idFromName(MM)).fetch("https://mm/m/hb", { method: "POST", body }); if (r && r.catch) r.catch(() => {}); } catch (_) {} }
   async fetch(req) {
     const url = new URL(req.url);
+    if (url.pathname.startsWith("/x/")) { // ops1: backups (only the worker's owner-checked /admin/* builds these requests)
+      const q = url.searchParams.get("o") === "b" ? this.db() : this.sdb(), J2 = (o) => new Response(JSON.stringify(o), { headers: { "content-type": "application/json" } });
+      if (url.pathname === "/x/snap") return J2(opsSnap(q));
+      if (url.pathname === "/x/restore") { let D = {}; try { D = JSON.parse(await req.text()); } catch (_) {} return J2(opsRestore(q, D, url.searchParams.get("dry") === "1")); }
+      if (url.pathname === "/x/trim") return J2(opsTrim(this.sdb(), +url.searchParams.get("days") || 60));
+      return J2({ err: "op" }); }
     if (url.pathname.startsWith("/b/")) return this.board(req, url); // comp1: this instance is the board object
     if (url.pathname.startsWith("/s/") || url.pathname === "/sws" || url.pathname === "/a/op") this.maint(); // srv2: owner maintenance set at deploy time (never via a request)
     if (url.pathname.startsWith("/s/")) return this.socialHttp(req, url); // srv1: this instance is the social object
