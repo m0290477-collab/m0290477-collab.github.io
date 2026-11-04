@@ -10,7 +10,7 @@ import {
 	Vector4,
 	WebGLRenderTarget,
 	HalfFloatType
-} from './three.module.min.js?v=grow1';
+} from './three.module.min.js?v=admin2';
 
 class Reflector extends Mesh {
 

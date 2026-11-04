@@ -1,23 +1,24 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=grow1";
-import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=grow1"; // srv1
-import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=grow1"; // srv2
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=grow1"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=grow1";
-import { legalButtons, contactNote, openFeedback } from "./legal.js?v=grow1"; import { call as socialCall } from "./social.js?v=grow1"; // coin1
-import { GTRAILS } from "./skins.js?v=grow1"; import { gtCellUrl } from "./gfx/gtrail.js?v=grow1"; // trail1
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=grow1";
-import { WORLDS, worldAsset } from "./worlds.js?v=grow1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=grow1";
-import { haptic } from "./audio.js?v=grow1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=grow1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=grow1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=grow1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=grow1";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=grow1"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=grow1";
-import { growBind, growStart, growResults } from "./grow.js?v=grow1"; // grow1: challenge links, clips, room QR
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=admin2";
+import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=admin2"; // srv1
+import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=admin2"; // srv2
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=admin2"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=admin2";
+import { legalButtons, contactNote, openFeedback } from "./legal.js?v=admin2"; import { call as socialCall } from "./social.js?v=admin2"; // coin1
+import { GTRAILS } from "./skins.js?v=admin2"; import { gtCellUrl } from "./gfx/gtrail.js?v=admin2"; // trail1
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=admin2";
+import { WORLDS, worldAsset } from "./worlds.js?v=admin2";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=admin2";
+import { haptic } from "./audio.js?v=admin2";
+import { skinFn, MODES, EMOTES } from "./game.js?v=admin2";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=admin2";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=admin2";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=admin2";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=admin2"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=admin2";
+import { CF, modeOff, onlineBlock, annBar } from "./admin2.js?v=admin2"; import { call as a2call } from "./social.js?v=admin2"; // admin2
+import { growBind, growStart, growResults } from "./grow.js?v=admin2"; // grow1: challenge links, clips, room QR
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -454,7 +455,8 @@ export class UI {
     const tier = S.seasonTier(), into = p.season.xp - tier * SEASON.per; $("l-tier").textContent = tier; $("l-sbar").style.width = (tier >= SEASON.tiers ? 100 : Math.round((into / SEASON.per) * 100)) + "%";
     const unclaimed = Array.from({ length: tier }, (_, i) => i + 1).some((k) => !p.season.claimed.includes(k)); $("l-sdot").classList.toggle("x-hide", !unclaimed);
     // modes: short, fully readable descriptions; the column scrolls with a fade + chevron hint
-    $("l-modes").innerHTML = MODE_LIST.map((m) => `<button class="mode ${m === this.selMode ? "on" : ""}" data-m="${m}" role="tab"><span class="mi">${IC[m]}</span><span><b>${t("m_" + m)}</b><small>${esc(t("m_" + m + "_s"))}</small></span>${NEW_MODES.has(m) ? `<i class="new">${t("new")}</i>` : ""}</button>`).join("");
+    CF.ui = this; if (modeOff(this.selMode)) this.selMode = MODE_LIST.find((m) => !modeOff(m)) || "classic"; annBar(); // admin2: switched-off modes are hidden
+    $("l-modes").innerHTML = MODE_LIST.filter((m) => !modeOff(m)).map((m) => `<button class="mode ${m === this.selMode ? "on" : ""}" data-m="${m}" role="tab"><span class="mi">${IC[m]}</span><span><b>${t("m_" + m)}</b><small>${esc(t("m_" + m + "_s"))}</small></span>${NEW_MODES.has(m) ? `<i class="new">${t("new")}</i>` : ""}</button>`).join("");
     $("l-modes").querySelectorAll(".mode").forEach((b) => this.click(b, () => { this.selMode = b.dataset.m; p.last.mode = this.selMode; S.save(); const st = $("l-modes").scrollTop; this.renderLobby(); $("l-modes").scrollTop = st; }, "tab"));
     requestAnimationFrame(() => this._modesFade && this._modesFade());
     const wb = $("l-worlds"); wb.innerHTML = "";
@@ -498,6 +500,7 @@ export class UI {
   claim(i) { const bt = document.querySelector(`[data-i2="${i}"]`); const r = this.S.claimMission(i); if (!r) return; this.fly(bt, "+◆" + fmtNum(r.coins)); this.app.audio.play("chime"); document.querySelectorAll(".chip.coins").forEach((c) => this.glow(c)); this.toast(`◆ +${r.coins} · +${r.coins} XP`, "gold"); this.coins(this.p.coins); if (r.lv.up) { this.toast(t("levelUp", { n: r.lv.level }), "gold"); this.app.audio.play("level"); } this.checkAch(); if (this.cur === "lobby") this.renderLobby(); else if (this.cur === "season") this.renderSeason(); }
   checkAch() { for (const a of this.S.checkAch()) { this.toast(`${a.ic} ${t("achUnlocked", { n: t(a.id) })} · ◆${a.r}`, "gold", 3500); this.app.audio.play("ach"); } }
   play() {
+    if (modeOff(this.selMode)) { this.toast(t("a2_modeOff"), "warn"); return; } if (this.selMode === "online") { const b = onlineBlock(); if (b) { this.toast(b, "warn", 5000); return; } } // admin2
     const p = this.p, mode = this.selMode; p.last.mode = mode; this.S.save();
     if (!this.S.unlocked("world", p.last.world)) p.last.world = 0;
     const D = mode === "daily" ? dailyDef() : null;
@@ -836,7 +839,10 @@ export class UI {
       if (a === "tut") { this.tutCfg = null; this.tutI = 0; this.tutStart(null); }
       if (a === "signup") this.showAuth("up");
       if (a === "signout") { this.S.signOut(); this.app.applyAll(); this.showAuth(); }
-      if (a === "redeem") { const inp = $("g-code"), r = await this.S.redeem(inp ? inp.value : "");
+      if (a === "redeem") { const inp = $("g-code"), code = inp ? inp.value.trim() : ""; let r = await this.S.redeem(code);
+        if (r !== "ok" && /^[A-Za-z0-9]{4,16}$/.test(code)) { const x = await a2call("promo", { code }); // admin2: owner promo codes (server-checked, one per player)
+          if (x && x.ok) { this.toast("✓ " + t("pr_ok", { c: fmtNum(x.c) }), "good", 4000); this.app.audio.play("reveal"); if (inp) inp.value = ""; return; }
+          if (x && ["used", "exp", "max"].includes(x.err)) { this.toast(t("pr_" + x.err), "warn"); this.app.audio.play("error"); return; } }
         if (r === "ok") { this.toast("✓ " + t("redeemOk"), "good", 3500); this.app.audio.play("reveal"); this.coins && this.coins(this.p.coins); this.renderSettings(); }
         else { this.toast(t(r === "na" ? "redeemNa" : "redeemBad"), "warn"); this.app.audio.play("error"); if (inp) { inp.select(); } } }
       if (a === "fb") { openFeedback(this, socialCall); return; } // coin1

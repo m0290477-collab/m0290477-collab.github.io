@@ -3,15 +3,16 @@
 // while its client id is not configured on the server (/cfg). Profile snapshots: debounced ~10 s after a save + at match end,
 // versioned (a newer save from another device wins), restored on sign-in. Owner grants arrive live over the social socket.
 // Owner panel (only reachable from the founder's own Profile, every call checked on the server). Finding-a-server overlay.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=grow1";
-import { SERVER } from "./net.js?v=grow1";
-import { devKey } from "./league.js?v=grow1";
-import { SO, call, socialRestart, errText } from "./social.js?v=grow1";
-import { avatarHtml } from "./profile.js?v=grow1";
-import { KV, jparse, newProfile } from "./store.js?v=grow1";
-import { pidHtml } from "./pid.js?v=grow1";
-import { legalButtons } from "./legal.js?v=grow1"; // coin1: Privacy / Terms
-import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=grow1"; // coin1
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=admin2";
+import { SERVER } from "./net.js?v=admin2";
+import { devKey } from "./league.js?v=admin2";
+import { SO, call, socialRestart, errText } from "./social.js?v=admin2";
+import { avatarHtml } from "./profile.js?v=admin2";
+import { KV, jparse, newProfile } from "./store.js?v=admin2";
+import { pidHtml } from "./pid.js?v=admin2";
+import { legalButtons } from "./legal.js?v=admin2"; // coin1: Privacy / Terms
+import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=admin2"; // coin1
+import { CF, dashExtra, liveHtml, ecoHtml, playerExtra, bind2, a2Reset, actName2 } from "./admin2.js?v=admin2"; // admin2
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -180,20 +181,22 @@ export function renderAdmin(ui) {
       h = `<div class="ad-tiles">${tile("ad_online", fmtNum(s.online))}${tile("ad_lobby", fmtNum(s.lobby))}${tile("ad_match", fmtNum(Math.max(s.match, s.inRooms)))}${tile("ad_rooms", fmtNum(s.rooms.filter((r) => r.live).length))}${tile("ad_msgs", (Math.round(s.msgMin * 10) / 10) + ` <i class="fine">(${Math.round(s.msg10 * 10) / 10})</i>`)}${tile("ad_errs", fmtNum(s.errs.social + s.errs.rooms), s.errs.social + s.errs.rooms ? "bad" : "")}</div>
         <div class="pv-card"><div class="pv-h">${t("ad_rooms")}<button class="btn ac-b ad-sm" id="ad-ref">${t("ad_refresh")}</button></div>${s.rooms.length ? `<table class="lb ad-tb"><tr><th>${t("ad_room")}</th><th>${t("ad_bracket")}</th><th>${t("ad_humans")}</th><th>${t("ad_botsH")}</th><th>${t("ad_up")}</th></tr>` + s.rooms.map((r) => `<tr class="${r.live ? "" : "dim"}"><td>${esc(serverName({ br: r.br, bi: r.i, room: r.room }))}</td><td>${r.br ? esc(t("br_" + r.br)) : "—"}</td><td class="g">${r.h}</td><td>${r.b}</td><td>${Math.round(r.up / 60)} min</td></tr>`).join("") + `</table>` : `<p class="fine">${t("ad_noRooms")}</p>`}
         <p class="fine">${t("ad_total", { p: fmtNum(s.players), a: fmtNum(s.accounts), r: fmtNum(s.open) })}</p></div>`; }
+    h = dashExtra(adm) + h; // admin2: stats + backup
   } else if (tab === "players") {
-    if (A.view) h = viewHtml(A.view);
+    if (A.view) h = viewHtml(A.view) + playerExtra(A.view); // admin2
     else { h = `<div class="pv-card"><form class="so-find" id="ad-f"><input id="ad-q" autocomplete="off" dir="auto" maxlength="24" placeholder="${t("ad_search")}" value="${esc(A.q)}"><button class="btn gold so-b" type="submit">${t("search")}</button></form></div>`;
       if (A.list) h += `<div class="pv-card">` + (A.list.length ? A.list.map((c) => `<button class="so-row ad-pr" data-vid="${esc(c.id)}">${avatarHtml(c.av || "p0", c.fr | 0, "m")}<div class="so-who"><b dir="auto">${esc(c.n)}</b><small>${pidHtml(c.id)} · ${t("level")} ${c.lv | 0}${c.acc ? " · ☁" : ""}${c.ban ? ` · <em class="ad-bad">${t("ad_ban")}</em>` : ""}${c.mute ? ` · <em class="ad-warn">${t("ad_mute")}</em>` : ""}</small></div></button>`).join("") : `<p class="fine">${t("ad_noRes")}</p>`) + `</div>`; }
-  } else if (tab === "reports") { const L = A.reps;
+  } else if (tab === "live") h = liveHtml(adm); else if (tab === "eco") h = ecoHtml(adm); // admin2
+  else if (tab === "reports") { const L = A.reps;
     h = !L ? `<p class="fine">${t("loading")}…</p>` : L.err ? `<p class="so-err">${esc(errText(L.err))}</p>` : L.length ? L.map((r) => `<div class="pv-card ad-rep ${r.res ? "res" : ""}"><div class="pv-h"><span>${r.res ? "✓ " + t("ad_resolved") : "● " + t("ad_open")}</span><span class="fine">${esc(new Date(r.t).toLocaleString(LANG))}</span></div>
         <div class="so-who"><b dir="auto">${esc(r.who.n)}</b> <small>${pidHtml(r.who.id)}</small></div><p class="ad-msg" dir="auto">“${esc(r.tx || "—")}”</p><p class="fine">${esc(t("ad_by", { n: r.by.n }))} · ${pidHtml(r.by.id)}${r.rwhy ? " · " + esc(r.rwhy) : ""}</p>
         <div class="ac-btns">${r.res ? "" : `<button class="btn gold ac-b" data-res="${r.id}">${t("ad_resolve")}</button>`}<button class="btn ac-b" data-vid="${esc(r.who.id)}">${t("ad_view")}</button></div></div>`).join("") : `<div class="pv-card"><p class="fine">${t("ad_noReps")}</p></div>`;
   } else { const L = A.aud;
     h = !L ? `<p class="fine">${t("loading")}…</p>` : L.err ? `<p class="so-err">${esc(errText(L.err))}</p>` : `<div class="pv-card">` + (L.length ? `<table class="lb ad-tb"><tr><th>${t("ad_t")}</th><th>${t("ad_act")}</th><th>${t("ad_tgt")}</th><th>${t("ad_reason")}</th></tr>` + L.map((x) => `<tr><td class="fine">${esc(new Date(x.t).toLocaleString(LANG, { dateStyle: "short", timeStyle: "short" }))}</td><td>${esc(actName(x.act))}${actData(x)}</td><td>${x.tgt ? pidHtml(x.tgt) : "—"}</td><td dir="auto">${esc(x.why)}</td></tr>`).join("") + `</table>` : `<p class="fine">${t("ad_noLog")}</p>`) + `</div>`; }
-  el.innerHTML = h; bindAdmin(ui, el);
+  el.innerHTML = h; bindAdmin(ui, el); CF.rer = () => { if (ui.cur === "admin") renderAdmin(ui); }; bind2(ui, el, adm, A, CF.rer); // admin2
   if (tab === "dash" && !A.srv) loadAdm(ui, "srv"); if (tab === "reports" && !A.reps) loadAdm(ui, "reps"); if (tab === "log" && !A.aud) loadAdm(ui, "aud");
 }
-const actName = (a) => t({ ban: "ad_ban", unban: "ad_unban", mute: "ad_mute", unmute: "ad_unmute", grant: "ad_grantS", rename: "ad_rname", resolve: "ad_resolve", delete: "ad_del" }[a] || "ad_act");
+const actName = (a) => t({ ...actName2, ban: "ad_ban", unban: "ad_unban", mute: "ad_mute", unmute: "ad_unmute", grant: "ad_grantS", rename: "ad_rname", resolve: "ad_resolve", delete: "ad_del" }[a] || "ad_act");
 function actData(x) { const d = jparse(x.d || "{}") || {}; return d.coins ? ` <span class="fine">◆${fmtNum(d.coins)}${d.items && d.items.length ? " +" + d.items.length : ""}</span>` : d.mins ? ` <span class="fine">${d.mins === "perm" ? t("ad_perm") : Math.round(d.mins / 60) + " h"}</span>` : ""; }
 async function loadAdm(ui, k) { const A = AC.adm; const r = await adm("a_" + k); if (k === "srv") A.srv = r; else A[k] = r && r.list ? r.list : { err: (r && r.err) || "offline" }; if (ui.cur === "admin") renderAdmin(ui); }
 function viewHtml(v) {
@@ -244,11 +247,11 @@ function injectDom(ui) {
   if ($("s-admin")) return;
   const sec = document.createElement("section"); sec.id = "s-admin"; sec.className = "screen panel";
   sec.innerHTML = `<header class="phead"><button class="icon-btn back" id="ad-x" data-ia="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 data-i="ac_admin"></h2>
-    <div class="seg tabs" id="ad-tabs"><button data-v="dash" class="on" data-i="ad_dash"></button><button data-v="players" data-i="ad_players"></button><button data-v="reports" data-i="ad_reports"></button><button data-v="log" data-i="ad_log"></button></div><div class="sp"></div></header>
+    <div class="seg tabs" id="ad-tabs"><button data-v="dash" class="on" data-i="ad_dash"></button><button data-v="players" data-i="ad_players"></button><button data-v="live" data-i="ad_live2"></button><button data-v="eco" data-i="ad_eco"></button><button data-v="reports" data-i="ad_reports"></button><button data-v="log" data-i="ad_log"></button></div><div class="sp"></div></header>
     <div class="pbody"><div class="pcontent wide" id="ad-content"></div></div>`;
   const lobby = $("s-lobby"); lobby.parentNode.insertBefore(sec, lobby.nextSibling);
   ui.click($("ad-x"), () => { ui.prTab = "over"; ui.go("profile", "fade"); }, "back"); // back to the founder's Profile (the only way in)
-  $("ad-tabs").querySelectorAll("button").forEach((b) => ui.click(b, () => { const A = AC.adm; A.tab = b.dataset.v; if (A.tab === "dash") A.srv = null; if (A.tab === "reports") A.reps = null; if (A.tab === "log") A.aud = null; renderAdmin(ui); }, "tab"));
+  $("ad-tabs").querySelectorAll("button").forEach((b) => ui.click(b, () => { const A = AC.adm; A.tab = b.dataset.v; a2Reset(A.tab); if (A.tab === "dash") A.srv = null; if (A.tab === "reports") A.reps = null; if (A.tab === "log") A.aud = null; renderAdmin(ui); }, "tab"));
   sec.querySelectorAll("[data-i]").forEach((el) => (el.textContent = t(el.dataset.i)));
   for (const [id, cls] of [["m-acem", "ac-em"], ["m-adact", "ad-act"]]) { const m = document.createElement("div"); m.id = id; m.className = "modal x-hide"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); m.innerHTML = `<div class="glass mcard ${cls}" id="${id}-c"></div>`; document.body.appendChild(m); m.addEventListener("click", (e) => { if (e.target === m) m.classList.add("x-hide"); }); }
   const f = document.createElement("div"); f.id = "mm-find"; f.className = "mm-find x-hide"; f.setAttribute("role", "status"); f.setAttribute("aria-live", "polite");

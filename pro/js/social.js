@@ -3,14 +3,15 @@
 // invites into the same online room, live notifications over one WebSocket to the "social-v1" object (reconnect with
 // back-off; a 30 s HTTP poll only while the socket is down), presence (online / in lobby / in a match), in-match player card.
 // No sound, no voice. Everything degrades to a friendly "offline" message when the server cannot be reached.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=grow1";
-import { SERVER } from "./net.js?v=grow1";
-import { devKey } from "./league.js?v=grow1";
-import { avatarHtml } from "./profile.js?v=grow1";
-import { idKind, idPrice, MSG_MAX } from "./sim.js?v=grow1";
-import { EMOTES } from "./game.js?v=grow1";
-import { pidHtml, pidBig } from "./pid.js?v=grow1";
-import { WL, online as walletOnline, onPush as walletPush } from "./wallet.js?v=grow1"; // coin1
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=admin2";
+import { SERVER } from "./net.js?v=admin2";
+import { devKey } from "./league.js?v=admin2";
+import { avatarHtml } from "./profile.js?v=admin2";
+import { idKind, idPrice, MSG_MAX } from "./sim.js?v=admin2";
+import { EMOTES } from "./game.js?v=admin2";
+import { pidHtml, pidBig } from "./pid.js?v=admin2";
+import { WL, online as walletOnline, onPush as walletPush, admSet } from "./wallet.js?v=admin2"; // coin1
+import { setCfg } from "./admin2.js?v=admin2"; // admin2
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -59,10 +60,12 @@ export function call(op, args = {}) {
 async function refresh() { const r = await call("list"); if (!r || r.err) return r; SO.lastList = Date.now(); if (r.me) setMe(r.me); SO.fr = r.fr || []; SO.inq = r.inq || []; SO.outq = r.outq || []; SO.bl = r.bl || []; SO.inv = (r.inv || []).filter((x) => x.from); badge(); rerender(); return r; }
 function onMsg(m) {
   if (m.t === "r") { const w = SO.wait.get(m.i); if (w) { SO.wait.delete(m.i); w.res(m); } return; }
-  if (m.t === "hi") { if (m.me) setMe(m.me); walletOnline(m.w).catch(() => {}); if (Array.isArray(m.chr)) m.chr.forEach((x, i) => setTimeout(() => chrNote(x), 600 + i * 3400)); /* grow1: challenge results that waited */ // coin1: the hello carries the wallet
+  if (m.t === "hi") { if (m.me) setMe(m.me); try { setCfg(m.cfg, !!(m.me && m.me.own)); } catch (e) { console.warn("cfg", e); } // admin2: owner config (announcement, maintenance, modes, prices)
+    walletOnline(m.w).catch(() => {}); if (Array.isArray(m.chr)) m.chr.forEach((x, i) => setTimeout(() => chrNote(x), 600 + i * 3400)); /* grow1: challenge results that waited */ // coin1: the hello carries the wallet
     if (SO.onAcct) try { SO.onAcct(m); } catch (e) { console.warn("acct", e); } return; } // srv2: account status, ban, pending grants
   if (m.t !== "ev") return; const ui = SO.ui, nm = (c) => (c && c.n) || "?";
   if (m.k === "wal") { walletPush(m); return; } // coin1: an online life paid by the room
+  if (m.k === "cfg") { setCfg(m.cfg); return; } if (m.k === "adm") { if (m.me) setMe(m.me); admSet(m); try { ui && ui.coins && ui.coins(ui.p.coins); } catch (_) {} return; } // admin2
   if (["grant", "ban", "unban", "mute", "unmute", "rname", "snap", "gone"].includes(m.k)) { if (SO.onAcctEv) try { SO.onAcctEv(m); } catch (e) { console.warn("acct", e); } return; } // srv2
   if (m.k === "chr") { chrNote(m); return; } // grow1: a friend played your challenge link
   if (m.k === "req") { if (!SO.inq.some((x) => x.id === m.from.id)) SO.inq.unshift(m.from); notify("👤", t("so_reqIn", { n: nm(m.from) }), "req"); }

@@ -2,7 +2,7 @@
 // this module shows the last balance the server sent (+ rewards still queued for it), queues reward claims (offline too,
 // each with a unique claim id so it can be paid only once), imports the device balance once on the first updated connect,
 // and buys only online. Nothing here can raise the balance: the server prices every claim itself.
-import { SEASON, UNLOCKS, COS_KEY } from "./econ.js?v=grow1";
+import { SEASON, UNLOCKS, COS_KEY } from "./econ.js?v=admin2";
 
 const KC = "ssp-wc", KQ = "ssp-wq", MAXQ = 200, XPK = new Set(["match", "ms", "wk"]);
 export const WL = { S: null, ui: null, call: null, up: () => false, st: null, q: [], busy: null, migrating: false, kv: null, jp: null, onBal: null };
@@ -72,6 +72,9 @@ export async function online(w) {
   sync(); if (!WL.call) return; if (!w) { const r = await WL.call("w_get"); if (!r || r.err || !r.w) return; w = r.w; }
   if (w.mig) { apply(w); flush(); } else await migrate();
 }
+// admin2: an owner edit of this wallet (items given / removed, level set): the server's state wins for those keys
+export function admSet(m) { sync(); if (!m || !m.w) return; const p = WL.S.p; for (const k of m.rm || []) { const s = String(k); if (/^fl:\d+$/.test(s)) p.flags = p.flags.filter((x) => x !== +s.slice(3)); else if (COS_KEY.test(s)) p.cos = p.cos.filter((x) => x !== s); else p.owned = p.owned.filter((x) => x !== s); }
+  if (Number.isFinite(+m.xp)) p.xp = Math.max(0, Math.floor(+m.xp)); if (migrated()) apply({ ...WL.st, ...m.w }); else { save(); WL.S.save(); } }
 // pushes from the server: an online life paid by the room, an owner gift
 export function onPush(m) { if (m && Number.isFinite(+m.bal)) { sync(); if (migrated()) apply({ ...WL.st, bal: +m.bal }); } }
 const ERR = { noCoins: "noCoins", own: "own", badPrice: "badPrice", na: "na", rate: "busy", sold: "sold", max: "max", price: "badPrice" };

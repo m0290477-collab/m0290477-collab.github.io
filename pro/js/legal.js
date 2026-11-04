@@ -1,6 +1,6 @@
 // coin1: in-game links to the Privacy Policy / Terms pages, the feedback form, and the wallet's messages (6 UI languages).
-import { t, addStrings, LANG } from "./i18n.js?v=grow1";
-import { CONTACT_EMAIL } from "./legal-config.js?v=grow1";
+import { t, addStrings, LANG } from "./i18n.js?v=admin2";
+import { CONTACT_EMAIL } from "./legal-config.js?v=admin2";
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const lang = () => (typeof LANG === "function" ? LANG() : LANG) || "en";
 export const legalUrl = (k) => `${k}.html?lang=${encodeURIComponent(lang())}`;

@@ -1,9 +1,9 @@
 // coin1: the coin economy's single source of truth, shared by the game (display, optimistic amounts) and the worker (the
 // wallet decides). Pure data + rules: no DOM, no storage. The server never takes an amount from the client: it recomputes
 // every reward from these tables and every price from the catalogue (and this week's offers) before it moves a coin.
-import { SKINS, FLAGS, FLAG_PRICE, GTRAILS } from "./skins.js?v=grow1";
-import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=grow1";
-import { CONTESTS } from "./sim.js?v=grow1";
+import { SKINS, FLAGS, FLAG_PRICE, GTRAILS } from "./skins.js?v=admin2";
+import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=admin2";
+import { CONTESTS } from "./sim.js?v=admin2";
 
 export const DAY = 86400000;
 // ---------- daily login calendar + lucky wheel (were in profile.js) ----------
@@ -74,6 +74,7 @@ export function plausible(a) {
 export const ONLINE = { PER_LIFE: 800, PER_DAY: 30000 };
 // ---------- shop catalogue: what each item key costs at full price ----------
 // item keys: skin id ("phoenix"), "fl:<flag index>", "gt:<trail id>", cosmetics "av:/fr:/ti:/bn:/bd:", special ids "sid:<n>"
+export const SHOP_TRAILS = GTRAILS; // admin2: the priced ground-trail list (owner price overrides edit it)
 export const gtPrice = (id) => { const G = GTRAILS.find((g) => g.id === id); return G ? G.price | 0 : -1; }; // fix1: -1 = unknown id
 export function catItem(k, i) {
   if (k === "skin") { const S = SKINS[i | 0]; if (!S || !S.src || !S.src.startsWith("coins:") || String(i | 0) !== String(i)) return null; return { key: S.id, base: +S.src.split(":")[1], it: { k: "skin", i: i | 0 } }; }

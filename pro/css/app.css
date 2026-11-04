@@ -1622,3 +1622,17 @@ html:not(.calm):not(.rm) .mm-find.busy .mmf-dot { animation: mmfP 1.6s ease-in-o
 .qr-card { text-align: center; max-width: 22rem; } .qr-card canvas { display: block; width: min(15rem, 52vmin); height: auto; margin: 0.5rem auto; border-radius: 0.5rem; image-rendering: pixelated; }
 .qr-url { font-size: 0.75rem; opacity: 0.75; word-break: break-all; margin: 0 0 0.5rem; }
 #replay.rp-cap #rp-again { display: none; }
+/* admin2: owner tools + announcement banner */
+.ann-bar { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 30; max-width: min(92vw, 640px); display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.5rem 0.35rem 0.75rem; border-radius: 0.875rem; background: linear-gradient(180deg, rgba(40, 32, 12, 0.95), rgba(22, 18, 8, 0.95)); border: 1px solid rgba(255, 205, 96, 0.45); color: #ffe7a8; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+.ann-bar p { margin: 0; font-size: 0.9rem; line-height: 1.25; overflow-wrap: anywhere; max-height: 2.6em; overflow: hidden; }
+.ann-bar .ann-x { min-width: 44px; min-height: 44px; flex: none; }
+.a2-chart { width: 100%; height: auto; max-height: 150px; } .a2-chart rect.a { fill: #f2c14e; } .a2-chart rect.n { fill: #4fd1a5; } .a2-chart text { fill: #aab; font-size: 9px; } .a2-chart text.v { fill: #ffe7a8; font-size: 8px; }
+.a2-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 8px; vertical-align: middle; } .a2-leg i.a { background: #f2c14e; } .a2-leg i.n { background: #4fd1a5; }
+.a2-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.25rem 0 0.5rem; }
+.a2-chip { min-height: 44px; min-width: 44px; padding: 0 0.85rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #dfe; font: inherit; font-size: 0.85rem; cursor: pointer; }
+.a2-chip.on { background: rgba(79, 209, 165, .18); border-color: rgba(79, 209, 165, .6); } .a2-chip.off { background: rgba(255, 90, 90, .12); border-color: rgba(255, 90, 90, .5); color: #f99; text-decoration: line-through; }
+.a2-room { padding: 0.4rem 0; border-top: 1px solid rgba(255,255,255,.07); } .a2-pl { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.15rem 0; min-height: 44px; }
+.a2-sel { width: 100%; min-height: 44px; border-radius: 0.6rem; background: rgba(0,0,0,.35); color: #fff; border: 1px solid rgba(255,255,255,.2); padding: 0 0.6rem; font: inherit; }
+.a2-cats { flex-wrap: wrap; } .a2-cats button { min-height: 44px; } .a2-chk { display: flex; align-items: center; gap: .5rem; min-height: 44px; }
+#ad-tabs button { min-height: 44px; min-width: 44px; } .ad-sm { min-height: 44px; } .a2-px td, .a2-px th { padding: 0.2rem 0.4rem; }
+@media (max-height: 460px) { #ad-tabs button { padding: 0 0.55rem; font-size: 0.8rem; } .ann-bar { top: 4px; } }
