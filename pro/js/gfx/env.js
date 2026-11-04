@@ -1,8 +1,8 @@
 // Living world environments: panoramic sky with procedural clouds/aurora/nebula, PBR ground with anti-tiling,
 // animated water/lava, swaying instanced foliage, decor, weather (rain/snow/sandstorm/ash/stars), ambient
 // creatures, time-of-day lighting. Textures stream per world (lazy WebP) and swap in when ready.
-import * as THREE from "../vendor/three.module.min.js?v=comp1";
-import { W3D, worldAsset } from "../worlds.js?v=comp1";
+import * as THREE from "../vendor/three.module.min.js?v=resp2a";
+import { W3D, worldAsset } from "../worlds.js?v=resp2a";
 
 const loader = new THREE.TextureLoader();
 const texCache = new Map();
@@ -212,6 +212,10 @@ export class World {
     mat.customProgramCacheKey = () => "foliage";
     const m = new THREE.Mesh(geo, mat); m.frustumCulled = false; this.group.add(m); this.foliage = m;
   }
+  // resp2 fix4: calmer floor (lower colour boost, a little desaturation, softer emissive) and fainter snow / stars
+  dim(c) { const W = this.W, X = this.X, g = this.groundU;
+    if (g) { g.uFlat.value.set(W.calm ? W.calm.ground : W.ground).multiplyScalar(c ? 1.7 : 1.95); g.uDesat.value = Math.min(0.85, (X.desat || 0) + (c ? 0.22 : 0.12)); g.uEm.value = (X.emissiveK || 0) * (c ? 0.65 : 0.8); }
+    if (this.wx) for (const p of this.wx) if (p.userData.own && (p.userData.k === 2 || p.userData.k === 3)) p.material.uniforms.uInt.value = c ? 0.4 : 0.6; }
   _weather() {
     const X = this.X, W = this.W; const kindMap = { firefly: 0, sandstorm: 1, dust: 1, snow: 2, stars: 3, star: 3, ash: 4, ember: 4, rain: 5 };
     const kinds = new Set([W.amb.kind]); for (const k of X.weather) if (k !== "clear") kinds.add(k); if (X.id === "jungle") kinds.add("firefly");
@@ -225,7 +229,7 @@ export class World {
       const isWeather = X.weather.includes(kind) && X.weather[0] === "clear"; const firefly = kind === "firefly";
       const U = { uT: this.uT, uScale: this.r3.ptScale, uC: { value: new THREE.Color(col) }, uKind: { value: kindMap[kind] ?? 0 }, uInt: firefly ? (this.nightI = { value: 0.2 }) : isWeather ? this.weatherI : { value: 1 }, uCam: this.r3.camU };
       const m = new THREE.ShaderMaterial({ uniforms: U, vertexShader: WX_VS, fragmentShader: WX_FS, transparent: true, depthWrite: false, blending: kind === "sandstorm" || kind === "snow" ? THREE.NormalBlending : THREE.AdditiveBlending });
-      const p = new THREE.Points(g, m); p.frustumCulled = false; p.renderOrder = 6; this.group.add(p); this.wx.push(p);
+      const p = new THREE.Points(g, m); p.frustumCulled = false; p.renderOrder = 6; p.userData.k = kindMap[kind] ?? 0; p.userData.own = !firefly && !isWeather; this.group.add(p); this.wx.push(p);
     }
   }
   _creatures() {
@@ -272,9 +276,9 @@ export class World {
     if (X.tod) { const ph = (t / X.tod) % 1; const el = Math.sin(ph * Math.PI * 2) * 0.5 + 0.5; // 0 night .. 1 noon
       night = Math.max(0, 0.55 - el) / 0.55; const dusk = Math.max(0, 1 - Math.abs(el - 0.35) / 0.25);
       tint.set(1, 1, 1).lerp(new THREE.Color(X.dusk), dusk * 0.45).lerp(new THREE.Color(X.night), night * 0.6);
-      r3.sun.intensity = W.sunI * (0.35 + 0.65 * el); r3.sun.color.set(W.sun).lerp(new THREE.Color(X.dusk), dusk * 0.6).lerp(new THREE.Color(0x9fb8ff), night);
-      r3.hemi.intensity = W.hemiI * (0.55 + 0.45 * el); const sa = ph * Math.PI * 2; r3.sunDir.set(-Math.cos(sa) * 0.6, 0.35 + el * 0.6, 0.45).normalize();
-    } else { tint.set(1, 1, 1); r3.sun.intensity = W.sunI; r3.sun.color.set(W.sun); r3.hemi.intensity = W.hemiI; r3.sunDir.set(-0.45, 0.75, 0.35).normalize(); }
+      r3.sun.intensity = W.sunI * (r3.lk || 1) * (0.35 + 0.65 * el); r3.sun.color.set(W.sun).lerp(new THREE.Color(X.dusk), dusk * 0.6).lerp(new THREE.Color(0x9fb8ff), night);
+      r3.hemi.intensity = W.hemiI * (r3.lk || 1) * (0.55 + 0.45 * el); const sa = ph * Math.PI * 2; r3.sunDir.set(-Math.cos(sa) * 0.6, 0.35 + el * 0.6, 0.45).normalize();
+    } else { tint.set(1, 1, 1); r3.sun.intensity = W.sunI * (r3.lk || 1); r3.sun.color.set(W.sun); r3.hemi.intensity = W.hemiI * (r3.lk || 1); r3.sunDir.set(-0.45, 0.75, 0.35).normalize(); }
     this.skyU.uTint.value.copy(tint); this.skyU.uNight.value = night; this.skyU.uSunDir.value.copy(r3.sunDir); this.skyU.uRot.value = t * 0.004;
     if (this.nightI) this.nightI.value = 0.15 + night * 1.1;
     // weather comes and goes (clear ↔ rain / sandstorm) on a slow cycle

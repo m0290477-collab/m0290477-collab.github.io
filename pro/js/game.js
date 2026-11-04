@@ -1,19 +1,19 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=comp1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=comp1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=comp1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=comp1";
-import { NetBackend } from "./net.js?v=comp1";
-import { t, fmtNum } from "./i18n.js?v=comp1";
-import { haptic } from "./audio.js?v=comp1";
-import { rankOf, rpDelta } from "./profile.js?v=comp1";
-import { Replay } from "./replay.js?v=comp1";
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=comp1"; // comp1
-import { onServerTrophy } from "./compui.js?v=comp1";
-import { Governor } from "./gov.js?v=comp1"; // perf2: adaptive render governor
-import { emit } from "./events.js?v=comp1"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=resp2a"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=resp2a";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=resp2a";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=resp2a";
+import { NetBackend } from "./net.js?v=resp2a";
+import { t, fmtNum } from "./i18n.js?v=resp2a";
+import { haptic } from "./audio.js?v=resp2a";
+import { rankOf, rpDelta } from "./profile.js?v=resp2a";
+import { Replay } from "./replay.js?v=resp2a";
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=resp2a"; // comp1
+import { onServerTrophy } from "./compui.js?v=resp2a";
+import { Governor } from "./gov.js?v=resp2a"; // perf2: adaptive render governor
+import { emit } from "./events.js?v=resp2a"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -117,6 +117,8 @@ export class Game {
     this.backend = this.attract; this.mode = "attract"; this.world = world; this.r.setArena(this.attract.R); this.r.setWorld(world); this.orbit = 0; this.titleT = title ? 0 : undefined; this.running = true; this.startLoop();
     for (let k = 0; k < 240; k++) this.attract.update(1 / 60);
   }
+  // resp1: after a resize the canvas is cleared; draw again even if the menu backdrop or a frozen match frame is being held
+  redraw() { this._stillRef = null; this._frozen = false; }
   startShow(world) { this.stopMatch(); this.palettes(world); this.backend = null; this.mode = "show"; if (world !== undefined) { this.world = world; this.r.setWorld(world); } this.running = true; this.startLoop(); }
 
   // ---------- matches ----------
@@ -216,7 +218,7 @@ export class Game {
       if (k === PU.RAIN) { this.rainFx = { until: performance.now() + 2300 }; }
       if (k === PU.GIANT) { this.r.ring(me.x, me.y, col, 5); this.r.shake && this.r.shake(0.6); A.audio.play("roar"); }
       if (k === PU.MAG) this.hud.banner(t("pu_0"), 1100); // fix1: calm name banner, the ring around the head shows the reach
-      if (k === PU.DASH) { this.r.kick && this.r.kick(1.1, col, 0.1); A.audio.play("whoosh"); }
+      if (k === PU.DASH) { this.r.kick && this.r.kick(1.1, col, 0.1); A.audio.play("whoosh"); this.hud.banner(t("pud_7"), 1600, "sub"); } // the rule in one line
     } else if (s && near) A.audio.at && A.audio.at("big", p.x, p.y);
     if (me && hit && hit.includes(me.id)) { this.hud.banner("❄ " + t("frozen"), 1400); A.audio.play("warn"); haptic.tap(30); this.hud.frost(PU_DUR[5]); }
   }
@@ -292,7 +294,7 @@ export class Game {
     A.audio.play("die"); A.audio.boost(false); haptic.pattern([40, 30, 80]); this.r.shake(1.2); this.r.kick && this.r.kick(1.2, [0.6, 0, 0], 0.35);
     const f = skinFn(this.mySkin()), lin = this.colOf({ skin: this.mySkin() });
     const calm = A.store.settings.calmFx; if (!calm) { this.r.shatter(me, f, 40); this.r.burst(me.x, me.y, lin, 16, 9, 0.8, 0.7, 6); this.hud.flash(); } this.r.ring(me.x, me.y, [1, 1, 1], 6); // calm1: short, cheap death beat, no slow-motion
-    me.alive = false; me.deadAt = performance.now(); this.deathT = performance.now(); this.killer = by && by !== me.id ? this.findSnake(by) : null; if (this.killer === me) this.killer = null; const selfHit = (this.selfHit = false); /* noself1: own body never kills */ this.deathCause = cause;
+    me.alive = false; me.deadAt = performance.now(); this.deathT = performance.now(); if (this.qPend) setTimeout(() => this.flushQ(), 700); /* resp2 fix3 */ this.killer = by && by !== me.id ? this.findSnake(by) : null; if (this.killer === me) this.killer = null; const selfHit = (this.selfHit = false); /* noself1: own body never kills */ this.deathCause = cause;
     this.spectate = this.killer; A.input.enabled = false; A.input.reset(); this.streak = 0;
     const msg = by && this.killer ? t("killedBy", { n: this.killer.name }) : cause === 6 ? t("meteorDeath") : cause === 3 && this.mode === "br" ? t("stormDeath") : cause === 1 ? t("hitWall") : t("eliminated");
     if (by && this.killer) this.pushFeed(this.killer.name, t("you"), false); this.hud.combo(0); this.hud.puClear();
@@ -318,6 +320,7 @@ export class Game {
   // ---------- win / lose ----------
   endMatch(win, reason) {
     if (this.ended || this.victory) return; this.win = win; const A = this.app, me = this.backend.me;
+    if (this.qPend) setTimeout(() => this.flushQ(), 700); // resp2 fix3: a queued tier change lands once the match is over
     if (win) {
       this.victory = { t0: performance.now(), dur: 3600, reason }; A.input.enabled = false; A.audio.boost(false); A.audio.play("victory"); haptic.pattern([30, 60, 30, 60, 90]);
       this.hud.cinematic(t("victory"), t("vic_" + reason)); const p = me && me.alive ? me : { x: this.camX, y: this.camY }; { const E = EV.pos; E.x = p.x; E.y = p.y; E.reason = reason; emit("fx.win", E); }
@@ -385,7 +388,9 @@ export class Game {
     this.ft[this.fi++ % this.ft.length] = dt * 1000;
     if (set.showFps && ts - this.fpsShown > 500) { this.fpsShown = ts; const n = Math.min(this.fi, 60); let s = 0; for (let k = 1; k <= n; k++) s += this.ft[(this.fi - k + this.ft.length) % this.ft.length]; this.hud.fps(Math.round(1000 / (s / n)), set.quality === "auto" && this.gov ? (this.r.is2D ? "2D " : (this.r.qName || "") + " ") + this.gov.tier : ""); }
     if (set.quality === "auto" && this.fi % 120 === 0 && this.fi > 240 && !document.hidden && this.mode !== "show") this.autoQuality();
-    if (this.mode === "show") { const v = this.view; v.t = this.t; v.dt = dt; v.scene = "show"; v.show = this.show; v.fpsTarget = (this.gov ? this.gov.fpsCap(set.fpsCap) : set.fpsCap) || 60; this.r.frame(v); return; }
+    if (this.mode === "show") { const sh = this.show; // resp1: a still backdrop (full-screen panel open) renders ~0.6 s, then holds the last frame
+      if (sh && sh.still) { if (this._stillRef !== sh) { this._stillRef = sh; this._stillT = 0; } this._stillT += dt; if (this._stillT > 0.6) return; } else this._stillRef = null;
+      const v = this.view; v.t = this.t; v.dt = dt; v.scene = "show"; v.show = this.show; v.fpsTarget = (this.gov ? this.gov.fpsCap(set.fpsCap) : set.fpsCap) || 60; this.r.frame(v); return; }
     const b = this.backend; if (!b) return; this.view.scene = "world";
     // calm1: behind the results card or the pause menu the last frame stays on screen; nothing is re-rendered
     if ((this.ended && !this.watching && !this.replay) || (this.paused && this.mode !== "online")) { if (this._frozen) return; this._frozen = true; } else this._frozen = false;
@@ -495,7 +500,7 @@ export class Game {
       e.team = s.team !== undefined ? TEAM_COL[s.team] : null; if (s.team !== undefined) e.nc = TEAM_CSS[s.team]; if (s.boss) { e.nc = "#ff4040"; e.glow = [1, 0.1, 0.1]; e.team = null; } else e.glow = null;
       if (s.boss && this.boss && this.boss.phase === 3) e.glow = [1.6, 0.2, 0.05];
       if (s.bounty) { e.glow = [1.5, 1.05, 0.15]; e.nc = "#ffd23a"; e.name = "💰 " + s.name; }
-      e.inv = false; e.giant = !!(s.pu && s.pu[9] > 0); e.dash = !!(s.pu && s.pu[7] > 0); if (e.dash) e.boost = true;
+      e.inv = false; e.giant = !!(s.pu && s.pu[9] > 0); e.dash = !!(s.pu && s.pu[7] > 0); if (e.dash) { e.boost = true; if (!e.glow) e.glow = [0.3, 0.95, 1.2]; } // dash: soft steady cyan glow (harmless while active)
       e.emo = s.emoT && now - s.emoT < 2600 ? EMOTES[s.emo] || null : null; e.emoI = s.emo | 0; e.gold = !!s.bounty;
       list.push(e); return e;
     };
@@ -511,7 +516,7 @@ export class Game {
     if (this.xm && this.xm.view) this.xm.view(this, v); // Track B
     // camera
     const me = b.me; let tx = this.camX, ty = this.camY, zoom = 1; const cam = v.cam;
-    cam.title = undefined; cam.intro = undefined; cam.kill = null; cam.victory = undefined; cam.orbit = undefined; v.letterbox = false; v.hideNames = false;
+    cam.gz = 1; cam.title = undefined; cam.intro = undefined; cam.kill = null; cam.victory = undefined; cam.orbit = undefined; v.letterbox = false; v.hideNames = false;
     if (this.mode === "attract") {
       const lead = b.sim.leaderboard(1)[0]; if (lead) { tx = lead.x * 0.3; ty = lead.y * 0.3; }
       if (this.titleT !== undefined) { this.titleT += dt; cam.title = this.titleT; v.hideNames = true; } else { this.orbit += dt * 0.05; cam.orbit = this.orbit; } zoom = 1.9;
@@ -519,7 +524,11 @@ export class Game {
       const foc = this.spectate && this.spectate.alive ? this.spectate : me;
       if (foc) { const head = foc === me && me.alive ? lerpHead(me, alpha) : (_LH[0] = foc.x, _LH[1] = foc.y, _LH); if (foc === me && b.vox) { head[0] += b.vox; head[1] += b.voy; }
         const la = (foc.boosting ? 4.2 : 2.6) * (1 + Math.max(0, foc.r - 0.6) * 0.5); this.lookX = (this.lookX || 0) + (Math.cos(foc.a) * la - (this.lookX || 0)) * Math.min(1, dt * 5); this.lookY = (this.lookY || 0) + (Math.sin(foc.a) * la - (this.lookY || 0)) * Math.min(1, dt * 5);
-        tx = head[0] + this.lookX; ty = head[1] + this.lookY; zoom = 1 + Math.max(0, foc.r - 0.6) * 0.55; cam.boost = !!foc.boosting && foc === me; }
+        tx = head[0] + this.lookX; ty = head[1] + this.lookY; zoom = 1 + Math.max(0, foc.r - 0.6) * 0.55; cam.boost = !!foc.boosting && foc === me;
+        if (foc === me && me.alive) { // zoom1: own live snake: zoom out with mass (log) + radius, eased over ~1 s; spectate/death keep the old radius rule
+          const R = this.r || {}, zt = growZoom(me.m || 0, me.r || 0.6, (R.w || 16) / (R.h || 9), !!R.is2D);
+          if (cam.snap || !(this.gz > 0)) this.gz = zt; else this.gz += (zt - this.gz) * (1 - Math.exp(-Math.min(0.1, dt) * 3));
+          zoom = this.gz; cam.gz = this.gz; } else { this.gz = 0; cam.gz = 1; } }
       if (this.intro > 0 && this.introDur) cam.intro = this.intro / this.introDur;
       if (this.killcam) { const k = (now - this.killcam.t0) / this.killcam.dur, w = Math.min(1, k * 5, (1 - k) * 4); cam.kill = { x: this.killcam.x, y: this.killcam.y, t: k * this.killcam.dur / 1000, a0: this.killcam.a0, w: Math.max(0, w) * 0.85 }; v.letterbox = true; }
       if (this.victory) { cam.victory = (now - this.victory.t0) / 1000; v.letterbox = true; v.hideNames = true; }
@@ -562,7 +571,7 @@ export class Game {
   // first matches: short contextual hints
   hint() {
     const p = this.app.store.p; if ((p.stats.games || 0) > 3 || this.mode === "online") return; this.hintT -= 0.25; if (this.hintT > 0) return;
-    const H = ["hint_steer", "hint_boost", "hint_eat", "hint_pu", "hint_cut", "hint_dead"]; if (this.hintI >= H.length) return; this.hud.hint(t(H[this.hintI++])); this.hintT = 9;
+    const H = ["hint_steer", "hint_boost", "hint_eat", "hint_pu", "hint_cut", "hint_dead"]; if (this.hintI >= H.length) return; const hk = H[this.hintI++], mo = !document.documentElement.classList.contains("touch") && (hk === "hint_steer" || hk === "hint_boost"); this.hud.hint(t(mo ? hk + "_m" : hk)); // resp1: mouse-only devices get mouse wording this.hintT = 9;
   }
   // fix1: pointer/joystick angles are screen directions; the 3D camera is tilted, so screen up/down is foreshortened.
   // Map the screen direction through the camera's local Jacobian at the head (identity in 2D) so the head points exactly
@@ -607,16 +616,38 @@ export class Game {
     const A = this.app; if (this.r.is2D) return;
     const n = this.ft.length, arr = this._ftS || (this._ftS = new Float32Array(n)); arr.set(this.ft); arr.sort(); const p90 = arr[Math.floor(n * 0.9)];
     const target = 1000 / ((this.gov ? this.gov.fpsCap(A.store.settings.fpsCap) : A.store.settings.fpsCap) || 60), order = ["low", "medium", "high", "ultra"], cur = this.r.qName, i = order.indexOf(cur), now = performance.now(), calm = now - (this.qChangeT || 0) > 10000;
+    // resp2 fix3: a tier change rebuilds meshes and recompiles shaders (a visible stutter), so mid-match it is only queued
+    // and applied at death / match end (flushQ); the governor's cheap live knobs carry the match meanwhile. Applied live
+    // only under severe sustained slowness: p90 over 2.2x the frame budget for 4 windows in a row (~8 s).
+    const me = this.backend && this.backend.me, live = !!(me && me.alive && !this.ended);
+    if (!live && this.qPend) { this.flushQ(); return; }
     if (p90 > target * 1.45) {
-      this.goodWins = 0; this.slowQ = (this.slowQ || 0) + 1;
-      if (i > 0 && this.slowQ >= 2 && calm) { this.slowQ = 0; this.qChangeT = now; A.applyQuality(order[i - 1]); this.ft.fill(target); if (!this.autoToasted) { this.autoToasted = true; A.ui.toast(t("autoLow")); } }
+      this.goodWins = 0; this.slowQ = (this.slowQ || 0) + 1; this.sevQ = p90 > target * 2.2 ? (this.sevQ || 0) + 1 : 0;
+      if (i > 0 && this.slowQ >= 2 && calm && (!live || this.sevQ >= 4)) { this.slowQ = 0; this.sevQ = 0; this.qPend = order[i - 1]; this.flushQ(); }
+      else if (i > 0 && this.slowQ >= 2 && live) { this.qPend = order[i - 1]; }
       // 2D only after a sustained real problem: already at low, well past the first seconds of the match (shader/stream
       // stalls), and three slow windows in a row (~6 s). Never persisted (see switchRenderer), so the next launch retries 3D.
       else if (i === 0 && p90 > 45 && now - (this.matchT0 || 0) > 15000) { if (++this.slowWins >= 3) { this.slowWins = 0; A.switchRenderer("2d", true); } }
-    } else if (p90 < target * 1.08) { this.slowWins = 0; this.slowQ = 0; if (++this.goodWins >= 6 && calm && !this.qRose && i >= 0 && i < (A.maxAuto || 2)) { this.goodWins = 0; this.qRose = true; this.qChangeT = now; A.applyQuality(order[i + 1]); this.ft.fill(target); } }
-    else { this.goodWins = 0; this.slowWins = 0; this.slowQ = 0; }
+    } else if (p90 < target * 1.08) { this.slowWins = 0; this.slowQ = 0; if (++this.goodWins >= 6 && calm && !this.qRose && !this.qPend && i >= 0 && i < (A.maxAuto || 2)) { this.goodWins = 0; this.qRose = true; this.qPend = order[i + 1]; if (!live) this.flushQ(); } this.sevQ = 0; }
+    else { this.goodWins = 0; this.slowWins = 0; this.slowQ = 0; this.sevQ = 0; }
+  }
+  // resp2 fix3: apply a queued tier change (death, match end, or severe sustained slowness). The first drop leaves one
+  // quiet note in the notification bell instead of a toast over the play field.
+  flushQ() {
+    const q = this.qPend, A = this.app; this.qPend = null; if (!q || !this.r || this.r.is2D || q === this.r.qName) return;
+    const down = ["low", "medium", "high", "ultra"].indexOf(q) < ["low", "medium", "high", "ultra"].indexOf(this.r.qName);
+    this.qChangeT = performance.now(); A.applyQuality(q); this.ft.fill(1000 / ((this.gov ? this.gov.fpsCap(A.store.settings.fpsCap) : A.store.settings.fpsCap) || 60));
+    if (down && !A.autoNoted) { A.autoNoted = true; A.ui.note(t("autoLow"), "⚙"); }
   }
 
 }
 const _LH = [0, 0]; // reused: no per-frame allocation
+// zoom1: gameplay camera zoom for the player's own snake. Grows on a log curve of mass (score) plus a radius term, capped
+// (2D 2.4, 3D 2.0: the 3D view also widens its cull/fog/shadow ranges with it). Portrait screens get up to +15 % so the
+// narrow side still shows enough ahead. m = START_M (24) -> 1.0 in landscape.
+export function growZoom(m, r, asp, is2D) {
+  const zl = 0.26 * Math.log(1 + Math.max(0, m - 24) / 40), zr = Math.max(0, r - 0.6) * 0.35;
+  const ak = asp < 1 ? 1 + 0.15 * Math.min(1, (1 / asp - 1) / 1.2) : 1;
+  return Math.min(is2D ? 2.4 : 2.0, (1 + zl + zr)) * ak;
+}
 function lerpHead(s, a) { const x1 = s.sx(1), y1 = s.sy(1); _LH[0] = x1 + (s.sx(0) - x1) * a; _LH[1] = y1 + (s.sy(0) - y1) * a; return _LH; }

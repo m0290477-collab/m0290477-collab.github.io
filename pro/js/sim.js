@@ -486,7 +486,7 @@ export class Sim {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= g.head.length) continue; let j = g.head[c];
         while (j >= 0) {
           if (g.o[j] !== s.id) { const dx = g.x[j] - s.x, dy = g.y[j] - s.y, rr = (g.r[j] + hr) * HIT_K, d2 = dx * dx + dy * dy;
-            if (d2 < rr * rr) { const o = this.byId.get(g.o[j]); if (!(this.teams && o && o.team === s.team)) { const dep = (rr - Math.sqrt(d2)) / hr; if (dep > best) { best = dep; killer = g.o[j]; seg = g.k[j]; } } } }
+            if (d2 < rr * rr) { const o = this.byId.get(g.o[j]); if (!(this.teams && o && o.team === s.team) && !(o && o.pu && o.pu[7] > 0)) { /* dash: a dashing snake is harmless to others */ const dep = (rr - Math.sqrt(d2)) / hr; if (dep > best) { best = dep; killer = g.o[j]; seg = g.k[j]; } } } }
           j = g.next[j];
         }
       }
@@ -505,7 +505,7 @@ export class Sim {
   static hitTest(hx, hy, hr, others, tmp, me = null, tmp2 = null) {
     const H = hr * HEAD_K; let id = 0, best = -1, mut = false;
     for (const o of others) {
-      if (!o.alive || o === me) continue; const sp = sampleSp(o.r), n = bodyPoints(o, o._ro || 0, o._rf || 0, sp, o.len, tmp, 590), L = Math.max(sp, (n - 1) * sp);
+      if (!o.alive || o === me || (o.pu && o.pu[7] > 0)) continue; /* dash: harmless while active (same as collide) */ const sp = sampleSp(o.r), n = bodyPoints(o, o._ro || 0, o._rf || 0, sp, o.len, tmp, 590), L = Math.max(sp, (n - 1) * sp);
       const qx = tmp[0] - hx, qy = tmp[1] - hy; if (qx * qx + qy * qy > (o.len + H + 8) ** 2) continue;
       let dep = -1; for (let j = 0; j < n; j++) { const rb = j ? o.r * taperAt(j * sp / L) : o.r * HEAD_K, rr = (rb + H) * HIT_K; const dx = tmp[j * 2] - hx, dy = tmp[j * 2 + 1] - hy, d2 = dx * dx + dy * dy; if (d2 < rr * rr) { const e = (rr - Math.sqrt(d2)) / H; if (e > dep) dep = e; } }
       if (dep < 0) continue;

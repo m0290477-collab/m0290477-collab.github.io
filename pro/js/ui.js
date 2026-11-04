@@ -1,21 +1,24 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=comp1";
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=comp1"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=comp1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=comp1";
-import { WORLDS, worldAsset } from "./worlds.js?v=comp1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=comp1";
-import { haptic } from "./audio.js?v=comp1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=comp1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=comp1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=comp1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=comp1";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=comp1"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=comp1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=resp2a";
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=resp2a"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=resp2a";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=resp2a";
+import { WORLDS, worldAsset } from "./worlds.js?v=resp2a";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=resp2a";
+import { haptic } from "./audio.js?v=resp2a";
+import { skinFn, MODES, EMOTES } from "./game.js?v=resp2a";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=resp2a";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=resp2a";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=resp2a";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=resp2a"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=resp2a";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
+// resp1: root font size / 16 = the UI scale every rem length in app.css follows
+const SHORT_MQ = matchMedia("(orientation: landscape) and (max-height: 540px)"), shortLand = () => SHORT_MQ.matches; // resp2 fix1
+const uiScale = () => (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) / 16;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const IC = {
@@ -133,16 +136,16 @@ export class Hud {
     const hud = $("hud"); if (!hud || hud.classList.contains("x-hide")) return;
     const W = innerWidth, cx = W / 2, vis = (el) => el && !el.classList.contains("x-hide") && el.offsetWidth > 0, R = (el) => el.getBoundingClientRect();
     // fix1: minimap top-right under the leaderboard, never over the boost / emote buttons: shrink it, then show 3 leaderboard rows
-    const tl = document.querySelector(".h-tl"), pu = $("h-pu"), lb = $("h-lb"), mm = $("h-mini");
+    const tl = document.querySelector(".h-tl"), pu = $("h-pu"), lb = $("h-lb"), mm = $("h-mini"), u = uiScale(); // resp1: CSS sizes are rem, so px limits scale with the UI
     if (lb && mm) { hud.classList.remove("lb-c"); hud.style.removeProperty("--miniE"); mm.style.width = mm.style.height = "";
     const fit = () => {
       const lr = R(lb), miniT = Math.round(lr.bottom + 8); hud.style.setProperty("--miniT", miniT + "px"); if (mm.classList.contains("x-hide")) return true;
       const m = R(mm); let lim = innerHeight - 6;
       for (const id of ["boost", "h-emo"]) { const el = $(id); if (!vis(el)) continue; const r = R(el), pad = 8; if (r.left - pad < m.right && r.right + pad > m.left) lim = Math.min(lim, r.top - pad); }
-      const S = Math.min(70, lim - miniT); if (S >= 52) { if (S < 70) mm.style.width = mm.style.height = S + "px"; return true; } return false;
+      const S = Math.min(70 * u, lim - miniT); if (S >= 52 * u) { if (S < 70 * u) mm.style.width = mm.style.height = S + "px"; return true; } return false;
     };
     if (!fit()) { hud.classList.add("lb-c"); if (!fit()) { // very short screens (Safari toolbars): beside the leaderboard, level with its top, same size
-        const lr = R(lb), S = 56; mm.style.width = mm.style.height = S + "px"; hud.style.setProperty("--miniT", Math.round(lr.top) + "px");
+        const lr = R(lb), S = 56 * u; mm.style.width = mm.style.height = S + "px"; hud.style.setProperty("--miniT", Math.round(lr.top) + "px");
         hud.style.setProperty("--miniE", Math.round((document.documentElement.dir === "rtl" ? lr.right : W - lr.left) + 8) + "px"); } }
       if (!mm.classList.contains("x-hide")) this._mmCss = Math.round(R(mm).width) || this._mmCss; } // perf3: minimap backing size
     // fix1: kill feed back at the top centre (max 3 lines), under the mode/timer pill, between the score cluster and the leaderboard
@@ -153,9 +156,23 @@ export class Hud {
     const base = top ? top + 6 : tl ? R(tl).top : 8; // no pill: level with the score cluster (safe-area aware through its rect)
     hud.style.setProperty("--feedT", Math.round(base) + "px"); hud.style.setProperty("--feedW", Math.round(half * 2) + "px");
     const fe = $("h-feed"), fb = fe && fe.childElementCount ? R(fe).bottom : top;
-    hud.style.setProperty("--bannerT", Math.round(Math.max(fb + 8, top + 10, innerHeight * 0.2)) + "px");
+    const bT0 = Math.round(Math.max(fb + 8, top + 10, innerHeight * 0.2)); hud.style.setProperty("--bannerT", bT0 + "px");
+    // resp2 fix1: short landscape (<= 540 px tall): the kill feed goes to the left column under the score / power chips,
+    // the banner sits right under the mode pill (or level with the score cluster), compact toasts under the banner slot:
+    // everything stays in the top band, nothing near the head at the screen centre
+    const de = document.documentElement;
+    if (shortLand()) {
+      const rtl = de.dir === "rtl", tr = tl ? R(tl) : null; let fy = tr ? tr.bottom : 8; if (pu && pu.childElementCount) fy = Math.max(fy, R(pu).bottom);
+      hud.style.setProperty("--feedT", Math.round(fy + 6) + "px"); hud.style.setProperty("--feedS", Math.round(tr ? (rtl ? W - tr.right : tr.left) : 10) + "px");
+      hud.style.setProperty("--feedW2", Math.round(Math.min(W * 0.3, 240 * u)) + "px");
+      const bT = top ? top + 4 : tr ? tr.top : 8, bH = Math.max($("h-banner").offsetHeight, 24 * u);
+      hud.style.setProperty("--bannerT", Math.round(bT) + "px"); hud.style.setProperty("--bannerW", Math.round(half * 2) + "px");
+      de.style.setProperty("--toastT", Math.round(bT + bH + 4) + "px"); de.style.setProperty("--toastW", Math.round(half * 2) + "px");
+    } else { // taller screens: one toast in a match, under the banner slot (it covered the top-centre kill feed)
+      const bH = Math.max($("h-banner").offsetHeight, 36 * u); de.style.setProperty("--toastT", Math.round(bT0 + bH + 6) + "px"); de.style.setProperty("--toastW", Math.round(half * 2) + "px"); }
   }
-  feed(list) { $("h-feed").innerHTML = list.slice(0, 3).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how === "bounty" ? `<b>💰</b> ${esc(f.b)}` : f.how ? `<b>${f.how === "storm" ? "🌀" : f.how === "self" ? "🔄" : f.how === "meteor" ? "☄" : "💥"}</b> ${esc(f.how === "self" && f.b === t("you") ? t("selfDeath") : t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); this.layout(); clearTimeout(this.ft); this.ft = setTimeout(() => { $("h-feed").innerHTML = ""; this.layout(); }, 6500); }
+  layoutSoon() { if (this._lq) return; this._lq = requestAnimationFrame(() => { this._lq = 0; this.layout(); }); } // resp2: one layout pass per frame however many feed lines land
+  feed(list) { $("h-feed").innerHTML = list.slice(0, 3).map((f) => `<div class="${f.mine ? "mine" : ""}${f.b === t("you") ? " dead" : ""}">${f.how === "bounty" ? `<b>💰</b> ${esc(f.b)}` : f.how ? `<b>${f.how === "storm" ? "🌀" : f.how === "self" ? "🔄" : f.how === "meteor" ? "☄" : "💥"}</b> ${esc(f.how === "self" && f.b === t("you") ? t("selfDeath") : t("feed_" + f.how, { y: f.b }))}` : `<b>${esc(f.a)}</b> <i>⚔</i> <span>${esc(f.b)}</span>`}</div>`).join(""); this.layoutSoon(); clearTimeout(this.ft); this.ft = setTimeout(() => { $("h-feed").innerHTML = ""; this.layoutSoon(); }, 6500); }
   // ONE centre message channel: a short queue, one message at a time, small, in the upper third (never over the snake)
   banner(txt, ms, kind) {
     const q = this.bq || (this.bq = []); if (this.bCur === txt || q.some((x) => x.txt === txt)) return; q.push({ txt, ms: Math.min(ms || 1300, 1800), kind: kind || "" }); if (q.length > 3) q.splice(0, q.length - 3);
@@ -181,7 +198,7 @@ export class Hud {
     const box = $("h-pu"); if (!P) { if (box.innerHTML) { box.innerHTML = ""; box.dataset.k = ""; } return; }
     const act = this._puAct || (this._puAct = []); act.length = 0; for (const k of PU_TIMED) if (P[k] > 0) act.push(k); if (slow > 0) act.push(-1);
     const key = act.join(","); let h = "";
-    if (box.dataset.k !== key) { for (const k of act) h += k < 0 ? `<div class="pu-chip bad" style="--c:#9ff3ff"><i>${puSvg(5)}</i><span></span></div>` : `<div class="pu-chip" aria-label="${esc(t("pu_" + k))}" title="${esc(t("pu_" + k))}" style="--c:${PU_COL[k]}"><i>${puSvg(k)}</i><span></span></div>`;
+    if (box.dataset.k !== key) { for (const k of act) h += k < 0 ? `<div class="pu-chip bad" style="--c:#9ff3ff"><i>${puSvg(5)}</i><span></span></div>` : `<div class="pu-chip" aria-label="${esc(k === 7 ? t("pud_7") : t("pu_" + k))}" title="${esc(k === 7 ? t("pud_7") : t("pu_" + k))}" style="--c:${PU_COL[k]}"><i>${puSvg(k)}</i><span></span></div>`;
       const n0 = box.childElementCount; box.innerHTML = h; box.dataset.k = key; this._puEl = [...box.children].map((el) => ({ el, sp: el.lastChild, f: "", v: "" })); if (n0 !== box.childElementCount) this.layout(); }
     const E = this._puEl || []; for (let i = 0; i < act.length && i < E.length; i++) { const k = act[i], e = E[i];
       const f = (k < 0 ? Math.max(0, Math.min(1, slow / PU_DUR[5])) : Math.max(0, Math.min(1, P[k] / PU_DUR[k]))).toFixed(2), v = k === 1 ? "1×" : Math.ceil(k < 0 ? slow : P[k]) + "s";
@@ -223,16 +240,24 @@ export class UI {
     const G = this.app.game; if (!["lobby", "custom", "season", "profile", "settings", "comp"].includes(this.cur)) return;
     if (G.mode !== "show") G.startShow();
     const d = this.cur === "custom" && this.sel ? this.sel : this.app.game.mySkin(); const fx = skinFx(d), L = LEGEND[fx];
-    const rtl = document.documentElement.dir === "rtl", x = (this.cur === "custom" ? 0.25 : this.cur === "lobby" ? 0.0 : 0.3) * (rtl ? -1 : 1); // pedestal on the side the panel leaves free
-    G.show = { d: { s: { id: -1, r: 0.5, m: 50, len: 46, x: 0, y: 0 }, fn: skinFn(d), eye: d.e | 0, trail: d.t | 0, fx, name: "" }, idle: L ? L.idle : "sway", glow: L ? L.glow : "#ffc845", x, zoom: this.cur === "lobby" ? 1.2 : 1, orbit: Math.sin(performance.now() / 9000) * 0.25 };
+    const rtl = document.documentElement.dir === "rtl", x = (this.cur === "custom" ? (innerHeight > innerWidth ? 0 : 0.25) : this.cur === "lobby" ? 0.0 : 0.3) * (rtl ? -1 : 1); /* resp1: portrait Locker: stage above the list */ // pedestal on the side the panel leaves free
+    // resp1: full-screen panels (Profile, Pass, Competitions, Settings) cover the stage, so no snake is drawn behind their cards and the
+    // backdrop is painted for a moment and then held (no frames rendered = no battery used) until the player is back on Lobby / Locker
+    const still = !(this.cur === "lobby" || this.cur === "custom");
+    G.show = { d: still ? null : { s: { id: -1, r: 0.5, m: 50, len: 46, x: 0, y: 0 }, fn: skinFn(d), eye: d.e | 0, trail: d.t | 0, fx, name: "" }, still, idle: L ? L.idle : "sway", glow: L ? L.glow : "#ffc845", x, zoom: this.cur === "lobby" ? 1.2 : 1, orbit: Math.sin(performance.now() / 9000) * 0.25 };
     if (this.cur === "lobby") { const i = d.k === "skin" ? d.i : -1, rar = i >= 0 ? SKINS[i].rar : d.k === "flag" ? "rare" : "epic"; $("l-showtag").innerHTML = `<span class="rar ${rar}">${t("rar_" + rar)}</span><b>${esc(d.k === "flag" ? flagName(FLAGS[d.i], LANG) : d.k === "custom" ? t("custom") : skinName(d.i))}</b>`; }
   }
   goLobby() { this.matchIntroHide(); ["m-pause", "m-results"].forEach((m) => $(m).classList.add("x-hide")); this.app.hud.hide(); this.app.game.startShow(this.p.last.world || 0); this.app.audio.music(true, this.p.last.world || 0, true); this.go("lobby", "fade"); setTimeout(() => this.nextReveal(), 900); }
   toast(msg, kind = "", ms = 2800) {
-    const el = document.createElement("div"); el.className = "toast " + kind; el.textContent = msg; const box = $("toasts"); box.appendChild(el); while (box.children.length > 3) box.firstChild.remove();
+    // resp2 fix3: toast nodes are reused (no create / GC per toast), opacity + transform only; in a match on a short
+    // landscape screen one compact toast at a time (fix1)
+    const box = $("toasts"), hudOn = !$("hud").classList.contains("x-hide"), max = hudOn ? 1 : 3;
+    while (box.children.length >= max) this.toastFree(box.firstChild);
+    const pool = this.tPool || (this.tPool = []), el = pool.pop() || document.createElement("div"); el.className = "toast " + kind; el.textContent = msg; box.appendChild(el);
     if (kind === "gold" || kind === "good") { this.note(msg, kind === "gold" ? "★" : "✓"); this.app.audio.play("toast"); }
-    setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 320); }, ms);
+    clearTimeout(el._t); el._t = setTimeout(() => { el.classList.add("out"); el._t = setTimeout(() => this.toastFree(el), 320); }, ms);
   }
+  toastFree(el) { if (!el) return; clearTimeout(el._t); el._t = 0; if (el.parentNode) el.parentNode.removeChild(el); const pool = this.tPool || (this.tPool = []); if (pool.length < 4) pool.push(el); }
   note(msg, ic) { this.notes.unshift({ msg, ic, t: Date.now(), seen: false }); if (this.notes.length > 20) this.notes.pop(); this.renderBell(); }
   renderBell() { const n = this.notes.filter((x) => !x.seen).length; $("l-bdg").textContent = n; $("l-bdg").classList.toggle("x-hide", !n); }
   confirm(text) { return new Promise((res) => { $("cf-text").textContent = text; const m = $("m-confirm"); m.classList.remove("x-hide"); const done = (v) => { m.classList.add("x-hide"); $("cf-yes").onclick = $("cf-no").onclick = null; res(v); }; $("cf-yes").onclick = () => done(true); $("cf-no").onclick = () => done(false); }); }

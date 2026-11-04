@@ -2,20 +2,21 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=comp1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=comp1";
+import { stageBox } from "./stage.js?v=resp2a";
+import * as THREE from "./vendor/three.module.min.js?v=resp2a";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=resp2a";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=comp1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=comp1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=comp1";
-import { World, prefetchWorld } from "./gfx/env.js?v=comp1";
-import { Post } from "./gfx/post.js?v=comp1";
-import { Studio } from "./gfx/showcase.js?v=comp1";
-import { SoftFx } from "./gfx/fx.js?v=comp1";
-import { on as onEv } from "./events.js?v=comp1";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=comp1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=resp2a";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=resp2a";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=resp2a";
+import { World, prefetchWorld } from "./gfx/env.js?v=resp2a";
+import { Post } from "./gfx/post.js?v=resp2a";
+import { Studio } from "./gfx/showcase.js?v=resp2a";
+import { SoftFx } from "./gfx/fx.js?v=resp2a";
+import { on as onEv } from "./events.js?v=resp2a";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=resp2a";
 
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
 const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3];
@@ -252,7 +253,7 @@ export class Renderer3D {
     const w = this.worldI; if (!first) { this.worldI = -1; this.setWorld(w); }
     this._built = true; this._applyDpr(); this.warm = this.prewarm && this.studio ? this.prewarm() : null;
   }
-  setOptions(o) { Object.assign(this, o); this._applyDpr(); }
+  setOptions(o) { Object.assign(this, o); this._applyDpr(); this._dim(); }
   // perf2: cheap live knobs only (no material/mesh rebuild): see gov.js
   setGov(L) { L = Math.max(0, Math.min(3, L | 0)); if (L === (this.govL | 0) && this._govSet) return; this._govSet = true; this.govL = L; this.pMax = Math.round(this.Q.particles * GOV_PK[L]); this.pHead = 0;
     if (this.halo) this.halo.visible = L < 2; this.r.shadowMap.autoUpdate = GOV_SH[L] === 1; this.r.shadowMap.needsUpdate = true; this._applyDpr(); }
@@ -324,14 +325,18 @@ export class Renderer3D {
     if (this.world) { this.scene.remove(this.world.group); this.world.dispose(); }
     this.world = new World(this, W, i, this.Q, 130); this.scene.add(this.world.group); this.world.fit(this.arenaR);
     this.scene.fog.color.set(W.fog); this.scene.fog.density = this.W3.fogK; this.scene.background = new THREE.Color(W.fog);
-    this.r.toneMappingExposure = W.exposure || 1.0; this.hemi.color.set(W.sky); this.hemi.groundColor.set(W.ground); this.hemi.intensity = W.hemiI; this.sun.color.set(W.sun); this.sun.intensity = W.sunI;
-    this._grade();
+    this.hemi.color.set(W.sky); this.hemi.groundColor.set(W.ground); this.sun.color.set(W.sun);
+    this._dim(); // resp2 fix4: exposure, hemi / sun, bloom and the floor dimmed (more again under html.calm)
     if (this.Q.reflect && (this.W3.reflect || this.W3.water !== "none")) this._applyDpr();
     if (this._built) this.warm = this.prewarm();
     // stream the neighbouring world in the background
     const nx = WORLDS[(i + 1) % WORLDS.length]; setTimeout(() => prefetchWorld(nx, this.Q.texLo), 2500);
   }
-  _grade() { if (!this.W3) return; if (this.post.bloom) this.post.bloom.strength = this.W3.bloom * 0.5; const gu = this.post.grade && this.post.grade.uniforms, G = this.W3.grade; if (gu) { gu.uLift.value.set(...G[0]); gu.uGain.value.set(...G[1]); gu.uSat.value = G[2]; gu.uCon.value = G[3]; } }
+  // resp2 fix4: a calmer floor like 2D so candies and snakes stand out: exposure x0.93, hemi / sun x0.88, bloom x0.65
+  // (calm: x0.85 / x0.78 / x0.4); the World dims its ground (boost, desaturation, emissive), reflection and snow / stars.
+  _dim() { const W = this.W; if (!W) return; const c = !!this.calm; this.lk = c ? 0.78 : 0.88; this.r.toneMappingExposure = (W.exposure || 1.0) * (c ? 0.85 : 0.93);
+    this.hemi.intensity = W.hemiI * this.lk; this.sun.intensity = W.sunI * this.lk; this._grade(); if (this.world && this.world.dim) this.world.dim(c); }
+  _grade() { if (!this.W3) return; if (this.post.bloom) this.post.bloom.strength = this.W3.bloom * 0.5 * (this.calm ? 0.4 : 0.65); const gu = this.post.grade && this.post.grade.uniforms, G = this.W3.grade; if (gu) { gu.uLift.value.set(...G[0]); gu.uGain.value.set(...G[1]); gu.uSat.value = G[2]; gu.uCon.value = G[3]; } }
   setArena(R) { this.arenaR = R; if (this.world) this.world.fit(R); }
   worldReady() { return !!(this.world && this.world.ready); }
 
@@ -413,7 +418,7 @@ export class Renderer3D {
     const fn = d.fn; for (let j = 0; j < n; j++) { fn(j, n, t, col); C[j] = packCol(toLin(col[0]), toLin(col[1]), toLin(col[2])); if (j === (n >> 2)) { st.col[0] = toLin(col[0]) * 1.5 + 0.08; st.col[1] = toLin(col[1]) * 1.5 + 0.08; st.col[2] = toLin(col[2]) * 1.5 + 0.08; } }
     this.snakes.writeRow(row, pts, n, r, ys, C);
     const fx = d.fx || 0, glow = d.glow || (fx && LEGC[fx] ? LEGC[fx].glow : null);
-    const gk = d.team ? 0.9 : d.gold ? 1.1 : fx ? 0.35 : 0;
+    const gk = d.team ? 0.9 : d.gold ? 1.1 : d.dash ? 0.8 : fx ? 0.35 : 0;
     this.snakes.set(show ? this._showGrp : ghost ? "g" : fx ? "f" : "i", slot, [row, n, len, fx], [show ? (d.pulse ?? st.pulse) : st.pulse, st.sq, d.boost ? 1 : 0, d.alpha ?? 1], [glow ? glow[0] * gk : 0, glow ? glow[1] * gk : 0, glow ? glow[2] * gk : 0, st.seed]);
     // eyes / tongue: follow the head frame exactly as the vertex shader builds it
     const hx = pts[0], hz = pts[1], hy = ys[0], fxw = pts[0] - pts[2], fzw = pts[1] - pts[3], fl = Math.hypot(fxw, fzw, ys[0] - ys[1]) || 1;
@@ -467,7 +472,9 @@ export class Renderer3D {
   }
   _camera(v, dt) {
     const cam = this.cam, c = v.cam, zoom = c.zoom || 1, hgt = 17.5 * zoom, back = hgt * 0.68;
-    const fov = 48 + (c.boost && !this.reduceMotion ? 8 : 0) + (c.fovAdd || 0) - (this.sfx ? this.sfx.punch * 4.5 : 0); if (Math.abs(cam.fov - fov) > 0.05) { cam.fov += (fov - cam.fov) * (1 - Math.exp(-dt * 6)); cam.updateProjectionMatrix(); this._ptScale(); }
+    let fov = 48 + (c.boost && !this.reduceMotion ? 8 : 0) + (c.fovAdd || 0) - (this.sfx ? this.sfx.punch * 4.5 : 0);
+    const asp = (this.w || 1) / (this.h || 1); if (asp < 1) fov = 2 * Math.atan(Math.tan((fov * Math.PI) / 360) / asp) * 180 / Math.PI; // resp1: portrait sees as far across as landscape sees up/down (same as the 2D min(w,h) rule)
+    if (Math.abs(cam.fov - fov) > 0.05) { cam.fov += (fov - cam.fov) * (1 - Math.exp(-dt * 6)); cam.updateProjectionMatrix(); this._ptScale(); }
     const k = 1 - Math.exp(-dt * (c.snap ? 60 : 16)); // fix1: 9 -> 16, the view keeps up with a quick turn
     this.camLook.x += (c.x - this.camLook.x) * k; this.camLook.z += (c.y - this.camLook.z) * k;
     this.camPos.y += (hgt - this.camPos.y) * (1 - Math.exp(-dt * 3));
@@ -490,8 +497,9 @@ export class Renderer3D {
   }
   _frameWorld(v, t, dt) {
     const Q = this.Q, cam = this.cam; this._camera(v, dt);
-    const vx = this.camLook.x, vz = this.camLook.z - 17.5 * (v.cam.zoom || 1) * 0.35; const vr = Math.min(17.5 * (v.cam.zoom || 1) * 2.2, 70), vr2 = vr * vr;
+    const vx = this.camLook.x, vz = this.camLook.z - 17.5 * (v.cam.zoom || 1) * 0.35; const vr = Math.min(17.5 * (v.cam.zoom || 1) * 2.2, 88), vr2 = vr * vr;
     const far = v.cam.title !== undefined || v.cam.kill || v.cam.intro > 0 || v.cam.victory !== undefined; const cullR = far ? 1e9 : vr;
+    { const fd = this.W3 ? this.W3.fogK / Math.pow(Math.max(1, v.cam.gz || 1), 0.9) : 0; if (fd && this.scene.fog && Math.abs(this.scene.fog.density - fd) > 1e-5) this.scene.fog.density = fd; } // zoom1: a higher growth camera keeps the same fog look
     this.camU.value.set(cam.position.x, 0, cam.position.z);
     // sun + shadow frustum follow the action
     this.world.update(t, dt, this);
@@ -499,7 +507,7 @@ export class Renderer3D {
     this.sun.position.set(this.camLook.x + this.sunDir.x * 70, this.sunDir.y * 70, this.camLook.z + this.sunDir.z * 70); this.sun.target.position.set(this.camLook.x, 0, this.camLook.z);
     // snakes
     const E = this.eyes, cnt = { e: 0, t: 0, h: 0 }; let ni = 0, ng = 0, nfx = 0, row = 0; const TR = this.teamRing.instanceMatrix.array, TRC = this.teamRing.instanceColor.array; let nt = 0; const MR = this.magRing.instanceMatrix.array; let nm = 0;
-    for (const L of this.labels.values()) L.used = false; let ne = 0; let crown = null; this._pal = v.foodPalCss === FOOD_COLORS_CB ? v.foodPal : CANDY_LIN; // candy1: eat sparkles match the candy this._eyeLook(v);
+    for (const L of this.labels.values()) L.used = false; let ne = 0, nd = 0; let crown = null; this._pal = v.foodPalCss === FOOD_COLORS_CB ? v.foodPal : CANDY_LIN; // candy1: eat sparkles match the candy this._eyeLook(v);
     for (const d of v.snakes) {
       if (row >= SHOW_ROW) break; const s = d.s; const hx0 = s.sx(d.o), hy0 = s.sy(d.o), dx0 = hx0 - vx, dz0 = hy0 - vz;
       if (dx0 * dx0 + dz0 * dz0 > (cullR + s.len) * (cullR + s.len)) continue;
@@ -507,6 +515,9 @@ export class Renderer3D {
       const n = this._snake(d, row, slot, ghost, E, t, cnt, false); if (!n) continue; row++; if (ghost) ng++; else if (lf) nfx++; else ni++;
       if (d.top1 && d.s.alive && !d.inv) crown = d;
       if ((d.team || d.gold) && nt < MAXS) { const tc = d.gold ? GOLDC : d.team, rr = d._hr * (d.gold ? 3.2 + 0.3 * Math.sin(t * 6) : 2.3); _m.makeScale(rr, 1, rr).setPosition(d._hx, 0.07, d._hz); _m.toArray(TR, nt * 16); TRC[nt * 3] = tc[0] * 2; TRC[nt * 3 + 1] = tc[1] * 2; TRC[nt * 3 + 2] = tc[2] * 2; nt++; }
+      if (d.dash && s.alive && nt < MAXS) { const rr = d._hr * 2.3; _m.makeScale(rr, 1, rr).setPosition(d._hx, 0.07, d._hz); _m.toArray(TR, nt * 16); TRC[nt * 3] = 0.45; TRC[nt * 3 + 1] = 1.7; TRC[nt * 3 + 2] = 2.0; nt++; } // dash: steady cyan ground ring
+      if (d.dash && s.alive && this.puTex && !v.hideNames) { const DS = this.dashSpr || (this.dashSpr = Array.from({ length: 8 }, () => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.puTex[7], transparent: true, depthWrite: false, depthTest: false, toneMapped: false, fog: false })); sp.visible = false; sp.renderOrder = 11; this.scene.add(sp); return sp; }));
+        if (nd < DS.length) { const sp = DS[nd++], es = Math.max(2.2, d._hr * 2); sp.position.set(d._hx, d._hr * 2.6 + 1.0 + es * 0.7 + (d.emo ? Math.max(3.4, d._hr * 3) * 1.2 : 0), d._hz - d._hr * 0.4); sp.scale.set(es, es, 1); sp.material.opacity = 0.95; sp.visible = true; } } // dash icon over the head (static)
       if (s.pu && s.pu[0] > 0 && s.alive && nm < MAXS) { const rr = magReach(s.r); _m.makeScale(rr, 1, rr).setPosition(d._hx, 0.06, d._hz); _m.toArray(MR, nm * 16); nm++; }
       if (d.emo && ne < this.emoSpr.length && !v.hideNames) { const sp = this.emoSpr[ne++], ti = d.emoI | 0; if (sp.material.map !== this.emoTex[ti]) { sp.material.map = this.emoTex[ti]; sp.material.needsUpdate = true; } const es = Math.max(3.4, d._hr * 3); sp.position.set(d._hx, d._hr * 2.6 + 1.0 + es * 0.75, d._hz - d._hr * 0.4); sp.scale.set(es, es, 1); sp.visible = true; }
       if (d.gold && this.pMax && Math.random() < 0.5) this.emit(d._hx + (Math.random() - 0.5) * d._hr * 3, d._hr * 2, d._hz + (Math.random() - 0.5) * d._hr * 3, 0, 1.5, 0, [1.6, 1.2, 0.3], 0.7, 0.3, 1, -0.3);
@@ -514,7 +525,7 @@ export class Renderer3D {
     }
     if (crown && !far) this.sfx.setCrown(crown._hx + (crown._fx || 0) * crown._hr * 0.3, crown._hz + (crown._fz || 0) * crown._hr * 0.3, crown._hr * 1.52, crown._hr, true); else this.sfx.setCrown(0, 0, 0, 0, false);
     for (const [id, L] of this.labels) if (!L.used) { this.scene.remove(L.sp); this.labels.delete(id); this.labelPool.push(L); }
-    for (let i = ne; i < this.emoSpr.length; i++) this.emoSpr[i].visible = false;
+    for (let i = ne; i < this.emoSpr.length; i++) this.emoSpr[i].visible = false; if (this.dashSpr) for (let i = nd; i < this.dashSpr.length; i++) this.dashSpr[i].visible = false;
     this.snakes.commit(ni, nfx, ng); this._flushE(E, cnt); this._flush(this.teamRing, nt); this._flush(this.magRing, nm);
     if (v.cam.title !== undefined) { for (const m of this.candy) m.count = 0; this.halo.count = this.gem.count = 0; } else this._food(v, t, vx, vz, far ? 1e9 : vr2);
     this._modeFx(v, t); this._pus(v, t); this._meteors(v, t);
@@ -529,7 +540,7 @@ export class Renderer3D {
     if (this.post.on) { const u = this.post.grade.uniforms; u.uCA.value = this.ca + this.speed * 0.25; u.uSpeed.value = this.speed * 0.6; u.uBox.value = this.box; u.uFlash.value.copy(this.flash); u.uT.value = t; u.uVig.value = 0.36 + this.box * 0.2; this.post.setScene(this.scene, cam); if (this.post.dofOn) this.post.setDof(false); }
     // planar reflection (high/ultra): mirrored camera renders the scene minus ground/water into a half-res target
     const gu = this.world.groundU; gu.uRefl.value = 0;
-    if (this.mirrorRT && Q.reflect && (this.W3.reflect || (this.world.water && this.W3.water !== "lava"))) { this._mirror(); gu.tRefl.value = this.mirrorRT.texture; gu.uRefl.value = this.W3.reflect || 0.0001; }
+    if (this.mirrorRT && Q.reflect && (this.W3.reflect || (this.world.water && this.W3.water !== "lava"))) { this._mirror(); gu.tRefl.value = this.mirrorRT.texture; gu.uRefl.value = (this.W3.reflect || 0.0001) * (this.calm ? 0.4 : 0.6); } // resp2 fix4: softer floor reflection
     const shN = GOV_SH[this.govL | 0]; if (shN > 1 && this.r.shadowMap.enabled) { this.r.shadowMap.autoUpdate = false; if (this._fno % shN === 0) this.r.shadowMap.needsUpdate = true; }
     if (this.post.on) this.post.render(dt); else this.r.render(this.scene, cam);
   }
@@ -611,14 +622,13 @@ export class Renderer3D {
   // between the skin name / Locker button and the world thumbnails, so nothing overlaps on short (Safari-with-bars) screens.
   _fitShow() {
     const S = this.studio, F = S.fit || (S.fit = { k: 1, dy: 0, dx: 0 }); let k = 1, dy = 0, dx = 0;
-    const lob = document.getElementById("s-lobby");
-    if (lob && lob.classList.contains("on")) {
-      const R = this.canvas.getBoundingClientRect(), H = R.height || innerHeight, q = (id) => { const e = document.getElementById(id); return e && e.offsetWidth ? e.getBoundingClientRect() : null; };
-      const tag = q("l-showtag"), act = q("l-locker"), wr = q("l-worlds") || q("l-dailyinfo") || q("l-diff") || q("l-room"); /* tidy1: Daily hides worlds + difficulty; fit above its info chip */
-      const top = Math.max(tag ? tag.bottom : 0, act ? act.bottom : 0) - R.top + 4, bot = (wr ? wr.top : H * 0.86) - R.top - 2;
+    const R = this.canvas.getBoundingClientRect(), B = stageBox(R); // resp1: shared with 2D (stage.js); Lobby box, or the portrait Locker stage
+    if (B) {
+      const H = R.height || innerHeight, W = R.width || innerWidth, top = B.top + 4, bot = B.bot - 2;
       const SPAN0 = 0.56, C0 = 0.64, box = Math.max(40, bot - top);
-      k = Math.max(1, Math.min(2.2, (SPAN0 * H) / box)); const cNow = H * (0.5 + (C0 - 0.5) / k); dy = (top + bot) / 2 - cNow;
-      const cc = document.querySelector("#s-lobby .col-c"); if (cc && cc.offsetWidth) { const b = cc.getBoundingClientRect(), W = R.width || innerWidth; S.cam.updateMatrixWorld(); const pp = _v.set(0, 0.6, 0).project(S.cam), px = (pp.x * 0.5 + 0.5) * W; dx = (F.dx || 0) + ((b.left + b.right) / 2 - R.left - px); } /* tidy2: pedestal centred under Locker */
+      k = Math.max(1, Math.min(2.2, (SPAN0 * H) / box)); if (W < H) k = Math.min(3.2, Math.max(k, k * Math.sqrt(H / W) * 0.8)); /* portrait: the pedestal is wide, keep it inside the narrow screen */
+      const cNow = H * (0.5 + (C0 - 0.5) / k); dy = (top + bot) / 2 - cNow;
+      if (B.cx !== null) { S.cam.updateMatrixWorld(); const pp = _v.set(0, 0.6, 0).project(S.cam), px = (pp.x * 0.5 + 0.5) * W; dx = (F.dx || 0) + (B.cx - px); } /* tidy2: pedestal centred under Locker */
     }
     if (Math.abs(F.k - k) > 0.01 || Math.abs(F.dy - dy) > 1 || Math.abs((F.dx || 0) - dx) > 1) { F.k = k; F.dy = dy; F.dx = dx; S.resize(this.w, this.h); }
   }

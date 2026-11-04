@@ -2,11 +2,12 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=comp1";
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=comp1";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=comp1";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=comp1";
-import { on as onEv } from "./events.js?v=comp1";
+import { stageBox } from "./stage.js?v=resp2a";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=resp2a";
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=resp2a";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=resp2a";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=resp2a";
+import { on as onEv } from "./events.js?v=resp2a";
 const NO2 = 220;
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle cap
 const GOV_PR = [3, 2, 1.5, 1.25], GOV_PC = [300, 180, 100, 50];
@@ -107,9 +108,8 @@ export class Renderer2D {
     if (!sv || !sv.d || !sv.d.fn) return;
     let cx = W * (0.5 + (sv.x || 0) * 0.55), cy = H * 0.43, R = Math.min(H * 0.2, W * 0.14) * (sv.zoom || 1); const glow = sv.glow || "#ffc845";
     // fit1: in the lobby, fit head..pedestal ring (cy - 0.5R .. cy + 1.4R) into the box between the Locker button and the world thumbnails
-    if (!(this._fitN = (this._fitN || 0) + 1) || this._fitN % 15 === 1) { const lob = document.getElementById("s-lobby"); this._fit = null;
-      if (lob && lob.classList.contains("on")) { const q = (id) => { const e = document.getElementById(id); return e && e.offsetWidth ? e.getBoundingClientRect() : null; }, Rc = this.canvas.getBoundingClientRect(), tag = q("l-showtag"), act = q("l-locker"), wr = q("l-worlds") || q("l-dailyinfo") || q("l-diff") || q("l-room"), cc = document.querySelector("#s-lobby .col-c");
-        const top = Math.max(tag ? tag.bottom : 0, act ? act.bottom : 0) - Rc.top + 6, bot = (wr ? wr.top : H * 0.86) - Rc.top - 4; if (bot - top > 30) { this._fit = { top, bot }; if (cc && cc.offsetWidth) { const b = cc.getBoundingClientRect(); this._fit.cx = (b.left + b.right) / 2 - Rc.left; } } } } /* tidy2: centred on the show column (under Locker) */
+    if (!(this._fitN = (this._fitN || 0) + 1) || this._fitN % 15 === 1) { this._fit = null; const Rc = this.canvas.getBoundingClientRect(), B = stageBox(Rc); // resp1: shared with 3D (stage.js)
+      if (B) { const top = B.top + 6, bot = B.bot - 4; if (bot - top > 30) { this._fit = { top, bot }; if (B.cx !== null) this._fit.cx = B.cx; } } } /* tidy2: centred on the show column (under Locker) */
     if (this._fit && !sv.x) { const F = this._fit, box = F.bot - F.top; R = Math.min(R, box / 1.95); cy = F.top + 0.5 * R + (box - 1.9 * R) / 2; if (F.cx) cx = F.cx; }
     // pedestal
     g.save(); g.translate(cx, cy + R * 0.95); g.scale(1, 0.32);
@@ -212,6 +212,7 @@ export class Renderer2D {
       // alpha) instead of n/2 separate arc sub-paths, which was the single most expensive path to rasterise per snake
       if (GL < 3) { const ox = r * 0.45; if (n > 1) { g.strokeStyle = "rgba(0,0,0,0.28)"; g.lineWidth = r * 2.04; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0] + ox, pts[1] + ox); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] + ox, pts[j * 2 + 1] + ox); g.stroke(); }
         else if (n === 1) { g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); g.arc(pts[0] + ox, pts[1] + ox, r * 1.02, 0, TAU); g.fill(); } }
+      if (P && P[7] > 0 && n > 1) { g.strokeStyle = "#5ce8ff"; g.globalAlpha = 0.38 * d.alpha; g.lineWidth = r * 2.9; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.stroke(); g.globalAlpha = d.alpha; } // dash: soft steady cyan outline (harmless while active)
       if (n > 1) { g.strokeStyle = "rgba(0,0,0,0.38)"; g.lineWidth = r * 2.16; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.stroke(); } // dark rim so the body reads on any ground
       if (d.team) { g.strokeStyle = lin2css(d.team); g.lineWidth = r * 0.5; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.globalAlpha *= 0.55; g.lineWidth = r * 2.5; g.stroke(); g.globalAlpha = d.alpha; }
       // body: consecutive segments of the same colour share one path
@@ -246,6 +247,7 @@ export class Renderer2D {
 
           if (P[7] > 0) { g.strokeStyle = PU_COL[7]; g.lineWidth = 0.2; g.globalAlpha = 0.45; g.beginPath(); for (let q = -2; q <= 2; q++) { const bx = pts[0] - Math.cos(a) * r * 1.6 - Math.sin(a) * q * r * 0.5, by = pts[1] - Math.sin(a) * r * 1.6 + Math.cos(a) * q * r * 0.5; g.moveTo(bx, by); g.lineTo(bx - Math.cos(a) * r * 4, by - Math.sin(a) * r * 4); } g.stroke(); }
 
+          if (P[7] > 0) { const sz = Math.max(1.1, r * 1.1), iy = pts[1] - r * 2.3 - 1.5 - sz - (d.emo ? 3.6 : 0); g.globalAlpha = 0.95 * d.alpha; g.drawImage(this.puSpr[7], pts[0] - sz, iy - sz, sz * 2, sz * 2); } // dash icon over the head (static)
           g.globalAlpha = d.alpha;
         }
         if (d.top1 && s.alive && !inv) { crown = d; d._x2 = pts[0]; d._y2 = pts[1]; d._r2 = r; }

@@ -1,14 +1,14 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=comp1";
-import { Store, KV } from "./store.js?v=comp1";
-import { setLang, applyI18n, t } from "./i18n.js?v=comp1";
-import { Audio, haptic } from "./audio.js?v=comp1";
-import { Input } from "./input.js?v=comp1";
-import { Game } from "./game.js?v=comp1";
-import { UI, Hud } from "./ui.js?v=comp1";
-import { Renderer2D } from "./render2d.js?v=comp1";
-import { startWatchdog, watchCanvas } from "./watchdog.js?v=comp1"; // perf2 guardian
+import { guard } from "./guard.js?v=resp2a";
+import { Store, KV } from "./store.js?v=resp2a";
+import { setLang, applyI18n, t } from "./i18n.js?v=resp2a";
+import { Audio, haptic } from "./audio.js?v=resp2a";
+import { Input } from "./input.js?v=resp2a";
+import { Game } from "./game.js?v=resp2a";
+import { UI, Hud } from "./ui.js?v=resp2a";
+import { Renderer2D } from "./render2d.js?v=resp2a";
+import { startWatchdog, watchCanvas } from "./watchdog.js?v=resp2a"; // perf2 guardian
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -23,6 +23,12 @@ addEventListener("error", (e) => oops(e.error || e.message));
 addEventListener("unhandledrejection", (e) => oops(e.reason));
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+// resp1: html.touch = this device can touch (phones, tablets, touch laptops). It shows the on-screen boost button and touch sizing;
+// without it (mouse + keyboard only) those are hidden. Hybrid devices (iPad + keyboard, touch laptops) keep both inputs live.
+{ const H = document.documentElement; let q = null; try { q = matchMedia("(any-pointer: coarse)"); } catch (_) {}
+  const can = () => !!(q && q.matches) || navigator.maxTouchPoints > 0 || "ontouchstart" in window; H.classList.toggle("touch", can());
+  if (q && q.addEventListener) q.addEventListener("change", () => H.classList.toggle("touch", can()));
+  addEventListener("pointerdown", (e) => { if (e.pointerType === "touch" || e.pointerType === "pen") H.classList.add("touch"); }, { passive: true, capture: true }); }
 // device tier from the GPU string + memory + cores; dynamic resolution and auto-quality refine it live
 function detect() {
   const nv = navigator, mem = nv.deviceMemory || 4, cores = nv.hardwareConcurrency || 4; let gpu = "";
@@ -49,7 +55,7 @@ async function makeRenderer(kind, quality) {
   if (kind === "3d") watchCanvas(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=comp1");
+      const m = await import("./render3d.js?v=resp2a");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); /* fit1: iOS drops the GL context whenever the tab is backgrounded; only a loss that lasts 6 s while the page is VISIBLE means 3D is broken. A background loss used to end in a silent switch to 2D for the session. */ const arm = () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (document.hidden) return; if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 6000); }; if (document.hidden) document.addEventListener("visibilitychange", function v() { if (document.hidden) return; document.removeEventListener("visibilitychange", v); if (app.renderer && app.renderer.lost) arm(); }); else arm(); }, onRestored: () => { clearTimeout(app._lostT); /* fit1: rebuild 3D from scratch after a restore (meshes/textures/targets all fresh) instead of trusting a half-restored GL state */ setTimeout(() => { if (app.renderer && !app.renderer.is2D) app.switchRenderer("3d"); }, 50); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
@@ -111,7 +117,9 @@ async function boot() {
   if (app.renderer.warm) { bar(92, t("loadShaders")); await Promise.race([app.renderer.warm, new Promise((r) => setTimeout(r, 20000))]); }
   try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]); } catch (_) {}
   bar(100, t("ready"));
-  addEventListener("resize", () => app.renderer && app.renderer.resize()); addEventListener("orientationchange", () => setTimeout(() => app.renderer && app.renderer.resize(), 300));
+  // resp1: resize / rotation / mobile toolbar changes re-fit the canvas and the menu preview live (no reload); one rAF per burst
+  let rzQ = 0; const rz = () => { if (rzQ) return; rzQ = requestAnimationFrame(() => { rzQ = 0; if (app.renderer) app.renderer.resize(); if (app.game) app.game.redraw(); if (app.ui && app.ui.cur && app.game && app.game.mode === "show") app.ui.updateShow(); }); };
+  addEventListener("resize", rz); addEventListener("orientationchange", () => setTimeout(rz, 300)); if (window.visualViewport) visualViewport.addEventListener("resize", rz);
   const unlock = () => { app.audio.unlock(); if (!app.audio.musicOn) app.audio.music(true, app.game.world || 0, app.game.mode !== "attract" ? true : true); }; // iOS Safari only lets audio start inside touchend/click (pointerdown alone is not always a valid gesture), and an "interrupted"
   // context (call, Siri, app switch) must be resumed by the next gesture: listen to all of them, unlock() is idempotent and cheap
   for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, unlock, { passive: true, capture: true });
