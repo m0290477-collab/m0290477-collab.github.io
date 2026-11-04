@@ -3,7 +3,7 @@
 // behind it; each decal lives 0.6-1.5 s on the ground and fades out. Both renderers draw the same pool: 2D with one
 // cached sprite atlas (drawImage per decal), 3D with one InstancedMesh (one draw call) using the same atlas as a texture.
 // Calm mode / reduced motion: static, low-alpha decals (no growth, no flicker, nothing bright), spawned less often.
-import { GTRAILS } from "../skins.js?v=ops1";
+import { GTRAILS } from "../skins.js?v=coin1";
 export const GT_CAP = 120, GT_CELL = 64, GT_VARS = 4;
 const TAU = Math.PI * 2;
 // per-type motion: spawn spacing (x snake radius), growth style (0 none, 1 ripple ring, 2 sprout, 3 split open, 4 shrink)

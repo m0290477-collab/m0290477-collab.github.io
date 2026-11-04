@@ -2,7 +2,7 @@
 // this module shows the last balance the server sent (+ rewards still queued for it), queues reward claims (offline too,
 // each with a unique claim id so it can be paid only once), imports the device balance once on the first updated connect,
 // and buys only online. Nothing here can raise the balance: the server prices every claim itself.
-import { SEASON, UNLOCKS, COS_KEY } from "./econ.js?v=ops1";
+import { SEASON, UNLOCKS, COS_KEY } from "./econ.js?v=coin1";
 
 const KC = "ssp-wc", KQ = "ssp-wq", MAXQ = 200;
 export const WL = { S: null, ui: null, call: null, up: () => false, st: null, q: [], busy: null, migrating: false, kv: null, jp: null, onBal: null };
