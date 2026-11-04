@@ -1,14 +1,16 @@
 // super-snake-online — Cloudflare Worker + Durable Object (one DO per room). No database, no payments, nothing stored.
 // The room runs the SAME sim.js as the client at 30 Hz and is authoritative for movement, food, mass, collisions and kills.
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
-import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies } from "./sim.js";
+import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP } from "./sim.js";
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 4; // v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 5; // v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 // look1: bots never share a look with any live snake (players included)
 const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
 const BOT_SKINS = (i) => ({ k: i % 3 === 0 ? "flag" : "skin", i: i % 3 === 0 ? (i * 37) % 197 : i % 24, e: i % 4, t: 0, n: 0, av: i % 3 === 0 ? "f" + ((i * 37) % 197) : "p" + ((i * 7) % 24), fr: i % 5 === 0 ? 0 : 1 + (i % 4) });
 const cors = { "access-control-allow-origin": "*", "content-type": "application/json" };
+const SOCIAL = "social-v1"; // srv1: the one social object (same Room class, SQLite-backed; no new migration)
+const OWNER_H = "f7fbde3c1fea505ba93f50420658e738b482e0fd55dea9bf270829ecb8d0fa78"; // srv1: SHA-256 of the one-time founder claim code (id 1); the code itself is not in any file that ships
 const BOARD = "board-v1"; // name of the single leaderboard object (same Room class, SQLite-backed; no new migration needed)
 // anonymous device player id: the client keeps a random secret (pk); the public id is a hash of it, so nobody can write to
 // or claim for another player's id without the secret. Sign-in can later link a pid to an account.
@@ -36,6 +38,15 @@ export default {
       const body = req.method === "POST" ? await req.text() : null;
       return env.ROOMS.get(env.ROOMS.idFromName(BOARD)).fetch(new Request("https://board/b/" + url.pathname.slice(4) + url.search, { method: req.method === "POST" ? "POST" : "GET", body: body ? body.slice(0, 600) : null }));
     }
+    // srv1: social API. POST /s {pk, op, ...} (HTTP fallback) and the live socket /sws?pk= (both -> the one social object)
+    if (url.pathname === "/s" || url.pathname === "/sws") {
+      if (req.method === "OPTIONS") return new Response(null, { headers: { ...cors, "access-control-allow-methods": "POST", "access-control-allow-headers": "content-type", "access-control-max-age": "86400" } });
+      const origin = req.headers.get("Origin"); if (origin && !ORIGINS.some((r) => r.test(origin))) return new Response("origin not allowed", { status: 403 });
+      const so = env.ROOMS.get(env.ROOMS.idFromName(SOCIAL));
+      if (url.pathname === "/sws") { if (req.headers.get("Upgrade") !== "websocket") return new Response("expected websocket", { status: 426 }); return so.fetch(new Request("https://social/sws?pk=" + encodeURIComponent(url.searchParams.get("pk") || ""), req)); }
+      if (req.method !== "POST") return J({ err: "method" }, 405); if (+(req.headers.get("content-length") || 0) > 1200) return new Response('{"err":"big"}', { status: 413, headers: cors });
+      return so.fetch(new Request("https://social/s/op", { method: "POST", body: (await req.text()).slice(0, 1200) }));
+    }
     return new Response("Super Snake online server", { headers: { "content-type": "text/plain" } });
   },
 };
@@ -58,6 +69,8 @@ export class Room {
   async fetch(req) {
     const url = new URL(req.url);
     if (url.pathname.startsWith("/b/")) return this.board(req, url); // comp1: this instance is the board object
+    if (url.pathname.startsWith("/s/")) return this.socialHttp(req, url); // srv1: this instance is the social object
+    if (url.pathname === "/sws") return this.socialWs(req, url);
     if (!this.sim) this.init(url.searchParams);
     const humans = [...this.clients].length;
     const pair = new WebSocketPair(); const [client, server] = Object.values(pair); server.accept();
@@ -80,7 +93,7 @@ export class Room {
   snakeMsg(s) { // full description of one snake incl. its recent path (enough to draw the whole body)
     const pts = []; const k = Math.min(s.n, Math.ceil(s.len / (C.SPEED * TICK)) + 4);
     for (let i = k - 1; i >= 0; i--) pts.push(Math.round(s.sx(i) * 100) / 100, Math.round(s.sy(i) * 100) / 100);
-    return { id: s.id, name: s.name, skin: s.skin, bot: s.bot ? 1 : 0, m: Math.round(s.m), a: s.a, path: pts, tick: this.sim.tick, tr: Number.isFinite(s.tr) ? s.tr : -1 };
+    return { id: s.id, name: s.name, skin: s.skin, bot: s.bot ? 1 : 0, m: Math.round(s.m), a: s.a, path: pts, tick: this.sim.tick, tr: Number.isFinite(s.tr) ? s.tr : -1, u: s.uid || "" }; // srv1: u = public player id (humans)
   }
   onMsg(c, data) {
     const now = Date.now(); if (now - c.win > 1000) { c.win = now; c.msgs = 0; } if (++c.msgs > 90) { c.ws.close(4008, "rate"); return; }
@@ -94,7 +107,7 @@ export class Room {
     if (!m || typeof m.t !== "string") return;
     if (m.t === "hello") {
       c.name = cleanName(m.name); c.skin = sanitizeSkin(m.skin); c.joined = true;
-      if (!c.pidP && typeof m.pk === "string") c.pidP = pidOf(m.pk).then(async (pid) => { c.pid = pid; if (!pid || !this.ranked()) return; try { const r = await (await this.boardStub().fetch("https://board/b/get?pid=" + pid)).json(); if (r && Number.isFinite(r.tr)) { c.tr = r.tr; if (c.snake) c.snake.tr = r.tr; this.send(c, JSON.stringify({ t: "tro0", tr: r.tr, ss: r.ss })); } } catch (_) {} });
+      if (!c.pidP && typeof m.pk === "string") c.pidP = pidOf(m.pk).then(async (pid) => { c.pid = pid; if (pid) this.uidOf(c); if (!pid || !this.ranked()) return; try { const r = await (await this.boardStub().fetch("https://board/b/get?pid=" + pid)).json(); if (r && Number.isFinite(r.tr)) { c.tr = r.tr; if (c.snake) c.snake.tr = r.tr; this.send(c, JSON.stringify({ t: "tro0", tr: r.tr, ss: r.ss })); } } catch (_) {} });
       this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, tick: this.sim.tick, dt: TICK, R: this.sim.R, snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
       this.send(c, this.foodFull());
       this.send(c, JSON.stringify({ t: "pus", l: this.sim.pus.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
@@ -106,7 +119,7 @@ export class Room {
       if (typeof m.name === "string") c.name = cleanName(m.name); if (m.skin) c.skin = sanitizeSkin(m.skin);
       // a human replaces one bot so rooms stay the same size
       const bot = this.sim.snakes.find((s) => s.bot && s.alive); if (bot && !this.noBots) { bot.alive = false; this.sim.evDie.push(bot.id, 0, 5); }
-      const s = this.sim.addSnake(c.name, c.skin, {}); c.snake = s; c.q.length = 0; c.ack = 0xffff; c.extra = 0;
+      const s = this.sim.addSnake(c.name, c.skin, {}); c.snake = s; if (c.uid) s.uid = c.uid; c.q.length = 0; c.ack = 0xffff; c.extra = 0;
       s.tr = c.tr; c.life = { t0: Date.now(), best: 99, field: this.sim.snakes.filter((o) => o.alive).length, bm: s.m, done: false }; // comp1: what this life is judged on
       this.send(c, JSON.stringify({ t: "you", id: s.id, x: s.x, y: s.y, a: s.a, m: s.m, tick: this.sim.tick, seq: (m.seq | 0) & 0xffff }));
       c.q.length = 0; c.seq0 = (m.seq | 0) & 0xffff; c.buf = true;
@@ -120,6 +133,9 @@ export class Room {
       const msg = JSON.stringify({ t: "emo", id: s.id, e }); for (const o of this.clients) if (o !== c && o.joined) this.send(o, msg);
     } else if (m.t === "ping") this.send(c, JSON.stringify({ t: "pong", c: m.c, s: Date.now(), tick: this.sim.tick }));
   }
+  // srv1: public id of a human in this room (shown on the in-match player card, used to add them as a friend)
+  uidOf(c) { this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + c.pid).then((r) => r.json()).then((r) => { if (!r || !/^\d{1,7}$/.test(r.id || "")) return; c.uid = r.id;
+    const s = c.snake; if (s && s.alive && s.uid !== r.id) { s.uid = r.id; this.bcast(JSON.stringify({ t: "uid", id: s.id, u: r.id })); } this.send(c, JSON.stringify({ t: "myid", u: r.id })); }).catch(() => {}); }
   // ---------- comp1: trophies (server-decided), board object (leaderboards, weekly/monthly contests, monthly seasons) ----------
   ranked() { return this.room.startsWith("pub-") && !this.noBots; } // private rooms never move trophies (no farming with friends)
   boardStub() { return this.env.ROOMS.get(this.env.ROOMS.idFromName(BOARD)); }
@@ -192,6 +208,141 @@ export class Room {
       return J({ err: "op" }, 404);
     } catch (e) { return J({ err: "server", m: String(e && e.message).slice(0, 120) }, 500); }
   }
+  // ---------- srv1: social object "social-v1" (same Room class, SQLite): public ids, special ids, friends, 1:1 chat, invites ----------
+  // Live delivery uses the Hibernation WebSocket API (state.acceptWebSocket, one tag = the player's pid), so idle lobby sockets
+  // cost no duration while nothing happens. Everything here is synchronous SQL inside one object = atomic per request.
+  sdb() {
+    if (this._sdb) return this._sdb; const q = this.state.storage.sql; this._sdb = q; this.rl = new Map();
+    q.exec("CREATE TABLE IF NOT EXISTS acct (pid TEXT PRIMARY KEY, id7 TEXT, vis TEXT, name TEXT, av TEXT, fr INTEGER, lv INTEGER, own INTEGER DEFAULT 0, seen INTEGER, t INTEGER)");
+    q.exec("CREATE TABLE IF NOT EXISTS ids (num TEXT PRIMARY KEY, pid TEXT, kind TEXT, t INTEGER, tok TEXT)"); q.exec("CREATE INDEX IF NOT EXISTS i_ids_pid ON ids(pid)");
+    q.exec("CREATE TABLE IF NOT EXISTS rq (a TEXT, b TEXT, t INTEGER, PRIMARY KEY (a, b))"); q.exec("CREATE INDEX IF NOT EXISTS i_rq_b ON rq(b)");
+    q.exec("CREATE TABLE IF NOT EXISTS fr (a TEXT, b TEXT, t INTEGER, PRIMARY KEY (a, b))");
+    q.exec("CREATE TABLE IF NOT EXISTS bl (a TEXT, b TEXT, t INTEGER, PRIMARY KEY (a, b))");
+    q.exec("CREATE TABLE IF NOT EXISTS msg (id INTEGER PRIMARY KEY AUTOINCREMENT, cv TEXT, f TEXT, tx TEXT, t INTEGER)"); q.exec("CREATE INDEX IF NOT EXISTS i_msg_cv ON msg(cv, id)");
+    q.exec("CREATE TABLE IF NOT EXISTS rd (pid TEXT, cv TEXT, last INTEGER, PRIMARY KEY (pid, cv))");
+    q.exec("CREATE TABLE IF NOT EXISTS inv (a TEXT, b TEXT, room TEXT, t INTEGER, PRIMARY KEY (a, b))");
+    q.exec("CREATE TABLE IF NOT EXISTS rep (id INTEGER PRIMARY KEY AUTOINCREMENT, by TEXT, who TEXT, mid INTEGER, tx TEXT, t INTEGER)");
+    q.exec("INSERT OR IGNORE INTO ids (num, pid, kind, t) VALUES ('1', '', 'o', 0)"); // id 1 is reserved for the founder: never assigned at random, only by the one-time claim
+    return q;
+  }
+  srow(pid) { return this.sdb().exec("SELECT * FROM acct WHERE pid = ?", pid).toArray()[0] || null; }
+  sAcct(pid) { // every player gets a 7-digit public id the first time the server sees them (random, unique, never sequential)
+    const q = this.sdb(); let r = this.srow(pid); if (r) return r; const now = Date.now();
+    for (let k = 0; k < 40; k++) { const b = new Uint32Array(1); crypto.getRandomValues(b); const n = String(1000000 + (b[0] % 9000000));
+      if (q.exec("SELECT num FROM ids WHERE num = ?", n).toArray().length) continue;
+      q.exec("INSERT INTO ids (num, pid, kind, t) VALUES (?, ?, 'b', ?)", n, pid, now); q.exec("INSERT INTO acct (pid, id7, vis, name, av, fr, lv, own, seen, t) VALUES (?, ?, ?, 'Guest', 'p0', 0, 1, 0, ?, ?)", pid, n, n, now, now); return this.srow(pid); }
+    throw new Error("id space");
+  }
+  sCard(pid, me) { const r = this.srow(pid); if (!r) return null; const c = { id: r.vis, n: r.name, av: r.av, fr: r.fr | 0, lv: r.lv | 0 }; if (r.own) c.own = 1; if (me) c.st = this.sPres(pid); return c; }
+  sPid(id) { id = String(id || ""); if (!/^\d{1,7}$/.test(id)) return ""; const r = this.sdb().exec("SELECT pid FROM ids WHERE num = ?", id).toArray()[0]; return r && r.pid ? r.pid : ""; }
+  sPres(pid, excl) { let ws = []; try { ws = this.state.getWebSockets(pid); } catch (_) {} let st = "off"; for (const w of ws) { if (w === excl) continue; let a = null; try { a = w.deserializeAttachment(); } catch (_) {} if (!a) continue; if (a.st === "match") return "match"; st = "lobby"; } return st; }
+  sPush(pid, o) { let ws = []; try { ws = this.state.getWebSockets(pid); } catch (_) {} const s = JSON.stringify({ t: "ev", ...o }); let n = 0; for (const w of ws) try { w.send(s); n++; } catch (_) {} return n; }
+  sFriends(pid) { return this.sdb().exec("SELECT b FROM fr WHERE a = ?", pid).toArray().map((r) => r.b); }
+  sPresAll(pid, excl) { const r = this.srow(pid); if (!r) return; const st = this.sPres(pid, excl); for (const f of this.sFriends(pid)) this.sPush(f, { k: "pres", id: r.vis, st }); }
+  sVis(pid) { const q = this.sdb(), r = this.srow(pid); if (!r) return; const p = q.exec("SELECT num FROM ids WHERE pid = ? AND kind = 'p' ORDER BY t DESC LIMIT 1", pid).toArray()[0];
+    const v = r.own ? "1" : p ? p.num : r.id7; if (v !== r.vis) q.exec("UPDATE acct SET vis = ? WHERE pid = ?", v, pid); return v; }
+  sMe(pid) { const r = this.srow(pid), q = this.sdb(); return { id: r.vis, id7: r.id7, prem: q.exec("SELECT num FROM ids WHERE pid = ? AND kind = 'p' ORDER BY t", pid).toArray().map((x) => x.num), own: r.own ? 1 : 0 }; }
+  sLimit(pid, k, n, win = 60000) { const now = Date.now(), key = pid + "|" + k; let e = this.rl.get(key); if (!e || now - e.t > win) { e = { t: now, n: 0 }; this.rl.set(key, e); } if (this.rl.size > 20000) this.rl.clear(); return ++e.n > n; }
+  sBlocked(a, b) { return this.sdb().exec("SELECT a FROM bl WHERE (a = ? AND b = ?) OR (a = ? AND b = ?)", a, b, b, a).toArray().length > 0; }
+  static cv(a, b) { return a < b ? a + ":" + b : b + ":" + a; }
+  sop(pid, m) {
+    const q = this.sdb(), now = Date.now(), op = String(m.op || ""); if (this.sLimit(pid, "*", 240)) return { err: "rate" };
+    const me = this.sAcct(pid); const other = () => { const o = this.sPid(m.id); return o && o !== pid ? o : ""; };
+    if (op === "hello") { // profile summary for friend lists + cards (name filtered like chat)
+      const nm = filterText(cleanName(m.n)).t.slice(0, 16) || "Guest", av = typeof m.av === "string" && /^(p([0-9]|1[0-9]|2[0-3])|f\d{1,3})$/.test(m.av) ? m.av : "p0";
+      q.exec("UPDATE acct SET name = ?, av = ?, fr = ?, lv = ?, seen = ? WHERE pid = ?", nm, av, Math.max(0, Math.min(17, m.fr | 0)), Math.max(1, Math.min(100, m.lv | 0)), now, pid); this.sVis(pid);
+      return { ok: 1, me: this.sMe(pid) }; }
+    if (op === "me") return { me: this.sMe(pid) };
+    if (op === "list") {
+      const fr = this.sFriends(pid).map((b) => { const c = this.sCard(b, 1); if (!c) return null; const cv = Room.cv(pid, b), rd = q.exec("SELECT last FROM rd WHERE pid = ? AND cv = ?", pid, cv).toArray()[0];
+        c.un = q.exec("SELECT COUNT(*) AS n FROM msg WHERE cv = ? AND f != ? AND id > ?", cv, pid, rd ? rd.last : 0).one().n; return c; }).filter(Boolean);
+      const cards = (rows, k) => rows.map((r) => this.sCard(r[k])).filter(Boolean);
+      return { me: this.sMe(pid), fr, inq: cards(q.exec("SELECT a FROM rq WHERE b = ? ORDER BY t DESC LIMIT 50", pid).toArray(), "a"), outq: cards(q.exec("SELECT b FROM rq WHERE a = ? ORDER BY t DESC LIMIT 50", pid).toArray(), "b"),
+        bl: cards(q.exec("SELECT b FROM bl WHERE a = ? LIMIT 100", pid).toArray(), "b"), inv: q.exec("SELECT a, room, t FROM inv WHERE b = ? AND t > ?", pid, now - 120000).toArray().map((r) => ({ from: this.sCard(r.a), room: r.room, t: r.t })).filter((x) => x.from) };
+    }
+    if (op === "find") { if (this.sLimit(pid, "find", 30)) return { err: "rate" }; const o = this.sPid(m.id); if (!o) return { err: "notfound" }; if (o === pid) return { err: "self" };
+      const c = this.sCard(o); c.rel = q.exec("SELECT a FROM fr WHERE a = ? AND b = ?", pid, o).toArray().length ? "fr" : q.exec("SELECT a FROM rq WHERE a = ? AND b = ?", pid, o).toArray().length ? "out" : q.exec("SELECT a FROM rq WHERE a = ? AND b = ?", o, pid).toArray().length ? "in" : q.exec("SELECT a FROM bl WHERE a = ? AND b = ?", pid, o).toArray().length ? "bl" : ""; return { card: c }; }
+    if (op === "req") { if (this.sLimit(pid, "req", 10)) return { err: "rate" }; const o = this.sPid(m.id); if (!o) return { err: "notfound" }; if (o === pid) return { err: "self" };
+      if (q.exec("SELECT a FROM fr WHERE a = ? AND b = ?", pid, o).toArray().length) return { err: "already" };
+      if (q.exec("SELECT a FROM bl WHERE a = ? AND b = ?", pid, o).toArray().length) return { err: "blocked" };
+      if (q.exec("SELECT a FROM bl WHERE a = ? AND b = ?", o, pid).toArray().length) return { ok: 1, sent: 1 }; // they blocked me: looks sent, never delivered
+      if (q.exec("SELECT a FROM rq WHERE a = ? AND b = ?", o, pid).toArray().length) return this.sop(pid, { op: "acc", id: m.id }); // they asked first: accept
+      if (q.exec("SELECT COUNT(*) AS n FROM fr WHERE a = ?", pid).one().n >= 200) return { err: "full" };
+      if (q.exec("SELECT COUNT(*) AS n FROM rq WHERE a = ?", pid).one().n >= 30) return { err: "pending" };
+      q.exec("INSERT OR REPLACE INTO rq (a, b, t) VALUES (?, ?, ?)", pid, o, now); this.sPush(o, { k: "req", from: this.sCard(pid) }); return { ok: 1, sent: 1 }; }
+    if (op === "acc") { const o = other(); if (!o || !q.exec("SELECT a FROM rq WHERE a = ? AND b = ?", o, pid).toArray().length) return { err: "none" };
+      q.exec("DELETE FROM rq WHERE (a = ? AND b = ?) OR (a = ? AND b = ?)", o, pid, pid, o); q.exec("INSERT OR IGNORE INTO fr (a, b, t) VALUES (?, ?, ?)", pid, o, now); q.exec("INSERT OR IGNORE INTO fr (a, b, t) VALUES (?, ?, ?)", o, pid, now);
+      this.sPush(o, { k: "acc", from: this.sCard(pid, 1) }); return { ok: 1, card: this.sCard(o, 1) }; }
+    if (op === "dec") { const o = other(); if (!o) return { err: "none" }; q.exec("DELETE FROM rq WHERE (a = ? AND b = ?) OR (a = ? AND b = ?)", o, pid, pid, o); return { ok: 1 }; } // also cancels my own request
+    if (op === "rem") { const o = other(); if (!o) return { err: "none" }; q.exec("DELETE FROM fr WHERE (a = ? AND b = ?) OR (a = ? AND b = ?)", o, pid, pid, o); q.exec("DELETE FROM inv WHERE (a = ? AND b = ?) OR (a = ? AND b = ?)", o, pid, pid, o); this.sPush(o, { k: "rem", id: me.vis }); return { ok: 1 }; }
+    if (op === "blk") { const o = other(); if (!o) return { err: "none" }; for (const T of ["fr", "rq", "inv"]) q.exec(`DELETE FROM ${T} WHERE (a = ? AND b = ?) OR (a = ? AND b = ?)`, o, pid, pid, o);
+      q.exec("INSERT OR REPLACE INTO bl (a, b, t) VALUES (?, ?, ?)", pid, o, now); this.sPush(o, { k: "rem", id: me.vis }); return { ok: 1 }; }
+    if (op === "unb") { const o = other(); if (!o) return { err: "none" }; q.exec("DELETE FROM bl WHERE a = ? AND b = ?", pid, o); return { ok: 1 }; }
+    const isFr = (o) => q.exec("SELECT a FROM fr WHERE a = ? AND b = ?", pid, o).toArray().length > 0;
+    if (op === "msgs") { const o = other(); if (!o || !isFr(o)) return { err: "notfriend" }; const cv = Room.cv(pid, o);
+      const list = q.exec("SELECT id, f, tx, t FROM msg WHERE cv = ? ORDER BY id DESC LIMIT ?", cv, CHAT_KEEP).toArray().reverse().map((r) => ({ i: r.id, me: r.f === pid ? 1 : 0, tx: r.tx, t: r.t }));
+      if (list.length) q.exec("INSERT OR REPLACE INTO rd (pid, cv, last) VALUES (?, ?, ?)", pid, cv, list[list.length - 1].i); return { id: m.id, list, card: this.sCard(o, 1) }; }
+    if (op === "read") { const o = other(); if (!o) return { err: "none" }; const cv = Room.cv(pid, o), r = q.exec("SELECT MAX(id) AS n FROM msg WHERE cv = ?", cv).one(); if (r && r.n) q.exec("INSERT OR REPLACE INTO rd (pid, cv, last) VALUES (?, ?, ?)", pid, cv, r.n); return { ok: 1 }; }
+    if (op === "send") { const o = other(); if (!o || !isFr(o)) return { err: "notfriend" }; if (this.sBlocked(pid, o)) return { err: "blocked" };
+      const raw = String(m.tx || ""); if (!raw.trim()) return { err: "empty" }; if ([...raw].length > MSG_MAX) return { err: "long" }; if (this.sLimit(pid, "send", 20) || this.sLimit(pid, "send1", 3, 2000)) return { err: "rate" }; const f = filterText(raw); if (!f.t) return { err: "empty" };
+      const cv = Room.cv(pid, o); q.exec("INSERT INTO msg (cv, f, tx, t) VALUES (?, ?, ?, ?)", cv, pid, f.t, now); const id = q.exec("SELECT MAX(id) AS n FROM msg WHERE cv = ?", cv).one().n;
+      const cut = q.exec("SELECT id FROM msg WHERE cv = ? ORDER BY id DESC LIMIT 1 OFFSET ?", cv, CHAT_KEEP - 1).toArray()[0]; if (cut) q.exec("DELETE FROM msg WHERE cv = ? AND id < ?", cv, cut.id); // keep the last 100
+      q.exec("INSERT OR REPLACE INTO rd (pid, cv, last) VALUES (?, ?, ?)", pid, cv, id);
+      this.sPush(o, { k: "msg", from: this.sCard(pid), m: { i: id, me: 0, tx: f.t, t: now } }); return { ok: 1, m: { i: id, me: 1, tx: f.t, t: now }, filt: f.hit ? 1 : 0 }; }
+    if (op === "rep") { if (this.sLimit(pid, "rep", 10)) return { err: "rate" }; const o = other(); if (!o) return { err: "none" }; const r = q.exec("SELECT tx FROM msg WHERE id = ? AND cv = ? AND f = ?", m.mid | 0, Room.cv(pid, o), o).toArray()[0];
+      q.exec("INSERT INTO rep (by, who, mid, tx, t) VALUES (?, ?, ?, ?, ?)", pid, o, m.mid | 0, r ? r.tx : "", now); return { ok: 1 }; }
+    if (op === "inv") { if (this.sLimit(pid, "inv", 6)) return { err: "rate" }; const o = other(); if (!o || !isFr(o)) return { err: "notfriend" };
+      let room = String(m.room || "").toLowerCase(); if (!/^[a-z0-9-]{1,24}$/.test(room)) { const b = new Uint8Array(4); crypto.getRandomValues(b); room = "f-" + [...b].map((x) => x.toString(36).padStart(2, "0")).join("").slice(0, 7); }
+      q.exec("INSERT OR REPLACE INTO inv (a, b, room, t) VALUES (?, ?, ?, ?)", pid, o, room, now); const live = this.sPush(o, { k: "inv", from: this.sCard(pid), room, at: now }); return { ok: 1, room, live: live ? 1 : 0, st: this.sPres(o) }; }
+    if (op === "invr") { const o = other(); if (!o) return { err: "none" }; const r = q.exec("SELECT room FROM inv WHERE a = ? AND b = ? AND t > ?", o, pid, now - 120000).toArray()[0]; q.exec("DELETE FROM inv WHERE a = ? AND b = ?", o, pid);
+      if (!r) return { err: "expired" }; this.sPush(o, { k: "invr", from: this.sCard(pid), ok: m.ok ? 1 : 0, room: r.room }); return { ok: 1, room: r.room }; }
+    // ---- special ids (shop). Ownership is decided here, atomically; the coin price is paid client-side right after (see client) ----
+    if (op === "shop") { const sold = new Set(q.exec("SELECT num FROM ids WHERE length(num) = 5").toArray().map((r) => r.num)); const pick = [];
+      const seed = Math.floor(now / 3600000); let h = seed * 2654435761 >>> 0; for (let k = 0; k < 200 && pick.length < 8; k++) { h = (Math.imul(h ^ (h >>> 13), 1274126177) + 0x9e3779b9) >>> 0; const n = String(10000 + (h % 90000)); if (idKind(n) === "std" && !sold.has(n) && !pick.includes(n)) pick.push(n); }
+      return { prices: ID_PRICES, rep: SPECIAL_REP.map((n) => ({ n, s: sold.has(n) ? 1 : 0 })), seq: SPECIAL_SEQ.map((n) => ({ n, s: sold.has(n) ? 1 : 0 })), std: pick, me: this.sMe(pid) }; }
+    if (op === "chk") { const n = String(m.n || ""), k = idKind(n); if (!k) return { err: "bad" }; return { n, kind: k, price: idPrice(n), sold: q.exec("SELECT num FROM ids WHERE num = ?", n).toArray().length ? 1 : 0 }; }
+    if (op === "buyid") { if (this.sLimit(pid, "buy", 6)) return { err: "rate" }; const n = String(m.n || ""), k = idKind(n); if (!k) return { err: "bad" };
+      if (Number(m.price) !== idPrice(n)) return { err: "price", price: idPrice(n) };
+      if (q.exec("SELECT COUNT(*) AS c FROM ids WHERE pid = ? AND kind = 'p'", pid).one().c >= 5) return { err: "max" };
+      if (q.exec("SELECT num FROM ids WHERE num = ?", n).toArray().length) return { err: "sold" }; // check + insert with no await between them: one buyer only
+      const b = new Uint8Array(8); crypto.getRandomValues(b); const tok = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+      q.exec("INSERT INTO ids (num, pid, kind, t, tok) VALUES (?, ?, 'p', ?, ?)", n, pid, now, tok); this.sVis(pid); this.sPresAll(pid);
+      return { ok: 1, n, price: idPrice(n), tok, me: this.sMe(pid) }; }
+    if (op === "undoid") { const n = String(m.n || ""), r = q.exec("SELECT * FROM ids WHERE num = ? AND pid = ? AND kind = 'p'", n, pid).toArray()[0]; // the coin payment failed on the device: give the id back
+      if (!r || !m.tok || r.tok !== String(m.tok) || now - r.t > 600000) return { err: "none" }; q.exec("DELETE FROM ids WHERE num = ?", n); this.sVis(pid); return { ok: 1, me: this.sMe(pid) }; }
+    if (op === "paid") { q.exec("UPDATE ids SET tok = NULL WHERE num = ? AND pid = ? AND kind = 'p'", String(m.n || ""), pid); return { ok: 1 }; } // payment done: the sale can no longer be undone
+    return { err: "op" };
+  }
+  async sOp(pid, m) { // the one op that needs an await (hashing the founder code) is resolved here, then everything else is synchronous
+    if (m && m.op === "claim1") { if (this.sLimit(pid, "claim", 5, 600000)) return { err: "rate" }; this.sAcct(pid);
+      const h = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("ssp-own|" + String(m.code || "").trim().toUpperCase())))].map((b) => b.toString(16).padStart(2, "0")).join("");
+      const q = this.sdb(), r = q.exec("SELECT pid FROM ids WHERE num = '1'").toArray()[0];
+      if (h !== OWNER_H) return { err: "bad" }; if (r && r.pid && r.pid !== pid) return { err: "taken" };
+      q.exec("UPDATE ids SET pid = ?, t = ? WHERE num = '1'", pid, Date.now()); q.exec("UPDATE acct SET own = 1 WHERE pid = ?", pid); this.sVis(pid); return { ok: 1, me: this.sMe(pid) }; }
+    try { return this.sop(pid, m || {}); } catch (e) { return { err: "server", m: String(e && e.message).slice(0, 100) }; }
+  }
+  async socialHttp(req, url) {
+    if (url.pathname === "/s/uid") { const pid = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400); try { return J({ id: this.sAcct(pid).vis }); } catch (e) { return J({ err: "server" }, 500); } } // internal: room -> social
+    let B = {}; try { B = JSON.parse((await req.text()).slice(0, 1200)) || {}; } catch (_) {}
+    const pid = await pidOf(String(B.pk || "")); if (!pid) return J({ err: "pk" }, 400); return J(await this.sOp(pid, B));
+  }
+  async socialWs(req, url) {
+    const pid = await pidOf(url.searchParams.get("pk") || ""); if (!pid) return new Response("pk", { status: 400 });
+    this.sAcct(pid); const old = this.state.getWebSockets(pid); for (let i = 0; i < old.length - 2; i++) try { old[i].close(4009, "replaced"); } catch (_) {} // at most 3 live tabs per player
+    if (!this._auto) { this._auto = 1; try { this.state.setWebSocketAutoResponse(new WebSocketRequestResponsePair('{"t":"ping"}', '{"t":"pong"}')); } catch (_) {} } // keep-alive pings never wake the object
+    const pair = new WebSocketPair(); const [client, server] = Object.values(pair); this.state.acceptWebSocket(server, [pid]);
+    server.serializeAttachment({ pid, st: "lobby" }); server.send(JSON.stringify({ t: "hi", me: this.sMe(pid), v: VERSION })); this.sPresAll(pid);
+    return new Response(null, { status: 101, webSocket: client });
+  }
+  async webSocketMessage(ws, data) { // hibernation API: only the social object's sockets come here (game rooms use accept() + listeners)
+    let a = null; try { a = ws.deserializeAttachment(); } catch (_) {} if (!a || !a.pid || typeof data !== "string" || data.length > 1200) return; let m; try { m = JSON.parse(data); } catch (_) { return; }
+    if (!m || typeof m !== "object") return;
+    if (m.t === "st") { const st = m.s === "match" ? "match" : "lobby"; if (a.st !== st) { a.st = st; ws.serializeAttachment(a); this.sPresAll(a.pid); } return; }
+    if (m.t === "ping") { try { ws.send('{"t":"pong"}'); } catch (_) {} return; }
+    if (m.t === "op") { const r = await this.sOp(a.pid, m); try { ws.send(JSON.stringify({ t: "r", i: m.i | 0, ...r })); } catch (_) {} }
+  }
+  async webSocketClose(ws) { let a = null; try { a = ws.deserializeAttachment(); } catch (_) {} if (a && a.pid) this.sPresAll(a.pid, ws); try { ws.close(1000); } catch (_) {} }
+  async webSocketError(ws) { return this.webSocketClose(ws); }
   foodFull() {
     const S = this.sim, idx = []; for (let i = 0; i < S.FM; i++) if (S.fa[i]) idx.push(i);
     const b = new ArrayBuffer(3 + idx.length * 12), v = new DataView(b); v.setUint8(0, 3); v.setUint16(1, idx.length, true);

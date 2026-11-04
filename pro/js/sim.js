@@ -574,6 +574,7 @@ export function sanitizeSkin(d) {
   if (Array.isArray(d.c)) o.c = d.c.slice(0, 3).map((h) => (typeof h === "string" && /^#[0-9a-fA-F]{6}$/.test(h) ? h : "#18c964"));
   o.e = Math.max(0, Math.min(11, d.e | 0)); o.t = Math.max(0, Math.min(12, d.t | 0)); o.n = Math.max(0, Math.min(19, d.n | 0));
   if (typeof d.av === "string" && /^(p([0-9]|1[0-9]|2[0-3])|f\d{1,3})$/.test(d.av)) o.av = d.av; o.fr = Math.max(0, Math.min(17, d.fr | 0)); /* comp1: 15..17 competition frames */ // profile avatar + frame (HUD rows)
+  if (typeof d.gt === "string" && GT_IDS.includes(d.gt)) o.gt = d.gt; // srv1: equipped ground trail (one of the 10 known ids), shown to other players online
   return o;
 }
 export const cleanName = (n) => String(n || "").replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, 16) || "Guest";
@@ -612,3 +613,35 @@ export const prevPeriodId = (per, ms) => periodId(per, periodStart(per, ms) - 10
 export const CONTESTS = [{ id: "w_rush", per: "w", met: "tr" }, { id: "w_hunt", per: "w", met: "kl" }, { id: "w_score", per: "w", met: "sc" }, { id: "m_rush", per: "m", met: "tr" }, { id: "m_hunt", per: "m", met: "kl" }, { id: "m_score", per: "m", met: "sc" }];
 // bots get a stable league from their index (online + offline), close to the player's own league offline
 export const botTrophies = (i, near) => { let h = (i * 2654435761) >>> 0; h ^= h >>> 15; const r = (h % 1000) / 1000; return near == null ? Math.round(r * r * 4600) : Math.max(0, Math.round(near + (r - 0.5) * 900)); };
+
+// ---------- srv1: social rules shared by the client and the online server (pure, no DOM) ----------
+// ground trail ids (same order as skins.js GTRAILS); the server only relays one of these
+export const GT_IDS = ["dust", "ripples", "sparks", "flowers", "snow", "toxic", "cracks", "electric", "lava", "gold"];
+// public player ids: 7 random digits (server-assigned), "1" = the founder, 5-digit special ids sold in the shop for coins
+export const ID_PRICES = { rep: 300000, seq: 150000, std: 50000 };
+export function idKind(n) {
+  n = String(n); if (!/^[1-9]\d{4}$/.test(n)) return "";
+  if (/^(\d)\1{4}$/.test(n)) return "rep";
+  const d = [...n].map(Number); let up = true, dn = true; for (let i = 1; i < 5; i++) { if (d[i] !== d[i - 1] + 1) up = false; if (d[i] !== d[i - 1] - 1) dn = false; }
+  return up || dn ? "seq" : "std";
+}
+export const idPrice = (n) => ID_PRICES[idKind(n)] || 0;
+export const SPECIAL_REP = ["11111", "22222", "33333", "44444", "55555", "66666", "77777", "88888", "99999"];
+export const SPECIAL_SEQ = ["12345", "23456", "34567", "45678", "56789", "98765", "87654", "76543", "65432", "54321"];
+// chat: 200 characters, last 100 kept per conversation. Filter: links, phone numbers / long digit runs, a short EN + AR
+// bad-word list (whole words; Arabic matched without diacritics / tatweel) -> "***"
+export const MSG_MAX = 200, CHAT_KEEP = 100;
+const BAD_EN = ["fuck", "fucking", "fucker", "shit", "bitch", "bastard", "asshole", "dick", "pussy", "cunt", "whore", "slut", "nigger", "nigga", "faggot", "retard", "motherfucker", "porn", "sex"];
+const BAD_AR = ["كس", "كسمك", "كس امك", "زب", "زبي", "شرموط", "شرموطة", "منيوك", "منيوكة", "قحبة", "قحبه", "عاهرة", "عاهره", "خول", "متناك", "نيك", "انيك", "طيز", "ابن الكلب", "كلب", "حمار", "حيوان", "ابن الحرام", "لوطي", "سكس"];
+const normW = (s) => s.toLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").replace(/[^\p{L}\p{N}]/gu, "");
+const BAD1 = new Set(), BAD2 = new Set(); for (const w of [...BAD_EN, ...BAD_AR]) { const k = w.split(" ").map(normW); (k.length > 1 ? BAD2 : BAD1).add(k.join(" ")); }
+const RX_URL = /(https?:\/\/|www\.)\S+|\b[a-z0-9-]{2,}\.(com|net|org|io|me|gg|ly|co|app|xyz|info|ru|tk|link|site|online|store|ir|iq|sa|ae)\b\S*/gi;
+const RX_TEL = /\+?[\d\u0660-\u0669][\d\u0660-\u0669\s().-]{6,}[\d\u0660-\u0669]/g;
+export function filterText(s) {
+  let o = String(s || "").replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, MSG_MAX), hit = false; const rep = () => { hit = true; return "***"; };
+  o = o.replace(RX_URL, rep).replace(RX_TEL, (m) => (m.replace(/[^\d\u0660-\u0669]/g, "").length >= 7 ? rep() : m));
+  const w = o.split(" "), n = w.map(normW); // whole words only (EN + AR, Arabic compared without diacritics / tatweel / hamza forms)
+  for (let i = 0; i < w.length; i++) { if (i + 1 < w.length && BAD2.has(n[i] + " " + n[i + 1])) { w[i] = "***"; w[i + 1] = ""; n[i + 1] = ""; hit = true; i++; continue; }
+    if (n[i] && (BAD1.has(n[i]) || (/^[\u0600-\u06FF]/.test(n[i]) && n[i].length > 3 && (n[i].startsWith("ال") || n[i].startsWith("يا") || n[i].startsWith("و")) && BAD1.has(n[i].replace(/^(ال|يا|و)/, ""))))) { w[i] = w[i].replace(/[\p{L}\p{N}\u064B-\u065F\u0640]+/u, "***"); hit = true; } }
+  return { t: w.filter((x) => x !== "").join(" "), hit };
+}

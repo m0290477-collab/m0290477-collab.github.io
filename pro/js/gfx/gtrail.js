@@ -3,7 +3,7 @@
 // behind it; each decal lives 0.6-1.5 s on the ground and fades out. Both renderers draw the same pool: 2D with one
 // cached sprite atlas (drawImage per decal), 3D with one InstancedMesh (one draw call) using the same atlas as a texture.
 // Calm mode / reduced motion: static, low-alpha decals (no growth, no flicker, nothing bright), spawned less often.
-import { GTRAILS } from "../skins.js?v=trail1";
+import { GTRAILS } from "../skins.js?v=srv1";
 export const GT_CAP = 120, GT_CELL = 64, GT_VARS = 4;
 const TAU = Math.PI * 2;
 // per-type motion: spawn spacing (x snake radius), growth style (0 none, 1 ripple ring, 2 sprout, 3 split open, 4 shrink)
@@ -60,22 +60,19 @@ export class GTrail {
     this.head = 0; this.live = 0; this.acc = 0; this.hx = NaN; this.hy = 0; this.sid = -1; this.cap = N;
     for (let i = 0; i < N; i++) this.life[i] = 0;
   }
-  clear() { this.life.fill(0); this.age.fill(0); this.live = 0; this.hx = NaN; this.acc = 0; this.sid = -1; }
+  clear() { this.life.fill(0); this.age.fill(0); this.live = 0; this.hx = NaN; this.acc = 0; this.sid = -1; if (this.st) this.st.clear(); }
   // v: the game view; ty: equipped trail index (-1 none); o: { calm, low, gov }
   step(v, dt, ty, o) {
     const cap = o.gov >= 3 ? 0 : o.low ? 40 : o.gov >= 2 ? 60 : GT_CAP; this.cap = cap; dt = Math.min(0.05, Math.max(0, dt));
-    // spawn from the player's own live snake only
-    let me = null; const SN = v && v.snakes; if (ty >= 0 && cap > 0 && SN) for (let k = 0; k < SN.length; k++) { const d = SN[k]; if (d.me && d.s && d.s.alive) { me = d; break; } }
-    if (me) { const s = me.s, o0 = me.o | 0, x = s.sx(o0), y = s.sy(o0), r = Math.max(0.35, s.r || 0.7);
-      if (this.sid !== s.id || !(this.hx === this.hx)) { this.sid = s.id; this.hx = x; this.hy = y; this.acc = 0; }
-      const dx = x - this.hx, dy = y - this.hy, dl = Math.hypot(dx, dy);
-      if (dl > 8) { this.hx = x; this.hy = y; this.acc = 0; } // teleport / respawn: no streak across the map
-      else if (dl > 1e-4) { const T = GTRAILS[ty], M = MOT[T.id] || MOT.dust, gap = r * M[0] * (o.calm ? 1.7 : 1) * (o.low ? 1.5 : 1), ux = dx / dl, uy = dy / dl;
-        this.acc += dl; let guard = 0;
-        while (this.acc >= gap && guard++ < 4) { this.acc -= gap; const back = r * (0.3 + Math.random() * 1.2), q = Math.random(), side = (q < 0.5 ? -1 : 1) * r * (q < 0.2 || q > 0.8 ? Math.random() * 0.6 : 0.7 + Math.random() * 1.2); // most beside the body, where they show
-          this._add(x - ux * back - uy * side, y - uy * back + ux * side, r * T.sz * (0.8 + Math.random() * 0.45), T.life * (0.85 + Math.random() * 0.3), ty); }
-        if (this.acc > gap) this.acc = gap; this.hx = x; this.hy = y; } }
-    else this.hx = NaN;
+    // spawn from the player's own live snake (ty) and, online (srv1), from other players whose skin carries a trail (d.gti),
+    // nearest 8 to the camera only, a little sparser than the own trail; all share the one capped pool
+    const SN = v && v.snakes, cam = v && v.cam, seen = this._seen || (this._seen = new Set()); seen.clear();
+    if (cap > 0 && SN) { let others = 0;
+      for (let k = 0; k < SN.length; k++) { const d = SN[k]; if (!d.s || !d.s.alive) continue; const ti = d.me ? ty : d.gti; if (!(ti >= 0) || !GTRAILS[ti]) continue;
+        const s = d.s, o0 = d.o | 0, x = s.sx(o0), y = s.sy(o0);
+        if (!d.me) { if (others >= 8 || (cam && (x - cam.x) ** 2 + (y - cam.y) ** 2 > 2500)) continue; others++; }
+        seen.add(s.id); this._spawnFrom(s, x, y, ti, d.me ? 1 : 1.4, o); } }
+    if (this.st) for (const id of this.st.keys()) if (!seen.has(id)) this.st.delete(id);
     // age + envelope
     let live = 0; const calm = !!o.calm;
     for (let i = 0; i < GT_CAP; i++) { const L = this.life[i]; if (L <= 0) { this.ca[i] = 0; continue; }
@@ -85,6 +82,17 @@ export class GTrail {
       this.ca[i] = T.a * Math.min(1, u / 0.1) * (1 - u * u * u);
       const g = M[1]; this.cs[i] = g === 1 ? 0.45 + 0.85 * u : g === 2 ? 0.3 + 0.7 * Math.min(1, u / 0.3) : g === 3 ? 0.6 + 0.4 * Math.min(1, u / 0.25) : g === 4 ? 1 - 0.35 * u : 1; }
     this.live = live;
+  }
+  _spawnFrom(s, x, y, ty, sparse, o) {
+    const st = this.st || (this.st = new Map()); let e = st.get(s.id); const r = Math.max(0.35, s.r || 0.7);
+    if (!e) { e = { hx: x, hy: y, acc: 0 }; st.set(s.id, e); return; }
+    const dx = x - e.hx, dy = y - e.hy, dl = Math.hypot(dx, dy);
+    if (dl > 8) { e.hx = x; e.hy = y; e.acc = 0; return; } // teleport / respawn: no streak across the map
+    if (dl <= 1e-4) return; const T = GTRAILS[ty], M = MOT[T.id] || MOT.dust, gap = r * M[0] * (o.calm ? 1.7 : 1) * (o.low ? 1.5 : 1) * sparse, ux = dx / dl, uy = dy / dl;
+    e.acc += dl; let guard = 0;
+    while (e.acc >= gap && guard++ < 4) { e.acc -= gap; const back = r * (0.3 + Math.random() * 1.2), q = Math.random(), side = (q < 0.5 ? -1 : 1) * r * (q < 0.2 || q > 0.8 ? Math.random() * 0.6 : 0.7 + Math.random() * 1.2); // most beside the body, where they show
+      this._add(x - ux * back - uy * side, y - uy * back + ux * side, r * T.sz * (0.8 + Math.random() * 0.45), T.life * (0.85 + Math.random() * 0.3), ty); }
+    if (e.acc > gap) e.acc = gap; e.hx = x; e.hy = y;
   }
   _add(x, y, sz, life, ty) {
     // ring buffer: the oldest slot is reused once the (quality) cap is reached

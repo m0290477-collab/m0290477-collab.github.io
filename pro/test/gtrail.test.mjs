@@ -41,5 +41,6 @@ const v6 = { snakes: [{ me: false, s: snake, o: 0 }] }, G6 = new GTrail(); for (
 const G7 = new GTrail(); snake.X = 0; for (let f = 0; f < 120; f++) { snake.X += 0.3; G7.step(v, 1 / 60, gtIndex("dust"), { calm: false, low: false, gov: 0 }); } snake.alive = false; for (let f = 0; f < 120; f++) G7.step(v, 1 / 60, gtIndex("dust"), { calm: false, low: false, gov: 0 }); ok(G7.live === 0, "after death every decal fades out within 2 s"); snake.alive = true;
 // cosmetic only
 const sim = readFileSync(new URL("../js/sim.js", import.meta.url), "utf8"), srv = readFileSync(new URL("../server/index.js", import.meta.url), "utf8");
-ok(!/gtrail|GTRAILS|\bgt\b/.test(sim) && !/gtrail|GTRAILS/.test(srv), "sim.js / server untouched by ground trails");
+{ const gl = sim.split("\n").filter((l) => /gtrail|GTRAILS|\bgt\b|GT_IDS/.test(l)); // srv1 (owner-approved): only the sanitizeSkin whitelist + the id list; no rule reads it
+  ok(gl.length <= 3 && gl.every((l) => /sanitizeSkin|o\.gt = d\.gt|export const GT_IDS|ground trail ids/.test(l)) && !/\.gt\b/.test(sim.replace(/.*o\.gt = d\.gt.*\n/, "")) && !/gtrail|GTRAILS/.test(srv), "ground trails stay cosmetic: sim.js only whitelists the id for online skins, no rule/collision reads it"); }
 console.log(fail ? fail + " FAILED" : "ALL OK"); process.exit(fail ? 1 : 0);

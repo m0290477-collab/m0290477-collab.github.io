@@ -1,19 +1,20 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=trail1";
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=trail1"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=trail1";
-import { GTRAILS } from "./skins.js?v=trail1"; import { gtCellUrl } from "./gfx/gtrail.js?v=trail1"; // trail1
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=trail1";
-import { WORLDS, worldAsset } from "./worlds.js?v=trail1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=trail1";
-import { haptic } from "./audio.js?v=trail1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=trail1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=trail1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=trail1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=trail1";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=trail1"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=trail1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=srv1";
+import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=srv1"; // srv1
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=srv1"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=srv1";
+import { GTRAILS } from "./skins.js?v=srv1"; import { gtCellUrl } from "./gfx/gtrail.js?v=srv1"; // trail1
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=srv1";
+import { WORLDS, worldAsset } from "./worlds.js?v=srv1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=srv1";
+import { haptic } from "./audio.js?v=srv1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=srv1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=srv1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=srv1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=srv1";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=srv1"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=srv1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -232,13 +233,13 @@ export class UI {
   async go(id, kind) { await this.wipe(kind || "go"); this.show(id); }
   show(id) {
     document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("on", s.id === "s-" + id)); this.cur = id; $("l-notif").classList.add("x-hide");
-    if (id === "lobby") this.renderLobby(); if (id === "custom") this.renderCustom(); if (id === "profile") this.renderProfile(); if (id === "settings") this.renderSettings(); if (id === "season") this.renderSeason(); if (id === "comp") renderComp(this);
+    if (id === "lobby") this.renderLobby(); if (id === "custom") this.renderCustom(); if (id === "profile") this.renderProfile(); if (id === "settings") this.renderSettings(); if (id === "season") this.renderSeason(); if (id === "comp") renderComp(this); if (id === "friends") renderFriends(this); // srv1
     this.updateShow();
   }
   hideScreens() { document.querySelectorAll(".screen").forEach((s) => s.classList.remove("on")); this.cur = null; }
   // studio showcase framing per screen
   updateShow() {
-    const G = this.app.game; if (!["lobby", "custom", "season", "profile", "settings", "comp"].includes(this.cur)) return;
+    const G = this.app.game; if (!["lobby", "custom", "season", "profile", "settings", "comp", "friends"].includes(this.cur)) return;
     if (G.mode !== "show") G.startShow();
     const d = this.cur === "custom" && this.sel ? this.sel : this.app.game.mySkin(); const fx = skinFx(d), L = LEGEND[fx];
     const rtl = document.documentElement.dir === "rtl", x = (this.cur === "custom" ? (innerHeight > innerWidth ? 0 : 0.25) : this.cur === "lobby" ? 0.0 : 0.3) * (rtl ? -1 : 1); /* resp1: portrait Locker: stage above the list */ // pedestal on the side the panel leaves free
@@ -248,7 +249,7 @@ export class UI {
     G.show = { d: still ? null : { s: { id: -1, r: 0.5, m: 50, len: 46, x: 0, y: 0 }, fn: skinFn(d), eye: d.e | 0, trail: d.t | 0, fx, name: "" }, still, idle: L ? L.idle : "sway", glow: L ? L.glow : "#ffc845", x, zoom: this.cur === "lobby" ? 1.2 : 1, orbit: Math.sin(performance.now() / 9000) * 0.25 };
     if (this.cur === "lobby") { const i = d.k === "skin" ? d.i : -1, rar = i >= 0 ? SKINS[i].rar : d.k === "flag" ? "rare" : "epic"; $("l-showtag").innerHTML = `<span class="rar ${rar}">${t("rar_" + rar)}</span><b>${esc(d.k === "flag" ? flagName(FLAGS[d.i], LANG) : d.k === "custom" ? t("custom") : skinName(d.i))}</b>`; }
   }
-  goLobby() { this.matchIntroHide(); ["m-pause", "m-results"].forEach((m) => $(m).classList.add("x-hide")); this.app.hud.hide(); this.app.game.startShow(this.p.last.world || 0); this.app.audio.music(true, this.p.last.world || 0, true); this.go("lobby", "fade"); setTimeout(() => this.nextReveal(), 900); }
+  goLobby() { socialStatus("lobby"); this.matchIntroHide(); ["m-pause", "m-results"].forEach((m) => $(m).classList.add("x-hide")); this.app.hud.hide(); this.app.game.startShow(this.p.last.world || 0); this.app.audio.music(true, this.p.last.world || 0, true); this.go("lobby", "fade"); setTimeout(() => this.nextReveal(), 900); }
   toast(msg, kind = "", ms = 2800) {
     // resp2 fix3: toast nodes are reused (no create / GC per toast), opacity + transform only; in a match on a short
     // landscape screen one compact toast at a time (fix1)
@@ -402,7 +403,7 @@ export class UI {
     if (this.fromPause && this.cur === "settings") { this.fromPause = false; this.hideScreens(); $("m-pause").classList.remove("x-hide"); return; }
     this.go("lobby", "fade");
   }
-  afterLogin() { this.selMode = this.p.last.mode || "classic"; this.app.applyAll(); this.goLobby(); compStartup(this); // comp1 setTimeout(() => this.toast(t("welcome", { n: this.p.name }), "good"), 700);
+  afterLogin() { this.selMode = this.p.last.mode || "classic"; this.app.applyAll(); this.goLobby(); compStartup(this); try { socialStart(this); } catch (e) { console.warn("social", e); } // srv1 // comp1 setTimeout(() => this.toast(t("welcome", { n: this.p.name }), "good"), 700);
     const q = this.app.roomParam; if (q) { this.app.roomParam = ""; this.selMode = "online"; this.p.last.mode = "online"; this.p.last.room = q; this.S.save(); setTimeout(() => { if (this.cur === "lobby") this.renderLobby(); this.toast(t("roomJoined", { n: q }), "good", 4000); }, 1200); }
     else if (!this.S.loginState().claimed) setTimeout(() => { if (this.cur === "lobby" && $("m-reveal").classList.contains("x-hide")) this.openLogin(); }, 1500); }
   showAuth(tab = "in") {
@@ -506,7 +507,7 @@ export class UI {
     const wk = (R.is2D ? "2d" : "3d") + ":" + R.qName + ":" + cfg.world, warm = this._warm || (this._warm = new Set()), ready = () => (R.worldReady ? R.worldReady() : true);
     const slow = !ready() || (!R.is2D && R.prewarm && !warm.has(wk));
     if (slow) { this.loading(true, `<span class="ld-mic">${IC[cfg.mode] || ""}</span>${t("m_" + cfg.mode)}<b>${esc(t("w_" + w.id))}</b><em class="ld-rule">${esc(t("m_" + cfg.mode + "_d"))}</em>`); this.progress(20, t("loading")); for (let k = 0; k < 60 && !ready(); k++) await new Promise((r) => setTimeout(r, 100)); this.progress(90); }
-    A.game.start(cfg);
+    A.game.start(cfg); socialStatus("match"); // srv1: presence for friends
     if (slow && R.prewarm && !R.is2D && !warm.has(wk)) { this.progress(96, t("loadShaders")); await new Promise((r) => requestAnimationFrame(() => r())); await Promise.race([R.prewarm(), new Promise((r) => setTimeout(r, 8000))]); }
     warm.add(wk); if (slow) { this.progress(100); this.loading(false); }
     this.matchIntro(cfg, cfg.mode === "online" ? 1500 : 1600);
@@ -583,6 +584,7 @@ export class UI {
         const stt = on || ok ? st(on, true) : `<small class="st buy${sel ? " go" : ""}">${sel ? t("buy", { n: "" }).trim() + " · " : ""}<span class="coin"></span>${fmtNum(G.price)}</small>`;
         return `<button class="item lk2 r-${G.rar} gtc ${on ? "on" : ""} ${sel ? "sel" : ""}" data-k="gt" data-v="${i}">${prev(i)}<div class="meta"><b>${t("gt_" + G.id)}</b><i class="rd ${G.rar}" title="${t("rar_" + G.rar)}"></i></div>${G.price ? stt : on ? stt : `<small class="st">${t("gt_free")}</small>`}</button>`; }).join("") + `</div>`; }
     else if (tab === "offers") { this.renderOffers(el); return; }
+    else if (tab === "ids") { renderIds(this, el); return; } // srv1: Special IDs shop
     else if (tab === "name") h = head(t("nameColor"), NAME_COLORS.length, NAME_COLORS.length) + `<div class="ncprev"><b style="color:${NAME_COLORS[p.nc] || "#fff"}">${esc(p.name || "Player")}</b></div><div class="namecols">` + NAME_COLORS.map((c, i) => `<button data-k="nc" data-v="${i}" class="${p.nc === i ? "on" : ""}" style="background:${c}" aria-label="${c}"></button>`).join("") + `</div>`;
     el.innerHTML = h;
     el.querySelectorAll("[data-k]").forEach((b) => this.click(b, () => this.pick(b.dataset.k, +b.dataset.v), "tab"));
@@ -679,6 +681,7 @@ export class UI {
       const achGot = Object.keys(p.ach).length;
       h = `<div class="pv-hero"><div class="pv-cover" style="background:${p.banner ? bannerCss(p.banner) : `url(${worldAsset(WORLDS[Math.min(WORLDS.length - 1, Math.max(0, p.last.world | 0))], "sky", true)}) center/cover`}"></div><div class="pv-idrow">${avatarHtml(p.av, p.frame, "l")}<div class="pv-id"><div class="nm">${esc(p.name)}</div><div class="tt">${t("ti_" + (TITLES[p.title] || TITLES[0]).id)} · ${t("level")} ${lv.n}</div><div class="pv-xp"><div class="xpbar"><i style="width:${lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)}%"></i></div><small>${lv.n >= 100 ? "MAX" : `${fmtNum(lv.x)} / ${fmtNum(lv.need)} XP`}</small></div></div>
         <div class="pv-acts"><button class="btn gold" id="pv-edit">${ed ? t("pvCancel") : t("pvEdit")}</button><button class="btn" id="pv-share">${t("pvShare")}</button></div></div></div>`;
+      h += profileIdCard(this); // srv1: public ID + copy (+ founder claim)
       if (ed) h += `<div class="pv-card pv-editor"><div class="pv-h">${t("pvEdit")}</div><label class="pv-lab" for="pr-nm">${t("editName")}</label><input type="text" id="pr-nm" maxlength="16" value="${esc(p.name)}" autocomplete="off" spellcheck="false" enterkeyhint="done">
         <label class="pv-lab" for="pv-bio">${t("pvAbout")}</label><textarea id="pv-bio" dir="auto" maxlength="90" rows="2" placeholder="${t("pvBioPh")}">${esc(p.bio)}</textarea>
         <div class="pv-lab">${t("pvHobbies")} <span class="fine">${t("pvPick5")}</span></div><div class="pv-chips" id="pv-hobs">` + HOBBIES.map(([id, ic]) => `<button class="pv-chip ${p.hob.includes(id) ? "on" : ""}" data-hb="${id}">${ic} ${t("hb_" + id)}</button>`).join("") + `</div>
@@ -711,7 +714,7 @@ export class UI {
       const L = p.bests[this.bMode] || [];
       h += L.length ? `<table class="lb"><tr><th>#</th><th>${t("bests")}</th><th>${t("r_mass")}</th><th>${t("r_kills")}</th><th>${t("world")}</th><th></th></tr>` + L.map((e, i) => `<tr><td>${i + 1}</td><td>${fmtNum(e.s)}</td><td>${fmtNum(e.m || 0)}</td><td>${e.k}</td><td>${t("w_" + (WORLDS[e.w] || WORLDS[0]).id)}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<div class="lx-empty"><svg viewBox="0 0 24 24"><path d="M4 16c3-6 6 2 9-3s4-6 7-4"/><circle cx="20" cy="9" r="1"/></svg><span>${t("noBests")}</span></div>`;
     }
-    el.innerHTML = h;
+    el.innerHTML = h; if (tab === "over") bindProfileId(this, el); // srv1
     const done = (msg) => { S.save(); this.renderProfile(); if (msg) this.toast("✓ " + msg, "good", 1600); };
     el.querySelectorAll("[data-av]").forEach((b) => this.click(b, () => this.pickAv(b.dataset.av), "tab"));
     el.querySelectorAll("[data-fr]").forEach((b) => this.click(b, () => { const i = +b.dataset.fr; if (!frameOk(S, i)) { this.toast("🔒 " + this.reqText(FRAMES[i].req)); this.app.audio.play("error"); return; } p.frame = i; done(t("equipped")); }, "tab"));
@@ -838,7 +841,7 @@ export class UI {
   replayHide() { const el = $("replay"); if (!el) return; el.classList.remove("on"); el.classList.add("x-hide"); }
   hideResults() { $("m-results").classList.add("x-hide"); this.app.hud.show(this.app.game.mode); }
   reshowResults() { const m = $("m-results"); m.classList.remove("x-hide"); this.app.hud.hide(); $("r-watch").classList.toggle("x-hide", !(this.app.game.killer && this.app.game.killer.alive)); }
-  showPause(online) { $("m-pause").classList.remove("x-hide"); $("pz-online").classList.toggle("x-hide", !online); $("pz-online").textContent = online ? t("m_online_d") : ""; $("pz-restart").classList.toggle("x-hide", online); $("pz-share").classList.toggle("x-hide", !online); }
+  showPause(online) { $("m-pause").classList.remove("x-hide"); $("pz-online").classList.toggle("x-hide", !online); $("pz-online").textContent = online ? t("m_online_d") : ""; $("pz-restart").classList.toggle("x-hide", online); $("pz-share").classList.toggle("x-hide", !online); pauseHook(online); }
   hidePause() { $("m-pause").classList.add("x-hide"); }
   showResults(r) {
     const m = $("m-results"); m.classList.remove("x-hide"); this.app.hud.hide(); m.querySelector(".results").classList.toggle("win", !!r.win);

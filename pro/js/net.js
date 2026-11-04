@@ -2,7 +2,7 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=trail1";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=srv1";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
 function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && !(s.pu && (s.pu[2] > 0 || s.pu[7] > 0))) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
 export const SERVER = (typeof window !== "undefined" && window.__SSP_SERVER) || "wss://super-snake-online.molierk.workers.dev/ws";
@@ -67,6 +67,8 @@ export class NetBackend {
       if (m.by && m.by === this.myId && m.id !== this.myId && m.cause !== 5) this.cb.onKill && this.cb.onKill(m.id);
     } else if (m.t === "pong") { const rtt = performance.now() - m.c; this.pings.push(rtt); if (this.pings.length > 10) this.pings.shift(); this.ping = Math.round(this.pings.reduce((a, b) => a + b, 0) / this.pings.length); this.stats.rtt.push(rtt); }
     else if (m.t === "lb") { this.lb = m.lb; this.humans = m.humans; }
+    else if (m.t === "uid") { const mr = this.mirrors.get(m.id); if (mr && /^\d{1,7}$/.test(m.u || "")) mr.s.uid = m.u; } // srv1
+    else if (m.t === "myid") { this.myUid = m.u; }
     else if (m.t === "full") {}
     else if (m.t === "tro" || m.t === "tro0") { this.cb.onTrophy && this.cb.onTrophy(m); } // comp1: server-decided trophies
     // power-ups (server v2): field list, spawns, pickups (+ who got frozen), shield breaks
@@ -90,6 +92,7 @@ export class NetBackend {
   }
   addMirror(m) {
     const s = new Snake(m.id); s.n = 0; s.h = 0; s.alive = true; s.name = m.name; s.skin = m.skin; s.bot = !!m.bot; s.avt = m.skin && m.skin.av; s.fr = m.skin ? m.skin.fr | 0 : 0; s.setMass(m.m); s.a = m.a || 0; if (Number.isFinite(m.tr) && m.tr >= 0) s.tr = m.tr; // comp1: league from the server
+    if (typeof m.u === "string" && /^\d{1,7}$/.test(m.u)) s.uid = m.u; // srv1: public player id (player card)
     for (let i = 0; i < m.path.length; i += 2) s.push(m.path[i], m.path[i + 1]);
     s.x = m.path[m.path.length - 2]; s.y = m.path[m.path.length - 1];
     const mr = { s, lastTick: m.tick, boost: 0, deadAt: 0 }; this.mirrors.set(m.id, mr); this.cb.onNewSnake && this.cb.onNewSnake(mr);

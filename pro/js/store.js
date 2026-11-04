@@ -1,6 +1,6 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex } from "./skins.js?v=trail1";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex } from "./skins.js?v=srv1";
 export const SEASON = { id: "s1", tiers: 30, per: 400 };
 // free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
 export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
@@ -10,8 +10,8 @@ export const CHAINS = {
   survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
 };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=trail1";
-import { FRAMES, TITLES } from "./profile.js?v=trail1";
+import { WORLDS } from "./worlds.js?v=srv1";
+import { FRAMES, TITLES } from "./profile.js?v=srv1";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -66,6 +66,7 @@ export function newProfile(name) {
     // comp1: trophies (on = last server-confirmed online total, off = offline part, pk = season peak, ss = season id,
     // dg/day = offline trophies gained today), local contest progress (cx), claimed reward keys (rc), device secret (dev)
     lg: { on: 0, off: 0, pk: 0, ss: "", dg: 0, day: "", conq: 0, rank: 0, sync: 0 }, cx: {}, rc: [], dev: "",
+    uid: "", // srv1: last public id the server gave this profile (display cache; the server is the source of truth)
   };
 }
 function fixProfile(p) { // fill any missing field from defaults (older or imported profiles)
@@ -91,6 +92,7 @@ function fixProfile(p) { // fill any missing field from defaults (older or impor
     if (!/^(\d{4}-\d{2})?$/.test(L.ss)) L.ss = ""; if (!/^(\d{4}-\d{2}-\d{2})?$/.test(L.day)) L.day = "";
     const X = p.cx; if (!X || typeof X !== "object" || Array.isArray(X)) p.cx = {}; else for (const k of Object.keys(X)) { if (k === "w" || k === "m") { if (typeof X[k] !== "string" || X[k].length > 10) delete X[k]; } else if (["wtr", "wkl", "wsc", "mtr", "mkl", "msc"].includes(k)) X[k] = Math.max(0, Math.min(1e7, Math.floor(+X[k] || 0))); else delete X[k]; }
     p.rc = p.rc.filter((x) => typeof x === "string" && x.length <= 40).slice(-300); if (!/^([0-9a-f]{32})?$/.test(p.dev)) p.dev = ""; }
+  if (!/^\d{0,7}$/.test(p.uid)) p.uid = "";
   return p;
 }
 
@@ -188,6 +190,9 @@ export class Store {
     catch (e) { p.coins = snap.coins; p.flags = snap.flags; p.owned = snap.owned; p.cos = snap.cos; logErr("buy", e); return "saveFail"; }
     finally { this._buying = false; }
   }
+  // srv1: a Special ID. The server has already given the id to this player (atomic, one buyer); this pays its coin price
+  // through the same protected purchase (all-or-nothing, saved). On anything but "ok" the caller hands the id back.
+  buySpecialId(n, price) { n = String(n); if (!/^[1-9]\d{4}$/.test(n)) return "na"; return this.purchase("sid:" + n, price, () => { if (!this.p.owned.includes("sid:" + n)) this.p.owned.push("sid:" + n); }, () => this.p.owned.includes("sid:" + n)); }
   // comp1: atomic reward grant (contest / season / milestone). key is unique per reward (period + contest + rank/milestone):
   // a key already in p.rc is refused, so a reward can never be paid twice on this profile; all-or-nothing on a failed save.
   grantReward(key, rw) {
