@@ -18,14 +18,16 @@ export class Input {
     el.addEventListener("contextmenu", (e) => e.preventDefault());
     addEventListener("blur", () => { this.keys.clear(); this.boost = false; this.steer = null; this.boostEl.classList.remove("on"); this.hideJoy(); });
   }
-  configure(s) { this.mode = s.ctrl; this.sens = s.sens; this.left = s.left; }
-  reset() { this.angle = null; this.boost = false; this.steer = null; this.boostId = null; this.mouseBoost = false; this.hideJoy(); this.boostEl.classList.remove("on"); this.keys.clear(); }
+  // play2: one-thumb mode = drag anywhere to steer (floating stick); boost = a second finger held, or double-tap-and-hold with the same thumb
+  configure(s) { this.one = !!s.one; this.mode = this.one ? "joy" : s.ctrl; this.sens = s.sens; this.left = s.left; }
+  reset() { this.oneB = null; this.oneUp = -1e9; this.angle = null; this.boost = false; this.steer = null; this.boostId = null; this.mouseBoost = false; this.hideJoy(); this.boostEl.classList.remove("on"); this.keys.clear(); }
   down(e) {
     if (!this.enabled) return;
     if (e.pointerType === "mouse") { if (e.button === 0 || e.button === 2) { this.mouseBoost = true; this.boost = true; } this.mouse(e); return; }
     e.preventDefault(); this.usedTouch = true;
-    if (this.steer) return;
-    this.steer = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lx: e.clientX, ly: e.clientY };
+    if (this.steer) { if (this.one && this.oneB == null) { this.oneB = e.pointerId; this.boost = true; } return; } // play2: second finger = boost
+    const now = performance.now(), dbl = this.one && now - (this.oneUp || -1e9) < 320 && Math.hypot(e.clientX - this.oneUx, e.clientY - this.oneUy) < 80;
+    this.steer = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lx: e.clientX, ly: e.clientY, dbl }; if (dbl) this.boost = true; // play2: double-tap-hold = boost
     if (this.mode === "joy") this.showJoy(e.clientX, e.clientY);
     if (this.mode === "follow") this.follow(e.clientX, e.clientY);
   }
@@ -44,7 +46,8 @@ export class Input {
   }
   up(e) {
     if (e.pointerType === "mouse") { if (this.mouseBoost) { this.mouseBoost = false; if (!this.keys.has(" ") && !this.keys.has("shift")) this.boost = false; } return; }
-    if (this.steer && e.pointerId === this.steer.id) { this.steer = null; this.hideJoy(); }
+    if (this.one && e.pointerId === this.oneB) { this.oneB = null; if (!(this.steer && this.steer.dbl)) this.boost = false; return; }
+    if (this.steer && e.pointerId === this.steer.id) { if (this.one) { if (this.steer.dbl || this.oneB == null) this.boost = false; this.oneUp = performance.now(); this.oneUx = e.clientX; this.oneUy = e.clientY; if (this.steer.dbl) this.oneUp = -1e9; } this.steer = null; this.hideJoy(); }
   }
   follow(x, y) { const [hx, hy] = this.headScreen(); const dx = x - hx, dy = y - hy; if (Math.hypot(dx, dy) > 8 / this.sens) { this.angle = Math.atan2(dy, dx); this.world = false; } }
   mouse(e) { const [hx, hy] = this.headScreen(); const dx = e.clientX - hx, dy = e.clientY - hy; if (Math.hypot(dx, dy) > 6) { this.angle = Math.atan2(dy, dx); this.world = false; } }

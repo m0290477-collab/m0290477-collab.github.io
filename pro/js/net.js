@@ -2,9 +2,10 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=admin2";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=play2";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
-function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && !(s.pu && (s.pu[2] > 0 || s.pu[7] > 0))) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
+let MUT = ""; // play2: weekend rule of the room (free boost = no boost cost in prediction either)
+function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && MUT !== "fb" && !(s.pu && (s.pu[2] > 0 || s.pu[7] > 0))) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
 export const SERVER = (typeof window !== "undefined" && window.__SSP_SERVER) || "wss://super-snake-online.molierk.workers.dev/ws";
 const DT = 1 / 30, INTERP = 3; // render remote snakes >= 3 server ticks (100 ms) behind: absorbs network jitter
 // perf2 network governor: the interpolation delay follows measured snapshot jitter / loss. It grows fast on a spike
@@ -82,7 +83,7 @@ export class NetBackend {
   spawn(name, skin) { if (name) this.o.name = name; if (skin) this.o.skin = skin; this.wantSpawn = false; this.send(JSON.stringify({ t: "spawn", seq: this.seq, name: this.o.name, skin: this.o.skin })); }
 
   onJson(m) {
-    if (m.t === "welcome") { this.server = { room: m.room, br: m.br || "", bi: m.bi | 0, h: m.h | 0, b: m.b | 0, fb: this.mm && this.mm.fb ? this.mm.fb : "", my: this.mm ? this.mm.my : "" }; this.cb.onFind && this.cb.onFind({ st: "in", ...this.server }); this.R = m.R; this.tick = m.tick; this.setClock(m.tick); for (const s of m.snakes) this.addMirror(s); this.cb.onState && this.cb.onState("welcome"); if (this.wantSpawn !== false) this.spawn(); }
+    if (m.t === "welcome") { this.server = { room: m.room, br: m.br || "", bi: m.bi | 0, h: m.h | 0, b: m.b | 0, fb: this.mm && this.mm.fb ? this.mm.fb : "", my: this.mm ? this.mm.my : "" }; this.cb.onFind && this.cb.onFind({ st: "in", ...this.server }); this.mut = MUT = m.mu || ""; this.cb.onMut && this.cb.onMut(this.mut); this.R = m.R; this.tick = m.tick; this.setClock(m.tick); for (const s of m.snakes) this.addMirror(s); this.cb.onState && this.cb.onState("welcome"); if (this.wantSpawn !== false) this.spawn(); }
     else if (m.t === "sn") { if (m.id !== this.myId) this.addMirror(m); }
     else if (m.t === "you") {
       const s = new Snake(m.id); s.reset(m.x, m.y, m.a, m.m); s.name = this.o.name; s.skin = this.o.skin; s.avt = this.o.skin && this.o.skin.av; s.fr = this.o.skin ? this.o.skin.fr | 0 : 0; this.me = s; this.myId = m.id; this.seq = m.seq; this.seq0 = m.seq; this.batch.length = 0; this.mirrors.delete(m.id);
@@ -92,7 +93,9 @@ export class NetBackend {
       else { const mr = this.mirrors.get(m.id); if (mr) { mr.s.alive = false; mr.deadAt = performance.now(); if (m.cause !== 5) this.cb.onDeath(mr, m.by, m.cause); } }
       if (m.by && m.by === this.myId && m.id !== this.myId && m.cause !== 5) this.cb.onKill && this.cb.onKill(m.id);
     } else if (m.t === "pong") { const rtt = performance.now() - m.c; this.pings.push(rtt); if (this.pings.length > 10) this.pings.shift(); this.ping = Math.round(this.pings.reduce((a, b) => a + b, 0) / this.pings.length); this.stats.rtt.push(rtt); }
-    else if (m.t === "lb") { this.lb = m.lb; this.humans = m.humans; }
+    else if (m.t === "lb") { this.lb = m.lb; this.humans = m.humans; this.bt = m.bt || null; } // play2: bt = [crown bounty snake id, value]
+    else if (m.t === "mut") { this.mut = MUT = m.k || ""; this.cb.onMut && this.cb.onMut(this.mut); }
+    else if (m.t === "bty") { this.cb.onBounty && this.cb.onBounty(m); }
     else if (m.t === "uid") { const mr = this.mirrors.get(m.id); if (mr && /^\d{1,7}$/.test(m.u || "")) mr.s.uid = m.u; } // srv1
     else if (m.t === "myid") { this.myUid = m.u; }
     else if (m.t === "ban") { this.banned = m.u || 1; }

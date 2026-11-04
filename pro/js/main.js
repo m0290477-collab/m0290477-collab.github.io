@@ -1,14 +1,15 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=admin2";
-import { Store, KV } from "./store.js?v=admin2";
-import { setLang, applyI18n, t } from "./i18n.js?v=admin2";
-import { Audio, haptic } from "./audio.js?v=admin2";
-import { Input } from "./input.js?v=admin2";
-import { Game } from "./game.js?v=admin2";
-import { UI, Hud } from "./ui.js?v=admin2";
-import { Renderer2D } from "./render2d.js?v=admin2";
-import { startWatchdog, watchCanvas } from "./watchdog.js?v=admin2"; // perf2 guardian
+import { guard } from "./guard.js?v=play2";
+import { Store, KV } from "./store.js?v=play2";
+import { setLang, applyI18n, t } from "./i18n.js?v=play2";
+import { Audio, haptic } from "./audio.js?v=play2";
+import { Input } from "./input.js?v=play2";
+import { Game } from "./game.js?v=play2";
+import { UI, Hud } from "./ui.js?v=play2";
+import { Renderer2D } from "./render2d.js?v=play2";
+import { startWatchdog, watchCanvas } from "./watchdog.js?v=play2"; // perf2 guardian
+import { applyIcon } from "./play2.js?v=play2"; try { applyIcon(); } catch (_) {} // play2: chosen home-screen icon (apple-touch-icon + manifest)
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -57,7 +58,7 @@ async function makeRenderer(kind, quality) {
   if (kind === "3d") watchCanvas(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=admin2");
+      const m = await import("./render3d.js?v=play2");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); /* fit1: iOS drops the GL context whenever the tab is backgrounded; only a loss that lasts 6 s while the page is VISIBLE means 3D is broken. A background loss used to end in a silent switch to 2D for the session. */ const arm = () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (document.hidden) return; if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 6000); }; if (document.hidden) document.addEventListener("visibilitychange", function v() { if (document.hidden) return; document.removeEventListener("visibilitychange", v); if (app.renderer && app.renderer.lost) arm(); }); else arm(); }, onRestored: () => { clearTimeout(app._lostT); /* fit1: rebuild 3D from scratch after a restore (meshes/textures/targets all fresh) instead of trusting a half-restored GL state */ setTimeout(() => { if (app.renderer && !app.renderer.is2D) app.switchRenderer("3d"); }, 50); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
@@ -88,7 +89,7 @@ app.applySetting = (k) => {
     case "showFps": $("h-fps").classList.toggle("x-hide", !s.showFps); break;
     case "minimap": $("h-mini").classList.toggle("x-hide", !s.minimap); break;
     case "res": case "postFx": case "juice": case "reduceMotion": case "calmFx": if (r) app.applyQuality(r.qName || (s.quality === "auto" ? autoStart() : s.quality)); H.classList.toggle("rm", s.reduceMotion); break;
-    case "ctrl": case "sens": case "left": app.input.configure(s); H.classList.toggle("lefty", s.left); break;
+    case "ctrl": case "sens": case "left": case "one": app.input.configure(s); H.classList.toggle("lefty", s.left); H.classList.toggle("one-thumb", !!s.one); break; // play2: one-thumb mode
     case "boostSize": $("boost").style.setProperty("--bs", s.boostSize); break;
     case "boostPos": $("boost").style.setProperty("--bp", s.boostPos); break;
     case "haptics": haptic.on = s.haptics; if (s.haptics && app.ready) haptic.tap(20); break;
@@ -98,7 +99,7 @@ app.applySetting = (k) => {
     case "lang": app.applyLang(); break;
   }
 };
-app.applyAll = () => { for (const k of ["showFps", "minimap", "postFx", "ctrl", "boostSize", "boostPos", "haptics", "vMaster", "cb", "bigText"]) app.applySetting(k); app.applyLang(); };
+app.applyAll = () => { for (const k of ["showFps", "minimap", "postFx", "ctrl", "one", "boostSize", "boostPos", "haptics", "vMaster", "cb", "bigText"]) app.applySetting(k); app.applyLang(); };
 
 async function boot() {
   bar(6);

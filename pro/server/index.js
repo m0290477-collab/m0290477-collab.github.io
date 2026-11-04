@@ -1,10 +1,10 @@
 // super-snake-online — Cloudflare Worker + Durable Object (one DO per room). No database, no payments, nothing stored.
 // The room runs the SAME sim.js as the client at 30 Hz and is authoritative for movement, food, mass, collisions and kills.
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
-import { periodId, Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP, EVENTS } from "./sim.js";
+import { periodId, Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP, EVENTS, MUTS, mutNow } from "./sim.js";
 import { DAY, LOGIN, LOGIN_NOCOS, SPIN, SPIN_NOCOS, spinPick, RANDOM_COS, SEASON, seasonReward, UNLOCKS, ACH_COINS, levelCoins, bonusCoins, dailyMissions, weeklyCoins, WC_REWARD, DAILY_MODE_BONUS,
-  leagueSeasonReward, CONQ_REWARD, rankReward, mileReward, CONTESTS, matchCoins, matchXp, plausible, OFF, ONLINE, catItem, validKey, offerCandidates, gtPrice, SHOP_TRAILS } from "./econ.js"; // coin1: shared economy tables
-import { SKINS, EYES, TRAILS } from "./skins.js";
+  leagueSeasonReward, CONQ_REWARD, rankReward, mileReward, CONTESTS, matchCoins, matchXp, plausible, OFF, ONLINE, catItem, validKey, offerCandidates, gtPrice, SHOP_TRAILS, BOUNTY, btyVal } from "./econ.js"; // coin1: shared economy tables
+import { SKINS, EYES, TRAILS, FLAG_PRICE, FLAG_PRICE0, setFlagPrice } from "./skins.js";
 // ---------- fix1: equipped cosmetics checked against the server wallet (own list + server level). Requirements mirror
 // js/profile.js (AVATARS / FRAMES; test/fix1s.test.mjs keeps them equal): number = level, "g" = granted only (must be owned),
 // 0 = free, "x" = achievement / stat / season (the server does not hold those: accepted).
@@ -29,7 +29,7 @@ export function verifySkin(sk, V) {
 export const XP = { MATCH: 4 * OFF.PER_MATCH, LIFE: 4 * ONLINE.PER_LIFE, DAY: 60000, SLACK: 3000, MIG_LV: 20 };
 export const cumXp = (L) => { let x = 0; for (let n = 1; n < Math.min(L, LV_MAX); n++) x += xpNeed(n); return x; };
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 11; // v11 (admin2): owner admin (coins/items/level/ids, announcement, gift-all, promo codes, maintenance, modes/events, prices, rooms + kick, chat delete, trophies, stats, backup now); warm rooms fast-forward; v10 (grow1): ids first seen after coin1 import 0 coins / level 1; challenge links (/c);  v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 12; // v12 (play2): crown bounty on #1 in public rooms, weekend mutators (owner override a_mut), offline claims refused for switched-off modes, flag price editable; v11 (admin2): owner admin (coins/items/level/ids, announcement, gift-all, promo codes, maintenance, modes/events, prices, rooms + kick, chat delete, trophies, stats, backup now); warm rooms fast-forward; v10 (grow1): ids first seen after coin1 import 0 coins / level 1; challenge links (/c);  v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 // look1: bots never share a look with any live snake (players included)
 const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
@@ -56,7 +56,8 @@ export const FF = { TICKS: 240, RESUME: 240 }; // 240 ticks = 8 s of world time 
 const PX0 = new Map(); // admin2: catalogue prices before any owner override
 export function applyPx(px) { px = px || {};
   for (const S of SKINS) { if (!S.src || !/^coins:/.test(S.src)) continue; if (!PX0.has(S.id)) PX0.set(S.id, +S.src.split(":")[1]); const v = px[S.id] | 0; S.src = "coins:" + (v > 0 ? v : PX0.get(S.id)); }
-  for (const G of SHOP_TRAILS) { if (!G.price) continue; const k = "gt:" + G.id; if (!PX0.has(k)) PX0.set(k, G.price | 0); const v = px[k] | 0; G.price = v > 0 ? v : PX0.get(k); } }
+  for (const G of SHOP_TRAILS) { if (!G.price) continue; const k = "gt:" + G.id; if (!PX0.has(k)) PX0.set(k, G.price | 0); const v = px[k] | 0; G.price = v > 0 ? v : PX0.get(k); }
+  if (!PX0.has("flags")) PX0.set("flags", FLAG_PRICE0); setFlagPrice(px.flags | 0); } // play2: one price for every flag
 export const pxBase = (k) => PX0.get(k);
 const SNAP_MAX = 64000, WARM_TICKS = 6, WARM_MASS = [24, 60, 140, 32, 220, 90, 420, 48, 170, 700, 36, 260, 110, 30, 520, 75, 1100, 40, 190, 330, 28, 130, 900, 55, 240, 26, 380, 66, 150, 1500]; // one profile snapshot (JSON text)
 export const LV_MAX = 100, xpNeed = (n) => Math.round(100 * n ** 1.6); // same curve as js/store.js
@@ -238,7 +239,7 @@ export class Room {
     this.noBots = params.get("bots") === "0" && !(params.get("name_room") || "").startsWith("pub-");
     this.room = params.get("name_room") || "pub-1"; const mb = /^pub-(bs|gp|dc|cq)-(\d{1,2})$/.exec(this.room); this.br = mb ? mb[1] : ""; this.bi = mb ? +mb[2] : 0; // srv2: bracket room
     this.sim = new Sim({ dt: TICK, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true, powerups: true, events: true, evtFirst: 35 });
-    this.sim.diff = 1; this.errs = this.errs || 0; this.t0 = Date.now();
+    this.sim.diff = 1; this.errs = this.errs || 0; this.t0 = Date.now(); this.mutOv = this.mutOv || "auto"; this.sim.mut = mutNow(this.mutOv, Date.now()); this.bty = null; // play2
     this.wOff = (Math.random() * WARM_MASS.length) | 0; this.fill(true); this.ffMs = this.warmUp(this.room.startsWith("pub-") ? FF.TICKS : WARM_TICKS); // admin2: warm start = aged spawn + headless fast-forward
     this.last = Date.now(); this.acc = 0;
   }
@@ -251,7 +252,17 @@ export class Room {
   // admin2: headless fast-forward (no humans, nothing sent): bots move, eat, die and respawn; returns the CPU ms it took
   warmUp(n) { const S = this.sim, t0 = performance.now(); for (let k = 0; k < n; k++) { S.step(() => true); S.drain(); if (k % 30 === 29) { for (const d of S.snakes.filter((x) => !x.alive)) S.removeSnake(d); this.fill(); } }
     S.drain(); for (const d of S.snakes.filter((x) => !x.alive)) S.removeSnake(d); this.fill(); S.drain(); return Math.round((performance.now() - t0) * 10) / 10; }
-  lbMsg() { const srt = this.sim.snakes.filter((s) => s.alive).sort((a, b2) => b2.m - a.m); return JSON.stringify({ t: "lb", lb: srt.slice(0, 10).map((s) => [s.id, Math.round(s.m), s.kills]), humans: [...this.clients].filter((c) => c.joined).length }); }
+  lbMsg() { const srt = this.sim.snakes.filter((s) => s.alive).sort((a, b2) => b2.m - a.m); return JSON.stringify({ t: "lb", lb: srt.slice(0, 10).map((s) => [s.id, Math.round(s.m), s.kills]), humans: [...this.clients].filter((c) => c.joined).length, bt: this.btyMsg() }); }
+  // play2: crown bounty = the #1 snake of a public room; grows with its time at #1; the human who kills it is paid by this room
+  btyTrack(top, now) { if (!this.ranked() || !top) { this.bty = null; return; } if (!this.bty || this.bty.id !== top.id) this.bty = { id: top.id, t0: now }; }
+  btyMsg() { const B = this.bty; return B ? [B.id, btyVal((Date.now() - B.t0) / 1000)] : null; }
+  btyKill(dead) { const B = this.bty; if (!B) return; const d = dead.find((x) => x[0] === B.id); if (!d) return; this.bty = null; const by = d[1]; if (!by || d[2] === 5) return;
+    const v = btyVal((Date.now() - B.t0) / 1000), c = [...this.clients].find((o) => o.snake && o.snake.id === by && o.pid); if (!c) return;
+    const body = JSON.stringify({ pid: c.pid, ck: ("on:bty:" + this.room + ":" + (this.t0 || 0) + ":" + B.id + ":" + by + ":" + this.sim.tick).slice(0, 93), bty: v });
+    try { this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/earn", { method: "POST", body }).then((r) => r.json()).then((r) => { if (r && r.ok && this.clients.has(c)) this.send(c, JSON.stringify({ t: "bty", c: r.c, v, bal: r.bal })); }).catch(() => {}); } catch (_) {} }
+  // play2: weekend rule (schedule + owner override), checked once a second; the owner override is re-read from social every 60 s while players are in
+  mutTick(now) { if (this.clients.size && now - (this.mutT || 0) > 60000) { this.mutT = now; try { this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/mu").then((r) => r.json()).then((r) => { if (r && typeof r.mu === "string") this.mutOv = r.mu; }).catch(() => {}); } catch (_) {} }
+    const k = mutNow(this.mutOv, now); if (k !== (this.sim.mut || "")) { this.sim.mut = k; this.bcast(JSON.stringify({ t: "mut", k })); } }
   // srv2: the room tells the matchmaker who is here (on join / leave and every 30 s while players are in). No alarms: an empty room costs nothing.
   hb(force) { const now = Date.now(); if (!this.room.startsWith("pub-") || (!force && now - (this.hbT || 0) < MM_CFG.HB_MS)) return; this.hbT = now;
     const h = [...this.clients].filter((c) => c.joined).length, b = this.sim ? this.sim.snakes.filter((s) => s.alive && s.bot).length : 0;
@@ -329,7 +340,7 @@ export class Room {
       if (!c.pidP && typeof m.pk === "string") c.pidP = pidOf(m.pk).then(async (dp) => { if (!dp) return; c.dp = dp; const u = await this.uidOf(c, 1); this.verC(c, u); c.verDone = 1; c.pid = (u && u.cp) || dp; if (!this.clients.has(c) || c.banned) return; if (!this.ranked()) return; try { const r = await (await this.boardStub().fetch("https://board/b/get?pid=" + c.pid)).json(); if (r && Number.isFinite(r.tr)) { c.tr = r.tr; if (c.snake) c.snake.tr = r.tr; this.send(c, JSON.stringify({ t: "tro0", tr: r.tr, ss: r.ss })); } } catch (_) {} }).catch(() => {}).finally(() => { if (!c.verDone) { c.verDone = 1; this.verC(c, null); } });
       else if (!c.pidP) { c.verDone = 1; this.verC(c, null); } // no device key: nothing owned on the server
       const hs = [...this.clients].filter((o) => o.joined).length;
-      this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, br: this.br, bi: this.bi, h: hs, b: this.sim.snakes.filter((s) => s.alive && s.bot).length, tick: this.sim.tick, dt: TICK, R: this.sim.R, snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
+      this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, br: this.br, bi: this.bi, h: hs, b: this.sim.snakes.filter((s) => s.alive && s.bot).length, tick: this.sim.tick, dt: TICK, R: this.sim.R, mu: this.sim.mut || "", snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
       this.hb(true);
       this.send(c, this.foodFull()); this.send(c, this.lbMsg()); // admin2: leaderboard at once
       this.send(c, JSON.stringify({ t: "pus", l: this.sim.pus.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
@@ -364,7 +375,7 @@ export class Room {
   uidOf(c, w) { return this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + c.dp + (w ? "&w=1" : "")).then((r) => r.json()).then((r) => { if (!r || !/^\d{1,7}$/.test(r.id || "")) return r;
     if (r.ban) { c.banned = 1; this.send(c, JSON.stringify({ t: "ban", u: r.ban })); if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4); try { c.ws.close(4003, "banned"); } catch (_) {} return r; }
     if (r.mt) { this.send(c, JSON.stringify({ t: "kick", k: r.mt.k, m: r.mt.m || "" })); if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4); try { c.ws.close(4011, r.mt.k); } catch (_) {} return r; } // admin2: maintenance / online switched off (owner exempt)
-    if (Array.isArray(r.evo)) this.sim.events = EVENTS.filter((k) => !r.evo.includes(k)); // admin2: events the owner switched off
+    if (Array.isArray(r.evo)) this.sim.events = EVENTS.filter((k) => !r.evo.includes(k)); if (typeof r.mu === "string" && r.mu !== this.mutOv) { this.mutOv = r.mu; this.mutTick(Date.now()); } // play2 // admin2: events the owner switched off
     c.mute = r.mute || 0; c.uid = r.id; if (r.nm) { c.name = cleanName(r.nm); if (c.snake) c.snake.name = c.name; }
     const s = c.snake; if (s && s.alive && s.uid !== r.id) { s.uid = r.id; this.bcast(JSON.stringify({ t: "uid", id: s.id, u: r.id })); } this.send(c, JSON.stringify({ t: "myid", u: r.id })); return r; }).catch(() => null); }
   // ---------- comp1: trophies (server-decided), board object (leaderboards, weekly/monthly contests, monthly seasons) ----------
@@ -509,7 +520,7 @@ export class Room {
   cfgGet(k) { return this.cfgAll()[k]; }
   cfgSet(k, v) { const q = this.sdb(); if (v == null) q.exec("DELETE FROM cfg WHERE k = ?", k); else q.exec("INSERT OR REPLACE INTO cfg (k, v) VALUES (?, ?)", k, JSON.stringify(v)); this._cfg = null; if (k === "px") this.cfgApply(); }
   cfgApply() { applyPx(this.cfgGet("px") || {}); } // price overrides edit the shared catalogue, so catItem / offers price from them
-  cfgPub() { const c = this.cfgAll(), now = Date.now(), a = c.ann && c.ann.tx && c.ann.exp > now ? c.ann : null; return { ann: a, mnt: c.mnt && c.mnt.on ? { on: 1, msg: c.mnt.msg || "" } : null, moff: c.moff || [], eoff: c.eoff || [], px: c.px || {} }; }
+  cfgPub() { const c = this.cfgAll(), now = Date.now(), a = c.ann && c.ann.tx && c.ann.exp > now ? c.ann : null; return { ann: a, mnt: c.mnt && c.mnt.on ? { on: 1, msg: c.mnt.msg || "" } : null, moff: c.moff || [], eoff: c.eoff || [], px: c.px || {}, mut: MUTS.includes(c.mut) || c.mut === "off" ? c.mut : "auto" }; }
   sPushAll(o) { let ws = []; try { ws = this.state.getWebSockets(); } catch (_) {} const s = JSON.stringify({ t: "ev", ...o }); let n = 0; for (const w of ws) try { w.send(s); n++; } catch (_) {} return n; }
   giftClaim(cp) { const q = this.sdb(), now = Date.now(), a = this.srow(cp); if (!a) return 0; let n = 0;
     for (const g of q.exec("SELECT * FROM gift WHERE exp > ? AND t > ? ORDER BY id", now, a.t || 0).toArray()) { if (q.exec("SELECT gid FROM gcl WHERE gid = ? AND pid = ?", g.id, cp).toArray().length) continue;
@@ -699,6 +710,7 @@ export class Room {
     else if (k === "match") { // offline / bot match: possible for the time played, no overlap with the previous one, capped per match and per day
       // a.at = when it ended on the device clock; ctx.skew moves it onto the server clock (the device sends its "now" with the batch)
       const at = Math.floor(+a.at || 0) + ((ctx && ctx.skew) | 0); if (!/^m:[0-9a-f]{8,24}$/.test(ck) || !(at > now - 3 * DAY && at < now + 60000)) return bad;
+      { const mo = this.cfgGet("moff") || [], am = String(a.mode || ""); if (am && mo.includes(am) && !(this.srow(cp) || {}).own) return { ck, err: "off" }; } // play2: switched-off mode earns nothing (owner exempt)
       const P = plausible(a), td = utcDay(at), used = W.fd === td ? W.fe | 0 : 0, start = at - Math.min(OFF.MAX_S, Math.max(0, +a.dur || 0)) * 1000; let cut = P.cut.slice(); c = P.c;
       if (start < (Number(W.mat) || 0) - 30000) { c = 0; cut.push("overlap"); } if (c > OFF.PER_DAY - used) { c = Math.max(0, OFF.PER_DAY - used); cut.push("day"); }
       set = ["mat = MAX(mat, ?), fd = ?, fe = ?", at, td, used + c]; if (cut.length) note = { cut, full: P.full, got: c }; }
@@ -746,9 +758,11 @@ export class Room {
   // coin1: an online life seen by a game room -> its coins (same formula as the device, capped per life and per day)
   wEarn(B) { const cp = String(B.pid || ""), ck = String(B.ck || ""), now = Date.now(); if (!/^[0-9a-f]{20}$/.test(cp) || !/^on:[a-z0-9:-]{6,90}$/.test(ck)) return { err: "bad" };
     const q = this.sdb(), W = q.exec("SELECT * FROM wal WHERE pid = ?", cp).toArray()[0]; if (!W || !W.mig) return { err: "mig" }; if (this.wClaimed(cp, ck)) return { dup: 1 };
-    let c = Math.min(ONLINE.PER_LIFE, matchCoins({ mode: "online", diff: 1, best: Math.max(0, Math.min(1e6, +B.best || 0)), kills: Math.max(0, Math.min(60, B.kills | 0)), dur: Math.max(0, Math.min(7200, +B.dur || 0)) }));
+    const bty = B.bty ? Math.max(0, Math.min(BOUNTY.MAX, B.bty | 0)) : 0; // play2: crown bounty (no XP), same daily online cap
+    let c = bty || Math.min(ONLINE.PER_LIFE, matchCoins({ mode: "online", diff: 1, best: Math.max(0, Math.min(1e6, +B.best || 0)), kills: Math.max(0, Math.min(60, B.kills | 0)), dur: Math.max(0, Math.min(7200, +B.dur || 0)) }));
     const td = utcDay(now), used = W.od === td ? W.oe | 0 : 0; let note = null; if (c > ONLINE.PER_DAY - used) { note = { cut: ["day"], full: c }; c = Math.max(0, ONLINE.PER_DAY - used); }
-    q.exec("UPDATE wal SET od = ?, oe = ? WHERE pid = ?", td, used + c, cp); this.wMark(cp, ck); this.wAdd(cp, c, "online", ck, note);
+    q.exec("UPDATE wal SET od = ?, oe = ? WHERE pid = ?", td, used + c, cp); this.wMark(cp, ck); this.wAdd(cp, c, bty ? "bounty" : "online", ck, note);
+    if (bty) { const bal = q.exec("SELECT bal FROM wal WHERE pid = ?", cp).one().bal; this.sPush(cp, { k: "wal", bal, e: { k: "bounty", c } }); return { ok: 1, c, bal, bty: 1 }; }
     const dur = Math.max(0, Math.min(7200, +B.dur || 0)); this.wXp(cp, dur < OFF.MIN_S ? 0 : Math.min(XP.LIFE, matchXp({ mode: "online", diff: 1, best: Math.max(0, Math.min(1e6, +B.best || 0)), kills: Math.max(0, Math.min(60, B.kills | 0)), dur })), "online"); // fix1
     const bal = q.exec("SELECT bal FROM wal WHERE pid = ?", cp).one().bal; this.sPush(cp, { k: "wal", bal, e: { k: "online", c } }); return { ok: 1, c, bal }; }
   // srv2: the device id (dp) a request came from -> the account's canonical player id. Every social row is keyed by the canonical
@@ -905,7 +919,7 @@ export class Room {
       const days = []; for (let i = 6; i >= 0; i--) { const d = utcDay(now - i * 86400000), d0 = Date.parse(d + "T00:00:00Z"); let act = q.exec("SELECT COUNT(*) AS n FROM dau WHERE d = ?", d).one().n; if (i === 0) act = Math.max(act, q.exec("SELECT COUNT(*) AS n FROM acct WHERE seen >= ?", d0).one().n);
         days.push({ d, act, nw: q.exec("SELECT COUNT(*) AS n FROM acct WHERE t >= ? AND t < ?", d0, d0 + 86400000).one().n }); }
       return { online: on.size, today: days[6].act, nw: days[6].nw, days, players: q.exec("SELECT COUNT(*) AS n FROM acct").one().n, at: now }; }
-    if (op === "a_cfg") return { cfg: this.cfgPub(), raw: { ann: this.cfgGet("ann") || null, mnt: this.cfgGet("mnt") || null }, modes: ADM_MODES, events: EVENTS, prices: [...SKINS.filter((x) => x.src && /^coins:/.test(x.src)).map((x) => ({ k: x.id, p: +x.src.split(":")[1], b: pxBase(x.id) })), ...SHOP_TRAILS.filter((g) => g.price).map((g) => ({ k: "gt:" + g.id, p: g.price, b: pxBase("gt:" + g.id) }))],
+    if (op === "a_cfg") return { cfg: this.cfgPub(), raw: { ann: this.cfgGet("ann") || null, mnt: this.cfgGet("mnt") || null }, modes: ADM_MODES, events: EVENTS, prices: [...SKINS.filter((x) => x.src && /^coins:/.test(x.src)).map((x) => ({ k: x.id, p: +x.src.split(":")[1], b: pxBase(x.id) })), { k: "flags", p: FLAG_PRICE, b: pxBase("flags") }, ...SHOP_TRAILS.filter((g) => g.price).map((g) => ({ k: "gt:" + g.id, p: g.price, b: pxBase("gt:" + g.id) }))],
       gifts: q.exec("SELECT id, coins, items, why, exp, t, n FROM gift ORDER BY id DESC LIMIT 10").toArray(), promos: q.exec("SELECT code, coins, items, max, used, exp, off, t FROM promo ORDER BY t DESC LIMIT 30").toArray() };
     if (op === "a_rooms") { let mm = null; try { mm = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(MM)).fetch("https://mm/m/list")).json(); } catch (_) {}
       const rooms = ((mm && mm.rooms) || []).slice(0, 24), out = await Promise.all(rooms.map(async (r) => { let d = null; try { d = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(r.room)).fetch("https://room/r/info")).json(); } catch (_) {} return { ...r, mode: "online", info: d }; }));
@@ -919,6 +933,7 @@ export class Room {
       log("maint", "", { on, kicked }); return { ok: 1, on, kicked }; }
     if (op === "a_modes") { const mo = (Array.isArray(m.moff) ? m.moff : []).map(String).filter((x) => ADM_MODES.includes(x)), eo = (Array.isArray(m.eoff) ? m.eoff : []).map(String).filter((x) => EVENTS.includes(x));
       this.cfgSet("moff", mo); this.cfgSet("eoff", eo); this.sPushAll({ k: "cfg", cfg: this.cfgPub() }); log("modes", "", { moff: mo, eoff: eo }); return { ok: 1, moff: mo, eoff: eo }; }
+    if (op === "a_mut") { const k = String(m.k || "auto"); if (k !== "auto" && k !== "off" && !MUTS.includes(k)) return { err: "bad" }; this.cfgSet("mut", k); this.sPushAll({ k: "cfg", cfg: this.cfgPub() }); log("mut", "", { k }); return { ok: 1, mut: k }; } // play2: weekend rule override
     if (op === "a_price") { const k = String(m.key || ""), p = Math.floor(+m.price || 0); if (pxBase(k) == null) return { err: "na" }; if (p < 0 || p > 1000000) return { err: "bad" }; const px = { ...(this.cfgGet("px") || {}) };
       if (p && p !== pxBase(k)) px[k] = p; else delete px[k]; this.cfgSet("px", px); this.sPushAll({ k: "cfg", cfg: this.cfgPub() }); log("price", "", { k, p: p || pxBase(k), was: pxBase(k) }); return { ok: 1, px }; }
     if (op === "a_gift") { const coins = Math.max(0, Math.min(100000, Math.floor(+m.coins || 0))), d = Math.max(1, Math.min(60, m.days | 0 || 7)); if (!coins && !items.length) return { err: "empty" };
@@ -971,8 +986,9 @@ export class Room {
   async socialHttp(req, url) {
     if (url.pathname === "/s/uid") { const dp = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(dp)) return J({ err: "pid" }, 400); // internal: room / matchmaker -> social
       try { const cp = this.canon(dp), a = this.sAcct(cp); const o = { id: a.vis, cp, ban: this.banOf(cp, dp), mute: this.muteOf(cp), nm: a.nr ? a.name : "" }; const mt = this.cfgGet("mnt"), mo = this.cfgGet("moff") || [];
-        if (!a.own && mt && mt.on) o.mt = { k: "maint", m: mt.msg || "" }; else if (!a.own && mo.includes("online")) o.mt = { k: "off", m: "" }; o.evo = this.cfgGet("eoff") || [];
+        if (!a.own && mt && mt.on) o.mt = { k: "maint", m: mt.msg || "" }; else if (!a.own && mo.includes("online")) o.mt = { k: "off", m: "" }; o.evo = this.cfgGet("eoff") || []; o.mu = this.cfgPub().mut; // play2
         if (url.searchParams.get("w")) { const W = this.sdb().exec("SELECT * FROM wal WHERE pid = ?", cp).toArray()[0]; o.w = { own: this.wOwn(cp), lv: W ? lvOf(this.wSx(cp, W)) : 1, o: a.own ? 1 : 0 }; } return J(o); } catch (e) { return J({ err: "server" }, 500); } }
+    if (url.pathname === "/s/mu") return J({ mu: this.cfgPub().mut, evo: this.cfgGet("eoff") || [] }); // play2: internal room -> social (weekend rule override)
     if (url.pathname === "/s/earn") { let E = {}; try { E = JSON.parse(await req.text()) || {}; } catch (_) {} try { return J(this.wEarn(E)); } catch (e) { this.serr = (this.serr | 0) + 1; return J({ err: "server" }, 500); } } // internal: room -> social (online coins)
     let B = {}; try { B = JSON.parse((await req.text()).slice(0, S_MAX)) || {}; } catch (_) {}
     const pid = await pidOf(String(B.pk || "")); if (!pid) return J({ err: "pk" }, 400); delete B._v; if (B.op === "snap") return J({ err: "use_a" }); return J(await this.sOp(pid, B));
@@ -1044,6 +1060,7 @@ export class Room {
     const dead = []; for (let i = 0; i < S.evDie.length; i += 3) dead.push([S.evDie[i], S.evDie[i + 1], S.evDie[i + 2]]);
     for (const id of S.evNew) { const s = S.byId.get(id); if (s && s.alive) this.bcast(JSON.stringify({ t: "sn", ...this.snakeMsg(s) })); }
     for (const [id, by, cause] of dead) this.bcast(JSON.stringify({ t: "dead", id, by, cause }));
+    if (dead.length) this.btyKill(dead); // play2
     if (dead.length) for (const c of this.clients) if (c.snake && !c.snake.alive && c.life && !c.life.done && dead.some((d) => d[0] === c.snake.id)) this.score(c, c.snake);
     if (S.evPuNew.length) this.bcast(JSON.stringify({ t: "pu+", l: S.evPuNew.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
     if (S.evPu.length) { const l = []; for (let i = 0; i < S.evPu.length; i += 3) l.push([S.evPu[i].id, S.evPu[i + 1], S.evPu[i].k, S.evPu[i + 2] || []]); this.bcast(JSON.stringify({ t: "pu-", l })); }
@@ -1073,7 +1090,8 @@ export class Room {
       this.fill();
       const srt = alive.slice().sort((a, b2) => b2.m - a.m), lb = srt.slice(0, 10).map((s) => [s.id, Math.round(s.m), s.kills]);
       for (const c of this.clients) { const L = c.life, s = c.snake; if (!L || L.done || !s || !s.alive) continue; const r = srt.indexOf(s) + 1; if (r > 0 && r < L.best) L.best = r; if (srt.length > L.field) L.field = srt.length; if (s.m > L.bm) L.bm = s.m; }
-      this.bcast(JSON.stringify({ t: "lb", lb, humans: [...this.clients].filter((c) => c.joined).length }));
+      this.btyTrack(srt[0], Date.now()); this.mutTick(Date.now()); // play2
+      this.bcast(JSON.stringify({ t: "lb", lb, humans: [...this.clients].filter((c) => c.joined).length, bt: this.btyMsg() }));
     }
   }
 }

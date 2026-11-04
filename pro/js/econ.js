@@ -1,9 +1,9 @@
 // coin1: the coin economy's single source of truth, shared by the game (display, optimistic amounts) and the worker (the
 // wallet decides). Pure data + rules: no DOM, no storage. The server never takes an amount from the client: it recomputes
 // every reward from these tables and every price from the catalogue (and this week's offers) before it moves a coin.
-import { SKINS, FLAGS, FLAG_PRICE, GTRAILS } from "./skins.js?v=admin2";
-import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=admin2";
-import { CONTESTS } from "./sim.js?v=admin2";
+import { SKINS, FLAGS, FLAG_PRICE, GTRAILS } from "./skins.js?v=play2";
+import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=play2";
+import { CONTESTS } from "./sim.js?v=play2";
 
 export const DAY = 86400000;
 // ---------- daily login calendar + lucky wheel (were in profile.js) ----------
@@ -72,6 +72,9 @@ export function plausible(a) {
   return { c, cut, full: matchCoins({ ...a, dur }), o }; // fix1: o = the clamped numbers (server XP uses them)
 }
 export const ONLINE = { PER_LIFE: 800, PER_DAY: 30000 };
+// play2: crown bounty on the #1 snake of a public online room (paid by the room to the human who kills it; counts in ONLINE.PER_DAY)
+export const BOUNTY = { BASE: 25, STEP: 5, EVERY: 10, MAX: 250 };
+export const btyVal = (sec) => Math.min(BOUNTY.MAX, BOUNTY.BASE + Math.floor(Math.max(0, sec) / BOUNTY.EVERY) * BOUNTY.STEP);
 // ---------- shop catalogue: what each item key costs at full price ----------
 // item keys: skin id ("phoenix"), "fl:<flag index>", "gt:<trail id>", cosmetics "av:/fr:/ti:/bn:/bd:", special ids "sid:<n>"
 export const SHOP_TRAILS = GTRAILS; // admin2: the priced ground-trail list (owner price overrides edit it)

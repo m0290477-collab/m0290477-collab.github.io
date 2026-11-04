@@ -2,7 +2,7 @@
 // name tag). Regular 7-digit ids stay plain. Tiers: id 1 = owner (red-gold + crown badge), repeated 5-digit (77777) = gold +
 // crown, sequential (12345) = violet + star, other 5-digit = teal + diamond. HTML uses a static gradient; a slow shimmer runs
 // only when neither calm mode nor reduced motion is on (CSS). Canvas name tags (2D + 3D) use the same gradient, static.
-import { idKind } from "./sim.js?v=admin2";
+import { idKind } from "./sim.js?v=play2";
 export function pidTier(id) { id = String(id ?? ""); if (id === "1") return "own"; const k = idKind(id); return k === "rep" ? "rep" : k === "seq" ? "seq" : k ? "std" : ""; }
 const SV = (d) => `<svg class="pid-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
 const CROWN = SV("M3 18h18l-1.6-9.5-4.9 4.2L12 5l-2.5 7.7-4.9-4.2Z"), STAR = SV("M12 3.2l2.6 5.6 6.1.7-4.5 4.1 1.2 6.1L12 16.8l-5.4 2.9 1.2-6.1-4.5-4.1 6.1-.7Z"), DIAM = SV("M7 4h10l4 5-9 11L3 9Z");

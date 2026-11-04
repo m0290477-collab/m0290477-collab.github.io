@@ -1636,3 +1636,18 @@ html:not(.calm):not(.rm) .mm-find.busy .mmf-dot { animation: mmfP 1.6s ease-in-o
 .a2-cats { flex-wrap: wrap; } .a2-cats button { min-height: 44px; } .a2-chk { display: flex; align-items: center; gap: .5rem; min-height: 44px; }
 #ad-tabs button { min-height: 44px; min-width: 44px; } .ad-sm { min-height: 44px; } .a2-px td, .a2-px th { padding: 0.2rem 0.4rem; }
 @media (max-height: 460px) { #ad-tabs button { padding: 0 0.55rem; font-size: 0.8rem; } .ann-bar { top: 4px; } }
+/* ---------- play2: weekend rule pill (lobby, centre column), home-screen icon picker, crown bounty, one-thumb ---------- */
+.mut-pill { pointer-events: auto; display: flex; align-items: center; gap: 0.5rem; max-width: min(22rem, 100%); padding: 0.3rem 0.75rem 0.3rem 0.5rem; border-radius: 0.875rem; border-color: rgba(120, 220, 160, 0.4); color: #e8fff0; }
+.mut-pill.live { border-color: rgba(255, 205, 96, 0.6); color: #ffe7a8; }
+.mut-pill .mi { font-size: 1.25rem; line-height: 1; flex: none; }
+.mut-pill .mt { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.mut-pill .mt b { font-size: 0.8rem; font-weight: 700; }
+.mut-pill .mt small { font-size: 0.68rem; opacity: 0.85; overflow-wrap: anywhere; }
+.p2-ics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+.p2-icb { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; min-height: 44px; padding: 0.5rem 0.25rem; border-radius: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: inherit; font: inherit; cursor: pointer; }
+.p2-icb img { width: 3.5rem; height: 3.5rem; border-radius: 0.875rem; }
+.p2-icb b { font-size: 0.8rem; } .p2-icb small { font-size: 0.68rem; opacity: 0.8; text-align: center; }
+.p2-icb.on { border-color: rgba(255, 205, 96, 0.8); background: rgba(255, 205, 96, 0.12); }
+.p2-icb.lock img { filter: grayscale(1) brightness(0.55); }
+#h-lb .bty { font-style: normal; color: #ffd23a; font-weight: 700; }
+html.one-thumb.touch #boost { display: none; }

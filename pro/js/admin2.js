@@ -1,22 +1,23 @@
 // admin2: owner admin (ID 1 only; every action is checked again on the server and written to the audit log) + the player side of
 // the owner config: announcement banner, maintenance / switched-off modes, price overrides, promo codes, owner wallet edits.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=admin2";
-import { SKINS, FLAGS, GTRAILS } from "./skins.js?v=admin2";
-import { AVATARS, FRAMES, TITLES, BANNERS } from "./profile.js?v=admin2";
-import { pidHtml } from "./pid.js?v=admin2";
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=play2";
+import { SKINS, FLAGS, GTRAILS, setFlagPrice } from "./skins.js?v=play2"; import { MUTS, mutNow } from "./sim.js?v=play2"; // play2
+import { AVATARS, FRAMES, TITLES, BANNERS } from "./profile.js?v=play2";
+import { pidHtml } from "./pid.js?v=play2";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-export const CF = { cfg: { ann: null, mnt: null, moff: [], eoff: [], px: {} }, ui: null, own: false };
+export const CF = { cfg: { ann: null, mnt: null, moff: [], eoff: [], px: {}, mut: "auto" }, ui: null, own: false };
 
 // ---------- price overrides: the same catalogue edit the server makes (so every price shown matches what the server charges) ----------
 const PX0 = new Map();
 function applyPx(px) { px = px || {};
   for (const S of SKINS) { if (!S.src || !/^coins:/.test(S.src)) continue; if (!PX0.has(S.id)) PX0.set(S.id, +S.src.split(":")[1]); const v = px[S.id] | 0; S.src = "coins:" + (v > 0 ? v : PX0.get(S.id)); }
-  for (const G of GTRAILS) { if (!G.price) continue; const k = "gt:" + G.id; if (!PX0.has(k)) PX0.set(k, G.price | 0); const v = px[k] | 0; G.price = v > 0 ? v : PX0.get(k); } }
+  for (const G of GTRAILS) { if (!G.price) continue; const k = "gt:" + G.id; if (!PX0.has(k)) PX0.set(k, G.price | 0); const v = px[k] | 0; G.price = v > 0 ? v : PX0.get(k); }
+  setFlagPrice(px.flags | 0); } // play2: one owner price for every flag
 
-export function setCfg(c, own) { if (!c) return; CF.cfg = { ann: c.ann || null, mnt: c.mnt || null, moff: c.moff || [], eoff: c.eoff || [], px: c.px || {} }; if (own !== undefined) CF.own = !!own; applyPx(CF.cfg.px);
-  const ui = CF.ui; if (ui && ui.cur === "lobby") { try { ui.renderLobby(); } catch (_) {} } annBar(); }
+export function setCfg(c, own) { if (!c) return; CF.cfg = { ann: c.ann || null, mnt: c.mnt || null, moff: c.moff || [], eoff: c.eoff || [], px: c.px || {}, mut: c.mut || "auto" }; if (own !== undefined) CF.own = !!own; applyPx(CF.cfg.px);
+  const ui = CF.ui; if (ui && ui.cur === "lobby") { try { ui.renderLobby(); } catch (_) {} } annBar(); try { CF.mutBar && CF.mutBar(); } catch (_) {} }
 export const modeOff = (m) => !CF.own && (CF.cfg.moff || []).includes(m);
 export function onlineBlock() { if (CF.own) return ""; const c = CF.cfg; if (c.mnt && c.mnt.on) return t("a2_maintOn") + (c.mnt.msg ? " — " + c.mnt.msg : ""); if ((c.moff || []).includes("online")) return t("a2_modeOff"); return ""; }
 // announcement banner (top of the lobby; closing it hides that one announcement on this device)
@@ -48,13 +49,14 @@ export function liveHtml(adm) { const C = A2.cfg, R = A2.rooms; if (!C) adm("a_c
     <div class="pv-card"><div class="pv-h">🛠 ${t("a2_maint")}</div><p class="fine">${mnt.on ? `<em class="ad-bad">${t("a2_maintOn")}</em> ${esc(mnt.msg || "")}` : `<span class="ad-good">${t("a2_maintOff")}</span>`}</p><div class="ac-btns">${mnt.on ? `<button class="btn ac-b" data-a2="mntoff">${t("a2_mntStop")}</button>` : `<button class="btn ac-b danger" data-a2="mnton">${t("a2_mntStart")}</button>`}</div></div></div>
     <div class="pv-card"><div class="pv-h">🎮 ${t("a2_modes")}</div><div class="a2-chips">${C.modes.map((m) => `<button class="a2-chip ${cf.moff.includes(m) ? "off" : "on"}" data-mo="${m}" aria-pressed="${!cf.moff.includes(m)}">${esc(t("m_" + m))}</button>`).join("")}</div>
       <div class="pv-lab">${t("a2_events")}</div><div class="a2-chips">${C.events.map((k) => `<button class="a2-chip ${cf.eoff.includes(k) ? "off" : "on"}" data-ev="${k}" aria-pressed="${!cf.eoff.includes(k)}">${esc(t("a2_ev_" + k))}</button>`).join("")}</div></div>
+    <div class="pv-card"><div class="pv-h">✨ ${t("a2_mut")}</div><p class="fine">${t("a2_mutNowIs")}: <b>${(() => { const k = mutNow(cf.mut || "auto", Date.now()); return k ? esc(t("p2_mut_" + k)) : esc(t("a2_mutOff")); })()}</b></p><div class="a2-chips">${["auto", "off", ...MUTS].map((k) => `<button class="a2-chip ${(cf.mut || "auto") === k ? "on" : "pick"}" data-mut="${k}" aria-pressed="${(cf.mut || "auto") === k}">${esc(k === "auto" ? t("a2_mutAuto") : k === "off" ? t("a2_mutOff") : t("p2_mut_" + k))}</button>`).join("")}</div></div>
     <div class="pv-card"><div class="pv-h">🏟 ${t("a2_rooms")} · ${rooms.length}<button class="btn ac-b ad-sm" data-a2="rref">${t("ad_refresh")}</button></div>${rooms.length ? rooms.map((r) => `<div class="a2-room"><b>${esc(r.room)}</b> <small class="fine">${esc(t("a2_online"))}${r.br ? " · " + esc(t("br_" + r.br)) : ""} · 👤 ${r.info.h} · 🤖 ${r.info.b}</small>
       ${r.info.pl.map((p) => `<div class="a2-pl"><span dir="auto">${esc(p.n)} ${p.u ? pidHtml(p.u) : ""} <small class="fine">◉ ${fmtNum(p.m)}</small></span>${p.u && p.u !== "1" ? `<button class="btn ac-b danger ad-sm" data-kick="${esc(r.room)}|${esc(p.u)}|${esc(p.n)}">${t("a2_kick")}</button>` : ""}</div>`).join("")}</div>`).join("") : `<p class="fine">${t("ad_noRooms")}</p>`}</div>`; }
 export function ecoHtml(adm) { const C = A2.cfg; if (!C) { adm("a_cfg").then((r) => { A2.cfg = r || { err: "offline" }; CF.rer && CF.rer(); }); return `<p class="fine">${t("loading")}…</p>`; } if (C.err) return `<p class="so-err">${esc(C.err)}</p>`;
   const it = (s) => { const a = (() => { try { return JSON.parse(s || "[]"); } catch (_) { return []; } })(); return a.length ? " + " + a.map(esc).join(", ") : ""; };
   return `<div class="pv-g2"><div class="pv-card"><div class="pv-h">🎁 ${t("a2_gift")}<button class="btn gold ac-b ad-sm" data-a2="gift">${t("a2_new1")}</button></div>${C.gifts.length ? C.gifts.map((g) => `<p class="fine">#${g.id} ◆${fmtNum(g.coins)}${it(g.items)} · ${t("a2_claimed")} ${fmtNum(g.n)} · ${g.exp > Date.now() ? t("a2_until") + " " + esc(fmtT(g.exp)) : t("a2_ended")}<br><span dir="auto">${esc(g.why)}</span></p>`).join("") : `<p class="fine">${t("a2_none")}</p>`}</div>
     <div class="pv-card"><div class="pv-h">🏷 ${t("a2_promo")}<button class="btn gold ac-b ad-sm" data-a2="promo">${t("a2_new1")}</button></div>${C.promos.length ? `<table class="lb ad-tb"><tr><th>${t("a2_code")}</th><th>${t("a2_reward")}</th><th>${t("a2_uses")}</th><th></th></tr>` + C.promos.map((p) => `<tr class="${p.off || p.exp < Date.now() ? "dim" : ""}"><td dir="ltr"><b>${esc(p.code)}</b></td><td>◆${fmtNum(p.coins)}${it(p.items)}</td><td>${p.used}/${p.max}</td><td>${p.off ? t("a2_off") : p.exp < Date.now() ? t("a2_ended") : `<button class="btn ac-b ad-sm" data-poff="${esc(p.code)}">${t("a2_disable")}</button>`}</td></tr>`).join("") + `</table>` : `<p class="fine">${t("a2_none")}</p>`}</div></div>
-    <div class="pv-card"><div class="pv-h">🛒 ${t("a2_prices")}</div><table class="lb ad-tb a2-px"><tr><th>${t("a2_item")}</th><th>${t("a2_base")}</th><th>${t("a2_now")}</th><th></th></tr>${C.prices.map((p) => `<tr><td dir="ltr">${esc(p.k)}</td><td>◆${fmtNum(p.b)}</td><td class="${p.p !== p.b ? "g" : ""}">◆${fmtNum(p.p)}</td><td><button class="btn ac-b ad-sm" data-px="${esc(p.k)}|${p.p}|${p.b}">${t("a2_edit")}</button></td></tr>`).join("")}</table></div>`; }
+    <div class="pv-card"><div class="pv-h">🛒 ${t("a2_prices")}</div><table class="lb ad-tb a2-px"><tr><th>${t("a2_item")}</th><th>${t("a2_base")}</th><th>${t("a2_now")}</th><th></th></tr>${C.prices.map((p) => `<tr><td dir="ltr">${p.k === "flags" ? "🏳 " + esc(t("a2_flags")) : esc(p.k)}</td><td>◆${fmtNum(p.b)}</td><td class="${p.p !== p.b ? "g" : ""}">◆${fmtNum(p.p)}</td><td><button class="btn ac-b ad-sm" data-px="${esc(p.k)}|${p.p}|${p.b}">${t("a2_edit")}</button></td></tr>`).join("")}</table></div>`; }
 export function playerExtra(v) { if (!v || !v.card || v.err) return "";
   return `<div class="pv-card"><div class="pv-h">${t("a2_owner")}</div><div class="ad-kvs"><div class="ad-kv"><small>${t("ad_level")}</small><b>${v.lv == null ? "—" : v.lv}</b></div><div class="ad-kv"><small>🏆</small><b>${v.tr == null ? "—" : fmtNum(v.tr)}</b></div><div class="ad-kv"><small>${t("a2_items")}</small><b>${(v.items || []).length}</b></div><div class="ad-kv"><small>${t("a2_msgs")}</small><b>${v.msgs | 0}</b></div></div>
     <div class="ad-acts"><button class="btn gold ac-b" data-p2="coins">◆ ${t("a2_setCoins")}</button><button class="btn ac-b" data-p2="give">＋ ${t("a2_giveItem")}</button><button class="btn ac-b danger" data-p2="take">− ${t("a2_takeItem")}</button><button class="btn ac-b" data-p2="lvl">${t("a2_setLvl")}</button>
@@ -93,13 +95,14 @@ export function bind2(ui, el, adm, A, reload) {
   const tog = (key, val) => { const C = A2.cfg.cfg, mo = new Set(C.moff), eo = new Set(C.eoff), S = key === "mo" ? mo : eo; S.has(val) ? S.delete(val) : S.add(val);
     dlg(ui, { title: "🎮 " + (S.has(val) ? t("a2_off") : t("a2_onW")) + ": " + (key === "mo" ? t("m_" + val) : t("a2_ev_" + val)), run: (v) => adm("a_modes", { ...v, moff: [...mo], eoff: [...eo] }), done: rc }); };
   on("[data-mo]", (b) => tog("mo", b.dataset.mo)); on("[data-ev]", (b) => tog("ev", b.dataset.ev));
+  on("[data-mut]", (b) => dlg(ui, { title: "✨ " + t("a2_mut") + ": " + b.textContent, run: (v) => adm("a_mut", { ...v, k: b.dataset.mut }), done: rc })); // play2
   on('[data-a2="rref"]', () => { A2.rooms = null; reload(); });
   on("[data-kick]", (b) => { const [room, u, n] = b.dataset.kick.split("|"); dlg(ui, { title: t("a2_kick") + ": " + n, sub: esc(room) + " · " + pidHtml(u), danger: 1, run: (v) => adm("a_kick", { ...v, room, u }), done: () => { A2.rooms = null; A.aud = null; reload(); } }); });
   on('[data-a2="gift"]', () => dlg(ui, { title: "🎁 " + t("a2_gift"), sub: t("a2_giftSub"), fields: [{ n: "coins", l: "ad_coins", num: 1, v: 500, max: 6 }, { n: "items", l: "ad_items", ph: "fl:3, gt:sparks", max: 200 }, { n: "days", l: "a2_days", num: 1, v: 7, max: 2 }], run: (v) => adm("a_gift", { ...v, coins: +v.coins || 0, days: +v.days || 7, items: v.items.split(/[,\s]+/).filter(Boolean) }), done: rc }));
   on('[data-a2="promo"]', () => dlg(ui, { title: "🏷 " + t("a2_promo"), fields: [{ n: "code", l: "a2_code", ph: "EID2026", max: 16 }, { n: "coins", l: "ad_coins", num: 1, v: 200, max: 6 }, { n: "items", l: "ad_items", ph: "fl:3", max: 200 }, { n: "max", l: "a2_maxUses", num: 1, v: 100, max: 6 }, { n: "days", l: "a2_days", num: 1, v: 7, max: 3 }],
     run: (v) => adm("a_promo", { ...v, coins: +v.coins || 0, max: +v.max || 100, days: +v.days || 7, items: v.items.split(/[,\s]+/).filter(Boolean) }), done: rc }));
   on("[data-poff]", (b) => dlg(ui, { title: t("a2_disable") + " " + b.dataset.poff, danger: 1, run: (v) => adm("a_promo", { ...v, code: b.dataset.poff, off: 1 }), done: rc }));
-  on("[data-px]", (b) => { const [k, p, base] = b.dataset.px.split("|"); dlg(ui, { title: "🛒 " + k, sub: t("a2_base") + " ◆" + fmtNum(+base) + " · " + t("a2_pxSub"), fields: [{ n: "price", l: "a2_now", num: 1, v: p, max: 7 }], run: (v) => adm("a_price", { ...v, key: k, price: +v.price || 0 }), done: rc }); });
+  on("[data-px]", (b) => { const [k, p, base] = b.dataset.px.split("|"); dlg(ui, { title: "🛒 " + (k === "flags" ? t("a2_flags") : k), sub: t("a2_base") + " ◆" + fmtNum(+base) + " · " + t("a2_pxSub"), fields: [{ n: "price", l: "a2_now", num: 1, v: p, max: 7 }], run: (v) => adm("a_price", { ...v, key: k, price: +v.price || 0 }), done: rc }); });
   // one player
   const V = A.view; if (!V || !V.card) return; const id = V.card.id, who = esc(V.card.n) + " · " + pidHtml(id), rv = async () => { const x = await adm("a_view", { id }); if (x && x.card) A.view = x; A.aud = null; reload(); };
   on('[data-p2="coins"]', () => dlg(ui, { title: "◆ " + t("a2_setCoins"), sub: who + " · ◆" + fmtNum(V.wal ? V.wal.bal : 0), fields: [{ n: "bal", l: "a2_exact", num: 1, v: V.wal ? V.wal.bal : 0, max: 9 }], danger: 0, run: (v) => adm("a_coins", { ...v, id, bal: +v.bal, sure: V.wal && +v.bal < V.wal.bal ? 1 : undefined }), done: rv }));

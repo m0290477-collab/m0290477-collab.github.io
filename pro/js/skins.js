@@ -11,7 +11,7 @@ export function flagName(f, lang) {
 
 // pattern ids
 export const PATTERNS = ["solid", "stripes", "bands", "gradient", "spots", "tiger", "diamond", "rainbow", "pulse", "galaxy", "scales", "split", "chevron", "dots", "wave", "checker"];
-export const FLAG_PRICE = 300;
+export let FLAG_PRICE = 300; export const FLAG_PRICE0 = 300; export function setFlagPrice(v) { FLAG_PRICE = v > 0 ? v | 0 : FLAG_PRICE0; } // play2: owner can edit the flag price (one price for every flag)
 
 // premium named skins: p pattern, c colours, lv unlock level
 export const SKINS = [

@@ -1,23 +1,23 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=admin2"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=admin2";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=admin2";
-import { GTrail } from "./gfx/gtrail.js?v=admin2"; // trail1: cosmetic ground trail decals (never in the sim)
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=admin2";
-import { NetBackend } from "./net.js?v=admin2";
-import { pidTier, PID_GLYPH } from "./pid.js?v=admin2"; // srv2
-import { onFind, findHide, accountMatchEnd } from "./account.js?v=admin2"; // srv2
-import { t, fmtNum } from "./i18n.js?v=admin2"; import { onlineBlock } from "./admin2.js?v=admin2"; // admin2
-import { haptic } from "./audio.js?v=admin2";
-import { rankOf, rpDelta } from "./profile.js?v=admin2";
-import { Replay } from "./replay.js?v=admin2";
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=admin2"; // comp1
-import { onServerTrophy } from "./compui.js?v=admin2";
-import { Governor } from "./gov.js?v=admin2"; // perf2: adaptive render governor
-import { claim, claimId } from "./wallet.js?v=admin2"; // coin1: offline match coins are claimed from the server wallet
-import { emit } from "./events.js?v=admin2"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=play2"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=play2";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=play2";
+import { GTrail } from "./gfx/gtrail.js?v=play2"; // trail1: cosmetic ground trail decals (never in the sim)
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=play2";
+import { NetBackend } from "./net.js?v=play2";
+import { pidTier, PID_GLYPH } from "./pid.js?v=play2"; // srv2
+import { onFind, findHide, accountMatchEnd } from "./account.js?v=play2"; // srv2
+import { t, fmtNum } from "./i18n.js?v=play2"; import { onlineBlock } from "./admin2.js?v=play2"; // admin2
+import { haptic } from "./audio.js?v=play2";
+import { rankOf, rpDelta } from "./profile.js?v=play2";
+import { Replay } from "./replay.js?v=play2";
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=play2"; // comp1
+import { onServerTrophy } from "./compui.js?v=play2";
+import { Governor } from "./gov.js?v=play2"; // perf2: adaptive render governor
+import { claim, claimId } from "./wallet.js?v=play2"; // coin1: offline match coins are claimed from the server wallet
+import { emit } from "./events.js?v=play2"; import "./play2.js"; // play2 strings // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -142,6 +142,8 @@ export class Game {
       onPu: (s, k, hit, p) => this.onPu(s, k, hit, p), onShield: (s) => this.onShield(s),
       onEvt: (e) => this.onEvt(e), onMeteor: (M) => this.onMeteor(M), onImpact: (x, y, r) => this.onImpact(x, y, r),
       onTrophy: (m) => this.onTrophy(m), onFind: (f) => onFind(f), // srv2: finding-a-server overlay
+      onBounty: (m) => { this.hud.banner("👑 " + t("p2_btyGot", { n: fmtNum(m.c | 0) }), 2600, "sub"); }, // play2: crown bounty paid by the room (no sound)
+      onMut: (k) => { if (k && k !== this._mutShown) { this._mutShown = k; this.hud.banner("✨ " + t("p2_mutOn", { k: t("p2_mut_" + k) }), 2600, "sub"); } }, // play2: weekend rule
     };
     this.troMsg = null;
     if (cfg.mode === "online") {
@@ -510,6 +512,7 @@ export class Game {
       if (s.boss && this.boss && this.boss.phase === 3) e.glow = [1.6, 0.2, 0.05];
       e.pt = s.uid && !s.team && !s.boss ? pidTier(s.uid) : ""; if (e.pt) e.name = PID_GLYPH[e.pt] + " " + s.name; // srv2: premium id -> tier name tag
       if (s.bounty) { e.glow = [1.5, 1.05, 0.15]; e.nc = "#ffd23a"; e.name = "💰 " + s.name; e.pt = ""; }
+      else if (b.bt && b.bt[0] === s.id && !b.sim) { e.name = "👑 ◆" + b.bt[1] + " " + e.name; } // play2: crown bounty on the room's #1
       e.inv = false; e.giant = !!(s.pu && s.pu[9] > 0); e.dash = !!(s.pu && s.pu[7] > 0); if (e.dash) { e.boost = true; if (!e.glow) e.glow = [0.3, 0.95, 1.2]; } // dash: soft steady cyan glow (harmless while active)
       e.emo = s.emoT && now - s.emoT < 2600 ? EMOTES[s.emo] || null : null; e.emoI = s.emo | 0; e.gold = !!s.bounty;
       if (e._gtk !== sk.gt) { e._gtk = sk.gt; e.gti = !me && sk.gt ? gtIndex(sk.gt) : -1; } // srv1: other players' ground trail (online skins carry gt)
@@ -555,7 +558,7 @@ export class Game {
     let top = all.slice(0, 5), scoreList = null;
     if (this.xm && this.xm.lb) scoreList = this.xm.lb(this); // Track B
     if (this.mode === "koth") scoreList = [...this.kothPts.entries()].sort((a, c) => c[1] - a[1]).slice(0, 5).map(([id, v]) => ({ s: this.findSnake(id), v: Math.floor(v) })).filter((x) => x.s);
-    this.hud.update({ mass: me && me.alive ? me.m : 0, rank, total: all.length, top, me, kills: st.kills, timeLeft: this.M && (this.mode === "time" || this.M.dur) ? st.timeLeft : null, wave: this.mode === "survival" ? st.wave : null, ping: b.online ? b.ping : null, nq: b.online ? b.quality : null, humans: b.online ? b.humans : null, scoreList, kothMine: this.mode === "koth" && me ? Math.floor(this.kothPts.get(me.id) || 0) : null, target: this.M && this.M.target, alive: this.mode === "br" ? all.length : null, zone: this.zone && this.zone.phase === "wait" ? Math.ceil(this.zoneNext) : null, hill: this.hill });
+    this.hud.update({ bt: b.online && b.bt ? b.bt : null, mass: me && me.alive ? me.m : 0, rank, total: all.length, top, me, kills: st.kills, timeLeft: this.M && (this.mode === "time" || this.M.dur) ? st.timeLeft : null, wave: this.mode === "survival" ? st.wave : null, ping: b.online ? b.ping : null, nq: b.online ? b.quality : null, humans: b.online ? b.humans : null, scoreList, kothMine: this.mode === "koth" && me ? Math.floor(this.kothPts.get(me.id) || 0) : null, target: this.M && this.M.target, alive: this.mode === "br" ? all.length : null, zone: this.zone && this.zone.phase === "wait" ? Math.ceil(this.zoneNext) : null, hill: this.hill });
     if (this.app.store.settings.minimap) this.hud.minimap(all, me, b.R || C.R, this.view.foodPalCss, this.zone, this.hill, this.boss && this.boss.s, b.pus);
     if (me && me.alive && !this.ended) {
       this.hud.pu(me.pu, me.slow);

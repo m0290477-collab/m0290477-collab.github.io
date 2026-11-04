@@ -2,6 +2,13 @@
 // Runs unchanged in the browser (offline modes, client prediction) and in the Cloudflare Durable Object (online rooms).
 // No DOM, no allocation in the hot loop: typed-array ring buffers for paths, a spatial hash rebuilt per tick, pooled food.
 
+// play2: weekend mutators (online rooms, Fri 00:00 - Sun 23:59 UTC). One rule per weekend, rotating weekly; the server decides.
+// df = double food, fb = free boost (no mass cost), bs = big start (start mass x3), ff = fast food spawn
+export const MUTS = ["df", "fb", "bs", "ff"];
+export function weekendMut(now) { const d = new Date(now), wd = d.getUTCDay(); if (wd !== 5 && wd !== 6 && wd !== 0) return "";
+  const fri = Math.floor(now / 86400000) - ((wd + 2) % 7); return MUTS[(((Math.floor((fri - 1) / 7)) % 4) + 4) % 4]; } // fri = day number of that Friday (day 1 = Fri 1970-01-02)
+// play2: the rule in force: owner override ("auto" or missing = schedule, "off" = none, or one of MUTS)
+export const mutNow = (ov, now) => (ov === "off" ? "" : MUTS.includes(ov) ? ov : weekendMut(now));
 export const C = {
   R: 240, // arena radius (world units): online rooms + default; offline modes set their own
   SPEED: 8.6, BOOST: 17.5,
@@ -210,7 +217,7 @@ export class Sim {
   addSnake(name, skin, opt = {}) {
     const s = new Snake(this.nextId++); s.name = name; s.skin = skin;
     const [x, y] = opt.pos || this.safeSpawn(); const a = Math.atan2(-y, -x) + (this.rand() - 0.5) * 1.2;
-    s.reset(x, y, a, opt.m || C.START_M); s.bornTick = this.tick; s.bot = !!opt.bot; s.god = !!opt.god;
+    s.reset(x, y, a, opt.m || C.START_M * (this.mut === "bs" ? 3 : 1)); s.bornTick = this.tick; s.bot = !!opt.bot; s.god = !!opt.god;
     if (s.bot) s.ai = { t: 0, mode: 0, tgt: 0, wa: a, diff: opt.diff ?? this.diff, err: 0, per: s.id % 3 }; // ai1: 0 fighter, 1 trickster, 2 builder
     this.snakes.push(s); this.byId.set(s.id, s); this.evNew.push(s.id);
     return s;
@@ -382,13 +389,13 @@ export class Sim {
     if (this.powerups) this.puStep();
     if (this.events.length || this.mets.length) this.eventStep(dt);
     // keep the world fed
-    this.feed(false);
+    this.feed(false); if (this.mut === "ff") this.feed(false); // play2: fast food spawn = two top-ups per tick
   }
   // one move of one snake with its per-move rules: turn + advance, boost cost + boost drop, arena wall
   moveOne(s, dt) {
     const canBoost = s.m > C.MIN_BOOST_M;
     moveSnake(s, dt, canBoost);
-    if (s.boosting && !(s.pu[2] > 0) && !(s.pu[7] > 0)) {
+    if (s.boosting && !(s.pu[2] > 0) && !(s.pu[7] > 0) && this.mut !== "fb") { // play2: free-boost weekend
       const cost = boostCost(s.m, dt); s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - cost)); s.dropAcc += cost;
       if (s.dropAcc > 2.2) { s.dropAcc -= 2.2; const o = Math.min(s.n - 1, Math.round(s.len / (C.SPEED * dt))); this.spawnFood(s.sx(o) + (this.rand() - 0.5), s.sy(o) + (this.rand() - 0.5), 1.5, (s.id * 5) % 12); }
     }
@@ -529,7 +536,7 @@ export class Sim {
     for (const s of this.snakes) {
       if (!s.alive || (only && s !== only)) continue;
       // noself1: head disc (r * HEAD_K) vs the candy's visible outline; the magnet ring (magReach) reaches the outline too
-      const mag = s.pu[0] > 0, hr = mag ? magReach(s.r) : s.r * HEAD_K, x2 = s.pu[3] > 0 ? 2 : 1, c0 = f.ci(s.x, s.y), rx = Math.ceil((hr + FOOD_VIS_MAX) / f.cell);
+      const mag = s.pu[0] > 0, hr = mag ? magReach(s.r) : s.r * HEAD_K, x2 = (s.pu[3] > 0 ? 2 : 1) * (this.mut === "df" ? 2 : 1), c0 = f.ci(s.x, s.y), rx = Math.ceil((hr + FOOD_VIS_MAX) / f.cell);
       for (let oy = -rx; oy <= rx; oy++) for (let ox = -rx; ox <= rx; ox++) {
         const c = c0 + oy * dim + ox; if (c < 0 || c >= f.head.length) continue; let j = f.head[c];
         while (j >= 0) {

@@ -3,16 +3,16 @@
 // while its client id is not configured on the server (/cfg). Profile snapshots: debounced ~10 s after a save + at match end,
 // versioned (a newer save from another device wins), restored on sign-in. Owner grants arrive live over the social socket.
 // Owner panel (only reachable from the founder's own Profile, every call checked on the server). Finding-a-server overlay.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=admin2";
-import { SERVER } from "./net.js?v=admin2";
-import { devKey } from "./league.js?v=admin2";
-import { SO, call, socialRestart, errText } from "./social.js?v=admin2";
-import { avatarHtml } from "./profile.js?v=admin2";
-import { KV, jparse, newProfile } from "./store.js?v=admin2";
-import { pidHtml } from "./pid.js?v=admin2";
-import { legalButtons } from "./legal.js?v=admin2"; // coin1: Privacy / Terms
-import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=admin2"; // coin1
-import { CF, dashExtra, liveHtml, ecoHtml, playerExtra, bind2, a2Reset, actName2 } from "./admin2.js?v=admin2"; // admin2
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=play2";
+import { SERVER } from "./net.js?v=play2";
+import { devKey } from "./league.js?v=play2";
+import { SO, call, socialRestart, errText } from "./social.js?v=play2";
+import { avatarHtml } from "./profile.js?v=play2";
+import { KV, jparse, newProfile } from "./store.js?v=play2";
+import { pidHtml } from "./pid.js?v=play2";
+import { legalButtons } from "./legal.js?v=play2"; // coin1: Privacy / Terms
+import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=play2"; // coin1
+import { CF, dashExtra, liveHtml, ecoHtml, playerExtra, bind2, a2Reset, actName2 } from "./admin2.js?v=play2"; // admin2
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

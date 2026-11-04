@@ -1,24 +1,24 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=admin2";
-import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=admin2"; // srv1
-import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=admin2"; // srv2
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=admin2"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=admin2";
-import { legalButtons, contactNote, openFeedback } from "./legal.js?v=admin2"; import { call as socialCall } from "./social.js?v=admin2"; // coin1
-import { GTRAILS } from "./skins.js?v=admin2"; import { gtCellUrl } from "./gfx/gtrail.js?v=admin2"; // trail1
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=admin2";
-import { WORLDS, worldAsset } from "./worlds.js?v=admin2";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=admin2";
-import { haptic } from "./audio.js?v=admin2";
-import { skinFn, MODES, EMOTES } from "./game.js?v=admin2";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=admin2";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=admin2";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=admin2";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=admin2"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=admin2";
-import { CF, modeOff, onlineBlock, annBar } from "./admin2.js?v=admin2"; import { call as a2call } from "./social.js?v=admin2"; // admin2
-import { growBind, growStart, growResults } from "./grow.js?v=admin2"; // grow1: challenge links, clips, room QR
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=play2";
+import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=play2"; // srv1
+import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=play2"; // srv2
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=play2"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=play2";
+import { legalButtons, contactNote, openFeedback } from "./legal.js?v=play2"; import { call as socialCall } from "./social.js?v=play2"; // coin1
+import { GTRAILS } from "./skins.js?v=play2"; import { gtCellUrl } from "./gfx/gtrail.js?v=play2"; // trail1
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=play2";
+import { WORLDS, worldAsset } from "./worlds.js?v=play2";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=play2";
+import { haptic } from "./audio.js?v=play2";
+import { skinFn, MODES, EMOTES } from "./game.js?v=play2";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=play2";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=play2";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=play2";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=play2"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=play2";
+import { CF, modeOff, onlineBlock, annBar } from "./admin2.js?v=play2"; import { call as a2call } from "./social.js?v=play2"; // admin2
+import { growBind, growStart, growResults } from "./grow.js?v=play2"; import { mutBar, iconCard, bindIcon } from "./play2.js?v=play2"; // grow1: challenge links, clips, room QR
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -76,7 +76,7 @@ export class Hud {
     const ic0 = (s) => (s.avt ? avatarHtml(s.avt, s.fr | 0, "s") : `<i style="background:${this.dot(s)}"></i>`), myT = trophies(this.app.store.p), onl = d.ping !== null && d.ping !== undefined;
     const ic = (s) => ic0(s) + hudTag(s, d.me, myT, onl); // comp1: league tag next to every name
     if (d.scoreList) { d.scoreList.forEach((x, i) => row(x.s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(x.s)}<span>${esc(x.s.name || "?")}</span>`, `${x.v}/${d.target}`)); }
-    else { d.top.forEach((s, i) => row(s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(s)}<span>${s.bounty ? "💰 " : ""}${esc(s.name || "?")}</span>`, fmtNum(s.m)));
+    else { d.top.forEach((s, i) => row(s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(s)}<span>${s.bounty ? "💰 " : ""}${d.bt && d.bt[0] === s.id ? `<i class="bty">◆${d.bt[1]}</i> ` : ""}${esc(s.name || "?")}</span>`, fmtNum(s.m))); // play2: crown bounty value
       if (d.me && d.me.alive && d.rank > 5) row("me", `<b>${d.rank}</b>${ic(d.me)}<span>${esc(d.me.name)}</span>`, fmtNum(d.me.m)); }
     if (d.ping !== null) row("", `<span><s class="nq ${d.nq || "good"}" aria-label="${esc(t("net_" + (d.nq || "good")))}"></s>${t("online", { n: d.ping })}</span>`, d.humans ? "👤" + d.humans : ""); // perf2: steady connection-quality dot
     // perf2: rows are keyed by their content (avatar + name), so a reorder moves existing nodes instead of re-parsing them
@@ -455,7 +455,7 @@ export class UI {
     const tier = S.seasonTier(), into = p.season.xp - tier * SEASON.per; $("l-tier").textContent = tier; $("l-sbar").style.width = (tier >= SEASON.tiers ? 100 : Math.round((into / SEASON.per) * 100)) + "%";
     const unclaimed = Array.from({ length: tier }, (_, i) => i + 1).some((k) => !p.season.claimed.includes(k)); $("l-sdot").classList.toggle("x-hide", !unclaimed);
     // modes: short, fully readable descriptions; the column scrolls with a fade + chevron hint
-    CF.ui = this; if (modeOff(this.selMode)) this.selMode = MODE_LIST.find((m) => !modeOff(m)) || "classic"; annBar(); // admin2: switched-off modes are hidden
+    CF.ui = this; CF.mutBar = mutBar; try { mutBar(); } catch (_) {} if (modeOff(this.selMode)) this.selMode = MODE_LIST.find((m) => !modeOff(m)) || "classic"; annBar(); // admin2: switched-off modes are hidden
     $("l-modes").innerHTML = MODE_LIST.filter((m) => !modeOff(m)).map((m) => `<button class="mode ${m === this.selMode ? "on" : ""}" data-m="${m}" role="tab"><span class="mi">${IC[m]}</span><span><b>${t("m_" + m)}</b><small>${esc(t("m_" + m + "_s"))}</small></span>${NEW_MODES.has(m) ? `<i class="new">${t("new")}</i>` : ""}</button>`).join("");
     $("l-modes").querySelectorAll(".mode").forEach((b) => this.click(b, () => { this.selMode = b.dataset.m; p.last.mode = this.selMode; S.save(); const st = $("l-modes").scrollTop; this.renderLobby(); $("l-modes").scrollTop = st; }, "tab"));
     requestAnimationFrame(() => this._modesFade && this._modesFade());
@@ -692,6 +692,7 @@ export class UI {
       h = `<div class="pv-hero"><div class="pv-cover" style="background:${p.banner ? bannerCss(p.banner) : `url(${worldAsset(WORLDS[Math.min(WORLDS.length - 1, Math.max(0, p.last.world | 0))], "sky", true)}) center/cover`}"></div><div class="pv-idrow">${avatarHtml(p.av, p.frame, "l")}<div class="pv-id"><div class="nm">${esc(p.name)}</div><div class="tt">${t("ti_" + (TITLES[p.title] || TITLES[0]).id)} · ${t("level")} ${lv.n}</div><div class="pv-xp"><div class="xpbar"><i style="width:${lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)}%"></i></div><small>${lv.n >= 100 ? "MAX" : `${fmtNum(lv.x)} / ${fmtNum(lv.need)} XP`}</small></div></div>
         <div class="pv-acts"><button class="btn gold" id="pv-edit">${ed ? t("pvCancel") : t("pvEdit")}</button><button class="btn" id="pv-share">${t("pvShare")}</button></div></div></div>`;
       h += profileIdCard(this); // srv1: public ID + copy (+ founder claim)
+      h += iconCard(lv.n); // play2: home-screen icon variants
       h += ownerEntry() + signInCard(this); // srv2: owner panel (founder only) + sign-in card
       if (ed) h += `<div class="pv-card pv-editor"><div class="pv-h">${t("pvEdit")}</div><label class="pv-lab" for="pr-nm">${t("editName")}</label><input type="text" id="pr-nm" maxlength="16" value="${esc(p.name)}" autocomplete="off" spellcheck="false" enterkeyhint="done">
         <label class="pv-lab" for="pv-bio">${t("pvAbout")}</label><textarea id="pv-bio" dir="auto" maxlength="90" rows="2" placeholder="${t("pvBioPh")}">${esc(p.bio)}</textarea>
@@ -725,7 +726,7 @@ export class UI {
       const L = p.bests[this.bMode] || [];
       h += L.length ? `<table class="lb"><tr><th>#</th><th>${t("bests")}</th><th>${t("r_mass")}</th><th>${t("r_kills")}</th><th>${t("world")}</th><th></th></tr>` + L.map((e, i) => `<tr><td>${i + 1}</td><td>${fmtNum(e.s)}</td><td>${fmtNum(e.m || 0)}</td><td>${e.k}</td><td>${t("w_" + (WORLDS[e.w] || WORLDS[0]).id)}</td><td class="fine">${new Date(e.d).toLocaleDateString(LANG)}</td></tr>`).join("") + `</table>` : `<div class="lx-empty"><svg viewBox="0 0 24 24"><path d="M4 16c3-6 6 2 9-3s4-6 7-4"/><circle cx="20" cy="9" r="1"/></svg><span>${t("noBests")}</span></div>`;
     }
-    el.innerHTML = h; if (tab === "over") { bindProfileId(this, el); bindSignIn(this, el); } // srv1 + srv2
+    el.innerHTML = h; if (tab === "over") { bindProfileId(this, el); bindSignIn(this, el); bindIcon(this, el, lv.n); } // srv1 + srv2
     const done = (msg) => { S.save(); this.renderProfile(); if (msg) this.toast("✓ " + msg, "good", 1600); };
     el.querySelectorAll("[data-av]").forEach((b) => this.click(b, () => this.pickAv(b.dataset.av), "tab"));
     el.querySelectorAll("[data-fr]").forEach((b) => this.click(b, () => { const i = +b.dataset.fr; if (!frameOk(S, i)) { this.toast("🔒 " + this.reqText(FRAMES[i].req)); this.app.audio.play("error"); return; } p.frame = i; done(t("equipped")); }, "tab"));
@@ -804,7 +805,7 @@ export class UI {
     if (tab === "graphics") rows = [seg("quality", [["auto", t("q_auto")], ["low", t("q_low")], ["medium", t("q_medium")], ["high", t("q_high")], ["ultra", t("q_ultra")]], "quality", R && s.quality === "auto" ? "→ " + t("q_" + R.qName) : ""),
       seg("res", [["auto", t("res_auto")], ["high", t("res_high")], ["max", t("res_max")]], "resolution", t("resSub") + (R && !R.is2D && R.dyn && R.dyn < 0.99 ? ` · ${t("dynRes")} ${Math.round(R.dyn * 100)}%` : "")),
       { ...seg("renderer", [["3d", "3D"], ["2d", "2D"]], "renderer"), sub: (R && R.is2D && s.renderer === "3d" ? t("rendererAuto") : t("rendererSub")) }, seg("fpsCap", [[30, "30"], [60, "60"], [0, "∞"]], "fpsCap"), { ...tog("showFps", "showFps"), sub: "debug" }, tog("calmFx", "calmFx", t("calmFxSub")), tog("replay", "deathReplay", t("deathReplaySub")), tog("postFx", "postFx", t("postFxSub")), tog("juice", "juice"), tog("minimap", "minimap")];
-    if (tab === "controls") rows = [seg("ctrl", [["joy", t("c_joy")], ["follow", t("c_follow")], ["swipe", t("c_swipe")]], "ctrlType"), rng("sens", "sens", 0.5, 2, 0.05, (v) => v.toFixed(2) + "×"), tog("left", "leftHand"),
+    if (tab === "controls") rows = [seg("ctrl", [["joy", t("c_joy")], ["follow", t("c_follow")], ["swipe", t("c_swipe")]], "ctrlType"), rng("sens", "sens", 0.5, 2, 0.05, (v) => v.toFixed(2) + "×"), tog("left", "leftHand"), tog("one", "p2_one", t("p2_oneSub")),
       rng("boostSize", "boostSize", 0.7, 1.4, 0.05, (v) => Math.round(v * 100) + "%"), rng("boostPos", "boostPos", 0, 1, 0.05, (v) => Math.round(v * 100) + "%"), { ...tog("haptics", "haptics"), sub: navigator.vibrate ? "" : t("hapticsNo") }];
     if (tab === "audio") rows = [rng("vMaster", "vMaster", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vSfx", "vSfx", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vUi", "vUi", 0, 1, 0.01, (v) => Math.round(v * 100) + "%"), rng("vMusic", "vMusic", 0, 1, 0.01, (v) => Math.round(v * 100) + "%")];
     if (tab === "access") rows = [tog("cb", "cbMode"), tog("reduceMotion", "reduceMotion"), tog("bigText", "bigText"), { type: "btn", label: "tutorial", act: "tut" }];

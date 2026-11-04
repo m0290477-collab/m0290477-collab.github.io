@@ -2,23 +2,23 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import { pidFill } from "./pid.js?v=admin2"; // srv2
-import { stageBox } from "./stage.js?v=admin2";
-import * as THREE from "./vendor/three.module.min.js?v=admin2";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=admin2";
+import { pidFill } from "./pid.js?v=play2"; // srv2
+import { stageBox } from "./stage.js?v=play2";
+import * as THREE from "./vendor/three.module.min.js?v=play2";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=play2";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=admin2";
-import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=admin2";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=admin2";
-import { World, prefetchWorld } from "./gfx/env.js?v=admin2";
-import { Post } from "./gfx/post.js?v=admin2";
-import { Studio } from "./gfx/showcase.js?v=admin2";
-import { SoftFx } from "./gfx/fx.js?v=admin2";
-import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=admin2"; // trail1: ground trails
-import { on as onEv } from "./events.js?v=admin2";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=admin2";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=play2";
+import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=play2";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=play2";
+import { World, prefetchWorld } from "./gfx/env.js?v=play2";
+import { Post } from "./gfx/post.js?v=play2";
+import { Studio } from "./gfx/showcase.js?v=play2";
+import { SoftFx } from "./gfx/fx.js?v=play2";
+import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=play2"; // trail1: ground trails
+import { on as onEv } from "./events.js?v=play2";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=play2";
 
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
 const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3];

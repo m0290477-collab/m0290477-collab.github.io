@@ -1,8 +1,8 @@
 // Living world environments: panoramic sky with procedural clouds/aurora/nebula, PBR ground with anti-tiling,
 // animated water/lava, swaying instanced foliage, decor, weather (rain/snow/sandstorm/ash/stars), ambient
 // creatures, time-of-day lighting. Textures stream per world (lazy WebP) and swap in when ready.
-import * as THREE from "../vendor/three.module.min.js?v=admin2";
-import { W3D, worldAsset } from "../worlds.js?v=admin2";
+import * as THREE from "../vendor/three.module.min.js?v=play2";
+import { W3D, worldAsset } from "../worlds.js?v=play2";
 
 const loader = new THREE.TextureLoader();
 const texCache = new Map();
