@@ -13,7 +13,7 @@ if (!globalThis.navigator) globalThis.navigator = { userAgent: "node" };
 
 // ---- server under test: copy index.js + sim.js side by side, exactly like deploy.sh uploads them ----
 const dir = mkdtempSync(join(tmpdir(), "ssp-c1-")); copyFileSync(ROOT + "/server/index.js", join(dir, "index.js")); for (const f of ["sim.js", "econ.js", "skins.js", "offers.js"]) copyFileSync(ROOT + "/js/" + f, join(dir, f)); // coin1: the worker also bundles econ.js (+ skins.js, offers.js)
-const W = await import(join(dir, "index.js")); const M = await import(join(dir, "sim.js"));
+const W = await import(join(dir, "index.js")); W.MIG.CUT = 9e15; /* grow1: test ids count as pre-coin1 */ const M = await import(join(dir, "sim.js"));
 class Sql { constructor() { this.db = new DatabaseSync(":memory:"); this.writes = 0; }
   exec(q, ...b) { const st = this.db.prepare(q); if (/^\s*SELECT/i.test(q)) { const rows = st.all(...b).map((r) => ({ ...r })); return { toArray: () => rows, one: () => rows[0] }; } const r = st.run(...b); this.writes += r.changes; return { toArray: () => [], one: () => undefined, rowsWritten: r.changes }; } }
 const objs = new Map(); const env = { ROOMS: { idFromName: (n) => n, get: (id) => ({ fetch: (u, init) => obj(id).fetch(u instanceof Request ? u : new Request(u, init)) }) } };

@@ -6,7 +6,7 @@ import { DatabaseSync } from "node:sqlite";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log("FAIL", m); } else console.log("ok", m); };
 const dir = mkdtempSync(join(tmpdir(), "ssp-o1-")); copyFileSync(ROOT + "/server/index.js", join(dir, "index.js")); for (const f of ["sim.js", "econ.js", "skins.js", "offers.js"]) copyFileSync(ROOT + "/js/" + f, join(dir, f));
-const W = await import(join(dir, "index.js"));
+const W = await import(join(dir, "index.js")); W.MIG.CUT = 9e15; /* grow1: test ids count as pre-coin1 */
 class Sql { constructor() { this.db = new DatabaseSync(":memory:"); }
   exec(q, ...b) { const st = this.db.prepare(q); if (/^\s*SELECT/i.test(q)) { const rows = st.all(...b).map((r) => ({ ...r })); return { toArray: () => rows, one: () => rows[0] }; } st.run(...b); return { toArray: () => [], one: () => undefined }; } }
 globalThis.fetch = (u) => Promise.reject(new Error("no network in tests: " + u));

@@ -29,7 +29,7 @@ export function verifySkin(sk, V) {
 export const XP = { MATCH: 4 * OFF.PER_MATCH, LIFE: 4 * ONLINE.PER_LIFE, DAY: 60000, SLACK: 3000, MIG_LV: 20 };
 export const cumXp = (L) => { let x = 0; for (let n = 1; n < Math.min(L, LV_MAX); n++) x += xpNeed(n); return x; };
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 9; // v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 10; // v10 (grow1): ids first seen after coin1 import 0 coins / level 1; challenge links (/c);  v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 // look1: bots never share a look with any live snake (players included)
 const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
@@ -57,7 +57,10 @@ export const allowance = (mins) => ({ coins: Math.round(4000 + 250 * Math.min(mi
 // ---------- coin1: wallet rules ----------
 // migration: the device balance is imported ONCE, capped: the founder up to 10M; an account with a server snapshot up to that
 // snapshot's coins + the srv2 allowance for the time since it was saved; everyone else up to 200,000. Cuts are logged.
-export const MIG = { FIRST: 200000, OWNER: 10000000, ITEMS: 800, CKS: 600 };
+export const CH_MODES = new Set(["classic", "time", "survival", "br", "koth", "boss", "team", "goldrush", "infection", "duel"]), CH_AB = "abcdefghjkmnpqrstuvwxyz23456789", CH_TTL = 30 * DAY; // grow1: challenge links (offline modes)
+export const MIG = { FIRST: 200000, OWNER: 10000000, ITEMS: 800, CKS: 600, CUT: Date.parse("2026-11-04T18:35:00Z") };
+// grow1: only ids the server knew before the coin1 release (acct row or a device seen before CUT) keep the one-time import;
+// a device id first seen after it imports 0 coins, no items, level 1 (fresh ids could otherwise mint 200k each).
 export const LV_DAY = 15; // level-up rewards claimable per UTC day (fast early levels fit, a forged level jump does not)
 const utcDay = (t) => new Date(t).toISOString().slice(0, 10);
 const dNum = (s) => (/^\d{4}-\d{2}-\d{2}$/.test(s || "") ? Math.floor(Date.parse(s + "T00:00:00Z") / DAY) : NaN);
@@ -455,6 +458,9 @@ export class Room {
     q.exec("CREATE TABLE IF NOT EXISTS clm (pid TEXT, ck TEXT, t INTEGER, PRIMARY KEY (pid, ck))");
     q.exec("CREATE TABLE IF NOT EXISTS led (id INTEGER PRIMARY KEY AUTOINCREMENT, pid TEXT, k TEXT, d INTEGER, bal INTEGER, ref TEXT, note TEXT, t INTEGER)"); q.exec("CREATE INDEX IF NOT EXISTS i_led_pid ON led(pid, id)");
     try { q.exec("ALTER TABLE gr ADD COLUMN w INTEGER DEFAULT 0"); } catch (_) {} // coin1: 1 = this grant's coins are in the wallet
+    // grow1: challenge links. chl = one shared run (seed + mode + the sender's score); chr = each opener's result (n = 0 until the sender saw it)
+    q.exec("CREATE TABLE IF NOT EXISTS chl (c TEXT PRIMARY KEY, pid TEXT, seed INTEGER, mode TEXT, wo INTEGER, df INTEGER, sc INTEGER, t INTEGER)"); q.exec("CREATE INDEX IF NOT EXISTS i_chl_pid ON chl(pid, t)");
+    q.exec("CREATE TABLE IF NOT EXISTS chr (c TEXT, pid TEXT, sc INTEGER, seen INTEGER DEFAULT 0, t INTEGER, PRIMARY KEY (c, pid))");
     for (const c of ["sxp INTEGER", "xd TEXT DEFAULT ''", "xn INTEGER DEFAULT 0", "xcut INTEGER DEFAULT 0"]) try { q.exec("ALTER TABLE wal ADD COLUMN " + c); } catch (_) {} // fix1: server XP, its UTC day + amount credited that day
     q.exec("INSERT OR IGNORE INTO ids (num, pid, kind, t) VALUES ('1', '', 'o', 0)"); // id 1 is reserved for the founder: never assigned at random, only by the one-time claim
     return q;
@@ -476,6 +482,9 @@ export class Room {
   sVis(pid) { const q = this.sdb(), r = this.srow(pid); if (!r) return; const p = q.exec("SELECT num FROM ids WHERE pid = ? AND kind = 'p' ORDER BY t DESC LIMIT 1", pid).toArray()[0];
     const v = r.own ? "1" : p ? p.num : r.id7; if (v !== r.vis) q.exec("UPDATE acct SET vis = ? WHERE pid = ?", v, pid); return v; }
   sMe(pid) { const r = this.srow(pid), q = this.sdb(); return { id: r.vis, id7: r.id7, prem: q.exec("SELECT num FROM ids WHERE pid = ? AND kind = 'p' ORDER BY t", pid).toArray().map((x) => x.num), own: r.own ? 1 : 0 }; }
+  chMsg(r, opid, sc) { const o = this.sCard(opid) || { n: "?" }; return { c: r.c, n: o.n, id: o.id, s: sc, my: r.sc, mode: r.mode, w: sc > r.sc ? 1 : 0 }; } // grow1: one result for the sender
+  chPend(pid) { const q = this.sdb(), L = q.exec("SELECT chr.c AS c, chr.pid AS o, chr.sc AS sc FROM chr JOIN chl ON chl.c = chr.c WHERE chl.pid = ? AND chr.seen = 0 ORDER BY chr.t LIMIT 10", pid).toArray();
+    const out = L.map((x) => this.chMsg(q.exec("SELECT * FROM chl WHERE c = ?", x.c).one(), x.o, x.sc)); for (const x of L) q.exec("UPDATE chr SET seen = 1 WHERE c = ? AND pid = ?", x.c, x.o); return out; }
   sLimit(pid, k, n, win = 60000) { const now = Date.now(), key = pid + "|" + k; let e = this.rl.get(key); if (!e || now - e.t > win) { e = { t: now, n: 0 }; this.rl.set(key, e); } if (this.rl.size > 20000) this.rl.clear(); return ++e.n > n; }
   sBlocked(a, b) { return this.sdb().exec("SELECT a FROM bl WHERE (a = ? AND b = ?) OR (a = ? AND b = ?)", a, b, b, a).toArray().length > 0; }
   static cv(a, b) { return a < b ? a + ":" + b : b + ":" + a; }
@@ -525,6 +534,15 @@ export class Room {
       const cut = q.exec("SELECT id FROM msg WHERE cv = ? ORDER BY id DESC LIMIT 1 OFFSET ?", cv, CHAT_KEEP - 1).toArray()[0]; if (cut) q.exec("DELETE FROM msg WHERE cv = ? AND id < ?", cv, cut.id); // keep the last 100
       q.exec("INSERT OR REPLACE INTO rd (pid, cv, last) VALUES (?, ?, ?)", pid, cv, id);
       this.sPush(o, { k: "msg", from: this.sCard(pid), m: { i: id, me: 0, tx: f.t, t: now } }); return { ok: 1, m: { i: id, me: 1, tx: f.t, t: now }, filt: f.hit ? 1 : 0 }; }
+    if (op === "ch_new") { if (this.sLimit(pid, "chn", 12, 600000)) return { err: "rate" }; const mode = String(m.mode || ""); if (!CH_MODES.has(mode)) return { err: "bad" };
+      const seed = Math.floor(+m.seed), sc = Math.floor(+m.sc); if (!(seed >= 0 && seed < 2 ** 31) || !(sc >= 0 && sc <= 1e7)) return { err: "bad" };
+      let c = ""; for (let k = 0; k < 6 && !c; k++) { const b = crypto.getRandomValues(new Uint8Array(7)); const x = [...b].map((v) => CH_AB[v % CH_AB.length]).join(""); if (!q.exec("SELECT c FROM chl WHERE c = ?", x).toArray().length) c = x; } if (!c) return { err: "server" };
+      q.exec("INSERT INTO chl (c, pid, seed, mode, wo, df, sc, t) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", c, pid, seed, mode, Math.max(0, Math.min(9, m.wo | 0)), Math.max(0, Math.min(3, m.df | 0)), sc, now); return { ok: 1, c }; }
+    if (op === "ch_get" || op === "ch_res") { const r = q.exec("SELECT * FROM chl WHERE c = ?", String(m.c || "").slice(0, 12)).toArray()[0]; if (!r || now - r.t > CH_TTL) return { err: "notfound" }; const by = this.sCard(r.pid) || { n: "?" };
+      if (op === "ch_get") return { ok: 1, ch: { c: r.c, seed: r.seed, mode: r.mode, wo: r.wo, df: r.df, sc: r.sc, n: by.n, id: by.id, mine: r.pid === pid ? 1 : 0 } };
+      if (r.pid === pid) return { ok: 1, self: 1 }; if (this.sLimit(pid, "chr", 20)) return { err: "rate" }; const sc = Math.max(0, Math.min(1e7, Math.floor(+m.sc || 0)));
+      const old = q.exec("SELECT sc FROM chr WHERE c = ? AND pid = ?", r.c, pid).toArray()[0]; if (old && old.sc >= sc) return { ok: 1, best: old.sc }; // only a better run is sent again
+      const live = this.sPush(r.pid, { k: "chr", ...this.chMsg(r, pid, sc) }); q.exec("INSERT OR REPLACE INTO chr (c, pid, sc, seen, t) VALUES (?, ?, ?, ?, ?)", r.c, pid, sc, live ? 1 : 0, now); return { ok: 1, win: sc > r.sc ? 1 : 0 }; }
     if (op === "fb") { if (this.sLimit(pid, "fb", 3, 600000)) return { err: "rate" }; const tx = String(m.tx || "").trim().slice(0, 500); if (tx.length < 3) return { err: "empty" }; // coin1: feedback to the owner (kept with the reports)
       q.exec("INSERT INTO rep (by, who, mid, tx, t) VALUES (?, 'fb', 0, ?, ?)", pid, tx, now); return { ok: 1 }; }
     if (op === "rep") { if (this.sLimit(pid, "rep", 10)) return { err: "rate" }; const o = other(); if (!o) return { err: "none" }; const r = q.exec("SELECT tx FROM msg WHERE id = ? AND cv = ? AND f = ?", m.mid | 0, Room.cv(pid, o), o).toArray()[0];
@@ -567,18 +585,21 @@ export class Room {
   wPay(cp, price, k, ref) { const q = this.sdb(), r = q.exec("SELECT bal FROM wal WHERE pid = ?", cp).one(); if (!r || r.bal < price) return false; q.exec("UPDATE wal SET bal = bal - ? WHERE pid = ? AND bal >= ?", price, cp, price); this.wLed(cp, k, -price, ref); return true; }
   wClaimed(cp, ck) { return this.sdb().exec("SELECT ck FROM clm WHERE pid = ? AND ck = ?", cp, ck).toArray().length > 0; }
   wMark(cp, ck) { this.sdb().exec("INSERT OR IGNORE INTO clm (pid, ck, t) VALUES (?, ?, ?)", cp, ck, Date.now()); }
+  wPre(cp) { const q = this.sdb(), C = MIG.CUT, a = q.exec("SELECT t FROM acct WHERE pid = ?", cp).toArray()[0];
+    if (a && (a.t == null || a.t < C)) return true; return q.exec("SELECT dp FROM dv WHERE cp = ? AND t0 < ? LIMIT 1", cp, C).toArray().length > 0 || q.exec("SELECT pid FROM snp WHERE pid = ? AND t < ?", cp, C).toArray().length > 0; }
   // first connect of an updated game: the device's balance + items come in once (capped, logged); afterwards the device only shows
   wMig(cp, m) {
     const q = this.sdb(), now = Date.now(), W = this.wRow(cp); if (W.mig) return { err: "done", w: this.wState(cp) };
     const dev = Math.max(0, Math.min(1e9, Math.floor(+m.coins || 0))), me = this.srow(cp), sn = q.exec("SELECT coins, xp, t FROM snp WHERE pid = ?", cp).toArray()[0];
-    const rule = me && me.own ? "owner" : sn ? "snapshot" : "first", cap = rule === "owner" ? MIG.OWNER : rule === "snapshot" ? sn.coins + allowance((now - sn.t) / 60000).coins : MIG.FIRST;
+    const pre = (me && me.own) || this.wPre(cp);
+    const rule = me && me.own ? "owner" : !pre ? "new" : sn ? "snapshot" : "first", cap = rule === "owner" ? MIG.OWNER : rule === "new" ? 0 : rule === "snapshot" ? sn.coins + allowance((now - sn.t) / 60000).coins : MIG.FIRST;
     const imp = Math.min(dev, cap), pend = q.exec("SELECT COALESCE(SUM(coins), 0) AS n FROM gr WHERE pid = ? AND (w = 0 OR w IS NULL) AND ack = 0", cp).one().n | 0; // owner grants this device never applied
-    let items = 0; for (const it of (Array.isArray(m.own) ? m.own : []).slice(0, MIG.ITEMS)) { const k = String(it); if (!validKey(k)) continue;
+    let items = 0; for (const it of (pre && Array.isArray(m.own) ? m.own : []).slice(0, MIG.ITEMS)) { const k = String(it); if (!validKey(k)) continue;
       if (k.startsWith("sid:") && !q.exec("SELECT num FROM ids WHERE num = ? AND pid = ? AND kind = 'p'", k.slice(4), cp).toArray().length) continue; this.wGive(cp, k, "mig"); items++; }
     for (const r of q.exec("SELECT num FROM ids WHERE pid = ? AND kind = 'p'", cp).toArray()) this.wGive(cp, "sid:" + r.num, "id");
     let cks = 0; for (const c of (Array.isArray(m.ck) ? m.ck : []).slice(0, MIG.CKS)) { const k = String(c); if (CK_RE.test(k)) { this.wMark(cp, k); cks++; } } // rewards this device already paid itself
     const day = (s) => (/^\d{4}-\d{2}-\d{2}$/.test(String(s || "")) ? String(s) : "");
-    q.exec("UPDATE wal SET bal = bal + ?, mig = 1, lvm = ?, ld = ?, ln = ?, sd = ?, bd = ?, mat = ?, cuts = cuts + ?, t = ? WHERE pid = ?", imp + pend, Math.max(1, Math.min(rule === "owner" ? 100 : sn ? Math.max(lvOf(sn.xp), 1) : XP.MIG_LV, m.lv | 0)), day(m.ld), Math.max(-1, Math.min(6, m.ln | 0)), day(m.sd), day(m.bd), now - 3600000, dev > imp ? 1 : 0, now, cp); // mat: a match that began up to 1 h before the import (still running) can be claimed
+    q.exec("UPDATE wal SET bal = bal + ?, mig = 1, lvm = ?, ld = ?, ln = ?, sd = ?, bd = ?, mat = ?, cuts = cuts + ?, t = ? WHERE pid = ?", imp + pend, Math.max(1, Math.min(rule === "owner" ? 100 : rule === "new" ? 1 : sn ? Math.max(lvOf(sn.xp), 1) : XP.MIG_LV, m.lv | 0)), day(m.ld), Math.max(-1, Math.min(6, m.ln | 0)), day(m.sd), day(m.bd), now - 3600000, dev > imp ? 1 : 0, now, cp); // mat: a match that began up to 1 h before the import (still running) can be claimed
     q.exec("UPDATE gr SET w = 1 WHERE pid = ?", cp);
     const note = { dev, cap, rule, cut: dev - imp, pend, items, cks }; this.wLed(cp, "mig", imp + pend, rule, note);
     return { ok: 1, mig: note, w: this.wState(cp) };
@@ -860,7 +881,7 @@ export class Room {
     const pair = new WebSocketPair(); const [client, server] = Object.values(pair); this.state.acceptWebSocket(server, [pid]);
     server.serializeAttachment({ pid, dp, st: "lobby" });
     const gr = this.sdb().exec("SELECT gid, coins, items FROM gr WHERE pid = ? AND ack = 0 ORDER BY gid LIMIT 20", pid).toArray().map((g) => ({ id: g.gid, c: g.coins, it: JSON.parse(g.items || "[]") }));
-    server.send(JSON.stringify({ t: "hi", me: this.sMe(pid), v: VERSION, ban: this.banOf(pid, dp), mute: this.muteOf(pid), acct: this.aView(dp), sv: this.snapSv(pid), gr, w: this.wState(pid) })); // coin1: wallet on connect this.sPresAll(pid);
+    server.send(JSON.stringify({ t: "hi", me: this.sMe(pid), v: VERSION, ban: this.banOf(pid, dp), mute: this.muteOf(pid), acct: this.aView(dp), sv: this.snapSv(pid), gr, w: this.wState(pid), chr: this.chPend(pid) })); // coin1: wallet on connect this.sPresAll(pid);
     return new Response(null, { status: 101, webSocket: client });
   }
   async webSocketMessage(ws, data) { // hibernation API: only the social object's sockets come here (game rooms use accept() + listeners)

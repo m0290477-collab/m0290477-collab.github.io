@@ -3,14 +3,14 @@
 // invites into the same online room, live notifications over one WebSocket to the "social-v1" object (reconnect with
 // back-off; a 30 s HTTP poll only while the socket is down), presence (online / in lobby / in a match), in-match player card.
 // No sound, no voice. Everything degrades to a friendly "offline" message when the server cannot be reached.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=fix1";
-import { SERVER } from "./net.js?v=fix1";
-import { devKey } from "./league.js?v=fix1";
-import { avatarHtml } from "./profile.js?v=fix1";
-import { idKind, idPrice, MSG_MAX } from "./sim.js?v=fix1";
-import { EMOTES } from "./game.js?v=fix1";
-import { pidHtml, pidBig } from "./pid.js?v=fix1";
-import { WL, online as walletOnline, onPush as walletPush } from "./wallet.js?v=fix1"; // coin1
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=grow1";
+import { SERVER } from "./net.js?v=grow1";
+import { devKey } from "./league.js?v=grow1";
+import { avatarHtml } from "./profile.js?v=grow1";
+import { idKind, idPrice, MSG_MAX } from "./sim.js?v=grow1";
+import { EMOTES } from "./game.js?v=grow1";
+import { pidHtml, pidBig } from "./pid.js?v=grow1";
+import { WL, online as walletOnline, onPush as walletPush } from "./wallet.js?v=grow1"; // coin1
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -59,11 +59,12 @@ export function call(op, args = {}) {
 async function refresh() { const r = await call("list"); if (!r || r.err) return r; SO.lastList = Date.now(); if (r.me) setMe(r.me); SO.fr = r.fr || []; SO.inq = r.inq || []; SO.outq = r.outq || []; SO.bl = r.bl || []; SO.inv = (r.inv || []).filter((x) => x.from); badge(); rerender(); return r; }
 function onMsg(m) {
   if (m.t === "r") { const w = SO.wait.get(m.i); if (w) { SO.wait.delete(m.i); w.res(m); } return; }
-  if (m.t === "hi") { if (m.me) setMe(m.me); walletOnline(m.w).catch(() => {}); // coin1: the hello carries the wallet
+  if (m.t === "hi") { if (m.me) setMe(m.me); walletOnline(m.w).catch(() => {}); if (Array.isArray(m.chr)) m.chr.forEach((x, i) => setTimeout(() => chrNote(x), 600 + i * 3400)); /* grow1: challenge results that waited */ // coin1: the hello carries the wallet
     if (SO.onAcct) try { SO.onAcct(m); } catch (e) { console.warn("acct", e); } return; } // srv2: account status, ban, pending grants
   if (m.t !== "ev") return; const ui = SO.ui, nm = (c) => (c && c.n) || "?";
   if (m.k === "wal") { walletPush(m); return; } // coin1: an online life paid by the room
   if (["grant", "ban", "unban", "mute", "unmute", "rname", "snap", "gone"].includes(m.k)) { if (SO.onAcctEv) try { SO.onAcctEv(m); } catch (e) { console.warn("acct", e); } return; } // srv2
+  if (m.k === "chr") { chrNote(m); return; } // grow1: a friend played your challenge link
   if (m.k === "req") { if (!SO.inq.some((x) => x.id === m.from.id)) SO.inq.unshift(m.from); notify("👤", t("so_reqIn", { n: nm(m.from) }), "req"); }
   else if (m.k === "acc") { SO.outq = SO.outq.filter((x) => x.id !== m.from.id); if (!SO.fr.some((x) => x.id === m.from.id)) SO.fr.push({ ...m.from, un: 0 }); notify("🤝", t("so_accIn", { n: nm(m.from) }), "acc"); }
   else if (m.k === "rem") { SO.fr = SO.fr.filter((x) => x.id !== m.id); SO.chats.delete(m.id); }
@@ -74,6 +75,7 @@ function onMsg(m) {
   else if (m.k === "invr") { if (m.ok) ui.toast("✓ " + t("so_invJoined", { n: nm(m.from) }), "good", 3500); else ui.toast(t("so_invNo", { n: nm(m.from) }), "", 3000); }
   badge(); rerender();
 }
+const chrNote = (m) => notify(m.w ? "🏆" : "⚔️", t(m.w ? "chResW" : "chResL", { n: m.n, a: fmtNum(m.s), b: fmtNum(m.my) }), "msg"); // grow1 (strings in grow.js)
 function notify(ic, msg, kind) { const ui = SO.ui; ui.toast(ic + " " + msg, kind === "msg" ? "" : "good", 3200); if (kind === "msg") ui.note(msg, ic); }
 export function unreadTotal() { return SO.inq.length + SO.fr.reduce((a, f) => a + (f.un | 0), 0) + SO.inv.filter((x) => Date.now() - x.t < 120000).length; }
 function badge() { const b = $("l-fbdg"); if (!b) return; const n = unreadTotal(); b.textContent = n > 99 ? "99+" : n; b.classList.toggle("x-hide", !n); }

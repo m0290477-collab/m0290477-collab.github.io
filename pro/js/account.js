@@ -3,15 +3,15 @@
 // while its client id is not configured on the server (/cfg). Profile snapshots: debounced ~10 s after a save + at match end,
 // versioned (a newer save from another device wins), restored on sign-in. Owner grants arrive live over the social socket.
 // Owner panel (only reachable from the founder's own Profile, every call checked on the server). Finding-a-server overlay.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=fix1";
-import { SERVER } from "./net.js?v=fix1";
-import { devKey } from "./league.js?v=fix1";
-import { SO, call, socialRestart, errText } from "./social.js?v=fix1";
-import { avatarHtml } from "./profile.js?v=fix1";
-import { KV, jparse, newProfile } from "./store.js?v=fix1";
-import { pidHtml } from "./pid.js?v=fix1";
-import { legalButtons } from "./legal.js?v=fix1"; // coin1: Privacy / Terms
-import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=fix1"; // coin1
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=grow1";
+import { SERVER } from "./net.js?v=grow1";
+import { devKey } from "./league.js?v=grow1";
+import { SO, call, socialRestart, errText } from "./social.js?v=grow1";
+import { avatarHtml } from "./profile.js?v=grow1";
+import { KV, jparse, newProfile } from "./store.js?v=grow1";
+import { pidHtml } from "./pid.js?v=grow1";
+import { legalButtons } from "./legal.js?v=grow1"; // coin1: Privacy / Terms
+import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=grow1"; // coin1
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

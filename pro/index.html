@@ -17,7 +17,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2305070d'/%3E%3Cpath d='M14 40c6-14 14 4 20-10s12-6 16-2' stroke='%23ffc845' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="preload" href="assets/fonts/oxanium.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/keyart_lo.webp" as="image" />
-<link rel="stylesheet" href="css/app.css?v=fix1" />
+<link rel="stylesheet" href="css/app.css?v=grow1" />
 <link rel="modulepreload" href="js/vendor/three.module.min.js" />
 </head>
 <body>
@@ -113,7 +113,7 @@
         </div>
       </div>
       <div class="playbox">
-        <div class="pb-opts"><div class="dinfo x-hide" id="l-dailyinfo"></div><div class="worlds" id="l-worlds"></div><div class="seg small" id="l-diff"></div><div class="room x-hide" id="l-room"><input id="l-code" data-ip="roomCode" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" /><button class="icon-btn" id="l-share" data-ia="shareRoom"><svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8 15.8 6.7M8.2 13.2l7.6 4.1"/></svg></button></div></div>
+        <div class="pb-opts"><div class="dinfo x-hide" id="l-dailyinfo"></div><div class="worlds" id="l-worlds"></div><div class="seg small" id="l-diff"></div><div class="room x-hide" id="l-room"><input id="l-code" data-ip="roomCode" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" /><button class="icon-btn" id="l-share" data-ia="shareRoom"><svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8 15.8 6.7M8.2 13.2l7.6 4.1"/></svg></button><button class="icon-btn" id="l-qr" data-ia="qrBtn"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2zM16 16h2v2h-2z"/></svg></button></div></div>
         <button class="btn play" id="l-play"><span class="pl-shine"></span><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5-12-7.5Z"/></svg><span class="pl-txt"><b data-i="play"></b><small id="l-playsub"></small></span></button>
       </div>
     </div>
@@ -213,7 +213,8 @@
   <div class="r-grid" id="r-grid"></div>
   <div class="r-xp"><div class="r-lv"><span data-i="level"></span> <b id="r-lv">1</b></div><div class="xpbar big"><i id="r-xpbar"></i></div><div class="r-gain"><span id="r-xp"></span> · <span id="r-coins"></span></div><div class="r-season" id="r-season"></div></div>
   <div class="r-extra" id="r-extra"></div>
-  <div class="r-btns"><button class="btn ghost" id="r-lobby" data-i="lobby"></button><button class="btn ghost x-hide" id="r-watch" data-i="watchKiller"></button><button class="btn ghost x-hide" id="r-replay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg><span data-i="watchReplay"></span></button><button class="btn gold" id="r-again" data-i="playAgain"></button></div>
+  <div class="r-chres x-hide" id="r-chres" role="status"></div>
+  <div class="r-btns"><button class="btn ghost" id="r-lobby" data-i="lobby"></button><button class="btn ghost r-g x-hide" id="r-chal" data-ia="chBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9 9M4 4v4M4 4h4M20 4l-9 9M20 4v4M20 4h-4M7 14l-3 3 3 3 3-3M17 14l3 3-3 3-3-3"/></svg><span data-i="chBtn"></span></button><button class="btn ghost r-g x-hide" id="r-clip" data-ia="clipBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h12v10H3zM15 10l6-3v10l-6-3"/></svg><span data-i="clipBtn"></span></button><button class="btn ghost x-hide" id="r-watch" data-i="watchKiller"></button><button class="btn ghost x-hide" id="r-replay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg><span data-i="watchReplay"></span></button><button class="btn gold" id="r-again" data-i="playAgain"></button></div>
 </div></div>
 
 <div id="m-tut" class="modal x-hide" role="dialog" aria-modal="true"><div class="glass mcard tut">
@@ -236,6 +237,6 @@
 
 <div id="wipe" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="toasts" aria-live="polite"></div>
-<script type="module" src="js/main.js?v=fix1"></script>
+<script type="module" src="js/main.js?v=grow1"></script>
 </body>
 </html>

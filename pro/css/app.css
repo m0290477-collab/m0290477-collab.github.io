@@ -1613,3 +1613,12 @@ html:not(.calm):not(.rm) .mm-find.busy .mmf-dot { animation: mmfP 1.6s ease-in-o
 #s-custom .seg button, #s-profile .seg button { min-height: max(44px, 2.75rem); min-width: max(44px, 2.75rem); }
 #s-custom #c-useed, #s-profile .ttl { min-height: max(44px, 2.75rem); }
 #s-profile .pv-link { min-width: max(44px, 2.75rem); }
+/* grow1: challenge result, clip / challenge buttons, room QR */
+.results .r-btns { flex-wrap: wrap; } .r-g svg { width: 1.125rem; height: 1.125rem; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } #m-qr .btn { min-height: 2.75rem; }
+@media (max-height: 440px) { .results .r-btns { flex-wrap: nowrap; } .results .r-btns .r-g { flex: none; width: 2.75rem; min-width: 2.75rem; padding: 0; } .results .r-g span { display: none; } }
+.r-chres { margin: 0.25rem auto 0; padding: 0.375rem 0.875rem; border-radius: 0.75rem; background: rgba(255, 120, 100, 0.14); border: 1px solid rgba(255, 140, 120, 0.35); font-weight: 700; text-align: center; max-width: 30rem; }
+.r-chres.win { background: rgba(255, 210, 90, 0.16); border-color: rgba(255, 210, 90, 0.45); }
+.room .icon-btn#l-qr, .room .icon-btn#l-share { width: 2.75rem; height: 2.75rem; }
+.qr-card { text-align: center; max-width: 22rem; } .qr-card canvas { display: block; width: min(15rem, 52vmin); height: auto; margin: 0.5rem auto; border-radius: 0.5rem; image-rendering: pixelated; }
+.qr-url { font-size: 0.75rem; opacity: 0.75; word-break: break-all; margin: 0 0 0.5rem; }
+#replay.rp-cap #rp-again { display: none; }

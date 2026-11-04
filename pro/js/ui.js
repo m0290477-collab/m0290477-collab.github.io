@@ -1,22 +1,23 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=fix1";
-import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=fix1"; // srv1
-import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=fix1"; // srv2
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=fix1"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=fix1";
-import { legalButtons, contactNote, openFeedback } from "./legal.js?v=fix1"; import { call as socialCall } from "./social.js?v=fix1"; // coin1
-import { GTRAILS } from "./skins.js?v=fix1"; import { gtCellUrl } from "./gfx/gtrail.js?v=fix1"; // trail1
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=fix1";
-import { WORLDS, worldAsset } from "./worlds.js?v=fix1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=fix1";
-import { haptic } from "./audio.js?v=fix1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=fix1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=fix1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=fix1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=fix1";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=fix1"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=fix1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=grow1";
+import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=grow1"; // srv1
+import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=grow1"; // srv2
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=grow1"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=grow1";
+import { legalButtons, contactNote, openFeedback } from "./legal.js?v=grow1"; import { call as socialCall } from "./social.js?v=grow1"; // coin1
+import { GTRAILS } from "./skins.js?v=grow1"; import { gtCellUrl } from "./gfx/gtrail.js?v=grow1"; // trail1
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=grow1";
+import { WORLDS, worldAsset } from "./worlds.js?v=grow1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=grow1";
+import { haptic } from "./audio.js?v=grow1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=grow1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=grow1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=grow1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=grow1";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=grow1"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=grow1";
+import { growBind, growStart, growResults } from "./grow.js?v=grow1"; // grow1: challenge links, clips, room QR
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -398,7 +399,7 @@ export class UI {
     this.click($("r-again"), () => { $("m-results").classList.add("x-hide"); if (A.game.mode === "online") A.game.again(); else this.launch(A.game.cfg); });
     this.click($("r-lobby"), () => { A.game.stopMatch(); this.goLobby(); });
     this.click($("r-watch"), () => { if (!A.game.watchKiller()) this.toast(t("killerGone")); });
-    this.click($("r-replay"), () => A.game.playReplay(true)); this.click($("rp-skip"), () => A.game.endReplay()); this.click($("rp-again"), () => A.game.replayAgain());
+    growBind(this); this.click($("r-replay"), () => A.game.playReplay(true)); this.click($("rp-skip"), () => A.game.endReplay()); this.click($("rp-again"), () => A.game.replayAgain());
     this.click($("h-spec-back"), () => A.game.stopWatch());
     this.click($("t-next"), () => this.tutNext()); this.click($("t-skip"), () => this.tutDone());
     this.click($("rv-close"), () => this.closeReveal()); this.click($("rv-equip"), () => { const i = this.revealing; if (i >= 0 && this.S.unlocked("skin", i)) { this.p.skin = { k: "skin", i }; this.S.save(); this.toast("✓ " + t("equipped"), "good"); } this.closeReveal(); });
@@ -409,7 +410,8 @@ export class UI {
     this.go("lobby", "fade");
   }
   afterLogin() { this.selMode = this.p.last.mode || "classic"; this.app.applyAll(); this.goLobby(); compStartup(this); try { socialStart(this); } catch (e) { console.warn("social", e); } try { accountStart(this); } catch (e) { console.warn("account", e); } // srv1 // comp1 setTimeout(() => this.toast(t("welcome", { n: this.p.name }), "good"), 700);
-    const q = this.app.roomParam; if (q) { this.app.roomParam = ""; this.selMode = "online"; this.p.last.mode = "online"; this.p.last.room = q; this.S.save(); setTimeout(() => { if (this.cur === "lobby") this.renderLobby(); this.toast(t("roomJoined", { n: q }), "good", 4000); }, 1200); }
+    const q = this.app.roomParam; if (q) { this.app.roomParam = ""; this.selMode = "online"; this.p.last.mode = "online"; this.p.last.room = q; this.S.save(); setTimeout(() => { if (this.cur === "lobby") this.renderLobby(); this.toast(t("roomJoined", { n: q }), "good", 4000); }, 1200); if (this.app.roomGo) { this.app.roomGo = false; setTimeout(() => { if (this.cur === "lobby" && document.querySelectorAll(".modal:not(.x-hide)").length === 0) this.play(); }, 1700); } growStart(this); }
+    else if (this.app.chParam) growStart(this);
     else if (!this.S.loginState().claimed) setTimeout(() => { if (this.cur === "lobby" && $("m-reveal").classList.contains("x-hide")) this.openLogin(); }, 1500); }
   showAuth(tab = "in") {
     if (this.app.game.mode !== "attract") this.app.game.startAttract(this.p.last.world || 0, true); this.show("auth"); $("a-tabs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.v === tab)); $("f-in").classList.toggle("x-hide", tab !== "in"); $("f-up").classList.toggle("x-hide", tab !== "up"); $("in-u").value = this.S.remember; $("in-rem").checked = !!this.S.remember;
@@ -778,10 +780,12 @@ export class UI {
       if (r.lv && r.lv.up) { this.toast(t("levelUp", { n: r.lv.level }), "gold"); this.app.audio.play("level"); }
       $("sp-go").textContent = t("spinDone"); if (this.cur === "lobby") this.renderLobby(); }, this.S.settings.reduceMotion ? 400 : 4300);
   }
+  // the room to share: the running room (pause menu) or the lobby's private code (a fresh one when none / public)
+  roomCode(fromPause) { const p = this.p; let code = fromPause && this.app.game.backend && this.app.game.backend.room ? this.app.game.backend.room : (p.last.room || "");
+    if (!code || /^pub-/.test(code)) { if (fromPause) code = this.app.game.backend && this.app.game.backend.room || "pub-1"; else { code = "r-" + Math.random().toString(36).slice(2, 7); p.last.room = code; this.S.save(); $("l-code").value = code; } } return code; }
   // ---------- share an online room: native share sheet, else copy the link ----------
   async shareRoom(fromPause) {
-    const p = this.p; let code = fromPause && this.app.game.backend && this.app.game.backend.room ? this.app.game.backend.room : (p.last.room || "");
-    if (!code || /^pub-/.test(code)) { if (fromPause) code = this.app.game.backend && this.app.game.backend.room || "pub-1"; else { code = "r-" + Math.random().toString(36).slice(2, 7); p.last.room = code; this.S.save(); $("l-code").value = code; } }
+    const code = this.roomCode(fromPause);
     const url = location.origin + location.pathname + "?room=" + encodeURIComponent(code), txt = t("roomShareTxt", { n: code });
     try { if (navigator.share) { await navigator.share({ title: "Super Snake Pro", text: txt, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
     try { await navigator.clipboard.writeText(url); this.toast("🔗 " + t("roomCopied", { n: code }), "good", 3500); }
@@ -873,7 +877,7 @@ export class UI {
     for (const a of r.ach) this.toast(`${a.ic} ${t("achUnlocked", { n: t(a.id) })} · ◆${a.r}`, "gold", 3500);
     if (r.tiers) this.note(t("tierUp", { n: this.S.seasonTier() }), "✦");
     for (const i of (r.mp && r.mp.legends) || []) this.revealQ.push(i);
-    this.coins(this.p.coins);
+    this.coins(this.p.coins); growResults(this, r);
   }
 }
 function eyeSvg(e) { const one = e.n === 1, r = 9 * e.s, pr = r * e.p, eye = (cx) => `<circle cx="${cx}" cy="20" r="${r}" fill="${e.ec}" stroke="rgba(0,0,0,.35)" stroke-width="1.2"/>${e.id === "viper" ? `<ellipse cx="${cx}" cy="20" rx="${pr * 0.45}" ry="${r * 0.82}" fill="${e.pc}"/>` : `<circle cx="${cx + 1.5}" cy="21" r="${pr}" fill="${e.pc}"/>`}<circle cx="${cx - r * 0.3}" cy="${20 - r * 0.35}" r="${Math.max(1.4, r * 0.18)}" fill="#fff" opacity=".85"/>${e.lid ? `<path d="M${cx - r - 1} 20 A${r + 1} ${r + 1} 0 0 1 ${cx + r + 1} 20 Z" fill="#2a3a2a"/>` : ""}`;

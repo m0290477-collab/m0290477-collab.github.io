@@ -1,12 +1,12 @@
-// replay1: death replay. While playing, a ring buffer keeps the last 5 s at 20 Hz of everything near the player
+// replay1: death replay. While playing, a ring buffer keeps the last 10.5 s (grow1; was 5 s) at 20 Hz of everything near the player
 // (snakes as downsampled body points, food, power-ups, storm, hill, meteors, camera). Everything lives in typed arrays
 // allocated once per match; recording a sample allocates nothing. On a match-ending death the clip is played back
 // through the existing 2D/3D renderers: Replay.view() fills a view object shaped exactly like Game.build()'s output,
 // with proxy snakes whose sx()/sy() read the interpolated recorded points, so no drawing code is duplicated.
-import { bodyPoints } from "./sim.js?v=fix1";
+import { bodyPoints } from "./sim.js?v=grow1";
 
-const HZ = 20, STEP = 1000 / HZ, NS = 104, MAXS = 24, MAXP = 96, MAXF = 360, MAXPU = 16, MAXM = 8;
-export const RP_CLIP = 3600, RP_SLOW = 800, RP_SLOWK = 0.4, RP_HOLD = 450; // ms of game time shown, slow tail, speed, end hold
+const HZ = 20, STEP = 1000 / HZ, NS = 210, MAXS = 24, MAXP = 96, MAXF = 360, MAXPU = 16, MAXM = 8;
+export const RP_FULL = 10000, RP_CLIP = 3600, RP_SLOW = 800, RP_SLOWK = 0.4, RP_HOLD = 450; // ms of game time shown, slow tail, speed, end hold
 
 class Proxy { // a recorded snake, shaped like sim Snake for bodyPoints() and the renderers
   constructor() { this.px = new Float32Array(MAXP); this.py = new Float32Array(MAXP); this.n = 0; this.id = 0; this.r = 0.6; this.len = 1; this.a = 0; this.ta = 0; this.x = 0; this.y = 0; this.m = 10; this.alive = true; this.boosting = false; this.pu = new Uint8Array(12); this.slow = 0; this.name = ""; this.team = undefined; }
@@ -74,7 +74,7 @@ export class Replay {
   }
   _find(k, id) { const b = k * MAXS, n = this.ns[k]; for (let i = 0; i < n; i++) if (this.sid[b + i] === id) return i; return -1; }
   // playback clock: returns the clip time for a playback position c (ms of game time from the clip start)
-  start() { const C = this.clip; if (!C) return false; this.c = Math.max(C.t0, C.t1 - RP_CLIP); this.cStart = this.c; this.hold = 0; this.done = false; this.impactFired = false; this.cam.snap = true; this.zk = 1; this.foc = 0; return true; }
+  start(full) { const C = this.clip; if (!C) return false; this.c = Math.max(C.t0, C.t1 - (full ? RP_FULL : RP_CLIP)); /* grow1: a saved clip re-renders the last 10 s */ this.cStart = this.c; this.hold = 0; this.done = false; this.impactFired = false; this.cam.snap = true; this.zk = 1; this.foc = 0; return true; }
   get total() { const C = this.clip; if (!C) return 0; const span = C.t1 - this.cStart; const slow = Math.min(RP_SLOW, span); return (span - slow) + slow / RP_SLOWK + RP_HOLD; }
   progress() { const C = this.clip; if (!C) return 1; const span = C.t1 - this.cStart, slow = Math.min(RP_SLOW, span); const played = this.c >= C.t1 ? (span - slow) + slow / RP_SLOWK + this.hold : this.c < C.t1 - slow ? this.c - this.cStart : (span - slow) + (this.c - (C.t1 - slow)) / RP_SLOWK; return Math.min(1, played / this.total); }
   // advance by a real frame dt (s); speed eases from 1 to 0.4 over 200 ms before the slow tail

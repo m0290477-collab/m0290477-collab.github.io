@@ -1,23 +1,23 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=fix1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=fix1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=fix1";
-import { GTrail } from "./gfx/gtrail.js?v=fix1"; // trail1: cosmetic ground trail decals (never in the sim)
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=fix1";
-import { NetBackend } from "./net.js?v=fix1";
-import { pidTier, PID_GLYPH } from "./pid.js?v=fix1"; // srv2
-import { onFind, findHide, accountMatchEnd } from "./account.js?v=fix1"; // srv2
-import { t, fmtNum } from "./i18n.js?v=fix1";
-import { haptic } from "./audio.js?v=fix1";
-import { rankOf, rpDelta } from "./profile.js?v=fix1";
-import { Replay } from "./replay.js?v=fix1";
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=fix1"; // comp1
-import { onServerTrophy } from "./compui.js?v=fix1";
-import { Governor } from "./gov.js?v=fix1"; // perf2: adaptive render governor
-import { claim, claimId } from "./wallet.js?v=fix1"; // coin1: offline match coins are claimed from the server wallet
-import { emit } from "./events.js?v=fix1"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=grow1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=grow1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=grow1";
+import { GTrail } from "./gfx/gtrail.js?v=grow1"; // trail1: cosmetic ground trail decals (never in the sim)
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=grow1";
+import { NetBackend } from "./net.js?v=grow1";
+import { pidTier, PID_GLYPH } from "./pid.js?v=grow1"; // srv2
+import { onFind, findHide, accountMatchEnd } from "./account.js?v=grow1"; // srv2
+import { t, fmtNum } from "./i18n.js?v=grow1";
+import { haptic } from "./audio.js?v=grow1";
+import { rankOf, rpDelta } from "./profile.js?v=grow1";
+import { Replay } from "./replay.js?v=grow1";
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=grow1"; // comp1
+import { onServerTrophy } from "./compui.js?v=grow1";
+import { Governor } from "./gov.js?v=grow1"; // perf2: adaptive render governor
+import { claim, claimId } from "./wallet.js?v=grow1"; // coin1: offline match coins are claimed from the server wallet
+import { emit } from "./events.js?v=grow1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -145,9 +145,9 @@ export class Game {
     };
     this.troMsg = null;
     if (cfg.mode === "online") {
-      this.backend = new NetBackend({ room: cfg.room, name: p.name, skin, cb, bots: cfg.bots, pk: devKey(this.app.store) }); this.backend.connect(); this.hud.net(t("connecting"));
+      this.mseed = null; this.backend = new NetBackend({ room: cfg.room, name: p.name, skin, cb, bots: cfg.bots, pk: devKey(this.app.store) }); this.backend.connect(); this.hud.net(t("connecting"));
     } else {
-      this.backend = new LocalBackend(cfg.mode, { diff: cfg.diff, seed: cfg.seed ?? (Math.random() * 1e9) | 0 }, cb); this.backend.spawn(p.name, skin);
+      const sd = cfg.seed ?? ((Math.random() * 1e9) | 0); this.mseed = sd; /* grow1: challenge links share it */ this.backend = new LocalBackend(cfg.mode, { diff: cfg.diff, seed: sd }, cb); this.backend.spawn(p.name, skin);
       if (cfg.mode === "time") this.stats.timeLeft = MODES.time.dur;
       if (this.M.dur && cfg.mode !== "time") this.stats.timeLeft = this.M.dur;
       this.hud.net(""); this.setupMode();
@@ -594,25 +594,25 @@ export class Game {
     const ux = Math.cos(a), uy = Math.sin(a), wx = (ux * by - uy * bx) / det, wy = (ax * uy - ay * ux) / det; return Math.atan2(wy, wx);
   }
   // ---------- replay1: death replay ----------
-  playReplay(fromResults) {
-    const R = this.rec; if (!R || !R.clip || !this.backend || !this.r) return false; R.start(); const A = this.app;
+  playReplay(fromResults, cap) { // grow1: cap = clip capture (full 10 s, each rendered frame copied to the recorder)
+    const R = this.rec; if (!R || !R.clip || !this.backend || !this.r) return false; R.start(!!cap); const A = this.app;
     const k = R.clip.killer ? this.findSnake(R.clip.killer) || (this.killer && this.killer.id === R.clip.killer ? this.killer : null) : null;
-    this.replay = { from: !!fromResults, killer: R.clip.killer, kname: k ? k.name : (R.meta.get(R.clip.killer) || {}).name || "" };
+    this.replay = { cap: cap || null, from: !!fromResults, killer: R.clip.killer, kname: k ? k.name : (R.meta.get(R.clip.killer) || {}).name || "" };
     A.input.enabled = false; A.audio.boost(false); this.hud.hide(); this.hud.bannerClear && this.hud.bannerClear(); this.r.clearFx && this.r.clearFx();
     if (fromResults) document.getElementById("m-results").classList.add("x-hide");
     const M = R.meta.get(R.clip.killer) || {}; A.ui.replayShow({ killer: R.clip.killer ? { name: this.replay.kname, avt: (k && k.avt) || M.avt, fr: (k ? k.fr : M.fr) | 0 } : null, cause: R.clip.cause, self: R.clip.self, mode: this.mode });
     this._frozen = false; this.startLoop(); return true;
   }
-  replayAgain() { if (this.replay && this.rec && this.rec.clip) { this.rec.start(); this.r.clearFx && this.r.clearFx(); } }
+  replayAgain() { if (this.replay && !this.replay.cap && this.rec && this.rec.clip) { this.rec.start(); this.r.clearFx && this.r.clearFx(); } }
   replayTick(dt, now) {
     const R = this.rec, Rp = this.replay; R.advance(dt);
-    const v = R.view(this.view, dt, this.t, Rp.killer); v.fpsTarget = (this.gov ? this.gov.fpsCap(this.app.store.settings.fpsCap) : this.app.store.settings.fpsCap) || 60; this.r.frame(v); R.cam.snap = false;
+    const v = R.view(this.view, dt, this.t, Rp.killer); v.fpsTarget = (this.gov ? this.gov.fpsCap(this.app.store.settings.fpsCap) : this.app.store.settings.fpsCap) || 60; this.r.frame(v); if (Rp.cap) Rp.cap.frame(); R.cam.snap = false;
     if (!R.impactFired && R.c >= R.clip.t1) { R.impactFired = true; this.r.ring(R.clip.ix, R.clip.iy, [0.55, 0.32, 0.28], 2.2); } // fix1: small, soft, centred on the contact
     this.app.ui.replayProg(R.progress());
     if (R.done) this.endReplay();
   }
   endReplay() {
-    const Rp = this.replay; if (!Rp) return; this.replay = null; this.app.ui.replayHide(); this.r.clearFx && this.r.clearFx();
+    const Rp = this.replay; if (!Rp) return; this.replay = null; if (Rp.cap) Rp.cap.stop(); this.app.ui.replayHide(); this.r.clearFx && this.r.clearFx();
     if (Rp.from || this.ended) { this._frozen = false; this.app.ui.reshowResults(); } else this.finish("death");
   }
   // after a game over: follow the killer for a while

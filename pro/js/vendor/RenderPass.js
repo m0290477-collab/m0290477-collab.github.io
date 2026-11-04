@@ -1,7 +1,7 @@
 import {
 	Color
-} from './three.module.min.js?v=fix1';
-import { Pass } from './Pass.js?v=fix1';
+} from './three.module.min.js?v=grow1';
+import { Pass } from './Pass.js?v=grow1';
 
 class RenderPass extends Pass {
 

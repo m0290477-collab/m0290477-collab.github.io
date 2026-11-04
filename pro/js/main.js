@@ -1,20 +1,22 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=fix1";
-import { Store, KV } from "./store.js?v=fix1";
-import { setLang, applyI18n, t } from "./i18n.js?v=fix1";
-import { Audio, haptic } from "./audio.js?v=fix1";
-import { Input } from "./input.js?v=fix1";
-import { Game } from "./game.js?v=fix1";
-import { UI, Hud } from "./ui.js?v=fix1";
-import { Renderer2D } from "./render2d.js?v=fix1";
-import { startWatchdog, watchCanvas } from "./watchdog.js?v=fix1"; // perf2 guardian
+import { guard } from "./guard.js?v=grow1";
+import { Store, KV } from "./store.js?v=grow1";
+import { setLang, applyI18n, t } from "./i18n.js?v=grow1";
+import { Audio, haptic } from "./audio.js?v=grow1";
+import { Input } from "./input.js?v=grow1";
+import { Game } from "./game.js?v=grow1";
+import { UI, Hud } from "./ui.js?v=grow1";
+import { Renderer2D } from "./render2d.js?v=grow1";
+import { startWatchdog, watchCanvas } from "./watchdog.js?v=grow1"; // perf2 guardian
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
-try { const q = new URLSearchParams(location.search).get("room"); if (q && /^[a-z0-9-]{1,24}$/i.test(q)) window.__ssRoom = q.toLowerCase(); if (q) history.replaceState(null, "", location.pathname); } catch (_) {}
+// grow1: &go=1 (room QR) joins straight away; ?c=CODE opens a friend's challenge
+try { const sp = new URLSearchParams(location.search), q = sp.get("room"), c = sp.get("c"); if (q && /^[a-z0-9-]{1,24}$/i.test(q)) { window.__ssRoom = q.toLowerCase(); window.__ssGo = sp.get("go") === "1"; }
+  if (c && /^[a-z2-9]{7}$/.test(c)) window.__ssCh = c; if (q || c) history.replaceState(null, "", location.pathname); } catch (_) {}
 const $ = (id) => document.getElementById(id);
-const app = (window.SSP = {}); app.roomParam = window.__ssRoom || "";
+const app = (window.SSP = {}); app.roomParam = window.__ssRoom || ""; app.roomGo = !!window.__ssGo; app.chParam = window.__ssCh || "";
 startWatchdog(app);
 window.__bt = []; const bar = (p, msg) => { window.__bt.push([Math.round(performance.now()), p]); $("bootbar").style.width = p + "%"; $("bootpct").textContent = Math.round(p) + "%"; if (msg) $("bootmsg").textContent = msg; };
 let lastErr = 0;
@@ -55,7 +57,7 @@ async function makeRenderer(kind, quality) {
   if (kind === "3d") watchCanvas(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=fix1");
+      const m = await import("./render3d.js?v=grow1");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); /* fit1: iOS drops the GL context whenever the tab is backgrounded; only a loss that lasts 6 s while the page is VISIBLE means 3D is broken. A background loss used to end in a silent switch to 2D for the session. */ const arm = () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (document.hidden) return; if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 6000); }; if (document.hidden) document.addEventListener("visibilitychange", function v() { if (document.hidden) return; document.removeEventListener("visibilitychange", v); if (app.renderer && app.renderer.lost) arm(); }); else arm(); }, onRestored: () => { clearTimeout(app._lostT); /* fit1: rebuild 3D from scratch after a restore (meshes/textures/targets all fresh) instead of trusting a half-restored GL state */ setTimeout(() => { if (app.renderer && !app.renderer.is2D) app.switchRenderer("3d"); }, 50); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }

@@ -8,7 +8,7 @@ process.env.TZ = "UTC";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 let fail = 0, n = 0; const ok = (c, m) => { n++; if (!c) { fail++; console.log("FAIL", m); } else console.log("ok", m); };
 const dir = mkdtempSync(join(tmpdir(), "ssp-c1-")); copyFileSync(ROOT + "/server/index.js", join(dir, "index.js")); for (const f of ["sim.js", "econ.js", "skins.js", "offers.js"]) copyFileSync(ROOT + "/js/" + f, join(dir, f));
-const W = await import(join(dir, "index.js")); const E = await import(join(dir, "econ.js")); const SK = await import(join(dir, "skins.js"));
+const W = await import(join(dir, "index.js")); W.MIG.CUT = 9e15; /* grow1: test ids count as pre-coin1 */ const E = await import(join(dir, "econ.js")); const SK = await import(join(dir, "skins.js"));
 class Sql { constructor() { this.db = new DatabaseSync(":memory:"); }
   exec(q, ...b) { const st = this.db.prepare(q); if (/^\s*SELECT/i.test(q)) { const rows = st.all(...b).map((r) => ({ ...r })); return { toArray: () => rows, one: () => rows[0] }; } st.run(...b); return { toArray: () => [], one: () => undefined }; } }
 class FakeWs { constructor() { this.out = []; this.att = null; this.open = true; this.code = 0; this.L = {}; } send(s) { if (!this.open) throw new Error("closed"); this.out.push(typeof s === "string" ? JSON.parse(s) : s); }

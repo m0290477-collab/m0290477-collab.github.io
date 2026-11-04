@@ -7,7 +7,7 @@ class Sql { constructor() { this.db = new DatabaseSync(":memory:"); }
 const pidOf = async (k) => { const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("ssp-pid|" + k)); return [...new Uint8Array(h)].slice(0, 10).map((b) => b.toString(16).padStart(2, "0")).join(""); };
 export async function useServerWallet(S, dev = "ab".repeat(16)) {
   const dir = mkdtempSync(join(tmpdir(), "ssp-tw-")); copyFileSync(ROOT + "server/index.js", join(dir, "index.js")); for (const f of ["sim.js", "econ.js", "skins.js", "offers.js"]) copyFileSync(ROOT + "js/" + f, join(dir, f));
-  const W = await import(join(dir, "index.js")), wl = await import("../js/wallet.js");
+  const W = await import(join(dir, "index.js")), wl = await import("../js/wallet.js"); W.MIG.CUT = 9e15; // grow1: test ids count as pre-coin1
   const objs = new Map(), env = { ROOMS: { idFromName: (n) => n, get: (id) => ({ fetch: (u, i) => obj(id).fetch(u instanceof Request ? u : new Request(u, i)) }) } };
   const obj = (id) => { let o = objs.get(id); if (!o) { o = new W.Room({ storage: { sql: new Sql() }, acceptWebSocket() {}, getWebSockets: () => [], setWebSocketAutoResponse() {} }, env); objs.set(id, o); } return o; };
   const so = obj("social-v1"); wl.WL.S = S; S.p.dev = dev; /* the wallet follows the Store a test uses (tests build several) */ const pid = await pidOf(dev);
