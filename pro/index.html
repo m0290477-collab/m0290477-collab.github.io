@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; manifest-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' wss://super-snake-online.molierk.workers.dev https://super-snake-online.molierk.workers.dev; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; manifest-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://appleid.cdn-apple.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob: https://*.googleusercontent.com; font-src 'self'; connect-src 'self' wss://super-snake-online.molierk.workers.dev https://super-snake-online.molierk.workers.dev https://accounts.google.com/gsi/ https://appleid.apple.com; media-src 'none'; object-src 'none'; frame-src https://accounts.google.com/ https://appleid.apple.com; worker-src 'self' blob:; base-uri 'none'; form-action 'none'" />
 <meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#05070d" />
@@ -17,7 +17,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2305070d'/%3E%3Cpath d='M14 40c6-14 14 4 20-10s12-6 16-2' stroke='%23ffc845' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="preload" href="assets/fonts/oxanium.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/keyart_lo.webp" as="image" />
-<link rel="stylesheet" href="css/app.css?v=srv1" />
+<link rel="stylesheet" href="css/app.css?v=srv2" />
 <link rel="modulepreload" href="js/vendor/three.module.min.js" />
 </head>
 <body>
@@ -236,6 +236,6 @@
 
 <div id="wipe" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="toasts" aria-live="polite"></div>
-<script type="module" src="js/main.js?v=srv1"></script>
+<script type="module" src="js/main.js?v=srv2"></script>
 </body>
 </html>

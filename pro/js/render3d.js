@@ -2,22 +2,23 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import { stageBox } from "./stage.js?v=srv1";
-import * as THREE from "./vendor/three.module.min.js?v=srv1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=srv1";
+import { pidFill } from "./pid.js?v=srv2"; // srv2
+import { stageBox } from "./stage.js?v=srv2";
+import * as THREE from "./vendor/three.module.min.js?v=srv2";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=srv2";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=srv1";
-import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=srv1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=srv1";
-import { World, prefetchWorld } from "./gfx/env.js?v=srv1";
-import { Post } from "./gfx/post.js?v=srv1";
-import { Studio } from "./gfx/showcase.js?v=srv1";
-import { SoftFx } from "./gfx/fx.js?v=srv1";
-import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=srv1"; // trail1: ground trails
-import { on as onEv } from "./events.js?v=srv1";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=srv1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=srv2";
+import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=srv2";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=srv2";
+import { World, prefetchWorld } from "./gfx/env.js?v=srv2";
+import { Post } from "./gfx/post.js?v=srv2";
+import { Studio } from "./gfx/showcase.js?v=srv2";
+import { SoftFx } from "./gfx/fx.js?v=srv2";
+import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=srv2"; // trail1: ground trails
+import { on as onEv } from "./events.js?v=srv2";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=srv2";
 
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
 const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3];
@@ -410,14 +411,14 @@ export class Renderer3D {
   light(x, y, rgb, k = 1) { if (!this.Q.post || this.calm) return; this.fxLight.position.set(x, 3, y); this.fxLight.color.setRGB(rgb[0], rgb[1], rgb[2]); this.fxLight.intensity = 32 * k; }
   confetti(x, y, n = 160) { if (this.calm) n = Math.min(n, 30); const P = [[1, 0.2, 0.3], [1, 0.8, 0.1], [0.2, 0.9, 1], [0.6, 0.3, 1], [0.2, 1, 0.5], [1, 1, 1]]; for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = 2 + Math.random() * 9; this.shard(x + Math.cos(a) * 2, 2 + Math.random() * 3, y + Math.sin(a) * 2, Math.cos(a) * v, 9 + Math.random() * 10, Math.sin(a) * v, P[i % P.length], 0.35 + Math.random() * 0.2, 3 + Math.random() * 2, true); } }
 
-  _label(id, name, color, me) {
+  _label(id, name, color, me, pt) {
     let L = this.labels.get(id);
-    if (!L || L.name !== name || L.color !== color) {
+    if (!L || L.name !== name || L.color !== color || L.pt !== (pt || "")) {
       if (!L) { L = this.labelPool.pop(); if (!L) { const cv = document.createElement("canvas"); cv.width = 512; cv.height = 128; const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
         const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, toneMapped: false, fog: false })); sp.renderOrder = 10; L = { cv, tex, sp }; } this.scene.add(L.sp); this.labels.set(id, L); }
       const g = L.cv.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, 512, 128); g.setTransform(2, 0, 0, 2, 0, 0); g.font = `700 ${me ? 32 : 28}px Oxanium, "Cairo", -apple-system, "Segoe UI", Roboto, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
-      g.lineWidth = 7; g.strokeStyle = "rgba(0,0,0,0.6)"; g.strokeText(name, 128, 34); g.fillStyle = color; g.fillText(name, 128, 34);
-      L.tex.needsUpdate = true; L.name = name; L.color = color;
+      g.lineWidth = 7; g.strokeStyle = "rgba(0,0,0,0.6)"; g.strokeText(name, 128, 34); const w = g.measureText(name).width; g.fillStyle = (pt && pidFill(g, pt, 128 - w / 2, 128 + w / 2)) || color; g.fillText(name, 128, 34); // srv2: premium id tier
+      L.tex.needsUpdate = true; L.name = name; L.color = color; L.pt = pt || "";
     }
     L.used = true; return L;
   }
@@ -545,7 +546,7 @@ export class Renderer3D {
       if (s.pu && s.pu[0] > 0 && s.alive && nm < MAXS) { const rr = magReach(s.r); _m.makeScale(rr, 1, rr).setPosition(d._hx, 0.06, d._hz); _m.toArray(MR, nm * 16); nm++; }
       if (d.emo && ne < this.emoSpr.length && !v.hideNames) { const sp = this.emoSpr[ne++], ti = d.emoI | 0; if (sp.material.map !== this.emoTex[ti]) { sp.material.map = this.emoTex[ti]; sp.material.needsUpdate = true; } const es = Math.max(3.4, d._hr * 3); sp.position.set(d._hx, d._hr * 2.6 + 1.0 + es * 0.75, d._hz - d._hr * 0.4); sp.scale.set(es, es, 1); sp.visible = true; }
       if (d.gold && this.pMax && Math.random() < 0.5) this.emit(d._hx + (Math.random() - 0.5) * d._hr * 3, d._hr * 2, d._hz + (Math.random() - 0.5) * d._hr * 3, 0, 1.5, 0, [1.6, 1.2, 0.3], 0.7, 0.3, 1, -0.3);
-      if (d.name && !d.me && (Q.names > 1 || d.top) && !v.hideNames && !d.inv) { const L = this._label(s.id, d.name, d.nc || "#fff", d.me); L.sp.position.set(d._hx, d._hr * 2.6 + 1.0, d._hz - d._hr * 0.4); const sw = Math.max(5.5, d._hr * 4.5) * (d.me ? 1.05 : 0.9); L.sp.scale.set(sw, sw / 4, 1); L.sp.material.opacity = d.alpha ?? 1; L.sp.visible = true; }
+      if (d.name && !d.me && (Q.names > 1 || d.top) && !v.hideNames && !d.inv) { const L = this._label(s.id, d.name, d.nc || "#fff", d.me, d.pt); L.sp.position.set(d._hx, d._hr * 2.6 + 1.0, d._hz - d._hr * 0.4); const sw = Math.max(5.5, d._hr * 4.5) * (d.me ? 1.05 : 0.9); L.sp.scale.set(sw, sw / 4, 1); L.sp.material.opacity = d.alpha ?? 1; L.sp.visible = true; }
     }
     if (crown && !far) this.sfx.setCrown(crown._hx + (crown._fx || 0) * crown._hr * 0.3, crown._hz + (crown._fz || 0) * crown._hr * 0.3, crown._hr * 1.52, crown._hr, true); else this.sfx.setCrown(0, 0, 0, 0, false);
     for (const [id, L] of this.labels) if (!L.used) { this.scene.remove(L.sp); this.labels.delete(id); this.labelPool.push(L); }

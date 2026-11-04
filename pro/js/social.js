@@ -3,12 +3,13 @@
 // invites into the same online room, live notifications over one WebSocket to the "social-v1" object (reconnect with
 // back-off; a 30 s HTTP poll only while the socket is down), presence (online / in lobby / in a match), in-match player card.
 // No sound, no voice. Everything degrades to a friendly "offline" message when the server cannot be reached.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=srv1";
-import { SERVER } from "./net.js?v=srv1";
-import { devKey } from "./league.js?v=srv1";
-import { avatarHtml } from "./profile.js?v=srv1";
-import { idKind, idPrice, MSG_MAX } from "./sim.js?v=srv1";
-import { EMOTES } from "./game.js?v=srv1";
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=srv2";
+import { SERVER } from "./net.js?v=srv2";
+import { devKey } from "./league.js?v=srv2";
+import { avatarHtml } from "./profile.js?v=srv2";
+import { idKind, idPrice, MSG_MAX } from "./sim.js?v=srv2";
+import { EMOTES } from "./game.js?v=srv2";
+import { pidHtml, pidBig } from "./pid.js?v=srv2";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -32,19 +33,21 @@ export function socialStart(ui) {
   if (pk !== SO.pk) { SO.pk = pk; SO.me = null; SO.fr = []; SO.inq = []; SO.outq = []; SO.bl = []; SO.inv = []; SO.chats.clear(); close(); connect(); } else if (SO.up) hello();
   badge();
 }
+// srv2: after sign-in / sign-out / delete the device plays as another account: reconnect so the server tags the socket anew
+export function socialRestart() { SO.me = null; SO.fr = []; SO.inq = []; SO.outq = []; SO.bl = []; SO.inv = []; SO.chats.clear(); SO._shop = null; close(); SO.tries = 0; connect(); badge(); }
 function close() { clearTimeout(SO._rt); if (SO.ws) { SO.ws.onclose = null; try { SO.ws.close(1000); } catch (_) {} } SO.ws = null; SO.up = false; }
 function connect() {
   clearTimeout(SO._rt); if (!SO.pk) return; let ws; try { ws = new WebSocket(WS_URL + "?pk=" + SO.pk); } catch (_) { retry(); return; } SO.ws = ws;
   const to = setTimeout(() => { if (ws.readyState !== 1) try { ws.close(); } catch (_) {} }, 8000);
   ws.onopen = () => { clearTimeout(to); SO.up = true; SO.tries = 0; stopPoll(); hello(); status(SO.st, true); clearInterval(SO._ping); SO._ping = setInterval(() => { if (SO.up) try { ws.send('{"t":"ping"}'); } catch (_) {} }, 45000); };
   ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch (_) { return; } onMsg(m); };
-  ws.onclose = (e) => { clearTimeout(to); clearInterval(SO._ping); SO.up = false; SO.ws = null; for (const [, w] of SO.wait) w.res({ err: "offline" }); SO.wait.clear(); if (e.code === 4009) return; retry(); };
+  ws.onclose = (e) => { clearTimeout(to); clearInterval(SO._ping); SO.up = false; SO.ws = null; for (const [, w] of SO.wait) w.res({ err: "offline" }); SO.wait.clear(); if (e.code === 4009 || e.code === 4010) return; retry(); };
   ws.onerror = () => {};
 }
 function retry() { SO.tries++; const d = Math.min(30000, 1000 * 2 ** Math.min(5, SO.tries - 1)) * (0.8 + Math.random() * 0.4); SO._rt = setTimeout(connect, d); startPoll(); } // 1, 2, 4, 8, 16, 30 s
 function startPoll() { if (SO._poll) return; SO._poll = setInterval(() => { if (!SO.up) refresh(); }, 30000); } // fallback only while the socket is down
 function stopPoll() { clearInterval(SO._poll); SO._poll = 0; }
-async function hello() { const p = SO.ui.p, r = await call("hello", { n: p.name, av: p.av, fr: p.frame, lv: SO.ui.S.level() }); if (r && r.me) setMe(r.me); refresh(); }
+async function hello() { const p = SO.ui.p, r = await call("hello", { n: p.name, av: p.av, fr: p.frame, lv: SO.ui.S.level() }); if (r && r.me) setMe(r.me); if (r && r.rn && p.name !== r.rn) { p.name = r.rn; SO.ui.S.save(); } refresh(); } // srv2: rn = name set by the owner
 function setMe(me) { SO.me = me; const p = SO.ui.p; if (me && me.id && p.uid !== me.id) { p.uid = me.id; SO.ui.S.save(); } }
 export function status(st, force) { if (!force && SO.st === st) return; SO.st = st; if (SO.up) try { SO.ws.send(JSON.stringify({ t: "st", s: st })); } catch (_) {} }
 export function call(op, args = {}) {
@@ -55,8 +58,9 @@ export function call(op, args = {}) {
 async function refresh() { const r = await call("list"); if (!r || r.err) return r; SO.lastList = Date.now(); if (r.me) setMe(r.me); SO.fr = r.fr || []; SO.inq = r.inq || []; SO.outq = r.outq || []; SO.bl = r.bl || []; SO.inv = (r.inv || []).filter((x) => x.from); badge(); rerender(); return r; }
 function onMsg(m) {
   if (m.t === "r") { const w = SO.wait.get(m.i); if (w) { SO.wait.delete(m.i); w.res(m); } return; }
-  if (m.t === "hi") { if (m.me) setMe(m.me); return; }
+  if (m.t === "hi") { if (m.me) setMe(m.me); if (SO.onAcct) try { SO.onAcct(m); } catch (e) { console.warn("acct", e); } return; } // srv2: account status, ban, pending grants
   if (m.t !== "ev") return; const ui = SO.ui, nm = (c) => (c && c.n) || "?";
+  if (["grant", "ban", "unban", "mute", "unmute", "rname", "snap", "gone"].includes(m.k)) { if (SO.onAcctEv) try { SO.onAcctEv(m); } catch (e) { console.warn("acct", e); } return; } // srv2
   if (m.k === "req") { if (!SO.inq.some((x) => x.id === m.from.id)) SO.inq.unshift(m.from); notify("👤", t("so_reqIn", { n: nm(m.from) }), "req"); }
   else if (m.k === "acc") { SO.outq = SO.outq.filter((x) => x.id !== m.from.id); if (!SO.fr.some((x) => x.id === m.from.id)) SO.fr.push({ ...m.from, un: 0 }); notify("🤝", t("so_accIn", { n: nm(m.from) }), "acc"); }
   else if (m.k === "rem") { SO.fr = SO.fr.filter((x) => x.id !== m.id); SO.chats.delete(m.id); }
@@ -72,9 +76,9 @@ export function unreadTotal() { return SO.inq.length + SO.fr.reduce((a, f) => a 
 function badge() { const b = $("l-fbdg"); if (!b) return; const n = unreadTotal(); b.textContent = n > 99 ? "99+" : n; b.classList.toggle("x-hide", !n); }
 function rerender() { const ui = SO.ui; if (ui && ui.cur === "friends") renderFriends(ui); if (ui && ui.cur === "custom" && ui.cTab === "ids" && SO._shop) renderIds(ui, $("c-content"), true); }
 const copyId = async (id) => { try { await navigator.clipboard.writeText(String(id)); SO.ui.toast("✓ " + t("so_copied", { n: id }), "good", 1800); } catch (_) { SO.ui.toast("ID " + id, "", 4000); } };
-const errText = (e) => t("so_e_" + e) !== "so_e_" + e ? t("so_e_" + e) : t("so_e_offline");
+export const errText = (e) => t("so_e_" + e) !== "so_e_" + e ? t("so_e_" + e) : t("so_e_offline");
 const stLabel = (st) => (st === "match" ? t("so_inMatch") : st === "lobby" ? t("so_inLobby") : t("so_offline"));
-const idTag = (id) => `<span class="so-id" dir="ltr">ID ${esc(id)}</span>`;
+const idTag = (id) => pidHtml(id); // srv2: premium ids get their tier style
 
 // ---------- DOM: lobby button, Friends screen, chat, invite popup, player card, players-in-match list ----------
 function injectDom(ui) {
@@ -114,7 +118,7 @@ export function renderFriends(ui) {
     h += `<div class="pv-card"><div class="pv-h">${t("so_incoming")} · ${SO.inq.length}</div>` + (SO.inq.length ? SO.inq.map((c) => row(c, `<button class="btn gold so-b" data-acc="${esc(c.id)}">${t("so_accept")}</button><button class="btn so-b" data-dec="${esc(c.id)}">${t("so_decline")}</button>`, t("level") + " " + (c.lv | 0))).join("") : `<p class="fine">${t("so_noReq")}</p>`) + `</div>`;
     h += `<div class="pv-card"><div class="pv-h">${t("so_outgoing")} · ${SO.outq.length}</div>` + (SO.outq.length ? SO.outq.map((c) => row(c, `<button class="btn so-b" data-dec="${esc(c.id)}">${t("so_cancel")}</button>`, t("so_pending"))).join("") : `<p class="fine">${t("so_noOut")}</p>`) + `</div>`;
   } else if (tab === "add") {
-    h += `<div class="pv-card so-add"><div class="pv-h">${t("so_yourId")}</div><div class="so-myid"><b dir="ltr">${SO.me ? esc(SO.me.id) : "…"}</b>${SO.me ? `<button class="btn so-b" data-copy="${esc(SO.me.id)}">${IC.copy}<span>${t("so_copy")}</span></button>` : ""}</div><p class="fine">${t("so_shareId")}</p></div>
+    h += `<div class="pv-card so-add"><div class="pv-h">${t("so_yourId")}</div><div class="so-myid">${SO.me ? pidBig(SO.me.id) : '<b dir="ltr">…</b>'}${SO.me ? `<button class="btn so-b" data-copy="${esc(SO.me.id)}">${IC.copy}<span>${t("so_copy")}</span></button>` : ""}</div><p class="fine">${t("so_shareId")}</p></div>
       <div class="pv-card"><div class="pv-h">${t("so_findById")}</div><form class="so-find" id="so-find"><input id="so-q" inputmode="numeric" pattern="[0-9]*" maxlength="7" autocomplete="off" dir="ltr" placeholder="${t("so_idPh")}" value="${esc(SO.q || "")}"><button class="btn gold so-b" type="submit">${t("search")}</button></form><div id="so-res">${SO.res ? resCard(SO.res) : ""}</div></div>`;
   } else {
     h += `<div class="pv-card"><div class="pv-h">${t("so_blocked")} · ${SO.bl.length}</div>` + (SO.bl.length ? SO.bl.map((c) => row(c, `<button class="btn so-b" data-unb="${esc(c.id)}">${t("so_unblock")}</button>`)).join("") : `<p class="fine">${t("so_noBlocked")}</p>`) + `</div>`;
@@ -230,7 +234,7 @@ function openPlayers(ui) {
 // ---------- profile: the ID row (+ the founder's one-time claim) ----------
 export function profileIdCard(ui) {
   const p = ui.p, id = (SO.me && SO.me.id) || p.uid || "", claim = p.owner && !(SO.me && SO.me.id === "1");
-  return `<div class="pv-card so-pid"><div class="pv-h">${t("so_playerId")}</div><div class="so-myid"><b dir="ltr">${id ? esc(id) : "…"}</b>${id ? `<button class="btn so-b" data-copy="${esc(id)}">${IC.copy}<span>${t("so_copy")}</span></button>` : `<span class="fine">${t("so_idSoon")}</span>`}
+  return `<div class="pv-card so-pid"><div class="pv-h">${t("so_playerId")}</div><div class="so-myid">${id ? pidBig(id) : '<b dir="ltr">…</b>'}${id ? `<button class="btn so-b" data-copy="${esc(id)}">${IC.copy}<span>${t("so_copy")}</span></button>` : `<span class="fine">${t("so_idSoon")}</span>`}
     <button class="btn so-b" data-goids="1">${t("so_special")}</button></div>${SO.me && SO.me.id !== SO.me.id7 ? `<p class="fine">${t("so_id7")} <span dir="ltr">${esc(SO.me.id7)}</span></p>` : ""}
     ${claim ? `<form class="so-find" id="so-claim"><input id="so-cc" autocomplete="off" dir="ltr" maxlength="40" placeholder="${t("so_claimPh")}"><button class="btn gold so-b" type="submit">${t("so_claim")}</button></form>` : ""}</div>`;
 }
@@ -246,7 +250,7 @@ export async function renderIds(ui, el, keep) {
   const card = (n, sold, kind) => { const mine = SO.me && SO.me.prem.includes(n), pr = idPrice(n), sel = SO.idSel === n;
     return `<button class="item lk2 so-idc k-${kind} ${sold ? (mine ? "on" : "lock") : ""} ${sel ? "sel" : ""}" data-id5="${n}" ${sold && !mine ? 'aria-disabled="true"' : ""}><div class="sw so-idsw"><b dir="ltr">${n}</b></div><div class="meta"><b>${t("so_k_" + kind)}</b></div>${mine ? `<small class="st on">✓ ${t("so_yours")}</small>` : sold ? `<small class="st lk">${t("so_sold")}</small>` : `<small class="st buy${sel ? " go" : ""}">${sel ? t("buy", { n: "" }).trim() + " · " : ""}<span class="coin"></span>${fmtNum(pr)}</small>`}</button>`; };
   const cur = (SO.me && SO.me.id) || p.uid || "…";
-  let h = `<div class="lk-head"><h4 class="sub">${t("so_special")}</h4></div><p class="gt-sub">${t("so_specialSub")}</p><div class="so-cur pv-card"><span>${t("so_yourId")}</span><b dir="ltr">${esc(cur)}</b>${SO.me ? `<button class="btn so-b" data-copy="${esc(cur)}">${IC.copy}<span>${t("so_copy")}</span></button>` : ""}</div>
+  let h = `<div class="lk-head"><h4 class="sub">${t("so_special")}</h4></div><p class="gt-sub">${t("so_specialSub")}</p><div class="so-cur pv-card"><span>${t("so_yourId")}</span>${pidBig(cur)}${SO.me ? `<button class="btn so-b" data-copy="${esc(cur)}">${IC.copy}<span>${t("so_copy")}</span></button>` : ""}</div>
     <form class="so-find" id="so-idq"><input id="so-n5" inputmode="numeric" pattern="[0-9]*" maxlength="5" dir="ltr" autocomplete="off" placeholder="${t("so_pick5")}" value="${esc(SO.n5 || "")}"><button class="btn so-b" type="submit">${t("so_check")}</button></form><div id="so-chk">${SO.chk ? chkHtml(SO.chk, card) : ""}</div>`;
   if (!sh) h += `<p class="fine">${t("loading")}…</p>`;
   else if (sh.err) h += `<p class="so-err">${esc(errText(sh.err))}</p>`;

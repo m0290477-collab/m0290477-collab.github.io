@@ -3,7 +3,7 @@
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
 import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP } from "./sim.js";
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 5; // v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 6; // v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 // look1: bots never share a look with any live snake (players included)
 const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
@@ -16,6 +16,72 @@ const BOARD = "board-v1"; // name of the single leaderboard object (same Room cl
 // or claim for another player's id without the secret. Sign-in can later link a pid to an account.
 async function pidOf(pk) { if (typeof pk !== "string" || !/^[0-9a-f]{32,64}$/.test(pk)) return ""; const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("ssp-pid|" + pk)); return [...new Uint8Array(h)].slice(0, 10).map((b) => b.toString(16).padStart(2, "0")).join(""); }
 const J = (o, st = 200) => new Response(JSON.stringify(o), { status: st, headers: cors });
+
+// ---------- srv2: accounts, sign-in, matchmaking ----------
+const MM = "mm-v1";
+const ACCT_OPS = new Set(["acst", "snap", "pull", "out", "adel", "em1", "em2", "idt", "nonce", "gack"]); // the matchmaker: one in-memory object (same Room class) that rooms report to and players pick a room from
+export const BRACKETS = ["bs", "gp", "dc", "cq"]; // Bronze–Silver, Gold–Platinum, Diamond–Crown, Conqueror (comp1 leagues)
+export const bracketOf = (tr, cq) => (cq ? "cq" : tr >= 2800 ? "dc" : tr >= 1000 ? "gp" : "bs");
+export const MM_CFG = { WAIT: 5000, LOW: 3, HB_MS: 30000, LIVE_MS: 75000, WARM_MS: 8 * 60000, LINGER_MS: 30000, MAX: MAX_HUMANS };
+const SNAP_MAX = 64000, WARM_TICKS = 6, WARM_MASS = [24, 60, 140, 32, 220, 90, 420, 48, 170, 700, 36, 260, 110, 30, 520, 75, 1100, 40, 190, 330, 28, 130, 900, 55, 240, 26, 380, 66, 150, 1500]; // one profile snapshot (JSON text)
+export const LV_MAX = 100, xpNeed = (n) => Math.round(100 * n ** 1.6); // same curve as js/store.js
+export function lvOf(xp) { let n = 1, x = +xp || 0, need = xpNeed(1); while (n < LV_MAX && x >= need) { x -= need; n++; need = xpNeed(n); } return n; }
+// what a snapshot may gain between two saves without a server grant (coins / xp). Anything above is cut back and counted.
+export const allowance = (mins) => ({ coins: Math.round(4000 + 250 * Math.min(mins, 2880)), xp: Math.round(30000 + 3000 * Math.min(mins, 2880)) });
+const hex = (b) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+const rnd = (n) => { const b = new Uint8Array(n); crypto.getRandomValues(b); return hex(b); };
+const sha = async (s) => hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
+const b64u = (s) => { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+export const IDP = { // ID-token issuers (OpenID Connect): Google Identity Services and Sign in with Apple
+  g: { jwks: "https://www.googleapis.com/oauth2/v3/certs", iss: ["accounts.google.com", "https://accounts.google.com"] },
+  a: { jwks: "https://appleid.apple.com/auth/keys", iss: ["https://appleid.apple.com"] },
+};
+const JWK_CACHE = new Map(); // jwks url -> { t, keys } (per isolate, 1 h)
+async function jwks(url, fetcher, force) { const c = JWK_CACHE.get(url); if (c && !force && Date.now() - c.t < 3600000) return c.keys;
+  const r = await fetcher(url); if (!r.ok) throw new Error("jwks " + r.status); const j = await r.json(); const keys = Array.isArray(j && j.keys) ? j.keys : []; JWK_CACHE.set(url, { t: Date.now(), keys }); return keys; }
+// verifies an RS256 ID token against the issuer's JWKS: signature, iss, aud, exp / iat (60 s skew). Returns the claims or throws.
+export async function verifyIdToken(tok, { jwks: url, iss, aud, now = Date.now(), fetcher = (u) => fetch(u) }) {
+  if (!aud) throw new Error("not configured"); const parts = String(tok || "").split("."); if (parts.length !== 3 || tok.length > 8000) throw new Error("malformed");
+  let h, c; try { h = JSON.parse(new TextDecoder().decode(b64u(parts[0]))); c = JSON.parse(new TextDecoder().decode(b64u(parts[1]))); } catch (_) { throw new Error("malformed"); }
+  if (!h || h.alg !== "RS256" || typeof h.kid !== "string") throw new Error("alg");
+  let keys = await jwks(url, fetcher), k = keys.find((x) => x.kid === h.kid); if (!k) { keys = await jwks(url, fetcher, true); k = keys.find((x) => x.kid === h.kid); } if (!k) throw new Error("kid");
+  const key = await crypto.subtle.importKey("jwk", { kty: k.kty, n: k.n, e: k.e, alg: "RS256", ext: true }, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
+  const ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64u(parts[2]), new TextEncoder().encode(parts[0] + "." + parts[1])); if (!ok) throw new Error("signature");
+  if (!iss.includes(c.iss)) throw new Error("iss"); const auds = Array.isArray(c.aud) ? c.aud : [c.aud]; if (!auds.includes(aud)) throw new Error("aud");
+  const s = now / 1000; if (!(c.exp > s - 60)) throw new Error("expired"); if (c.iat && c.iat > s + 300) throw new Error("iat"); if (typeof c.sub !== "string" || !c.sub || c.sub.length > 255) throw new Error("sub");
+  return c;
+}
+// srv2: pick a room. R: room name -> {room, br, i, h humans, b bots, t last report, pend just sent here}; P: recent pickers.
+// 1) a room of the player's own bracket that has players and space; 2) a neighbouring bracket's populated room when the own
+// bracket is quiet (fewer than LOW players looked for a match in 2 min) or the player has already waited WAIT ms; 3) while the
+// own bracket is busy but has no open populated room, hold (the client asks again in 2.5 s); 4) the bracket's warm room (still
+// in memory, bots playing) or its first room with space. A friend invite never comes here (it names the room).
+export function mmPick(R, P, { pid, br, w = 0, x = "", now = Date.now() }) {
+  P.set(pid, { br, t: now }); if (P.size > 5000) for (const [k, v] of P) if (now - v.t > 120000) P.delete(k);
+  const rooms = [...R.values()], live = (r) => now - r.t < MM_CFG.LIVE_MS, cap = (r) => r.h + (r.pend || 0) < MM_CFG.MAX && r.room !== x;
+  const withP = (b) => rooms.filter((r) => r.br === b && live(r) && r.h > 0 && cap(r)).sort((a, c) => c.h - a.h || a.i - c.i);
+  const out = (r, fb, why) => { r.pend = (r.pend || 0) + 1; return { room: r.room, br: r.br, i: r.i, h: r.h, b: r.b, fb: fb || "", why, my: br }; };
+  const own = withP(br); if (own.length) return out(own[0], "", "match");
+  const pop = [...P.entries()].filter(([k, v]) => k !== pid && v.br === br && now - v.t < 120000).length, bi = BRACKETS.indexOf(br);
+  const nb = [bi - 1, bi + 1].filter((i) => i >= 0 && i < BRACKETS.length).map((i) => BRACKETS[i]);
+  if (w >= MM_CFG.WAIT || pop < MM_CFG.LOW) { const c = nb.flatMap(withP).sort((a, b2) => b2.h - a.h); if (c.length) return out(c[0], c[0].br, w >= MM_CFG.WAIT ? "wait" : "low"); }
+  else return { hold: 1, br, wait: 2500, my: br };
+  const warm = rooms.filter((r) => r.br === br && now - r.t < MM_CFG.WARM_MS && cap(r)).sort((a, c) => c.t - a.t)[0]; if (warm) return out(warm, "", "warm");
+  for (let i = 1; i <= 60; i++) { const n = "pub-" + br + "-" + i; let r = R.get(n); if (r && !cap(r)) continue; if (!r) { r = { room: n, br, i, h: 0, b: TARGET_SNAKES, t: now, pend: 0, up: now }; R.set(n, r); } return out(r, "", "new"); }
+  return { room: "pub-" + br + "-1", br, i: 1, h: 0, b: 0, fb: "", why: "overflow", my: br };
+}
+const EMAIL_RE = /^[^\s@<>"'`()[\]\\,;:]{1,64}@(?:[^\s@<>"'`()[\]\\,;:.]+\.)+[^\s@<>"'`()[\]\\,;:.\d]{2,24}$/u, PERM = 9e15;
+export const maskEm = (e) => { const [u, d] = String(e).split("@"); return (u || "").slice(0, 2) + "***@" + (d || ""); };
+// owner grants: cosmetics ("av:", "fr:", "ti:", "bn:", "bd:") go to p.cos, every other item id to p.owned (same fields the client uses)
+export function applyItems(P, items) { if (!Array.isArray(P.owned)) P.owned = []; if (!Array.isArray(P.cos)) P.cos = []; for (const it of items) { const L = /^(av|fr|ti|bn|bd):/.test(it) ? P.cos : P.owned; if (!L.includes(it)) L.push(it); } }
+// email codes go out through an HTTP mail API only when MAIL_API_KEY + MAIL_FROM are configured (Resend-compatible by default)
+async function sendMail(env, to, code) {
+  if (!env.MAIL_API_KEY || !env.MAIL_FROM) return "off";
+  try { const r = await fetch(env.MAIL_API_URL || "https://api.resend.com/emails", { method: "POST", headers: { authorization: "Bearer " + env.MAIL_API_KEY, "content-type": "application/json" },
+    body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject: "Super Snake sign-in code: " + code, text: "Your Super Snake sign-in code is " + code + ". It expires in 10 minutes. If you did not ask for it, you can ignore this email.\n\nرمز الدخول إلى Super Snake هو " + code + " وينتهي خلال 10 دقائق." }) }); return r.ok ? "ok" : "fail"; } catch (_) { return "fail"; } }
+const cfgOf = (env) => ({ g: (env && env.GOOGLE_CLIENT_ID) || "", a: (env && env.APPLE_SERVICES_ID) || "", ar: (env && env.APPLE_REDIRECT_URI) || "https://billke.com/pro/", em: env && env.MAIL_API_KEY && env.MAIL_FROM ? 1 : 0 });
+const pre = (req) => { const origin = req.headers.get("Origin"); return origin && !ORIGINS.some((r) => r.test(origin)) ? new Response("origin not allowed", { status: 403 }) : null; };
+const opts = (m) => new Response(null, { headers: { ...cors, "access-control-allow-methods": m, "access-control-allow-headers": "content-type", "access-control-max-age": "86400" } });
 
 export default {
   async fetch(req, env) {
@@ -47,6 +113,27 @@ export default {
       if (req.method !== "POST") return J({ err: "method" }, 405); if (+(req.headers.get("content-length") || 0) > 1200) return new Response('{"err":"big"}', { status: 413, headers: cors });
       return so.fetch(new Request("https://social/s/op", { method: "POST", body: (await req.text()).slice(0, 1200) }));
     }
+    // srv2: sign-in config (client ids are public values; empty = that button stays hidden)
+    if (url.pathname === "/cfg") return new Response(JSON.stringify(cfgOf(env)), { headers: { ...cors, "cache-control": "public, max-age=300" } });
+    // srv2: accounts + sign-in. Google / Apple ID tokens are verified HERE (JWKS); only verified claims reach the social object.
+    if (url.pathname === "/a") {
+      if (req.method === "OPTIONS") return opts("POST"); const bad = pre(req); if (bad) return bad; if (req.method !== "POST") return J({ err: "method" }, 405);
+      if (+(req.headers.get("content-length") || 0) > SNAP_MAX + 2000) return new Response('{"err":"big"}', { status: 413, headers: cors });
+      let B; try { B = JSON.parse((await req.text()).slice(0, SNAP_MAX + 2000)); } catch (_) { return J({ err: "json" }, 400); } if (!B || typeof B !== "object") return J({ err: "json" }, 400);
+      delete B._v; const C = cfgOf(env);
+      if (B.op === "google" || B.op === "apple") { const k = B.op === "google" ? "g" : "a";
+        try { const c = await verifyIdToken(String(B.tok || ""), { ...IDP[k], aud: k === "g" ? C.g : C.a }); const ev = c.email_verified === true || c.email_verified === "true";
+          B._v = { k, sub: c.sub, em: ev && typeof c.email === "string" ? c.email.toLowerCase().slice(0, 254) : "", n: typeof c.nonce === "string" ? c.nonce : "" }; B.op = "idt"; }
+        catch (e) { return J({ err: "token", m: String(e && e.message).slice(0, 60) }); } }
+      else if (B.op === "test") { if (!env.TEST_KEY || typeof B.key !== "string" || B.key !== env.TEST_KEY) return J({ err: "op" }); const nm = String(B.name || "").toLowerCase(); if (!/^[a-z0-9-]{3,32}$/.test(nm)) return J({ err: "bad" }); B._v = { k: "t", sub: nm, em: "", n: "" }; B.op = "idt"; B.nn = 1; }
+      return env.ROOMS.get(env.ROOMS.idFromName(SOCIAL)).fetch(new Request("https://social/a/op", { method: "POST", body: JSON.stringify(B) }));
+    }
+    // srv2: matchmaking -> the matchmaker picks a live room in the player's skill bracket (server-decided from the board)
+    if (url.pathname === "/mm") {
+      if (req.method === "OPTIONS") return opts("GET"); const bad = pre(req); if (bad) return bad;
+      const pid = await pidOf(url.searchParams.get("pk") || ""); if (!pid) return J({ err: "pk" }, 400);
+      return env.ROOMS.get(env.ROOMS.idFromName(MM)).fetch(new Request("https://mm/m/pick?pid=" + pid + "&w=" + (Math.max(0, Math.min(60000, +url.searchParams.get("w") || 0)) | 0) + "&x=" + encodeURIComponent((url.searchParams.get("x") || "").slice(0, 24))));
+    }
     return new Response("Super Snake online server", { headers: { "content-type": "text/plain" } });
   },
 };
@@ -55,23 +142,34 @@ export class Room {
   constructor(state, env) { this.state = state; this.env = env; this.clients = new Set(); this.sim = null; this.timer = null; this.botSeq = 0; }
   init(params) {
     this.noBots = params.get("bots") === "0" && !(params.get("name_room") || "").startsWith("pub-");
-    this.room = params.get("name_room") || "pub-1";
+    this.room = params.get("name_room") || "pub-1"; const mb = /^pub-(bs|gp|dc|cq)-(\d{1,2})$/.exec(this.room); this.br = mb ? mb[1] : ""; this.bi = mb ? +mb[2] : 0; // srv2: bracket room
     this.sim = new Sim({ dt: TICK, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true, powerups: true, events: true, evtFirst: 35 });
-    this.sim.diff = 1;
-    this.fill();
+    this.sim.diff = 1; this.errs = this.errs || 0; this.t0 = Date.now();
+    this.fill(true); for (let k = 0; k < WARM_TICKS; k++) this.sim.step(() => true); this.sim.drain(); for (const d of this.sim.snakes.filter((x) => !x.alive)) this.sim.removeSnake(d); this.fill(); // srv2 warm start: a world already in progress
     this.last = Date.now(); this.acc = 0;
   }
-  fill() {
+  fill(warm) {
     if (this.noBots) return;
     const alive = this.sim.snakes.filter((s) => s.alive).length; let want = TARGET_SNAKES - alive;
-    while (want-- > 0) { const i = this.botSeq++; const b = this.sim.addSnake(pickBotName(this.sim.snakes, i), uniqSkin(this.sim.snakes, i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5] }); if (b) b.tr = botTrophies(i); }
+    // srv2: a fresh public room starts mid-game: bots spawn at mixed sizes (same rules as every other snake), later refills start small
+    while (want-- > 0) { const i = this.botSeq++; const m = warm && !this.noBots ? WARM_MASS[i % WARM_MASS.length] : undefined; const b = this.sim.addSnake(pickBotName(this.sim.snakes, i), uniqSkin(this.sim.snakes, i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5], m }); if (b) b.tr = botTrophies(i); }
   }
+  // srv2: the room tells the matchmaker who is here (on join / leave and every 30 s while players are in). No alarms: an empty room costs nothing.
+  hb(force) { const now = Date.now(); if (!this.room.startsWith("pub-") || (!force && now - (this.hbT || 0) < MM_CFG.HB_MS)) return; this.hbT = now;
+    const h = [...this.clients].filter((c) => c.joined).length, b = this.sim ? this.sim.snakes.filter((s) => s.alive && s.bot).length : 0;
+    const body = JSON.stringify({ room: this.room, br: this.br, i: this.bi, h, b, e: this.errs | 0, up: this.t0 || now });
+    try { const r = this.env.ROOMS.get(this.env.ROOMS.idFromName(MM)).fetch("https://mm/m/hb", { method: "POST", body }); if (r && r.catch) r.catch(() => {}); } catch (_) {} }
   async fetch(req) {
     const url = new URL(req.url);
     if (url.pathname.startsWith("/b/")) return this.board(req, url); // comp1: this instance is the board object
+    if (url.pathname.startsWith("/s/") || url.pathname === "/sws" || url.pathname === "/a/op") this.maint(); // srv2: owner maintenance set at deploy time (never via a request)
     if (url.pathname.startsWith("/s/")) return this.socialHttp(req, url); // srv1: this instance is the social object
     if (url.pathname === "/sws") return this.socialWs(req, url);
-    if (!this.sim) this.init(url.searchParams);
+    if (url.pathname === "/a/op") return this.acctHttp(req); // srv2: accounts (only the worker builds this request)
+    if (url.pathname.startsWith("/m/")) return this.mmHttp(req, url); // srv2: this instance is the matchmaker
+    // srv2: a room kept in memory while empty resumes where it was; after WARM_MS it starts a fresh warm world
+    if (this.sim && !this.clients.size && this.idleAt && Date.now() - this.idleAt > MM_CFG.WARM_MS) this.sim = null;
+    if (!this.sim) this.init(url.searchParams); this.idleAt = 0; clearTimeout(this.lingerT); this.lingerT = 0;
     const humans = [...this.clients].length;
     const pair = new WebSocketPair(); const [client, server] = Object.values(pair); server.accept();
     if (humans >= MAX_HUMANS) { server.send(JSON.stringify({ t: "full" })); server.close(4001, "full"); return new Response(null, { status: 101, webSocket: client }); }
@@ -86,7 +184,10 @@ export class Room {
   drop(c) {
     if (!this.clients.has(c)) return; this.clients.delete(c);
     if (c.snake && c.snake.alive) { this.sim.kill(c.snake, 0, 4); this.score(c, c.snake); }
-    if (!this.clients.size && this.timer) { clearInterval(this.timer); this.timer = null; }
+    this.hb(true);
+    // srv2: the world keeps running for LINGER_MS after the last player leaves (a quick "play again" lands in the same live
+    // world), then pauses in memory; no timer is left behind, so an empty room makes no requests at all
+    if (!this.clients.size && this.timer) { this.idleAt = Date.now(); clearTimeout(this.lingerT); this.lingerT = setTimeout(() => { if (!this.clients.size && this.timer) { clearInterval(this.timer); this.timer = null; } }, MM_CFG.LINGER_MS); }
   }
   send(c, m) { try { c.ws.send(typeof m === "string" ? m : m); } catch (_) {} }
   bcast(m) { for (const c of this.clients) if (c.joined) this.send(c, m); }
@@ -107,14 +208,17 @@ export class Room {
     if (!m || typeof m.t !== "string") return;
     if (m.t === "hello") {
       c.name = cleanName(m.name); c.skin = sanitizeSkin(m.skin); c.joined = true;
-      if (!c.pidP && typeof m.pk === "string") c.pidP = pidOf(m.pk).then(async (pid) => { c.pid = pid; if (pid) this.uidOf(c); if (!pid || !this.ranked()) return; try { const r = await (await this.boardStub().fetch("https://board/b/get?pid=" + pid)).json(); if (r && Number.isFinite(r.tr)) { c.tr = r.tr; if (c.snake) c.snake.tr = r.tr; this.send(c, JSON.stringify({ t: "tro0", tr: r.tr, ss: r.ss })); } } catch (_) {} });
-      this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, tick: this.sim.tick, dt: TICK, R: this.sim.R, snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
+      // srv2: device -> account (canonical player id) + ban / mute first, then trophies for that account
+      if (!c.pidP && typeof m.pk === "string") c.pidP = pidOf(m.pk).then(async (dp) => { if (!dp) return; c.dp = dp; const u = await this.uidOf(c); c.pid = (u && u.cp) || dp; if (!this.clients.has(c) || c.banned) return; if (!this.ranked()) return; try { const r = await (await this.boardStub().fetch("https://board/b/get?pid=" + c.pid)).json(); if (r && Number.isFinite(r.tr)) { c.tr = r.tr; if (c.snake) c.snake.tr = r.tr; this.send(c, JSON.stringify({ t: "tro0", tr: r.tr, ss: r.ss })); } } catch (_) {} });
+      const hs = [...this.clients].filter((o) => o.joined).length;
+      this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, br: this.br, bi: this.bi, h: hs, b: this.sim.snakes.filter((s) => s.alive && s.bot).length, tick: this.sim.tick, dt: TICK, R: this.sim.R, snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
+      this.hb(true);
       this.send(c, this.foodFull());
       this.send(c, JSON.stringify({ t: "pus", l: this.sim.pus.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
       const E = this.sim.evt; if (E) this.send(c, JSON.stringify({ t: "evt", k: E.k, ph: "start", id: E.id || 0, d: Math.max(1, Math.round(E.t)), late: 1 }));
       if (this.sim.mets.length) this.send(c, JSON.stringify({ t: "met", l: this.sim.mets.map((M) => [M.id, Math.round(M.x * 100) / 100, Math.round(M.y * 100) / 100, M.r, +M.t.toFixed(2), M.T]) }));
     } else if (m.t === "spawn") {
-      if (!c.joined || (c.snake && c.snake.alive)) return;
+      if (!c.joined || c.banned || (c.snake && c.snake.alive)) return;
       if (c.snake) this.sim.removeSnake(c.snake);
       if (typeof m.name === "string") c.name = cleanName(m.name); if (m.skin) c.skin = sanitizeSkin(m.skin);
       // a human replaces one bot so rooms stay the same size
@@ -129,13 +233,16 @@ export class Room {
       if (k === s) return; // noself1: own body never kills (an old client's self report is ignored)
       this.sim.kill(s, by, by ? 3 : 1);
     } else if (m.t === "emo") { // quick emote: one per second per player, relayed to everyone else in the room
-      const s = c.snake, e = m.e | 0; if (!s || !s.alive || e < 0 || e > 5 || now - (c.lastEmo || 0) < 1000) return; c.lastEmo = now;
+      const s = c.snake, e = m.e | 0; if (!s || !s.alive || e < 0 || e > 5 || now - (c.lastEmo || 0) < 1000 || (c.mute && c.mute > now)) return; c.lastEmo = now; // srv2: muted players send no emotes
       const msg = JSON.stringify({ t: "emo", id: s.id, e }); for (const o of this.clients) if (o !== c && o.joined) this.send(o, msg);
     } else if (m.t === "ping") this.send(c, JSON.stringify({ t: "pong", c: m.c, s: Date.now(), tick: this.sim.tick }));
   }
   // srv1: public id of a human in this room (shown on the in-match player card, used to add them as a friend)
-  uidOf(c) { this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + c.pid).then((r) => r.json()).then((r) => { if (!r || !/^\d{1,7}$/.test(r.id || "")) return; c.uid = r.id;
-    const s = c.snake; if (s && s.alive && s.uid !== r.id) { s.uid = r.id; this.bcast(JSON.stringify({ t: "uid", id: s.id, u: r.id })); } this.send(c, JSON.stringify({ t: "myid", u: r.id })); }).catch(() => {}); }
+  // srv2: also returns the account (canonical pid), a ban (the room refuses the player) and a chat mute
+  uidOf(c) { return this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + c.dp).then((r) => r.json()).then((r) => { if (!r || !/^\d{1,7}$/.test(r.id || "")) return r;
+    if (r.ban) { c.banned = 1; this.send(c, JSON.stringify({ t: "ban", u: r.ban })); if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4); try { c.ws.close(4003, "banned"); } catch (_) {} return r; }
+    c.mute = r.mute || 0; c.uid = r.id; if (r.nm) { c.name = cleanName(r.nm); if (c.snake) c.snake.name = c.name; }
+    const s = c.snake; if (s && s.alive && s.uid !== r.id) { s.uid = r.id; this.bcast(JSON.stringify({ t: "uid", id: s.id, u: r.id })); } this.send(c, JSON.stringify({ t: "myid", u: r.id })); return r; }).catch(() => null); }
   // ---------- comp1: trophies (server-decided), board object (leaderboards, weekly/monthly contests, monthly seasons) ----------
   ranked() { return this.room.startsWith("pub-") && !this.noBots; } // private rooms never move trophies (no farming with friends)
   boardStub() { return this.env.ROOMS.get(this.env.ROOMS.idFromName(BOARD)); }
@@ -145,7 +252,7 @@ export class Room {
     const atDeath = 1 + this.sim.snakes.filter((o) => o.alive && o !== s && o.m > s.m).length, place = Math.min(L.best, atDeath);
     const kills = s.kills | 0, life = (Date.now() - L.t0) / 1000, sc = Math.round(Math.max(L.bm, s.m));
     const d = trophyDelta({ place, field, kills, life, t: c.tr | 0, online: 1 });
-    const body = JSON.stringify({ pid: c.pid, name: c.name, d, kl: kills, sc: life >= TROPHY.LIFE_MIN ? sc : 0 });
+    const body = JSON.stringify({ pid: c.pid, name: c.name, d, kl: kills, sc: life >= TROPHY.LIFE_MIN ? sc : 0, u: c.uid || "" });
     this.boardStub().fetch("https://board/b/rec", { method: "POST", body }).then((r) => r.json()).then((r) => {
       if (!r || !r.ok) return; c.tr = r.tr; if (c.snake === s) s.tr = r.tr;
       if (this.clients.has(c)) this.send(c, JSON.stringify({ t: "tro", d: r.d, tr: r.tr, ss: r.ss, pl: place, f: field, k: kills, sc, life: Math.round(life) }));
@@ -156,7 +263,7 @@ export class Room {
     q.exec("CREATE TABLE IF NOT EXISTS pl (pid TEXT PRIMARY KEY, name TEXT, tr INTEGER, ss TEXT, pk INTEGER, wk TEXT, wtr INTEGER, wkl INTEGER, wsc INTEGER, mo TEXT, mtr INTEGER, mkl INTEGER, msc INTEGER, n INTEGER, upd INTEGER)");
     for (const [n, c] of [["ss", "tr"], ["wk", "wtr"], ["wk", "wkl"], ["wk", "wsc"], ["mo", "mtr"], ["mo", "mkl"], ["mo", "msc"]]) q.exec(`CREATE INDEX IF NOT EXISTS i_${n}_${c} ON pl(${n}, ${c} DESC)`);
     q.exec("CREATE TABLE IF NOT EXISTS fin (per TEXT, met TEXT, pid TEXT, rk INTEGER, v INTEGER, cl INTEGER DEFAULT 0, PRIMARY KEY (per, met, pid))");
-    q.exec("CREATE INDEX IF NOT EXISTS i_fin_pid ON fin(pid, cl)"); q.exec("CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT)");
+    q.exec("CREATE INDEX IF NOT EXISTS i_fin_pid ON fin(pid, cl)"); try { q.exec("ALTER TABLE pl ADD COLUMN u TEXT"); } catch (_) {} /* srv2: public id (premium ids styled on the leaderboard) */ q.exec("CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT)");
     return q;
   }
   // period rollover (lazy, on the first request of a new week / month): freeze the final top lists that earn rewards
@@ -176,20 +283,23 @@ export class Room {
         if (!r) return { tr: 0, ss: M, pk: 0, wtr: 0, wkl: 0, wsc: 0, mtr: 0, mkl: 0, msc: 0 };
         const o = { ...r }; if (o.ss !== M) { o.tr = seasonCarry(o.tr); o.pk = o.tr; o.ss = M; } if (o.wk !== W) { o.wk = W; o.wtr = o.wkl = o.wsc = 0; } if (o.mo !== M) { o.mo = M; o.mtr = o.mkl = o.msc = 0; } return o; };
       let B = {}; if (req.method === "POST") { try { B = JSON.parse((await req.text()).slice(0, 600)) || {}; } catch (_) { B = {}; } }
-      if (op === "get") { const pid = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400); const v = view(row(pid)); return J({ tr: v.tr, ss: M }); }
+      if (op === "get") { const pid = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400); const v = view(row(pid));
+        const cq = v.tr >= TROPHY.CONQ_MIN && q.exec("SELECT COUNT(*) AS n FROM pl WHERE ss = ? AND tr > ?", M, v.tr).one().n < TROPHY.CONQ_N ? 1 : 0; return J({ tr: v.tr, ss: M, cq }); } // srv2: cq = Conqueror (top 50 with 4,100+)
+      if (op === "del") { const pid = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400); q.exec("DELETE FROM pl WHERE pid = ?", pid); q.exec("DELETE FROM fin WHERE pid = ?", pid); this.lbc.clear(); return J({ ok: 1 }); } // srv2: account delete (internal)
       if (op === "rec") { // internal: a room reports one finished life
         const pid = String(B.pid || ""); if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400);
         const d = Math.max(TROPHY.ON_MIN, Math.min(TROPHY.ON_MAX, B.d | 0)), kl = Math.max(0, Math.min(60, B.kl | 0)), sc = Math.max(0, Math.min(1e6, B.sc | 0));
         const v = view(row(pid)), tr = Math.max(0, Math.min(TROPHY.MAX, v.tr + d)), ap = tr - v.tr;
         q.exec("INSERT OR REPLACE INTO pl (pid, name, tr, ss, pk, wk, wtr, wkl, wsc, mo, mtr, mkl, msc, n, upd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
           pid, cleanName(B.name), tr, M, Math.max(v.pk | 0, tr), W, (v.wtr | 0) + ap, (v.wkl | 0) + kl, Math.max(v.wsc | 0, sc), M, (v.mtr | 0) + ap, (v.mkl | 0) + kl, Math.max(v.msc | 0, sc), ((v.n | 0) + 1), now);
+        if (/^\d{1,7}$/.test(String(B.u || ""))) q.exec("UPDATE pl SET u = ? WHERE pid = ?", String(B.u), pid);
         return J({ ok: 1, d: ap, tr, ss: M });
       }
       if (op === "top") { // ?k=tr|wtr|wkl|wsc|mtr|mkl|msc  -> top 50 (cached 20 s; ids shown shortened)
         const k = url.searchParams.get("k") || "tr"; if (!["tr", "wtr", "wkl", "wsc", "mtr", "mkl", "msc"].includes(k)) return J({ err: "k" }, 400);
         const c = this.lbc.get(k); if (c && now - c.t < 20000) return J(c.o);
         const where = k === "tr" ? "ss = ?" : k[0] === "w" ? `wk = ? AND ${k} > 0` : `mo = ? AND ${k} > 0`, per = k === "tr" || k[0] === "m" ? M : W;
-        const list = q.exec(`SELECT pid, name, ${k} AS v FROM pl WHERE ${where} ORDER BY ${k} DESC, upd ASC LIMIT 50`, per).toArray().map((r, i) => ({ r: i + 1, n: r.name, v: r.v, id: r.pid.slice(0, 6) }));
+        const list = q.exec(`SELECT pid, name, u, ${k} AS v FROM pl WHERE ${where} ORDER BY ${k} DESC, upd ASC LIMIT 50`, per).toArray().map((r, i) => ({ r: i + 1, n: r.name, v: r.v, id: r.pid.slice(0, 6), u: r.u || "" }));
         const o = { k, per, list, conqN: TROPHY.CONQ_N, conqMin: TROPHY.CONQ_MIN, t: now }; this.lbc.set(k, { t: now, o }); return J(o);
       }
       if (op === "me" || op === "claim") {
@@ -222,6 +332,21 @@ export class Room {
     q.exec("CREATE TABLE IF NOT EXISTS rd (pid TEXT, cv TEXT, last INTEGER, PRIMARY KEY (pid, cv))");
     q.exec("CREATE TABLE IF NOT EXISTS inv (a TEXT, b TEXT, room TEXT, t INTEGER, PRIMARY KEY (a, b))");
     q.exec("CREATE TABLE IF NOT EXISTS rep (id INTEGER PRIMARY KEY AUTOINCREMENT, by TEXT, who TEXT, mid INTEGER, tx TEXT, t INTEGER)");
+    // srv2: accounts. au = one account (pid = its canonical player id: the device id it was created from); dl = device -> account;
+    // snp = versioned profile snapshot per canonical id; dv = devices seen; ban / mute; gr = owner grants; aud = admin audit log
+    q.exec("CREATE TABLE IF NOT EXISTS au (aid TEXT PRIMARY KEY, pid TEXT UNIQUE, email TEXT, gsub TEXT, asub TEXT, tsub TEXT, t INTEGER, last INTEGER)");
+    for (const c of ["email", "gsub", "asub", "tsub"]) q.exec(`CREATE INDEX IF NOT EXISTS i_au_${c} ON au(${c})`);
+    q.exec("CREATE TABLE IF NOT EXISTS dl (dp TEXT PRIMARY KEY, aid TEXT, t INTEGER)"); q.exec("CREATE INDEX IF NOT EXISTS i_dl_aid ON dl(aid)");
+    q.exec("CREATE TABLE IF NOT EXISTS snp (pid TEXT PRIMARY KEY, sv INTEGER, coins INTEGER, xp INTEGER, lv INTEGER, js TEXT, t INTEGER, sus INTEGER DEFAULT 0)");
+    q.exec("CREATE TABLE IF NOT EXISTS dv (dp TEXT PRIMARY KEY, cp TEXT, t0 INTEGER, t1 INTEGER, ua TEXT)"); q.exec("CREATE INDEX IF NOT EXISTS i_dv_cp ON dv(cp)");
+    q.exec("CREATE TABLE IF NOT EXISTS ecode (email TEXT PRIMARY KEY, h TEXT, exp INTEGER, n INTEGER, dp TEXT, t INTEGER)");
+    q.exec("CREATE TABLE IF NOT EXISTS nonce (n TEXT PRIMARY KEY, dp TEXT, t INTEGER)");
+    q.exec("CREATE TABLE IF NOT EXISTS ban (pid TEXT PRIMARY KEY, until INTEGER, why TEXT, t INTEGER)");
+    q.exec("CREATE TABLE IF NOT EXISTS mute (pid TEXT PRIMARY KEY, until INTEGER, why TEXT, t INTEGER)");
+    q.exec("CREATE TABLE IF NOT EXISTS gr (gid INTEGER PRIMARY KEY AUTOINCREMENT, pid TEXT, coins INTEGER, items TEXT, why TEXT, t INTEGER, ack INTEGER DEFAULT 0)"); q.exec("CREATE INDEX IF NOT EXISTS i_gr_pid ON gr(pid, ack)");
+    q.exec("CREATE TABLE IF NOT EXISTS aud (id INTEGER PRIMARY KEY AUTOINCREMENT, t INTEGER, act TEXT, tgt TEXT, why TEXT, d TEXT)");
+    for (const c of ["res INTEGER DEFAULT 0", "rwhy TEXT", "rt INTEGER"]) try { q.exec("ALTER TABLE rep ADD COLUMN " + c); } catch (_) {} // srv2: reports can be resolved
+    for (const c of ["nr INTEGER DEFAULT 0", "nro TEXT"]) try { q.exec("ALTER TABLE acct ADD COLUMN " + c); } catch (_) {} // srv2: name reset by the owner (rooms use the server name)
     q.exec("INSERT OR IGNORE INTO ids (num, pid, kind, t) VALUES ('1', '', 'o', 0)"); // id 1 is reserved for the founder: never assigned at random, only by the one-time claim
     return q;
   }
@@ -250,7 +375,9 @@ export class Room {
     const me = this.sAcct(pid); const other = () => { const o = this.sPid(m.id); return o && o !== pid ? o : ""; };
     if (op === "hello") { // profile summary for friend lists + cards (name filtered like chat)
       const nm = filterText(cleanName(m.n)).t.slice(0, 16) || "Guest", av = typeof m.av === "string" && /^(p([0-9]|1[0-9]|2[0-3])|f\d{1,3})$/.test(m.av) ? m.av : "p0";
-      q.exec("UPDATE acct SET name = ?, av = ?, fr = ?, lv = ?, seen = ? WHERE pid = ?", nm, av, Math.max(0, Math.min(17, m.fr | 0)), Math.max(1, Math.min(100, m.lv | 0)), now, pid); this.sVis(pid);
+      const keep = me.nr && (nm === me.nro || nm === me.name); // srv2: after an owner name reset the old name is refused; the server name stands until the player picks a new one
+      q.exec("UPDATE acct SET name = ?, av = ?, fr = ?, lv = ?, seen = ?, nr = ? WHERE pid = ?", keep ? me.name : nm, av, Math.max(0, Math.min(17, m.fr | 0)), Math.max(1, Math.min(100, m.lv | 0)), now, keep ? 1 : 0, pid); this.sVis(pid);
+      if (keep) return { ok: 1, me: this.sMe(pid), rn: me.name };
       return { ok: 1, me: this.sMe(pid) }; }
     if (op === "me") return { me: this.sMe(pid) };
     if (op === "list") {
@@ -283,7 +410,7 @@ export class Room {
       const list = q.exec("SELECT id, f, tx, t FROM msg WHERE cv = ? ORDER BY id DESC LIMIT ?", cv, CHAT_KEEP).toArray().reverse().map((r) => ({ i: r.id, me: r.f === pid ? 1 : 0, tx: r.tx, t: r.t }));
       if (list.length) q.exec("INSERT OR REPLACE INTO rd (pid, cv, last) VALUES (?, ?, ?)", pid, cv, list[list.length - 1].i); return { id: m.id, list, card: this.sCard(o, 1) }; }
     if (op === "read") { const o = other(); if (!o) return { err: "none" }; const cv = Room.cv(pid, o), r = q.exec("SELECT MAX(id) AS n FROM msg WHERE cv = ?", cv).one(); if (r && r.n) q.exec("INSERT OR REPLACE INTO rd (pid, cv, last) VALUES (?, ?, ?)", pid, cv, r.n); return { ok: 1 }; }
-    if (op === "send") { const o = other(); if (!o || !isFr(o)) return { err: "notfriend" }; if (this.sBlocked(pid, o)) return { err: "blocked" };
+    if (op === "send") { const o = other(); if (!o || !isFr(o)) return { err: "notfriend" }; if (this.sBlocked(pid, o)) return { err: "blocked" }; const mu = this.muteOf(pid); if (mu) return { err: "muted", until: mu };
       const raw = String(m.tx || ""); if (!raw.trim()) return { err: "empty" }; if ([...raw].length > MSG_MAX) return { err: "long" }; if (this.sLimit(pid, "send", 20) || this.sLimit(pid, "send1", 3, 2000)) return { err: "rate" }; const f = filterText(raw); if (!f.t) return { err: "empty" };
       const cv = Room.cv(pid, o); q.exec("INSERT INTO msg (cv, f, tx, t) VALUES (?, ?, ?, ?)", cv, pid, f.t, now); const id = q.exec("SELECT MAX(id) AS n FROM msg WHERE cv = ?", cv).one().n;
       const cut = q.exec("SELECT id FROM msg WHERE cv = ? ORDER BY id DESC LIMIT 1 OFFSET ?", cv, CHAT_KEEP - 1).toArray()[0]; if (cut) q.exec("DELETE FROM msg WHERE cv = ? AND id < ?", cv, cut.id); // keep the last 100
@@ -313,36 +440,208 @@ export class Room {
     if (op === "paid") { q.exec("UPDATE ids SET tok = NULL WHERE num = ? AND pid = ? AND kind = 'p'", String(m.n || ""), pid); return { ok: 1 }; } // payment done: the sale can no longer be undone
     return { err: "op" };
   }
-  async sOp(pid, m) { // the one op that needs an await (hashing the founder code) is resolved here, then everything else is synchronous
+  // srv2: the device id (dp) a request came from -> the account's canonical player id. Every social row is keyed by the canonical
+  // id, so a device that signs in sees that account's id, friends, chats and special ids at once.
+  canon(dp) { const q = this.sdb(); const r = q.exec("SELECT a.pid AS p FROM dl JOIN au a ON a.aid = dl.aid WHERE dl.dp = ?", dp).toArray()[0]; return r && r.p ? r.p : dp; }
+  banOf(cp, dp) { const q = this.sdb(), now = Date.now(); const r = q.exec("SELECT until FROM ban WHERE pid IN (?, ?) AND until > ? ORDER BY until DESC LIMIT 1", cp, dp || cp, now).toArray()[0]; return r ? r.until : 0; }
+  muteOf(cp) { const r = this.sdb().exec("SELECT until FROM mute WHERE pid = ? AND until > ?", cp, Date.now()).toArray()[0]; return r ? r.until : 0; }
+  async sOp(dp, m) { // the ops that need an await (hashing, mail, sign-in) are resolved here, then everything else is synchronous
+    m = m || {}; const pid = this.canon(dp), op = String(m.op || "");
+    try { if (ACCT_OPS.has(op)) return await this.aop(dp, pid, m); if (op.startsWith("a_")) return await this.adm(pid, m); } catch (e) { this.serr = (this.serr | 0) + 1; return { err: "server", m: String(e && e.message).slice(0, 100) }; }
+    const bu = this.banOf(pid, dp); if (bu && op !== "me") return { err: "banned", until: bu };
     if (m && m.op === "claim1") { if (this.sLimit(pid, "claim", 5, 600000)) return { err: "rate" }; this.sAcct(pid);
       const h = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("ssp-own|" + String(m.code || "").trim().toUpperCase())))].map((b) => b.toString(16).padStart(2, "0")).join("");
       const q = this.sdb(), r = q.exec("SELECT pid FROM ids WHERE num = '1'").toArray()[0];
       if (h !== OWNER_H) return { err: "bad" }; if (r && r.pid && r.pid !== pid) return { err: "taken" };
       q.exec("UPDATE ids SET pid = ?, t = ? WHERE num = '1'", pid, Date.now()); q.exec("UPDATE acct SET own = 1 WHERE pid = ?", pid); this.sVis(pid); return { ok: 1, me: this.sMe(pid) }; }
-    try { return this.sop(pid, m || {}); } catch (e) { return { err: "server", m: String(e && e.message).slice(0, 100) }; }
+    try { return this.sop(pid, m || {}); } catch (e) { this.serr = (this.serr | 0) + 1; return { err: "server", m: String(e && e.message).slice(0, 100) }; }
+  }
+  // ---------- srv2: accounts (link a device to an account, sign-in, profile snapshots) ----------
+  devAcct(dp) { return this.sdb().exec("SELECT a.* FROM dl JOIN au a ON a.aid = dl.aid WHERE dl.dp = ?", dp).toArray()[0] || null; }
+  aView(dp) { const A = this.devAcct(dp); if (!A) return null; const r = this.srow(A.pid); return { aid: A.aid.slice(0, 8), g: A.gsub ? 1 : 0, a: A.asub ? 1 : 0, e: A.email ? maskEm(A.email) : "", tt: A.tsub ? 1 : 0, own: r && r.own ? 1 : 0, since: A.t }; }
+  snapSv(cp) { const r = this.sdb().exec("SELECT sv FROM snp WHERE pid = ?", cp).toArray()[0]; return r ? r.sv : 0; }
+  link(dp, cp, k, sub) {
+    const q = this.sdb(), now = Date.now(), col = { e: "email", g: "gsub", a: "asub", t: "tsub" }[k]; if (!col) return { err: "bad" };
+    const A = q.exec(`SELECT * FROM au WHERE ${col} = ?`, sub).toArray()[0], cur = this.devAcct(dp); let mode;
+    if (A) { if (cur && cur.aid === A.aid) mode = "same"; else { q.exec("INSERT OR REPLACE INTO dl (dp, aid, t) VALUES (?, ?, ?)", dp, A.aid, now); mode = "restore"; } } // a known account: this device now plays as it
+    else if (cur) { if (cur[col]) return { err: "has" }; q.exec(`UPDATE au SET ${col} = ? WHERE aid = ?`, sub, cur.aid); mode = "added"; } // signed in already: one more way to sign in
+    else { const mine = q.exec("SELECT * FROM au WHERE pid = ?", cp).toArray()[0];
+      if (mine) { if (mine[col]) return { err: "has" }; q.exec(`UPDATE au SET ${col} = ? WHERE aid = ?`, sub, mine.aid); q.exec("INSERT OR REPLACE INTO dl (dp, aid, t) VALUES (?, ?, ?)", dp, mine.aid, now); mode = "added"; }
+      else { const aid = rnd(12); q.exec("INSERT INTO au (aid, pid, email, gsub, asub, tsub, t, last) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", aid, cp, k === "e" ? sub : null, k === "g" ? sub : null, k === "a" ? sub : null, k === "t" ? sub : null, now, now);
+        q.exec("INSERT OR REPLACE INTO dl (dp, aid, t) VALUES (?, ?, ?)", dp, aid, now); mode = "new"; } } // a new account from this device's current profile (keeps its id, friends, id 1 if it holds it)
+    q.exec("UPDATE au SET last = ? WHERE aid = (SELECT aid FROM dl WHERE dp = ?)", now, dp);
+    const ncp = this.canon(dp); this.sAcct(ncp); const sn = q.exec("SELECT sv, js FROM snp WHERE pid = ?", ncp).toArray()[0];
+    q.exec("UPDATE dv SET cp = ? WHERE dp = ?", ncp, dp);
+    return { ok: 1, mode, acct: this.aView(dp), me: this.sMe(ncp), snap: mode === "restore" && sn ? { sv: sn.sv, js: sn.js } : null, sv: sn ? sn.sv : 0 };
+  }
+  // a real delete: the account, its links, snapshot, social rows, special ids and board row. Ban rows stay (they only hold ids).
+  purge(cp) {
+    const q = this.sdb(), A = q.exec("SELECT aid FROM au WHERE pid = ?", cp).toArray()[0], me = this.srow(cp), fr = this.sFriends(cp);
+    if (A) { q.exec("DELETE FROM dl WHERE aid = ?", A.aid); q.exec("DELETE FROM au WHERE aid = ?", A.aid); } q.exec("DELETE FROM dl WHERE dp = ?", cp);
+    for (const T of ["fr", "rq", "bl", "inv"]) q.exec(`DELETE FROM ${T} WHERE a = ? OR b = ?`, cp, cp);
+    q.exec("DELETE FROM msg WHERE cv LIKE ? OR cv LIKE ?", cp + ":%", "%:" + cp); q.exec("DELETE FROM rd WHERE pid = ? OR cv LIKE ? OR cv LIKE ?", cp, cp + ":%", "%:" + cp);
+    q.exec("DELETE FROM rep WHERE by = ? OR who = ?", cp, cp); for (const T of ["gr", "snp", "mute", "nonce"]) q.exec(`DELETE FROM ${T} WHERE ${T === "nonce" ? "dp" : "pid"} = ?`, cp);
+    q.exec("DELETE FROM dv WHERE cp = ? OR dp = ?", cp, cp); q.exec("DELETE FROM ids WHERE pid = ? AND num != '1'", cp); q.exec("DELETE FROM acct WHERE pid = ?", cp);
+    if (me) for (const f of fr) this.sPush(f, { k: "rem", id: me.vis });
+    let ws = []; try { ws = this.state.getWebSockets(cp); } catch (_) {} for (const w of ws) try { w.send('{"t":"ev","k":"gone"}'); w.close(4010, "deleted"); } catch (_) {}
+    try { const r = this.boardStub().fetch("https://board/b/del?pid=" + cp); if (r && r.catch) r.catch(() => {}); } catch (_) {}
+  }
+  snapOp(dp, cp, m) {
+    const q = this.sdb(), now = Date.now(), js = String(m.js || ""); if (js.length > SNAP_MAX) return { err: "big" }; if (this.sLimit(cp, "snap", 20)) return { err: "rate" };
+    let P; try { P = JSON.parse(js, (k, v) => (k === "__proto__" || k === "constructor" || k === "prototype" ? undefined : v)); } catch (_) { return { err: "json" }; }
+    if (!P || typeof P !== "object" || Array.isArray(P) || !Number.isFinite(+P.coins) || !Number.isFinite(+P.xp) || +P.coins < 0 || +P.xp < 0) return { err: "bad" };
+    delete P.dev; delete P._ck; delete P.ssv; // the device secret never leaves the device; checksums are rebuilt on restore
+    const prev = q.exec("SELECT sv, coins, xp, t, sus FROM snp WHERE pid = ?", cp).toArray()[0];
+    if (prev && (m.sv | 0) !== prev.sv) return { err: "stale", sv: prev.sv, js: q.exec("SELECT js FROM snp WHERE pid = ?", cp).one().js }; // another device saved first: take that save
+    let coins = Math.floor(+P.coins), xp = Math.floor(+P.xp), adj = null, sus = prev ? prev.sus | 0 : 0;
+    // server-checked economy: coins / xp may only rise as fast as play can earn them (owner grants are added here directly)
+    const al = prev ? allowance((now - prev.t) / 60000) : { coins: 5e6, xp: 5e8 }, bc = prev ? prev.coins : 0, bx = prev ? prev.xp : 0;
+    if (coins > bc + al.coins) { coins = bc + al.coins; adj = { coins }; sus++; } if (xp > bx + al.xp) { xp = bx + al.xp; adj = { ...(adj || {}), xp }; sus++; }
+    P.coins = coins; P.xp = xp; const sv = (prev ? prev.sv : 0) + 1, lv = lvOf(xp);
+    q.exec("INSERT OR REPLACE INTO snp (pid, sv, coins, xp, lv, js, t, sus) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", cp, sv, coins, xp, lv, JSON.stringify(P), now, sus);
+    let ws = []; try { ws = this.state.getWebSockets(cp); } catch (_) {} for (const w of ws) if (w !== m._ws) try { w.send(JSON.stringify({ t: "ev", k: "snap", sv })); } catch (_) {} // other signed-in devices
+    return { ok: 1, sv, adj, lv };
+  }
+  async aop(dp, cp, m) {
+    const q = this.sdb(), now = Date.now(), op = m.op;
+    if (op === "acst") return { acct: this.aView(dp), sv: this.snapSv(cp), ban: this.banOf(cp, dp), mute: this.muteOf(cp), me: this.sMe(this.sAcct(cp).pid) };
+    if (op === "snap") return this.snapOp(dp, cp, m);
+    if (op === "pull") { const r = q.exec("SELECT sv, js FROM snp WHERE pid = ?", cp).toArray()[0]; return r ? { sv: r.sv, js: r.js } : { sv: 0, js: "" }; }
+    if (op === "gack") { const ids = (Array.isArray(m.ids) ? m.ids : []).slice(0, 20).map((x) => x | 0); for (const g of ids) q.exec("UPDATE gr SET ack = 1 WHERE gid = ? AND pid = ?", g, cp); return { ok: 1 }; }
+    if (op === "nonce") { if (this.sLimit(dp, "nonce", 10)) return { err: "rate" }; const n = rnd(16); q.exec("DELETE FROM nonce WHERE t < ?", now - 900000); q.exec("INSERT INTO nonce (n, dp, t) VALUES (?, ?, ?)", n, dp, now); return { n }; }
+    if (op === "idt") { const v = m._v; if (!v || !["g", "a", "t"].includes(v.k) || typeof v.sub !== "string") return { err: "token" }; if (this.sLimit(dp, "link", 10)) return { err: "rate" };
+      if (v.k !== "t") { const r = q.exec("SELECT n FROM nonce WHERE n = ? AND dp = ? AND t > ?", String(v.n || ""), dp, now - 900000).toArray()[0]; if (!r) return { err: "nonce" }; q.exec("DELETE FROM nonce WHERE n = ?", r.n); } // one use, this device, 15 min
+      return this.link(dp, cp, v.k, v.sub); }
+    if (op === "em1") { const em = String(m.email || "").trim().toLowerCase(); if (!EMAIL_RE.test(em) || em.length > 254) return { err: "email" };
+      if (!this.env || !this.env.MAIL_API_KEY || !this.env.MAIL_FROM) return { err: "mail_off" };
+      if (this.sLimit(dp, "em1", 3, 600000) || this.sLimit(em, "em1", 4, 3600000)) return { err: "rate" };
+      const b = new Uint32Array(1); crypto.getRandomValues(b); const code = String(100000 + (b[0] % 900000));
+      q.exec("INSERT OR REPLACE INTO ecode (email, h, exp, n, dp, t) VALUES (?, ?, ?, 0, ?, ?)", em, await sha("ssp-em|" + em + "|" + code), now + 600000, dp, now);
+      const st = await sendMail(this.env, em, code); if (st !== "ok") { q.exec("DELETE FROM ecode WHERE email = ?", em); return { err: "mail_fail" }; } return { ok: 1, exp: 600 }; }
+    if (op === "em2") { const em = String(m.email || "").trim().toLowerCase(), code = String(m.code || "").replace(/\D/g, ""); const r = q.exec("SELECT * FROM ecode WHERE email = ?", em).toArray()[0];
+      if (!r || r.exp < now) return { err: "expired" }; if (r.dp !== dp) return { err: "expired" }; if (r.n >= 5) return { err: "tries" };
+      if ((await sha("ssp-em|" + em + "|" + code)) !== r.h) { q.exec("UPDATE ecode SET n = n + 1 WHERE email = ?", em); return { err: "code", left: 4 - r.n }; }
+      q.exec("DELETE FROM ecode WHERE email = ?", em); return this.link(dp, cp, "e", em); }
+    if (op === "out") { q.exec("DELETE FROM dl WHERE dp = ?", dp); q.exec("UPDATE dv SET cp = ? WHERE dp = ?", dp, dp); return { ok: 1 }; }
+    if (op === "adel") { const A = this.devAcct(dp); if (!A) return { err: "none" }; const r = this.srow(A.pid); if (r && r.own) return { err: "owner" }; this.purge(A.pid); return { ok: 1 }; }
+    return { err: "op" };
+  }
+  async acctHttp(req) { let B = {}; try { B = JSON.parse(await req.text()) || {}; } catch (_) {} const dp = await pidOf(String(B.pk || "")); if (!dp) return J({ err: "pk" }, 400); return J(await this.sOp(dp, B)); }
+  // ---------- srv2: owner-only maintenance. Input comes ONLY from the deployment (worker binding MAINT, set by
+  // /workspace/work/srv2/move_id1.sh with the Cloudflare API token); no request can choose what runs. Each MAINT key runs once.
+  maint() {
+    const raw = this.env && this.env.MAINT; if (!raw || this._mDone === raw) return; this._mDone = raw; let M; try { M = JSON.parse(raw); } catch (_) { return; }
+    const q = this.sdb(); q.exec("CREATE TABLE IF NOT EXISTS smeta (k TEXT PRIMARY KEY, v TEXT)"); if (!M || !/^[0-9a-f]{16,64}$/.test(M.key || "")) return;
+    if (q.exec("SELECT v FROM smeta WHERE k = ?", "maint:" + M.key).toArray().length) return; let out;
+    try { out = M.op === "move1" ? this.moveId1(String(M.to || "")) : { err: "op" }; } catch (e) { out = { err: "server", m: String(e && e.message).slice(0, 100) }; }
+    q.exec("INSERT OR REPLACE INTO smeta (k, v) VALUES (?, ?)", "maint:" + M.key, JSON.stringify({ t: Date.now(), ...out }));
+    if (out.ok) q.exec("INSERT INTO aud (t, act, tgt, why, d) VALUES (?, 'move1', '1', ?, ?)", Date.now(), "owner maintenance: id 1 moved to the account of " + M.to, JSON.stringify(out).slice(0, 400));
+  }
+  // id 1 -> the account that holds 7-digit id `to` (its coins, skins, friends, level and trophies stay: they are keyed by that account);
+  // the 7-digit number is released. A previous holder of id 1 (if any) loses the owner flag and gets a fresh 7-digit id.
+  moveId1(to) {
+    const q = this.sdb(), now = Date.now(); if (!/^[1-9]\d{6}$/.test(to)) return { err: "bad" };
+    const r = q.exec("SELECT pid FROM ids WHERE num = ? AND kind = 'b'", to).toArray()[0]; if (!r || !r.pid) return { err: "notfound" }; const tp = r.pid;
+    const one = q.exec("SELECT pid FROM ids WHERE num = '1'").toArray()[0], old = one && one.pid && one.pid !== tp ? one.pid : "";
+    if (old) { q.exec("UPDATE acct SET own = 0 WHERE pid = ?", old); let n = ""; for (let k = 0; k < 40 && !n; k++) { const b = new Uint32Array(1); crypto.getRandomValues(b); const c = String(1000000 + (b[0] % 9000000)); if (!q.exec("SELECT num FROM ids WHERE num = ?", c).toArray().length) n = c; }
+      q.exec("INSERT INTO ids (num, pid, kind, t) VALUES (?, ?, 'b', ?)", n, old, now); q.exec("UPDATE acct SET id7 = ? WHERE pid = ?", n, old); this.sVis(old); }
+    q.exec("UPDATE ids SET pid = ?, t = ? WHERE num = '1'", tp, now); q.exec("UPDATE acct SET own = 1, id7 = '1' WHERE pid = ?", tp); q.exec("DELETE FROM ids WHERE num = ? AND pid = ?", to, tp); this.sVis(tp);
+    let ws = []; try { ws = this.state.getWebSockets(tp); } catch (_) {} for (const w of ws) try { w.close(4012, "id changed"); } catch (_) {} // the game reconnects and gets id 1
+    this.sPresAll(tp); return { ok: 1, to, prev: old ? "moved" : "none", friends: this.sFriends(tp).length };
+  }
+  // ---------- srv2: owner admin (only the account holding id 1; checked here on every call, never on the client) ----------
+  grantTo(cp, coins, items, why) {
+    const q = this.sdb(), now = Date.now(); q.exec("INSERT INTO gr (pid, coins, items, why, t) VALUES (?, ?, ?, ?, ?)", cp, coins, JSON.stringify(items), why, now);
+    const gid = q.exec("SELECT MAX(gid) AS n FROM gr WHERE pid = ?", cp).one().n, r = q.exec("SELECT * FROM snp WHERE pid = ?", cp).toArray()[0]; let sv = 0;
+    if (r) { let P = null; try { P = JSON.parse(r.js); } catch (_) {} if (P) { P.coins = (+P.coins || 0) + coins; applyItems(P, items); if (!Array.isArray(P.rc)) P.rc = []; P.rc.push("adm:" + gid); sv = r.sv + 1; q.exec("UPDATE snp SET sv = ?, coins = ?, js = ? WHERE pid = ?", sv, P.coins, JSON.stringify(P), cp); } }
+    const live = this.sPush(cp, { k: "grant", g: { id: gid, c: coins, it: items }, sv }); return { gid, sv, live };
+  }
+  async adm(cp, m) {
+    const q = this.sdb(), now = Date.now(), op = String(m.op), me = this.srow(cp);
+    if (!me || !me.own) { this.denied = (this.denied | 0) + 1; return { err: "forbidden" }; } if (this.sLimit(cp, "adm", 150)) return { err: "rate" };
+    const why = String(m.why || "").trim().slice(0, 200), card = (p) => { const r = this.srow(p); return r ? { id: r.vis, n: r.name, lv: r.lv | 0, av: r.av, fr: r.fr | 0, own: r.own ? 1 : 0 } : { id: "—", n: "(deleted)" }; };
+    const log = (act, tgt, d) => q.exec("INSERT INTO aud (t, act, tgt, why, d) VALUES (?, ?, ?, ?, ?)", now, act, tgt || "", why, JSON.stringify(d || {}).slice(0, 400));
+    const devs = (p) => [...new Set([p, ...q.exec("SELECT dl.dp AS d FROM dl JOIN au a ON a.aid = dl.aid WHERE a.pid = ?", p).toArray().map((r) => r.d), ...q.exec("SELECT dp AS d FROM dv WHERE cp = ?", p).toArray().map((r) => r.d)])];
+    if (op === "a_find") { const s = String(m.q || "").trim().slice(0, 24); if (!s) return { list: [] }; const pids = new Set(); const byId = this.sPid(s); if (byId) pids.add(byId);
+      if (!/^\d+$/.test(s)) for (const r of q.exec("SELECT pid FROM acct WHERE name LIKE ? ESCAPE '\\' ORDER BY seen DESC LIMIT 25", "%" + s.replace(/[\\%_]/g, (c) => "\\" + c) + "%").toArray()) pids.add(r.pid);
+      return { list: [...pids].slice(0, 25).map((p) => ({ ...card(p), ban: this.banOf(p) ? 1 : 0, mute: this.muteOf(p) ? 1 : 0, acc: q.exec("SELECT aid FROM au WHERE pid = ?", p).toArray().length ? 1 : 0, seen: (this.srow(p) || {}).seen || 0 })) }; }
+    if (op === "a_view") { const t = this.sPid(m.id); if (!t) return { err: "notfound" }; const r = this.srow(t), A = q.exec("SELECT * FROM au WHERE pid = ?", t).toArray()[0], sn = q.exec("SELECT sv, coins, xp, lv, t, sus, length(js) AS sz FROM snp WHERE pid = ?", t).toArray()[0];
+      const linked = new Set(A ? q.exec("SELECT dp FROM dl WHERE aid = ?", A.aid).toArray().map((x) => x.dp) : []), bn = q.exec("SELECT until, why, t FROM ban WHERE pid = ? AND until > ?", t, now).toArray()[0], mu = q.exec("SELECT until, why, t FROM mute WHERE pid = ? AND until > ?", t, now).toArray()[0];
+      return { card: { ...card(t), id7: r.id7, seen: r.seen, t: r.t, nr: r.nr ? 1 : 0 }, pid: t.slice(0, 8),
+        acct: A ? { g: A.gsub ? 1 : 0, a: A.asub ? 1 : 0, e: A.email ? maskEm(A.email) : "", tt: A.tsub ? 1 : 0, since: A.t, last: A.last } : null, snap: sn || null,
+        devices: q.exec("SELECT dp, ua, t0, t1 FROM dv WHERE cp = ? ORDER BY t1 DESC LIMIT 12", t).toArray().map((d) => ({ d: d.dp.slice(0, 6), ua: d.ua, t0: d.t0, t1: d.t1, ln: linked.has(d.dp) ? 1 : 0 })),
+        reps: q.exec("SELECT id, by, tx, t, res FROM rep WHERE who = ? ORDER BY id DESC LIMIT 30", t).toArray().map((x) => ({ id: x.id, by: card(x.by), tx: x.tx, t: x.t, res: x.res | 0 })), repBy: q.exec("SELECT COUNT(*) AS n FROM rep WHERE by = ?", t).one().n,
+        ban: bn || null, mute: mu || null, grants: q.exec("SELECT gid, coins, items, why, t, ack FROM gr WHERE pid = ? ORDER BY gid DESC LIMIT 10", t).toArray(), friends: q.exec("SELECT COUNT(*) AS n FROM fr WHERE a = ?", t).one().n, prem: this.sMe(t).prem }; }
+    if (op === "a_srv") { let mm = null; try { mm = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(MM)).fetch("https://mm/m/list")).json(); } catch (_) {}
+      let ws = []; try { ws = this.state.getWebSockets(); } catch (_) {} const seen = new Map(); for (const w of ws) { let a = null; try { a = w.deserializeAttachment(); } catch (_) {} if (a && a.pid) seen.set(a.pid, seen.get(a.pid) === "match" ? "match" : a.st); }
+      const st = [...seen.values()], rooms = (mm && mm.rooms) || [];
+      return { rooms, online: seen.size, lobby: st.filter((x) => x !== "match").length, match: st.filter((x) => x === "match").length, inRooms: rooms.reduce((a, r) => a + (r.live ? r.h : 0), 0),
+        msgMin: q.exec("SELECT COUNT(*) AS n FROM msg WHERE t > ?", now - 60000).one().n, msg10: q.exec("SELECT COUNT(*) AS n FROM msg WHERE t > ?", now - 600000).one().n / 10,
+        errs: { social: this.serr | 0, rooms: rooms.reduce((a, r) => a + (r.e | 0), 0), denied: this.denied | 0 }, players: q.exec("SELECT COUNT(*) AS n FROM acct").one().n, accounts: q.exec("SELECT COUNT(*) AS n FROM au").one().n,
+        open: q.exec("SELECT COUNT(*) AS n FROM rep WHERE res = 0 OR res IS NULL").one().n, mm: mm ? 1 : 0, at: now }; }
+    if (op === "a_reps") return { list: q.exec("SELECT id, by, who, tx, t, res, rwhy FROM rep ORDER BY (res = 1) ASC, id DESC LIMIT 60").toArray().map((x) => ({ id: x.id, by: card(x.by), who: card(x.who), tx: x.tx, t: x.t, res: x.res | 0, rwhy: x.rwhy || "" })) };
+    if (op === "a_aud") return { list: q.exec("SELECT id, t, act, tgt, why, d FROM aud ORDER BY id DESC LIMIT 100").toArray() };
+    if (why.length < 3) return { err: "reason" }; // every action below needs a reason and goes into the audit log
+    if (op === "a_res") { const rid = m.rid | 0; if (!q.exec("SELECT id FROM rep WHERE id = ?", rid).toArray().length) return { err: "none" }; q.exec("UPDATE rep SET res = 1, rwhy = ?, rt = ? WHERE id = ?", why, now, rid); log("resolve", "", { rid }); return { ok: 1 }; }
+    const t = this.sPid(m.id); if (!t) return { err: "notfound" }; if (t === cp) return { err: "self" }; const tr = this.srow(t), tid = tr.vis; if (tr.own) return { err: "owner" };
+    if (op === "a_ban") { const mins = Math.max(0, Math.min(525600, m.mins | 0)), until = mins ? now + mins * 60000 : PERM; for (const d of devs(t)) q.exec("INSERT OR REPLACE INTO ban (pid, until, why, t) VALUES (?, ?, ?, ?)", d, until, why, now);
+      this.sPush(t, { k: "ban", u: until }); log("ban", tid, { mins: mins || "perm" }); return { ok: 1, until }; }
+    if (op === "a_unban") { for (const d of devs(t)) q.exec("DELETE FROM ban WHERE pid = ?", d); this.sPush(t, { k: "unban" }); log("unban", tid); return { ok: 1 }; }
+    if (op === "a_mute") { const mins = Math.max(0, Math.min(525600, m.mins | 0)), until = mins ? now + mins * 60000 : PERM; q.exec("INSERT OR REPLACE INTO mute (pid, until, why, t) VALUES (?, ?, ?, ?)", t, until, why, now); this.sPush(t, { k: "mute", u: until }); log("mute", tid, { mins: mins || "perm" }); return { ok: 1, until }; }
+    if (op === "a_unmute") { q.exec("DELETE FROM mute WHERE pid = ?", t); this.sPush(t, { k: "unmute" }); log("unmute", tid); return { ok: 1 }; }
+    if (op === "a_grant") { const coins = Math.max(0, Math.min(1000000, Math.floor(+m.coins || 0))), items = (Array.isArray(m.items) ? m.items : []).map(String).filter((x) => /^[a-z0-9_:.-]{1,32}$/i.test(x)).slice(0, 10);
+      if (!coins && !items.length) return { err: "empty" }; const g = this.grantTo(t, coins, items, why); log("grant", tid, { coins, items, gid: g.gid }); return { ok: 1, ...g }; }
+    if (op === "a_rname") { const nm = "Player" + String(tid).slice(-4); q.exec("UPDATE acct SET name = ?, nro = ?, nr = 1 WHERE pid = ?", nm, tr.name, t);
+      const sr = q.exec("SELECT js FROM snp WHERE pid = ?", t).toArray()[0]; if (sr) { try { const P = JSON.parse(sr.js); P.name = nm; q.exec("UPDATE snp SET js = ? WHERE pid = ?", JSON.stringify(P), t); } catch (_) {} }
+      this.sPush(t, { k: "rname", n: nm }); log("rename", tid, { old: tr.name, nw: nm }); return { ok: 1, n: nm }; }
+    if (op === "a_del") { this.purge(t); log("delete", tid, { name: tr.name }); return { ok: 1 }; }
+    return { err: "op" };
   }
   async socialHttp(req, url) {
-    if (url.pathname === "/s/uid") { const pid = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400); try { return J({ id: this.sAcct(pid).vis }); } catch (e) { return J({ err: "server" }, 500); } } // internal: room -> social
+    if (url.pathname === "/s/uid") { const dp = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(dp)) return J({ err: "pid" }, 400); // internal: room / matchmaker -> social
+      try { const cp = this.canon(dp), a = this.sAcct(cp); return J({ id: a.vis, cp, ban: this.banOf(cp, dp), mute: this.muteOf(cp), nm: a.nr ? a.name : "" }); } catch (e) { return J({ err: "server" }, 500); } }
     let B = {}; try { B = JSON.parse((await req.text()).slice(0, 1200)) || {}; } catch (_) {}
-    const pid = await pidOf(String(B.pk || "")); if (!pid) return J({ err: "pk" }, 400); return J(await this.sOp(pid, B));
+    const pid = await pidOf(String(B.pk || "")); if (!pid) return J({ err: "pk" }, 400); delete B._v; if (B.op === "snap") return J({ err: "use_a" }); return J(await this.sOp(pid, B));
   }
   async socialWs(req, url) {
-    const pid = await pidOf(url.searchParams.get("pk") || ""); if (!pid) return new Response("pk", { status: 400 });
-    this.sAcct(pid); const old = this.state.getWebSockets(pid); for (let i = 0; i < old.length - 2; i++) try { old[i].close(4009, "replaced"); } catch (_) {} // at most 3 live tabs per player
+    const dp = await pidOf(url.searchParams.get("pk") || ""); if (!dp) return new Response("pk", { status: 400 });
+    const pid = this.canon(dp); this.sAcct(pid); const now = Date.now(); // srv2: sockets are tagged with the account's id (pushes reach every signed-in device); dv = devices seen
+    try { const ua = String(req.headers.get("user-agent") || ""), uas = (/iPhone|iPad|Android|Macintosh|Windows|Linux|CrOS/.exec(ua) || ["?"])[0] + " " + ((/Edg|Firefox|CriOS|Chrome|Safari/.exec(ua) || [""])[0]);
+      this.sdb().exec("INSERT INTO dv (dp, cp, t0, t1, ua) VALUES (?, ?, ?, ?, ?) ON CONFLICT(dp) DO UPDATE SET cp = excluded.cp, t1 = excluded.t1, ua = excluded.ua", dp, pid, now, now, uas.trim().slice(0, 40)); } catch (_) {}
+    const old = this.state.getWebSockets(pid); for (let i = 0; i < old.length - 2; i++) try { old[i].close(4009, "replaced"); } catch (_) {} // at most 3 live tabs per player
     if (!this._auto) { this._auto = 1; try { this.state.setWebSocketAutoResponse(new WebSocketRequestResponsePair('{"t":"ping"}', '{"t":"pong"}')); } catch (_) {} } // keep-alive pings never wake the object
     const pair = new WebSocketPair(); const [client, server] = Object.values(pair); this.state.acceptWebSocket(server, [pid]);
-    server.serializeAttachment({ pid, st: "lobby" }); server.send(JSON.stringify({ t: "hi", me: this.sMe(pid), v: VERSION })); this.sPresAll(pid);
+    server.serializeAttachment({ pid, dp, st: "lobby" });
+    const gr = this.sdb().exec("SELECT gid, coins, items FROM gr WHERE pid = ? AND ack = 0 ORDER BY gid LIMIT 20", pid).toArray().map((g) => ({ id: g.gid, c: g.coins, it: JSON.parse(g.items || "[]") }));
+    server.send(JSON.stringify({ t: "hi", me: this.sMe(pid), v: VERSION, ban: this.banOf(pid, dp), mute: this.muteOf(pid), acct: this.aView(dp), sv: this.snapSv(pid), gr })); this.sPresAll(pid);
     return new Response(null, { status: 101, webSocket: client });
   }
   async webSocketMessage(ws, data) { // hibernation API: only the social object's sockets come here (game rooms use accept() + listeners)
-    let a = null; try { a = ws.deserializeAttachment(); } catch (_) {} if (!a || !a.pid || typeof data !== "string" || data.length > 1200) return; let m; try { m = JSON.parse(data); } catch (_) { return; }
-    if (!m || typeof m !== "object") return;
+    let a = null; try { a = ws.deserializeAttachment(); } catch (_) {} if (!a || !a.pid || typeof data !== "string" || data.length > SNAP_MAX + 400 || (data.length > 1200 && data.indexOf('"op":"snap"') < 0)) return; let m; try { m = JSON.parse(data); } catch (_) { return; }
+    if (!m || typeof m !== "object") return; delete m._v; m._ws = ws; // srv2: a verified identity can only come from the worker (never from a socket); snapshots may be large
     if (m.t === "st") { const st = m.s === "match" ? "match" : "lobby"; if (a.st !== st) { a.st = st; ws.serializeAttachment(a); this.sPresAll(a.pid); } return; }
     if (m.t === "ping") { try { ws.send('{"t":"pong"}'); } catch (_) {} return; }
-    if (m.t === "op") { const r = await this.sOp(a.pid, m); try { ws.send(JSON.stringify({ t: "r", i: m.i | 0, ...r })); } catch (_) {} }
+    if (m.t === "op") { const r = await this.sOp(a.dp || a.pid, m); try { ws.send(JSON.stringify({ ...r, t: "r", i: m.i | 0 })); } catch (_) {} }
   }
   async webSocketClose(ws) { let a = null; try { a = ws.deserializeAttachment(); } catch (_) {} if (a && a.pid) this.sPresAll(a.pid, ws); try { ws.close(1000); } catch (_) {} }
   async webSocketError(ws) { return this.webSocketClose(ws); }
+  // ---------- srv2: matchmaker "mm-v1" (memory only, no storage rows; rooms report again within 30 s if it was evicted) ----------
+  async mmHttp(req, url) {
+    const R = this.mmR || (this.mmR = new Map()), P = this.mmP || (this.mmP = new Map()), now = Date.now(), op = url.pathname.slice(3);
+    if (op === "hb") { let b = {}; try { b = JSON.parse((await req.text()).slice(0, 400)) || {}; } catch (_) {} const n = String(b.room || ""); if (!/^pub-[a-z0-9-]{1,20}$/.test(n)) return J({ err: "room" });
+      R.set(n, { room: n, br: BRACKETS.includes(b.br) ? b.br : "", i: b.i | 0, h: Math.max(0, b.h | 0), b: Math.max(0, b.b | 0), e: b.e | 0, up: +b.up || now, t: now, pend: 0 });
+      if (R.size > 300) for (const [k, v] of R) if (now - v.t > MM_CFG.WARM_MS) R.delete(k); return J({ ok: 1 }); }
+    if (op === "list") return J({ rooms: [...R.values()].filter((r) => now - r.t < MM_CFG.WARM_MS && (r.h > 0 || r.e || now - r.t < MM_CFG.WARM_MS)).sort((a, b) => b.h - a.h || a.room.localeCompare(b.room)).map((r) => ({ room: r.room, br: r.br, i: r.i, h: r.h, b: r.b, e: r.e, age: Math.round((now - r.t) / 1000), up: Math.round((now - r.up) / 1000), live: now - r.t < MM_CFG.LIVE_MS && r.h > 0 ? 1 : 0 })),
+      pickers: [...P.values()].filter((v) => now - v.t < 300000).length, t: now });
+    if (op === "pick") {
+      const pid = url.searchParams.get("pid") || "", w = +url.searchParams.get("w") || 0, x = url.searchParams.get("x") || ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400);
+      let cp = pid, tr = 0, cq = 0; // the bracket is decided here from the board (the client's own league is never trusted)
+      try { const u = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + pid)).json(); if (u && u.ban) return J({ err: "banned", u: u.ban }); if (u && u.cp) cp = u.cp; } catch (_) {}
+      try { const b = await (await this.boardStub().fetch("https://board/b/get?pid=" + cp)).json(); tr = b.tr | 0; cq = b.cq | 0; } catch (_) {}
+      return J({ ...mmPick(R, P, { pid: cp, br: bracketOf(tr, cq), w, x, now }), tr });
+    }
+    return J({ err: "op" }, 404);
+  }
   foodFull() {
     const S = this.sim, idx = []; for (let i = 0; i < S.FM; i++) if (S.fa[i]) idx.push(i);
     const b = new ArrayBuffer(3 + idx.length * 12), v = new DataView(b); v.setUint8(0, 3); v.setUint16(1, idx.length, true);
@@ -351,7 +650,8 @@ export class Room {
   }
   loop() {
     const now = Date.now(); this.acc += (now - this.last) / 1000; this.last = now; if (this.acc > 0.25) this.acc = 0.25; // never spiral
-    while (this.acc >= TICK) { this.acc -= TICK; this.tick(); }
+    while (this.acc >= TICK) { this.acc -= TICK; try { this.tick(); } catch (e) { this.errs = (this.errs | 0) + 1; this.lastErr = String(e && e.message).slice(0, 100); } } // srv2: errors are counted for the owner's server view
+    if (this.clients.size) this.hb(false);
   }
   tick() {
     const S = this.sim;

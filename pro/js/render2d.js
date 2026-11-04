@@ -2,14 +2,15 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { stageBox } from "./stage.js?v=srv1";
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=srv1";
+import { pidFill } from "./pid.js?v=srv2"; // srv2
+import { stageBox } from "./stage.js?v=srv2";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=srv2";
 const TUBE_STEPS = [[1, 0.28], [0.9, 0.51], [0.78, 0.85], [0.66, 1]]; // tube1: [fraction of the spine from the head, half-width / r]
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=srv1";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=srv1";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=srv1";
-import { on as onEv } from "./events.js?v=srv1";
-import { gtAtlas, GT_CAP, GT_CELL } from "./gfx/gtrail.js?v=srv1"; // trail1: ground trails
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=srv2";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=srv2";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=srv2";
+import { on as onEv } from "./events.js?v=srv2";
+import { gtAtlas, GT_CAP, GT_CELL } from "./gfx/gtrail.js?v=srv2"; // trail1: ground trails
 const NO2 = 220;
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle cap
 const GOV_PR = [3, 2, 1.5, 1.25], GOV_PC = [300, 180, 100, 50];
@@ -261,7 +262,7 @@ export class Renderer2D {
         if (d.top1 && s.alive && !inv) { crown = d; d._x2 = pts[0]; d._y2 = pts[1]; d._r2 = r; }
         if (d.gold) { g.strokeStyle = "#ffd23a"; g.lineWidth = 0.25; g.globalAlpha = 0.45; g.beginPath(); g.arc(pts[0], pts[1], r * 2, 0, TAU); g.stroke(); g.globalAlpha = d.alpha; }
         if (d.emo) { g.save(); g.globalAlpha = 1; g.translate(pts[0], pts[1] - r * 2.2 - 2.2); g.scale(1 / S, 1 / S); g.fillStyle = "rgba(10,14,26,0.85)"; g.strokeStyle = "rgba(255,220,140,0.95)"; g.lineWidth = 2; g.beginPath(); g.arc(0, -16, 17, 0, TAU); g.fill(); g.stroke(); g.textAlign = "center"; g.textBaseline = "middle"; g.font = d.emo === "GG" ? "800 15px sans-serif" : "20px sans-serif"; g.fillStyle = "#ffd23a"; g.fillText(d.emo, 0, -15); g.restore(); }
-        if (d.name && !d.me && !inv && !v.hideNames) { g.save(); g.translate(pts[0], pts[1] - r * 2.3); g.scale(1 / S, 1 / S); g.font = "600 11.5px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.fillStyle = "rgba(0,0,0,0.5)"; g.fillText(d.name, 1, 1); g.globalAlpha = 0.85 * d.alpha; g.fillStyle = d.nc || "#fff"; g.fillText(d.name, 0, 0); g.restore(); } // own name tag hidden
+        if (d.name && !d.me && !inv && !v.hideNames) { g.save(); g.translate(pts[0], pts[1] - r * 2.3); g.scale(1 / S, 1 / S); g.font = "600 11.5px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.fillStyle = "rgba(0,0,0,0.5)"; g.fillText(d.name, 1, 1); g.globalAlpha = (d.pt ? 0.95 : 0.85) * d.alpha; let fs = null; if (d.pt) { const w = g.measureText(d.name).width; fs = pidFill(g, d.pt, -w / 2, w / 2); } g.fillStyle = fs || d.nc || "#fff"; g.fillText(d.name, 0, 0); g.restore(); } // srv2: premium id = tier gradient // own name tag hidden
       }
       g.globalAlpha = 1;
     }

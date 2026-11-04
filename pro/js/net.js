@@ -2,7 +2,7 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=srv1";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=srv2";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
 function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && !(s.pu && (s.pu[2] > 0 || s.pu[7] > 0))) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
 export const SERVER = (typeof window !== "undefined" && window.__SSP_SERVER) || "wss://super-snake-online.molierk.workers.dev/ws";
@@ -28,8 +28,29 @@ export class NetBackend {
     this.age = (i) => Math.min(1, (performance.now() - this.fb[i]) / 300);
     this.ta = 0; this.boostIn = 0; this.publicIdx = 1; this.pus = []; this.mets = [];
   }
+  // srv2: matchmaking. With no room named (no friend invite / shared link), the matchmaker picks a live room in the player's
+  // skill bracket (decided on the server from the board). "hold" = the bracket is busy right now: ask again (with the time
+  // waited) and after ~5 s the matchmaker widens to the neighbouring bracket. Any failure falls back to the old public room.
+  async pick(excl) {
+    const t0 = performance.now(), base = SERVER.replace(/^ws/, "http").replace(/\/ws$/, "/mm");
+    for (let k = 0; k < 5 && !this.closed; k++) {
+      let r = null; try { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 5000); r = await (await fetch(base + "?pk=" + encodeURIComponent(this.o.pk || "") + "&w=" + Math.round(performance.now() - t0) + (excl ? "&x=" + encodeURIComponent(excl) : ""), { signal: ac.signal })).json(); clearTimeout(tm); } catch (_) { r = null; }
+      if (r && r.err === "banned") { this.banned = r.u || 1; return null; }
+      if (!r || r.err || (!r.room && !r.hold)) return null;
+      if (r.hold) { this.cb.onFind && this.cb.onFind({ st: "wait", br: r.br }); await new Promise((q) => setTimeout(q, r.wait || 2500)); continue; }
+      return r;
+    }
+    return null;
+  }
   connect() {
-    if (this.closed) return; const room = this.o.room || "pub-" + this.publicIdx;
+    if (this.closed) return;
+    if (!this.o.room && !this.mmRoom && this.o.pk) { // srv2: find a live room first (finding screen), then connect to it
+      if (this._picking) return; this._picking = true; this.cb.onFind && this.cb.onFind({ st: "find" });
+      this.pick(this._excl).then((r) => { this._picking = false; if (this.closed) return; if (this.banned) { this.cb.onFind && this.cb.onFind({ st: "ban", u: this.banned }); this.fail(); return; }
+        this.mm = r; this.mmRoom = r ? r.room : "pub-" + this.publicIdx; this.cb.onFind && this.cb.onFind({ st: "found", ...(r || { room: this.mmRoom }) }); this.connect(); });
+      return;
+    }
+    const room = this.o.room || this.mmRoom || "pub-" + this.publicIdx;
     let ws; try { ws = new WebSocket(SERVER + "?room=" + encodeURIComponent(room) + (this.o.bots === 0 ? "&bots=0" : "")); } catch (e) { this.fail(); return; }
     ws.binaryType = "arraybuffer"; this.ws = ws; this.room = room;
     const to = setTimeout(() => { if (ws.readyState !== 1) { try { ws.close(); } catch (_) {} } }, 6000);
@@ -37,6 +58,8 @@ export class NetBackend {
     ws.onmessage = (e) => { try { typeof e.data === "string" ? this.onJson(JSON.parse(e.data)) : this.onBin(e.data); } catch (err) { console.warn("net msg", err); } };
     ws.onclose = (e) => {
       clearTimeout(to); clearInterval(this._pingT); if (this.closed) return;
+      if (e.code === 4003) { this.banned = 1; this.cb.onFind && this.cb.onFind({ st: "ban", u: this.banned }); this.fail(); return; } // srv2: banned by the owner
+      if (e.code === 4001 && !this.o.room && this.mmRoom && (this._fullN = (this._fullN || 0) + 1) < 4) { this._excl = this.mmRoom; this.mmRoom = ""; this.connect(); return; } // srv2: full -> ask the matchmaker again
       if (e.code === 4001 && !this.o.room && this.publicIdx < 6) { this.publicIdx++; this.connect(); return; } // room full → next public room
       this.retry();
     };
@@ -56,7 +79,7 @@ export class NetBackend {
   spawn(name, skin) { if (name) this.o.name = name; if (skin) this.o.skin = skin; this.wantSpawn = false; this.send(JSON.stringify({ t: "spawn", seq: this.seq, name: this.o.name, skin: this.o.skin })); }
 
   onJson(m) {
-    if (m.t === "welcome") { this.R = m.R; this.tick = m.tick; this.setClock(m.tick); for (const s of m.snakes) this.addMirror(s); this.cb.onState && this.cb.onState("welcome"); if (this.wantSpawn !== false) this.spawn(); }
+    if (m.t === "welcome") { this.server = { room: m.room, br: m.br || "", bi: m.bi | 0, h: m.h | 0, b: m.b | 0, fb: this.mm && this.mm.fb ? this.mm.fb : "", my: this.mm ? this.mm.my : "" }; this.cb.onFind && this.cb.onFind({ st: "in", ...this.server }); this.R = m.R; this.tick = m.tick; this.setClock(m.tick); for (const s of m.snakes) this.addMirror(s); this.cb.onState && this.cb.onState("welcome"); if (this.wantSpawn !== false) this.spawn(); }
     else if (m.t === "sn") { if (m.id !== this.myId) this.addMirror(m); }
     else if (m.t === "you") {
       const s = new Snake(m.id); s.reset(m.x, m.y, m.a, m.m); s.name = this.o.name; s.skin = this.o.skin; s.avt = this.o.skin && this.o.skin.av; s.fr = this.o.skin ? this.o.skin.fr | 0 : 0; this.me = s; this.myId = m.id; this.seq = m.seq; this.seq0 = m.seq; this.batch.length = 0; this.mirrors.delete(m.id);
@@ -69,6 +92,7 @@ export class NetBackend {
     else if (m.t === "lb") { this.lb = m.lb; this.humans = m.humans; }
     else if (m.t === "uid") { const mr = this.mirrors.get(m.id); if (mr && /^\d{1,7}$/.test(m.u || "")) mr.s.uid = m.u; } // srv1
     else if (m.t === "myid") { this.myUid = m.u; }
+    else if (m.t === "ban") { this.banned = m.u || 1; }
     else if (m.t === "full") {}
     else if (m.t === "tro" || m.t === "tro0") { this.cb.onTrophy && this.cb.onTrophy(m); } // comp1: server-decided trophies
     // power-ups (server v2): field list, spawns, pickups (+ who got frozen), shield breaks

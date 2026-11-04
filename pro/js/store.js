@@ -1,6 +1,6 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex } from "./skins.js?v=srv1";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex } from "./skins.js?v=srv2";
 export const SEASON = { id: "s1", tiers: 30, per: 400 };
 // free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
 export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
@@ -10,8 +10,8 @@ export const CHAINS = {
   survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
 };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=srv1";
-import { FRAMES, TITLES } from "./profile.js?v=srv1";
+import { WORLDS } from "./worlds.js?v=srv2";
+import { FRAMES, TITLES } from "./profile.js?v=srv2";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -69,7 +69,7 @@ export function newProfile(name) {
     uid: "", // srv1: last public id the server gave this profile (display cache; the server is the source of truth)
   };
 }
-function fixProfile(p) { // fill any missing field from defaults (older or imported profiles)
+export function fixProfile(p) { // fill any missing field from defaults (older or imported profiles)
   const d = newProfile(p && p.name);
   if (!p || typeof p !== "object") return d;
   for (const k in d) if (p[k] === undefined || typeof p[k] !== typeof d[k] || Array.isArray(d[k]) !== Array.isArray(p[k])) p[k] = d[k];
@@ -168,7 +168,7 @@ export class Store {
     put("ssp-acc", sa); put("ssp-guest", sg); put("ssp-set", JSON.stringify(this.settings));
     if (this.cur) put("ssp-cur", this.cur); else if (W["ssp-cur"] !== "") { KV.del("ssp-cur"); W["ssp-cur"] = ""; }
     if (KV.ok && !ok) { this._failN = (this._failN || 0) + 1; logErr("save", "write failed (" + this._failN + ")"); if (this._failN === 1 && this.warn) this.warn("storageFull"); clearTimeout(this._rt); this._rt = setTimeout(() => this.flush(), Math.min(60000, 2000 * 2 ** Math.min(5, this._failN - 1))); }
-    else if (ok) { this._failN = 0; this._backup(sa, sg); }
+    else if (ok) { this._failN = 0; this._backup(sa, sg); if (this.onFlush) try { this.onFlush(); } catch (_) {} } // srv2: account sync (debounced there)
     return ok || !KV.ok;
   }
   // last-known-good: the state just written (checksums verified) becomes ssp-bak at most every 20 s; ssp-bak moves to
@@ -250,6 +250,9 @@ export class Store {
     const a = { u: old.u || k, email: String(old.email || ""), h: old.h, s: old.s, it: old.it, p: fixProfile(p), from: "day1" };
     this.acc[k] = a; return a;
   }
+  // srv2: put a profile in place of the current one (account restore / sign-out). The device key of the incoming profile is
+  // chosen by the caller; checksums are rebuilt by flush().
+  replaceProfile(np) { const f = fixProfile(np); if (this.cur) this.acc[this.cur].p = f; else this.guest = f; this.flush(); return f; }
   resetProgress() { const n = this.p.name; const f = newProfile(n); f.tut = 1; if (this.cur) this.acc[this.cur].p = f; else this.guest = f; this.flush(); }
 
   // ---------- progression ----------

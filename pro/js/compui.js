@@ -1,11 +1,12 @@
 // comp1: Competitions screen (League · Weekly · Monthly · Badges), lobby chip, results trophy row, profile league card,
 // HUD league tags. Works offline (own progress + milestones); the online boards load from the server when reachable.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=srv1";
-import { fmtLeft } from "./offers.js?v=srv1";
-import { FRAMES, TITLES, avatarHtml } from "./profile.js?v=srv1";
+import { pidHtml, pidTier } from "./pid.js?v=srv2"; // srv2
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=srv2";
+import { fmtLeft } from "./offers.js?v=srv2";
+import { FRAMES, TITLES, avatarHtml } from "./profile.js?v=srv2";
 import { LEAGUES, TROPHY, leagueOf, CONTESTS, botTrophies, leagueBadge, leagueName, trophyIcon, badgeImg, trophies, myLeague, ROMAN, SEASON_COINS, CONQ_REWARD, rankReward, MILE, MILE_COINS, BADGE_OF, BADGES,
-  localVal, mileKey, claimMilestone, contestTick, seasonTick, syncMe, top, lastMe, nowMs, contestEnds, applyServer } from "./league.js?v=srv1";
-import { periodEnd } from "./sim.js?v=srv1";
+  localVal, mileKey, claimMilestone, contestTick, seasonTick, syncMe, top, lastMe, nowMs, contestEnds, applyServer } from "./league.js?v=srv2";
+import { periodEnd } from "./sim.js?v=srv2";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -100,7 +101,7 @@ async function loadBoard(ui, force) {
   const box = $("cp-list"); if (!box) return; const k = box.dataset.k, o = await top(k); if (!box.isConnected || box.dataset.k !== k) return;
   if (!o || !Array.isArray(o.list)) { box.innerHTML = `<div class="cp-off"><p class="fine">${t("offlineBoard")}</p></div>`; return; }
   if (!o.list.length) { box.innerHTML = `<p class="fine cp-load">${t("boardEmpty")}</p>`; return; }
-  const myId = lastMe && lastMe.pid; box.innerHTML = o.list.map((r) => `<div class="cp-row ${r.id === myId ? "me" : ""} ${r.r <= 3 ? "pod" : ""}"><b>${r.r}</b><span>${esc(r.n)}${r.id === myId ? ` <em>· ${t("you")}</em>` : ""}</span><em>${fmtNum(r.v)}</em></div>`).join("");
+  const myId = lastMe && lastMe.pid; box.innerHTML = o.list.map((r) => `<div class="cp-row ${r.id === myId ? "me" : ""} ${r.r <= 3 ? "pod" : ""}"><b>${r.r}</b><span>${esc(r.n)}${r.u && pidTier(r.u) ? " " + pidHtml(r.u) : ""}${r.id === myId ? ` <em>· ${t("you")}</em>` : ""}</span><em>${fmtNum(r.v)}</em></div>`).join("");
 }
 
 addStrings({ reqComp: ["Win it in Competitions", "تنكسب بالمنافسات"], toNextL: ["{n} trophies to {r}", "باقي {n} كأس لـ {r}"] });
