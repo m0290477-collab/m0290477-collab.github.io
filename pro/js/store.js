@@ -1,6 +1,6 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=resp2";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex } from "./skins.js?v=trail1";
 export const SEASON = { id: "s1", tiers: 30, per: 400 };
 // free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
 export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
@@ -10,8 +10,8 @@ export const CHAINS = {
   survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
 };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=resp2";
-import { FRAMES, TITLES } from "./profile.js?v=resp2";
+import { WORLDS } from "./worlds.js?v=trail1";
+import { FRAMES, TITLES } from "./profile.js?v=trail1";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -55,7 +55,7 @@ export const DEF_SETTINGS = {
 export function newProfile(name) {
   return {
     v: 1, name: name || "Guest", xp: 0, coins: 100, flags: [], skin: { k: "skin", i: 0 }, custom: { p: 10, c: ["#18c964", "#0b7a3b", "#b8ffcf"] },
-    eye: 0, trail: 0, nc: 0, presets: [null, null, null, null],
+    eye: 0, trail: 0, gt: "", nc: 0, presets: [null, null, null, null],
     stats: { games: 0, kills: 0, deaths: 0, food: 0, best: 0, time: 0, life: 0, top: 0, boost: 0, online: 0, zen: 0, wave: 0, tbest: 0, wins: 0, brWins: 0, kothWins: 0, teamWins: 0, bossKills: 0, cores: 0 },
     bests: { classic: [], time: [], survival: [], zen: [], online: [], br: [], koth: [], boss: [], team: [] }, ach: {}, daily: { d: "", m: [] }, bonus: "",
     owned: [], season: { id: "s1", xp: 0, claimed: [] }, weekly: { w: "", m: [], done: 0 }, chains: {}, seen: [], introSeen: 0,
@@ -84,6 +84,7 @@ function fixProfile(p) { // fill any missing field from defaults (older or impor
   p.pins = p.pins.filter((x) => typeof x === "string" && Store.ACH.some((a) => a[0] === x)).slice(0, 3); p.cos = p.cos.filter((x) => typeof x === "string" && /^(av|fr|ti|bn|bd):[a-z0-9]{1,4}$/.test(x));
   p.hist = p.hist.filter((h) => h && typeof h === "object" && typeof h.m === "string").slice(0, 10); if (!p.mg || typeof p.mg !== "object" || Array.isArray(p.mg)) p.mg = {};
   for (const k of Object.keys(p.mg)) if (typeof p.mg[k] !== "number" || !isFinite(p.mg[k])) delete p.mg[k];
+  { const gi = gtIndex(p.gt); if (gi < 0 || (GTRAILS[gi].price && !p.owned.includes("gt:" + p.gt))) p.gt = ""; } // trail1: ground trail slot ("" = none)
   p.bio = String(p.bio).replace(/[<>]/g, "").slice(0, 90); p.hob = p.hob.filter((x) => typeof x === "string" && /^[a-z]{2,12}$/.test(x)).slice(0, 5);
   if (!p.login || typeof p.login.d !== "string") p.login = { d: "", n: 0 }; p.login.n = Math.max(0, Math.min(6, p.login.n | 0));
   { const L = p.lg, D = d.lg; for (const k in D) if (typeof L[k] !== typeof D[k]) L[k] = D[k]; for (const k of ["on", "off", "pk", "dg", "rank", "sync"]) L[k] = Math.max(0, Math.min(k === "sync" ? 9e15 : 99999, Math.floor(+L[k] || 0))); L.conq = L.conq ? 1 : 0;
@@ -151,7 +152,7 @@ export class Store {
   save() { this._dirty = true; clearTimeout(this._t); this._t = setTimeout(() => this.flush(), 250); }
   _sig() { const p = this.p, st = p.stats, d = p.daily, w = p.weekly; let m = 0; if (d && d.m) for (const x of d.m) m += (+x.p || 0) + (x.c ? 1e6 : 0); if (w && w.m) for (const x of w.m) m += (+x.p || 0) + (x.c ? 1e6 : 0);
     const S = this.settings; let sv = ""; for (const k in S) sv += S[k] + ","; // settings: ~30 scalars
-    return (this.cur || "") + "|" + p.coins + "|" + p.xp + "|" + p.owned.length + "|" + p.flags.length + "|" + p.cos.length + "|" + JSON.stringify(p.skin) + p.eye + p.trail + p.nc + p.av + p.frame + p.title + p.banner + "|" + p.season.xp + "|" + p.season.claimed.length + "|" + st.games + "|" + st.kills + "|" + st.food + "|" + p.hist.length + "|" + p.rp + "|" + m + "|" + Object.keys(p.ach).length + "|" + p.name + p.bio + "|" + p.last.mode + p.last.world + p.last.diff + p.last.room + "|" + sv; }
+    return (this.cur || "") + "|" + p.coins + "|" + p.xp + "|" + p.owned.length + "|" + p.flags.length + "|" + p.cos.length + "|" + JSON.stringify(p.skin) + p.eye + p.trail + "~" + p.gt + p.nc + p.av + p.frame + p.title + p.banner + "|" + p.season.xp + "|" + p.season.claimed.length + "|" + st.games + "|" + st.kills + "|" + st.food + "|" + p.hist.length + "|" + p.rp + "|" + m + "|" + Object.keys(p.ach).length + "|" + p.name + p.bio + "|" + p.last.mode + p.last.world + p.last.diff + p.last.room + "|" + sv; }
   startAutosave() {
     if (this._as) return; this._as = setInterval(() => { const g = this._sig(); if (g !== this._lastSig || this._dirty) this.flush(); }, 1000);
     const now = () => this.flush(); addEventListener("pagehide", now); addEventListener("beforeunload", now); document.addEventListener("visibilitychange", () => { if (document.hidden) now(); });
@@ -252,6 +253,7 @@ export class Store {
   unlocked(kind, i) {
     const lv = this.level();
     if (kind === "skin") { const S = SKINS[i]; if (!S) return false; if (S.src) { if (this.p.owned.includes(S.id)) return true; const [k, n] = S.src.split(":"); return k === "level" && lv >= +n; } return lv >= S.lv; } if (kind === "flag") return this.p.flags.includes(i); if (kind === "eye") return lv >= EYES[i].lv;
+    if (kind === "gtrail") { const G = GTRAILS[i]; return !!G && (!G.price || this.p.owned.includes("gt:" + G.id)); }
     if (kind === "trail") return lv >= TRAILS[i].lv; if (kind === "world") return lv >= WORLDS[i].lv; if (kind === "diff") return i < 3 || lv >= 10; return true;
   }
   // offers: several cosmetics for one coin price, through the same atomic purchase (all granted or none). An item owned
@@ -301,6 +303,12 @@ export class Store {
   grant(id) { if (!this.p.owned.includes(id)) { this.p.owned.push(id); this.save(); return true; } return false; }
   legendPrice(i) { const S = SKINS[i]; if (!S || !S.src) return 0; const [k, n] = S.src.split(":"); return k === "coins" ? +n : 0; }
   buyLegend(i, price) { const S = SKINS[i], base = this.legendPrice(i); if (!base) return "na"; if (price != null && Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, base)) return "badPrice"; return this.purchase("skin:" + i, price ?? base, () => { if (!this.p.owned.includes(S.id)) this.p.owned.push(S.id); }, () => this.unlocked("skin", i)); }
+  // trail1: ground trails. Paid ones go through the same atomic coin purchase (price bounds, rollback on a failed save);
+  // the free ones are never sold. equipGTrail(-1) clears the slot.
+  gtPrice(i) { const G = GTRAILS[i]; return G ? G.price | 0 : 0; }
+  buyGTrail(i, price) { const G = GTRAILS[i], base = this.gtPrice(i); if (!G || !base) return "na"; if (price != null && Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, base)) return "badPrice";
+    return this.purchase("gt:" + i, price ?? base, () => { if (!this.p.owned.includes("gt:" + G.id)) this.p.owned.push("gt:" + G.id); }, () => this.unlocked("gtrail", i)); }
+  equipGTrail(i) { if (i < 0) { this.p.gt = ""; this.save(); return "ok"; } const G = GTRAILS[i]; if (!G) return "na"; if (!this.unlocked("gtrail", i)) return "locked"; this.p.gt = G.id; this.save(); return "ok"; }
   seasonTier() { return Math.min(SEASON.tiers, Math.floor(this.p.season.xp / SEASON.per)); }
   addSeasonXp(n) { const b = this.seasonTier(); this.p.season.xp += Math.max(0, Math.round(n)); const a = this.seasonTier(); this.save(); return a > b ? a - b : 0; }
   claimTier(k) {

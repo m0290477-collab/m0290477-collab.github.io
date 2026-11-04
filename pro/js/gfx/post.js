@@ -1,12 +1,12 @@
 // Post-processing stack: MSAA HDR render → GTAO (ultra) → bloom → depth of field (menus, high+) → ACES output →
 // cinematic grade (per-world lift/gain/saturation/contrast, vignette, chromatic aberration kick, speed lines,
 // letterbox, flash, film grain). Low quality skips the whole stack (CSS vignette instead).
-import * as THREE from "../vendor/three.module.min.js?v=resp2";
-import { EffectComposer } from "../vendor/EffectComposer.js?v=resp2";
-import { RenderPass } from "../vendor/RenderPass.js?v=resp2";
-import { UnrealBloomPass } from "../vendor/UnrealBloomPass.js?v=resp2";
-import { OutputPass } from "../vendor/OutputPass.js?v=resp2";
-import { ShaderPass } from "../vendor/ShaderPass.js?v=resp2";
+import * as THREE from "../vendor/three.module.min.js?v=trail1";
+import { EffectComposer } from "../vendor/EffectComposer.js?v=trail1";
+import { RenderPass } from "../vendor/RenderPass.js?v=trail1";
+import { UnrealBloomPass } from "../vendor/UnrealBloomPass.js?v=trail1";
+import { OutputPass } from "../vendor/OutputPass.js?v=trail1";
+import { ShaderPass } from "../vendor/ShaderPass.js?v=trail1";
 
 const GradeShader = {
   uniforms: { tDiffuse: { value: null }, uLift: { value: new THREE.Vector3() }, uGain: { value: new THREE.Vector3(1, 1, 1) }, uSat: { value: 1.1 }, uCon: { value: 1.05 }, uVig: { value: 0.38 }, uCA: { value: 0 }, uSpeed: { value: 0 }, uBox: { value: 0 }, uFlash: { value: new THREE.Vector4(0, 0, 0, 0) }, uT: { value: 0 }, uGrain: { value: 0.035 }, uAspect: { value: 2 } },
@@ -42,9 +42,9 @@ export class Post {
     const rt = new THREE.WebGLRenderTarget(sz.x, sz.y, { type: THREE.HalfFloatType, samples: Q.msaa || 0 });
     const C = (this.composer = new EffectComposer(r, rt));
     this.rp = new RenderPass(scene, cam); C.addPass(this.rp);
-    if (Q.gtao) { import("../vendor/GTAOPass.js?v=resp2").then((m) => { if (this.composer !== C) return; try { const g = new m.GTAOPass(scene, cam, sz.x, sz.y); g.output = m.GTAOPass.OUTPUT.Default; g.blendIntensity = 0.85; g.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.4, thickness: 1.2, scale: 1.0, samples: 12 }); g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 12 }); C.insertPass(g, 1); this.gtao = g; } catch (e) { console.warn("gtao", e); } }); }
+    if (Q.gtao) { import("../vendor/GTAOPass.js?v=trail1").then((m) => { if (this.composer !== C) return; try { const g = new m.GTAOPass(scene, cam, sz.x, sz.y); g.output = m.GTAOPass.OUTPUT.Default; g.blendIntensity = 0.85; g.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.4, thickness: 1.2, scale: 1.0, samples: 12 }); g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 12 }); C.insertPass(g, 1); this.gtao = g; } catch (e) { console.warn("gtao", e); } }); }
     this.bloom = new UnrealBloomPass(new THREE.Vector2(sz.x * 0.5, sz.y * 0.5), 0.6, 0.55, 0.82); C.addPass(this.bloom);
-    if (Q.dof) import("../vendor/BokehPass.js?v=resp2").then((m) => { if (this.composer !== C) return; try { const b = new m.BokehPass(scene, cam, { focus: 12, aperture: 0.0025, maxblur: 0.005 }); b.enabled = this.dofOn; const i = C.passes.indexOf(this.bloom); C.insertPass(b, i + 1); this.bokeh = b; } catch (e) { console.warn("dof", e); } });
+    if (Q.dof) import("../vendor/BokehPass.js?v=trail1").then((m) => { if (this.composer !== C) return; try { const b = new m.BokehPass(scene, cam, { focus: 12, aperture: 0.0025, maxblur: 0.005 }); b.enabled = this.dofOn; const i = C.passes.indexOf(this.bloom); C.insertPass(b, i + 1); this.bokeh = b; } catch (e) { console.warn("dof", e); } });
     this.out = new OutputPass(); C.addPass(this.out);
     this.grade = new ShaderPass(GradeShader); C.addPass(this.grade);
     this.on = true; this.setSize();

@@ -1,18 +1,19 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=resp2";
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=resp2"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=resp2";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=resp2";
-import { WORLDS, worldAsset } from "./worlds.js?v=resp2";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=resp2";
-import { haptic } from "./audio.js?v=resp2";
-import { skinFn, MODES, EMOTES } from "./game.js?v=resp2";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=resp2";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=resp2";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=resp2";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=resp2"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=resp2";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=trail1";
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=trail1"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=trail1";
+import { GTRAILS } from "./skins.js?v=trail1"; import { gtCellUrl } from "./gfx/gtrail.js?v=trail1"; // trail1
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=trail1";
+import { WORLDS, worldAsset } from "./worlds.js?v=trail1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=trail1";
+import { haptic } from "./audio.js?v=trail1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=trail1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=trail1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=trail1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=trail1";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=trail1"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=trail1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -573,7 +574,14 @@ export class UI {
         <div class="ed-row"><label>${t("color1")}<input type="color" data-ci="0" value="${c.c[0]}"></label><label>${t("color2")}<input type="color" data-ci="1" value="${c.c[1]}"></label><label>${t("color3")}<input type="color" data-ci="2" value="${c.c[2]}"></label>
         <button class="btn gold" id="c-useed">${p.skin.k === "custom" ? "✓ " + t("equipped") : t("equip")}</button></div>`;
     } else if (tab === "eyes") { const own = EYES.filter((e, i) => S.unlocked("eye", i)).length; h = head(t("eyes"), own, EYES.length) + `<div class="grid">` + EYES.map((e, i) => { const ok = S.unlocked("eye", i), on = p.eye === i; return `<button class="item lk2 ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="eye" data-v="${i}"><div class="sw eyesw">${eyeSvg(e)}${i >= 7 ? `<span class="nw">${t("lk_new")}</span>` : ""}</div><div class="meta"><b>${cap(e.id)}</b></div>${st(on, ok, t("lockedLv", { n: e.lv }))}</button>`; }).join("") + `</div>`; }
-    else if (tab === "trails") { const own = TRAILS.filter((e, i) => S.unlocked("trail", i)).length; h = head(t("trails"), own, TRAILS.length) + `<div class="grid">` + TRAILS.map((tr, i) => { const ok = S.unlocked("trail", i), on = p.trail === i; return `<button class="item lk2 ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="trail" data-v="${i}"><div class="sw trsw" style="${tr.c ? `--a:${tr.c[0]};--b:${tr.c[1]}` : ""}">${tr.c ? "<i></i><i></i><i></i><i></i><i></i>" : ""}${i >= 7 ? `<span class="nw">${t("lk_new")}</span>` : ""}</div><div class="meta"><b>${cap(tr.id)}</b></div>${st(on, ok, t("lockedLv", { n: tr.lv }))}</button>`; }).join("") + `</div>`; }
+    else if (tab === "trails") { const own = TRAILS.filter((e, i) => S.unlocked("trail", i)).length; h = head(t("particles"), own, TRAILS.length) + `<div class="grid">` + TRAILS.map((tr, i) => { const ok = S.unlocked("trail", i), on = p.trail === i; return `<button class="item lk2 ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="trail" data-v="${i}"><div class="sw trsw" style="${tr.c ? `--a:${tr.c[0]};--b:${tr.c[1]}` : ""}">${tr.c ? "<i></i><i></i><i></i><i></i><i></i>" : ""}${i >= 7 ? `<span class="nw">${t("lk_new")}</span>` : ""}</div><div class="meta"><b>${cap(tr.id)}</b></div>${st(on, ok, t("lockedLv", { n: tr.lv }))}</button>`; }).join("") + `</div>`; }
+    else if (tab === "gtrails") { // trail1: ground trail shop + equip slot. A locked card is selected by the first tap and bought by the second.
+      const own = GTRAILS.filter((g, i) => S.unlocked("gtrail", i)).length, still = this.calmUi() ? " still" : "", cur = p.gt, gs = this.gtSel ?? -2;
+      const prev = (i) => `<div class="sw gtsw${still}">${i < 0 ? "" : [0, 1, 2, 3].map((k) => `<i style="background-image:url(${gtCellUrl(i, k)})"></i>`).join("") + `<b class="hd"><i></i></b>`}</div>`;
+      const none = `<button class="item lk2 r-common ${cur ? "" : "on"}" data-k="gt" data-v="-1">${prev(-1)}<div class="meta"><b>${t("gt_none")}</b></div>${st(!cur, true)}</button>`;
+      h = head(t("trails"), own, GTRAILS.length) + `<p class="gt-sub">${t("gt_sub")}</p><div class="grid">` + none + GTRAILS.map((G, i) => { const ok = S.unlocked("gtrail", i), on = cur === G.id, sel = !ok && gs === i;
+        const stt = on || ok ? st(on, true) : `<small class="st buy${sel ? " go" : ""}">${sel ? t("buy", { n: "" }).trim() + " · " : ""}<span class="coin"></span>${fmtNum(G.price)}</small>`;
+        return `<button class="item lk2 r-${G.rar} gtc ${on ? "on" : ""} ${sel ? "sel" : ""}" data-k="gt" data-v="${i}">${prev(i)}<div class="meta"><b>${t("gt_" + G.id)}</b><i class="rd ${G.rar}" title="${t("rar_" + G.rar)}"></i></div>${G.price ? stt : on ? stt : `<small class="st">${t("gt_free")}</small>`}</button>`; }).join("") + `</div>`; }
     else if (tab === "offers") { this.renderOffers(el); return; }
     else if (tab === "name") h = head(t("nameColor"), NAME_COLORS.length, NAME_COLORS.length) + `<div class="ncprev"><b style="color:${NAME_COLORS[p.nc] || "#fff"}">${esc(p.name || "Player")}</b></div><div class="namecols">` + NAME_COLORS.map((c, i) => `<button data-k="nc" data-v="${i}" class="${p.nc === i ? "on" : ""}" style="background:${c}" aria-label="${c}"></button>`).join("") + `</div>`;
     el.innerHTML = h;
@@ -605,14 +613,19 @@ export class UI {
     else if (k === "pat") { p.custom.p = v; p.skin = { k: "custom", i: 0 }; this.sel = null; }
     else if (k === "eye") { if (!S.unlocked("eye", v)) { this.toast("🔒 " + t("unlockAt", { n: EYES[v].lv })); return; } p.eye = v; }
     else if (k === "trail") { if (!S.unlocked("trail", v)) { this.toast("🔒 " + t("unlockAt", { n: TRAILS[v].lv })); return; } p.trail = v; }
+    else if (k === "gt") { // trail1
+      if (v < 0 || S.unlocked("gtrail", v)) { S.equipGTrail(v); this.gtSel = -2; this.renderCustom(); if (v >= 0) this.toast("✓ " + t("equipped") + " · " + t("gt_" + GTRAILS[v].id), "good"); return; }
+      if (this.gtSel !== v) { this.gtSel = v; this.renderCustom(); return; }
+      const r = S.buyGTrail(v); if (!this.buyResult(r)) return; S.equipGTrail(v); this.gtSel = -2; const sel = `[data-k="gt"][data-v="${v}"]`, tgt = document.querySelector("#c-content " + sel);
+      this.buyFx(tgt, sel); this.renderCustom(); this.toast(t("bought") + " " + t("gt_" + GTRAILS[v].id), "good"); this.checkAch(); return; }
     else if (k === "nc") p.nc = v;
     S.save(); this.renderCustom();
   }
   renderPresets() {
     const p = this.p, box = $("c-presets");
     box.innerHTML = p.presets.map((pr, i) => `<div class="pre2 ${pr ? "full" : ""}"><div class="pre-sw" style="${pr ? `background:${swatchCss(pr.skin.k === "custom" ? { k: "custom", p: pr.custom.p, c: pr.custom.c } : pr.skin)}` : ""}"><span>${i + 1}</span></div><div class="pre-act">${pr ? `<button data-pl="${i}">${t("load")}</button>` : ""}<button data-ps="${i}" class="${pr ? "" : "only"}">${pr ? t("save") : "+ " + t("save")}</button></div></div>`).join("");
-    box.querySelectorAll("[data-ps]").forEach((b) => this.click(b, () => { p.presets[+b.dataset.ps] = { skin: { ...p.skin }, custom: { p: p.custom.p, c: [...p.custom.c] }, eye: p.eye, trail: p.trail, nc: p.nc }; this.S.save(); this.toast("✓ " + t("save"), "good"); this.checkAch(); this.renderPresets(); }));
-    box.querySelectorAll("[data-pl]").forEach((b) => this.click(b, () => { const pr = p.presets[+b.dataset.pl]; if (!pr) return; Object.assign(p, { skin: { ...pr.skin }, custom: { p: pr.custom.p, c: [...pr.custom.c] }, eye: pr.eye, trail: pr.trail, nc: pr.nc }); this.S.save(); this.sel = null; this.renderCustom(); }));
+    box.querySelectorAll("[data-ps]").forEach((b) => this.click(b, () => { p.presets[+b.dataset.ps] = { skin: { ...p.skin }, custom: { p: p.custom.p, c: [...p.custom.c] }, eye: p.eye, trail: p.trail, gt: p.gt, nc: p.nc }; this.S.save(); this.toast("✓ " + t("save"), "good"); this.checkAch(); this.renderPresets(); }));
+    box.querySelectorAll("[data-pl]").forEach((b) => this.click(b, () => { const pr = p.presets[+b.dataset.pl]; if (!pr) return; Object.assign(p, { skin: { ...pr.skin }, custom: { p: pr.custom.p, c: [...pr.custom.c] }, eye: pr.eye, trail: pr.trail, nc: pr.nc }); if (typeof pr.gt === "string") { const gi = GTRAILS.findIndex((g) => g.id === pr.gt); this.S.equipGTrail(gi); } this.S.save(); this.sel = null; this.renderCustom(); }));
   }
   // ---------- rarity reveal ----------
   reveal(i) { if (i === undefined || i < 0) return; this.revealQ.push(i); if (!this.revealing && this.revealing !== 0) this.nextReveal(); }

@@ -1,19 +1,20 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=resp2"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=resp2";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=resp2";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=resp2";
-import { NetBackend } from "./net.js?v=resp2";
-import { t, fmtNum } from "./i18n.js?v=resp2";
-import { haptic } from "./audio.js?v=resp2";
-import { rankOf, rpDelta } from "./profile.js?v=resp2";
-import { Replay } from "./replay.js?v=resp2";
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=resp2"; // comp1
-import { onServerTrophy } from "./compui.js?v=resp2";
-import { Governor } from "./gov.js?v=resp2"; // perf2: adaptive render governor
-import { emit } from "./events.js?v=resp2"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=trail1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=trail1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=trail1";
+import { GTrail } from "./gfx/gtrail.js?v=trail1"; // trail1: cosmetic ground trail decals (never in the sim)
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=trail1";
+import { NetBackend } from "./net.js?v=trail1";
+import { t, fmtNum } from "./i18n.js?v=trail1";
+import { haptic } from "./audio.js?v=trail1";
+import { rankOf, rpDelta } from "./profile.js?v=trail1";
+import { Replay } from "./replay.js?v=trail1";
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=trail1"; // comp1
+import { onServerTrophy } from "./compui.js?v=trail1";
+import { Governor } from "./gov.js?v=trail1"; // perf2: adaptive render governor
+import { emit } from "./events.js?v=trail1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -101,7 +102,7 @@ class LocalBackend {
 
 export class Game {
   constructor(app) {
-    this.app = app; this.r = null; this.running = false; this.paused = false; this.view = { snakes: [], food: null, cam: { x: 0, y: 0, zoom: 1 }, t: 0, dt: 0, ghosts: null, foodPal: null, foodPalCss: null };
+    this.app = app; this.gtr = new GTrail(); this.r = null; this.running = false; this.paused = false; this.view = { snakes: [], food: null, cam: { x: 0, y: 0, zoom: 1 }, t: 0, dt: 0, ghosts: null, foodPal: null, foodPalCss: null };
     this.entries = new Map(); this.ft = new Float32Array(240); this.fi = 0; this.fpsShown = 0; this.lastFrame = 0; this.attract = null; this.t = 0;
     this.hud = app.hud; this._loop = (ts) => this.loop(ts); this.raf = 0; this.goodWins = 0; this.autoToasted = false; this.camX = 0; this.camY = 0; this.show = null;
   }
@@ -123,7 +124,7 @@ export class Game {
 
   // ---------- matches ----------
   start(cfg) {
-    const A = this.app, S = A.store, p = S.p; this.palettes(cfg.world);
+    const A = this.app, S = A.store, p = S.p; this.palettes(cfg.world); this.gtr.clear();
     this.cfg = cfg; this.mode = cfg.mode; this.world = cfg.world; this.attract = null; this.M = MODES[cfg.mode] || {};
     this.stats = { kills: 0, food: 0, boost: 0, life: 0, best: 0, rankBest: 99, t0: performance.now(), lifeT0: performance.now(), deaths: 0, score: 0, timeLeft: 0, wave: 1 };
     this.combo = 0; this.comboT = 0; this.gainAcc = 0; this.gainT = 0; this.rankShown = 99; this.massMile = 0; this.liveMs = new Set(); this.puLast = null; this.hintI = 0; this.hintT = 4; this.stats.bonus = 0; this.stats.pu = 0; this.stats.bounty = 0; this.watching = false; this.killer = null; this.selfHit = false; this.deathCause = 0; this.emoT = 0; this.rainFx = null; this.evNow = null; // no stale killer from the last match
@@ -509,6 +510,7 @@ export class Game {
     else { b.prepareOthers(); for (const mr of b.mirrors.values()) add(mr.s, mr.s._ro, mr.s._rf, false, mr.boost); if (b.me) add(b.me, 1, alpha, true, b.me.boosting); }
     for (const [k, e] of this.entries) if (!e.used) this.entries.delete(k);
     for (let q = 0; q < 3; q++) { let best = null; for (const e of list) if (!e.top && e.s.alive && (!best || e.s.m > best.s.m)) best = e; if (best) { best.top = true; if (q === 0) best.top1 = true; } }
+    v.gt = this.mode === "attract" || this.mode === "show" ? null : this.gtr; { const gid = this.app.store.p.gt; if (this._gtId !== gid) { this._gtId = gid; this._gtI = gtIndex(gid); } v.gtI = this._gtI; } // trail1: own snake only (online: other players' skins carry no ground trail)
     v.food = b; v.ghosts = b.ghosts; v.pus = b.pus || null; v.mets = b.mets || null; v.tick = b.sim ? b.sim.tick : undefined;
     v.rain = this.rainFx && now < this.rainFx.until && b.me && b.me.alive ? b.me : null; v.goldRain = this.evNow && this.evNow.k === "rain" && now < this.evNow.until && b.me ? b.me : null;
     v.zone = this.zone && this.mode === "br" ? this.zone : null; v.hill = this.hill && this.mode === "koth" ? { x: this.hill.x, y: this.hill.y, r: this.hill.r, c: this.hill.mine ? [0.3, 1, 0.5] : this.hill.contested ? [1, 0.3, 0.3] : [1, 0.8, 0.2] } : null;

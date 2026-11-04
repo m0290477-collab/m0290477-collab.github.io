@@ -2,13 +2,14 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { stageBox } from "./stage.js?v=resp2";
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=resp2";
+import { stageBox } from "./stage.js?v=trail1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=trail1";
 const TUBE_STEPS = [[1, 0.28], [0.9, 0.51], [0.78, 0.85], [0.66, 1]]; // tube1: [fraction of the spine from the head, half-width / r]
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=resp2";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=resp2";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=resp2";
-import { on as onEv } from "./events.js?v=resp2";
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=trail1";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=trail1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=trail1";
+import { on as onEv } from "./events.js?v=trail1";
+import { gtAtlas, GT_CAP, GT_CELL } from "./gfx/gtrail.js?v=trail1"; // trail1: ground trails
 const NO2 = 220;
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle cap
 const GOV_PR = [3, 2, 1.5, 1.25], GOV_PC = [300, 180, 100, 50];
@@ -179,6 +180,7 @@ export class Renderer2D {
     if (v.hill) { const h = v.hill, c = lin2css(h.c || [1, 0.8, 0.2]); g.globalAlpha = 0.14; g.fillStyle = c; g.beginPath(); g.arc(h.x, h.y, h.r, 0, TAU); g.fill(); g.globalAlpha = 0.6; g.strokeStyle = c; g.lineWidth = 0.3; g.stroke(); g.globalAlpha = 1; }
     if (v.zone) { const z = v.zone, zr = Math.max(0.5, z.r); g.save(); g.beginPath(); g.rect(cx - vr * 1.5, cy - vr * 1.5, vr * 3, vr * 3); g.arc(z.x, z.y, zr, 0, TAU, true); g.fillStyle = "rgba(40,24,64,0.45)"; g.fill("evenodd"); g.restore();
       g.strokeStyle = "#b9a6e0"; g.globalAlpha = 0.12; g.lineWidth = 2.2; g.beginPath(); g.arc(z.x, z.y, zr - 1, 0, TAU); g.stroke(); g.globalAlpha = 0.55; g.lineWidth = 0.3; g.beginPath(); g.arc(z.x, z.y, zr, 0, TAU); g.stroke(); g.globalAlpha = 1; }
+    if (v.gt) this._gtrail(g, v, dt, cx, cy, vr2); // trail1: ground trail decals, on the ground under food and snakes
     // candy1: big flat candy sprites (one cached sprite per type + colour, no glow), coins in Gold Rush; eaten candy
     // shrinks and slides into the eater's mouth (ghosts), drawn under the snakes
     { const F = v.food, pal = v.foodPalCss === FOOD_COLORS_CB ? v.foodPalCss : CANDY_CSS, NP = pal.length, gold = !!v.goldMode, CS = this.candySpr;
@@ -303,6 +305,14 @@ export class Renderer2D {
     g.fillStyle = "#e8b53a"; g.beginPath(); g.moveTo(-0.95, 0.5); g.lineTo(-1.0, -0.35); g.lineTo(-0.5, 0.05); g.lineTo(0, -0.6); g.lineTo(0.5, 0.05); g.lineTo(1.0, -0.35); g.lineTo(0.95, 0.5); g.closePath(); g.fill();
     g.fillStyle = "#ffe08a"; g.beginPath(); g.moveTo(-0.95, 0.5); g.lineTo(-1.0, -0.35); g.lineTo(-0.5, 0.05); g.lineTo(0, -0.6); g.lineTo(0, 0.5); g.closePath(); g.globalAlpha *= 0.55; g.fill(); g.globalAlpha /= 0.55;
     g.fillStyle = "#b07a18"; g.fillRect(-0.95, 0.3, 1.9, 0.2); g.fillStyle = "#ff4a6a"; g.beginPath(); g.arc(0, 0.12, 0.13, 0, TAU); g.fill(); g.restore(); }
+  // trail1: step the shared decal pool once per frame, then one drawImage per live decal from the cached atlas
+  _gtrail(g, v, dt, cx, cy, vr2) {
+    const G = v.gt, o = this._gto || (this._gto = { calm: false, low: false, gov: 0 }); o.calm = !!(this.calm || this.reduceMotion); o.low = this.qName === "low" || !!this.userLow; o.gov = this.govL | 0;
+    G.step(v, v.dt, v.gtI, o); if (!G.live) return; const A = gtAtlas(); if (!A) return; const C = GT_CELL;
+    for (let i = 0; i < GT_CAP; i++) { const a = G.ca[i]; if (a <= 0.004) continue; const x = G.x[i], y = G.y[i]; if ((x - cx) * (x - cx) + (y - cy) * (y - cy) > vr2) continue;
+      const h = G.sz[i] * G.cs[i], r = G.rot[i]; g.globalAlpha = a; g.translate(x, y); g.rotate(r); g.drawImage(A, G.va[i] * C, G.ty[i] * C, C, C, -h, -h, h * 2, h * 2); g.rotate(-r); g.translate(-x, -y); }
+    g.globalAlpha = 1;
+  }
   clearFx() { for (const p of this.parts) this.pPool.push(p); this.parts.length = 0; this.rings.length = 0; this.oN = 0; } // replay1: a clean stage for the replay
   dispose() { if (this._unsub) for (const u of this._unsub) u(); this._unsub = null; }
 }

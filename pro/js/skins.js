@@ -145,6 +145,22 @@ export const TRAILS = [
   { id: "goldrush", lv: 18, c: ["#ffd700", "#fff1a8"] }, { id: "sakura", lv: 22, c: ["#ffb7d5", "#ffffff"] }, { id: "toxic", lv: 28, c: ["#9dff00", "#39ff14"] },
   { id: "ocean", lv: 32, c: ["#00b4d8", "#caf0f8"] }, { id: "aurora", lv: 38, c: ["#00ffa3", "#7a2cff"] }, { id: "inferno", lv: 44, c: ["#ff2a00", "#ffb000"] },
 ];
+// trail1: ground trails (cosmetic only, never in the sim): decals spawned on the ground along the player's own path,
+// near the head and behind it, living 0.6-1.5 s. price 0 = free. Owned ids go in profile.owned as "gt:<id>", the equipped
+// one in profile.gt ("" = none). c = sprite colours, life = seconds, a = peak alpha (kept soft), sz = size x snake radius.
+export const GTRAILS = [
+  { id: "dust", price: 0, rar: "common", c: ["#b9a27e", "#8a7658"], life: 0.8, a: 0.4, sz: 2.2 },
+  { id: "ripples", price: 0, rar: "common", c: ["#cfeaff", "#8cc8f0"], life: 0.95, a: 0.45, sz: 2.4 },
+  { id: "sparks", price: 1200, rar: "epic", c: ["#ffd27a", "#ff9a3c"], life: 0.6, a: 0.6, sz: 1.8 },
+  { id: "flowers", price: 1500, rar: "epic", c: ["#ff9cc8", "#fff0a8", "#ffffff"], life: 1.5, a: 0.8, sz: 1.7 },
+  { id: "snow", price: 1800, rar: "epic", c: ["#eef9ff", "#a8dcff"], life: 1.3, a: 0.6, sz: 2.2 },
+  { id: "toxic", price: 1800, rar: "epic", c: ["#7fe03a", "#3f8f1a"], life: 1.3, a: 0.55, sz: 2.2 },
+  { id: "cracks", price: 2500, rar: "legendary", c: ["#2a1d14", "#5a4430"], life: 1.4, a: 0.65, sz: 2.4 },
+  { id: "electric", price: 3000, rar: "legendary", c: ["#b8dcff", "#7fb2ff"], life: 0.6, a: 0.42, sz: 2.0 },
+  { id: "lava", price: 3500, rar: "legendary", c: ["#ff7a1a", "#3a1408", "#ffb04a"], life: 1.4, a: 0.7, sz: 2.4 },
+  { id: "gold", price: 5000, rar: "legendary", c: ["#ffd24a", "#fff1b0"], life: 1.2, a: 0.62, sz: 1.9 },
+];
+export const gtIndex = (id) => GTRAILS.findIndex((g) => g.id === id);
 export const NAME_COLORS = ["#ffffff", "#ffd700", "#39ff88", "#00e5ff", "#ff6fae", "#ff7a3d", "#b18cff", "#ff3355", "#c0c7d6", "#9dff00",
   "#e9c46a", "#2ec4b6", "#ffb7d5", "#7fb2ff", "#ffd1a1", "#c6ff3a", "#ff9e00", "#e0aaff", "#90e0ef", "#f15bb5"];
 // lk1: editor palette quick-picks

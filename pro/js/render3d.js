@@ -2,21 +2,22 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import { stageBox } from "./stage.js?v=resp2";
-import * as THREE from "./vendor/three.module.min.js?v=resp2";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=resp2";
+import { stageBox } from "./stage.js?v=trail1";
+import * as THREE from "./vendor/three.module.min.js?v=trail1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=trail1";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=resp2";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=resp2";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=resp2";
-import { World, prefetchWorld } from "./gfx/env.js?v=resp2";
-import { Post } from "./gfx/post.js?v=resp2";
-import { Studio } from "./gfx/showcase.js?v=resp2";
-import { SoftFx } from "./gfx/fx.js?v=resp2";
-import { on as onEv } from "./events.js?v=resp2";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=resp2";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=trail1";
+import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=trail1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=trail1";
+import { World, prefetchWorld } from "./gfx/env.js?v=trail1";
+import { Post } from "./gfx/post.js?v=trail1";
+import { Studio } from "./gfx/showcase.js?v=trail1";
+import { SoftFx } from "./gfx/fx.js?v=trail1";
+import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=trail1"; // trail1: ground trails
+import { on as onEv } from "./events.js?v=trail1";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=trail1";
 
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
 const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3];
@@ -53,7 +54,7 @@ export class Renderer3D {
     this.tmp = new Float32Array(SW * 2 + 64); this.ys = new Float32Array(SW); this.cols = new Float32Array(SW); this.col = [0, 0, 0]; this.state = new Map();
     this.sunDir = new THREE.Vector3(-0.45, 0.75, 0.35).normalize();
     this._initLights(); this.snakes = new SnakeSystem(this, this.Q); for (const m of this.snakes.worldMeshes) this.scene.add(m);
-    this._initFood(); this._initParticles(); this._initBits(); this._initFx(); this.labels = new Map(); this.labelPool = [];
+    this._initFood(); this._initGT(); this._initParticles(); this._initBits(); this._initFx(); this.labels = new Map(); this.labelPool = [];
     this.eyes = this._eyes(this.scene); this.studio = new Studio(this); for (const m of this.snakes.showMeshes) this.studio.scene.add(m); this.eyesS = this._eyes(this.studio.scene);
     this.sfx = new SoftFx(this); this.scene.add(this.sfx.group); this._subFx();
     this._meRing = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 48, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false, toneMapped: false, fog: false })); this._meRing.visible = false; this._meRing.renderOrder = 4; this.scene.add(this._meRing); // look1: steady ring marks your own snake
@@ -119,6 +120,29 @@ export class Renderer3D {
     this.halo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(0,0,0,0.42)"], [0.45, "rgba(0,0,0,0.26)"], [1, "rgba(0,0,0,0)"]]), transparent: true, depthWrite: false, toneMapped: false, fog: false, color: 0xffffff }), MAX_FOOD, false); // contact shadows
     this.halo.renderOrder = 1;
     this.gem = this._inst(this.scene, coinGeometry(THREE, q), coinMaterial(THREE, tier), MAX_GEM, false); // Gold Rush gold: metallic coins, never candy
+  }
+  // trail1: ground trail decals: one InstancedMesh (one draw call) of flat quads sampling the shared sprite atlas; per-instance
+  // atlas cell (aUv) and alpha (aA). Basic material (unlit, no tone mapping), fog on, no depth write, just above the ground.
+  _initGT() {
+    const A = gtAtlas(); if (!A) return; const N = GT_CAP, geo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+    this.gtUv = new THREE.InstancedBufferAttribute(new Float32Array(N * 4), 4).setUsage(THREE.DynamicDrawUsage); this.gtA = new THREE.InstancedBufferAttribute(new Float32Array(N), 1).setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute("aUv", this.gtUv); geo.setAttribute("aA", this.gtA);
+    const tex = new THREE.CanvasTexture(A); tex.colorSpace = THREE.SRGBColorSpace; tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.anisotropy = 4;
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, fog: true, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+    mat.onBeforeCompile = (sh) => { sh.vertexShader = "attribute vec4 aUv; attribute float aA; varying float vGA;\n" + sh.vertexShader.replace("#include <uv_vertex>", "#include <uv_vertex>\n vMapUv = aUv.xy + uv * aUv.zw; vGA = aA;");
+      sh.fragmentShader = "varying float vGA;\n" + sh.fragmentShader.replace("#include <map_fragment>", "#include <map_fragment>\n diffuseColor.a *= vGA;"); };
+    mat.customProgramCacheKey = () => "gtrail1";
+    this.gtMesh = this._inst(this.scene, geo, mat, N, false); this.gtMesh.renderOrder = 1; this._gto = { calm: false, low: false, gov: 0 };
+  }
+  _gtrail(v, dt) {
+    const M = this.gtMesh; if (!M) return; const G = v.gt; if (!G) { M.count = 0; return; }
+    const o = this._gto; o.calm = !!(this.calm || this.reduceMotion); o.low = this.qName === "low" || !!this.userLow; o.gov = this.govL | 0;
+    G.step(v, dt, v.gtI, o); const IM = M.instanceMatrix.array, UV = this.gtUv.array, AA = this.gtA.array, cu = 1 / GT_VARS, cv = 1 / GTRAILS.length; let n = 0;
+    if (G.live) for (let i = 0; i < GT_CAP; i++) { const a = G.ca[i]; if (a <= 0.004) continue;
+      const sc = G.sz[i] * G.cs[i] * 2, r = G.rot[i], c = Math.cos(r) * sc, sn = Math.sin(r) * sc, b = n * 16;
+      IM[b] = c; IM[b + 1] = 0; IM[b + 2] = -sn; IM[b + 3] = 0; IM[b + 4] = 0; IM[b + 5] = 1; IM[b + 6] = 0; IM[b + 7] = 0; IM[b + 8] = sn; IM[b + 9] = 0; IM[b + 10] = c; IM[b + 11] = 0; IM[b + 12] = G.x[i]; IM[b + 13] = 0.04; IM[b + 14] = G.y[i]; IM[b + 15] = 1;
+      const q = n * 4; UV[q] = G.va[i] * cu; UV[q + 1] = 1 - (G.ty[i] + 1) * cv; UV[q + 2] = cu; UV[q + 3] = cv; AA[n] = a; n++; }
+    M.count = n; if (n) { M.instanceMatrix.needsUpdate = true; this.gtUv.needsUpdate = true; this.gtA.needsUpdate = true; }
   }
   _initParticles() {
     const N = 2600; this.pN = N; this.pMax = this.Q.particles;
@@ -528,6 +552,7 @@ export class Renderer3D {
     for (let i = ne; i < this.emoSpr.length; i++) this.emoSpr[i].visible = false; if (this.dashSpr) for (let i = nd; i < this.dashSpr.length; i++) this.dashSpr[i].visible = false;
     this.snakes.commit(ni, nfx, ng); this._flushE(E, cnt); this._flush(this.teamRing, nt); this._flush(this.magRing, nm);
     if (v.cam.title !== undefined) { for (const m of this.candy) m.count = 0; this.halo.count = this.gem.count = 0; } else this._food(v, t, vx, vz, far ? 1e9 : vr2);
+    if (v.cam.title !== undefined) { if (this.gtMesh) this.gtMesh.count = 0; } else this._gtrail(v, dt); // trail1
     this._modeFx(v, t); this._pus(v, t); this._meteors(v, t);
     if (this.pMax && v.rain) { const h = v.rain; for (let k = 0; k < 6; k++) { const a = Math.random() * 6.283, d = 3 + Math.random() * 16; this.emit(h.x + Math.cos(a) * d, 10 + Math.random() * 4, h.y + Math.sin(a) * d, 0, -18, 0, [0.8, 1.6, 0.3], 0.6, 0.35, 1, 0); } }
     if (this.pMax && v.goldRain) { const h = v.goldRain; for (let k = 0; k < 4; k++) { const a = Math.random() * 6.283, d = 2 + Math.random() * 28; this.emit(h.x + Math.cos(a) * d, 11 + Math.random() * 5, h.y + Math.sin(a) * d, 0, -16, 0, [1.8, 1.3, 0.3], 0.7, 0.4, 1, 0); } }
@@ -550,10 +575,10 @@ export class Renderer3D {
     mc.position.set(cp.x, -cp.y, cp.z); const target = (this._mt || (this._mt = new THREE.Vector3())).set(look.x, -look.y, look.z); mc.up.set(0, 1, 0).applyMatrix4(_m); mc.up.y = -mc.up.y; mc.lookAt(target);
     mc.fov = cam.fov; mc.aspect = cam.aspect; mc.near = cam.near; mc.far = cam.far; mc.updateMatrixWorld(); mc.projectionMatrix.copy(cam.projectionMatrix);
     this.mirrorMat.set(0.5, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0, 0.5, 0.5, 0, 0, 0, 1).multiply(mc.projectionMatrix).multiply(mc.matrixWorldInverse); this.world.groundU.uMat.value.copy(this.mirrorMat);
-    const g = this.world.ground, w = this.world.water, vis = this._vis || (this._vis = []); vis.length = 0; g.visible = false; if (w) w.visible = false; for (const L of this.labels.values()) { vis.push(L.sp); L.sp.visible = false; } this.pts.visible = false;
+    const g = this.world.ground, w = this.world.water, vis = this._vis || (this._vis = []); vis.length = 0; g.visible = false; if (w) w.visible = false; for (const L of this.labels.values()) { vis.push(L.sp); L.sp.visible = false; } this.pts.visible = false; if (this.gtMesh) this.gtMesh.visible = false;
     const shadow = this.r.shadowMap.autoUpdate; this.r.shadowMap.autoUpdate = false;
     const prev = this.r.getRenderTarget(); this.r.setRenderTarget(this.mirrorRT); this.r.clear(); this.r.render(this.scene, mc); this.r.setRenderTarget(prev);
-    this.r.shadowMap.autoUpdate = shadow; g.visible = true; if (w) w.visible = true; for (const s of vis) s.visible = true; this.pts.visible = true;
+    this.r.shadowMap.autoUpdate = shadow; g.visible = true; if (w) w.visible = true; for (const s of vis) s.visible = true; this.pts.visible = true; if (this.gtMesh) this.gtMesh.visible = true;
   }
   // candy1: big candy. Each food -> its candy type mesh (rotY * uniform scale), a soft round contact shadow under it,
   // a slow spin + bob of at most 0.045 (none with reduced motion). Gold Rush gold stays a metallic coin.

@@ -2,11 +2,11 @@
 // reset, weekly / monthly contests with milestones (work offline) and final-rank rewards (online, server-validated).
 // Rewards are coins + exclusive cosmetics only (frames, titles, badges); no real money anywhere.
 // Rules shared with the server live in sim.js (leagueOf, trophyDelta, seasonCarry, period ids).
-import { LEAGUES, TROPHY, leagueOf, trophyDelta, seasonCarry, seasonId, weekId, periodEnd, CONTESTS, botTrophies } from "./sim.js?v=resp2";
-import { t, fmtNum, addStrings } from "./i18n.js?v=resp2";
-import { KV, logErr } from "./store.js?v=resp2";
-import { stableNow } from "./offers.js?v=resp2";
-import { SERVER } from "./net.js?v=resp2";
+import { LEAGUES, TROPHY, leagueOf, trophyDelta, seasonCarry, seasonId, weekId, periodEnd, CONTESTS, botTrophies } from "./sim.js?v=trail1";
+import { t, fmtNum, addStrings } from "./i18n.js?v=trail1";
+import { KV, logErr } from "./store.js?v=trail1";
+import { stableNow } from "./offers.js?v=trail1";
+import { SERVER } from "./net.js?v=trail1";
 
 export { LEAGUES, TROPHY, leagueOf, CONTESTS, botTrophies };
 export const ROMAN = ["", "I", "II", "III", "IV", "V"];
