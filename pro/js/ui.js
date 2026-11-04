@@ -1,21 +1,22 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=srv2";
-import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=srv2"; // srv1
-import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=srv2"; // srv2
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=srv2"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=srv2";
-import { GTRAILS } from "./skins.js?v=srv2"; import { gtCellUrl } from "./gfx/gtrail.js?v=srv2"; // trail1
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=srv2";
-import { WORLDS, worldAsset } from "./worlds.js?v=srv2";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=srv2";
-import { haptic } from "./audio.js?v=srv2";
-import { skinFn, MODES, EMOTES } from "./game.js?v=srv2";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=srv2";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=srv2";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=srv2";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=srv2"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=srv2";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=coin1";
+import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=coin1"; // srv1
+import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=coin1"; // srv2
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=coin1"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=coin1";
+import { legalButtons, contactNote, openFeedback } from "./legal.js?v=coin1"; import { call as socialCall } from "./social.js?v=coin1"; // coin1
+import { GTRAILS } from "./skins.js?v=coin1"; import { gtCellUrl } from "./gfx/gtrail.js?v=coin1"; // trail1
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=coin1";
+import { WORLDS, worldAsset } from "./worlds.js?v=coin1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=coin1";
+import { haptic } from "./audio.js?v=coin1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=coin1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=coin1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=coin1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=coin1";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=coin1"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=coin1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -224,7 +225,7 @@ export class UI {
   get S() { return this.app.store; }
   get p() { return this.app.store.p; }
   click(el, fn, snd = "click") {
-    el.addEventListener("click", (e) => { this.app.audio.unlock(); this.app.audio.play(snd); haptic.tap(6); this.ripple(el, e); try { fn(e); } catch (err) { console.error(err); this.toast(t("oops"), "warn"); } });
+    el.addEventListener("click", (e) => { this.app.audio.unlock(); this.app.audio.play(snd); haptic.tap(6); this.ripple(el, e); try { const pr = fn(e); if (pr && pr.catch) pr.catch((err) => { console.error(err); this.toast(t("oops"), "warn"); }); } catch (err) { console.error(err); this.toast(t("oops"), "warn"); } }); // coin1: purchases are async (server)
     if (matchMedia("(hover: hover)").matches) el.addEventListener("pointerenter", () => this.app.audio.play("hover"));
   }
   ripple(el, e) { if (!el.classList || !(el.classList.contains("btn") || el.classList.contains("item") || el.classList.contains("mode")) || this.S.settings.reduceMotion) return; const r = el.getBoundingClientRect(), d = Math.max(r.width, r.height), s = document.createElement("span"); s.className = "rip"; s.style.width = s.style.height = d + "px"; s.style.left = ((e.clientX || r.left + r.width / 2) - r.left - d / 2) + "px"; s.style.top = ((e.clientY || r.top + r.height / 2) - r.top - d / 2) + "px"; const w = document.createElement("span"); w.className = "ripw"; w.appendChild(s); el.appendChild(w); setTimeout(() => w.remove(), 600); }
@@ -285,10 +286,10 @@ export class UI {
     h += `<p class="ofnote">${t("offCoins")}</p>`;
     el.innerHTML = h;
     // buy: the offer is recomputed at the moment of the tap (never trusted from the page)
-    el.querySelectorAll("[data-buyi]").forEach((b) => this.click(b, () => { const [k, i] = b.dataset.buyi.split(":"), S2 = this.offerState(), it = S2.w.items.find((x) => x.k === k && x.i === +i); if (!it) { this.renderCustom(); return; }
-      const r = k === "skin" ? this.S.buyLegend(it.i, it.price) : this.S.buyFlag(it.i, it.price); if (!this.buyResult(r)) return; const card = b.closest(".item"); this.buyFx(card, null); b.disabled = true; b.textContent = "✓"; setTimeout(() => { if (this.cTab === "offers" && this.cur === "custom") this.renderCustom(); }, 1100); }, "tab"));
-    el.querySelectorAll("[data-buyb]").forEach((b) => this.click(b, () => { const S2 = this.offerState(), key = b.dataset.buyb, bb = [S2.o, S2.m].find((x) => x && x.key === key && x.items && x.items.length); if (!bb) { this.renderCustom(); return; }
-      const r = this.S.buyBundle(bb.key, bb.items, bb.price); if (!this.buyResult(r)) return; const card = b.closest(".ofb"); this.buyFx(card, null); b.disabled = true; b.textContent = "✓"; setTimeout(() => { if (this.cTab === "offers" && this.cur === "custom") this.renderCustom(); }, 1100); }, "tab"));
+    el.querySelectorAll("[data-buyi]").forEach((b) => this.click(b, async () => { const [k, i] = b.dataset.buyi.split(":"), S2 = this.offerState(), it = S2.w.items.find((x) => x.k === k && x.i === +i); if (!it) { this.renderCustom(); return; }
+      b.disabled = true; const r = await (k === "skin" ? this.S.buyLegend(it.i, it.price) : this.S.buyFlag(it.i, it.price)); b.disabled = false; if (!this.buyResult(r)) return; const card = b.closest(".item"); this.buyFx(card, null); b.disabled = true; b.textContent = "✓"; setTimeout(() => { if (this.cTab === "offers" && this.cur === "custom") this.renderCustom(); }, 1100); }, "tab"));
+    el.querySelectorAll("[data-buyb]").forEach((b) => this.click(b, async () => { const S2 = this.offerState(), key = b.dataset.buyb, bb = [S2.o, S2.m].find((x) => x && x.key === key && x.items && x.items.length); if (!bb) { this.renderCustom(); return; }
+      b.disabled = true; const r = await this.S.buyBundle(bb.key, bb.items, bb.price); b.disabled = false; if (!this.buyResult(r)) return; const card = b.closest(".ofb"); this.buyFx(card, null); b.disabled = true; b.textContent = "✓"; setTimeout(() => { if (this.cTab === "offers" && this.cur === "custom") this.renderCustom(); }, 1100); }, "tab"));
     const pf0 = performance.now(); // countdowns tick from the (clock-back protected) time the offers were built with, never from a clock that jumped backwards
     clearInterval(this._ofT); this._ofT = setInterval(() => { if (this.cur !== "custom" || this.cTab !== "offers") { clearInterval(this._ofT); return; } const n0 = Date.now(), n = n0 < now - 3600000 ? now + (performance.now() - pf0) : n0; let roll = false;
       el.querySelectorAll(".ofleft").forEach((x) => { const e = +x.dataset.ends; if (n >= e) roll = true; x.textContent = t("offEnds", { n: fmtLeft(e - n) }); }); if (roll) this.renderCustom(); }, 1000);
@@ -328,6 +329,8 @@ export class UI {
     if (r === "ok") return true; if (r === "busy") return false;
     if (r === "noCoins") { this.toast(t("noCoins"), "warn"); this.app.audio.play("error"); return false; }
     if (r === "own") { this.toast("✓ " + t("lk_owned"), ""); return false; }
+    if (r === "offline") { this.toast(t("w_offline", { n: fmtNum(this.p.coins) }), "warn", 4200); this.app.audio.play("error"); return false; } // coin1: purchases need the server
+    if (r === "badPrice") { this.toast(t("w_price"), "warn"); if (this.cur === "custom") this.renderCustom(); return false; }
     this.toast(t(r === "saveFail" ? "buyFail" : "oops"), "warn"); this.app.audio.play("error"); return false;
   }
   // purchase animation (~850 ms total: coins 0-810 ms, glow from 500 ms, sparkles 500-880 ms): coins fly from the balance chip into the item, the item gets a soft gold glow + a few
@@ -608,19 +611,19 @@ export class UI {
     else h = `<span class="rar epic">${t("rar_epic")}</span><b>${t("custom")}</b>`;
     $("c-info").innerHTML = h;
     const eq = $("ci-eq"); if (eq) this.click(eq, () => { p.skin = { k: "skin", i: d.i }; S.save(); this.sel = null; this.renderCustom(); this.toast("✓ " + t("equipped"), "good"); });
-    const by = $("ci-buy"); if (by) this.click(by, () => { const r = S.buyLegend(d.i); if (!this.buyResult(r)) return; const tgt = document.querySelector(`#c-content [data-k="skin"][data-v="${d.i}"]`) || by; this.buyFx(tgt, `[data-k="skin"][data-v="${d.i}"]`); this.renderCustom(); setTimeout(() => this.reveal(d.i), this.calmUi() ? 350 : 820); }, "tab");
+    const by = $("ci-buy"); if (by) this.click(by, async () => { by.disabled = true; const r = await S.buyLegend(d.i); by.disabled = false; if (!this.buyResult(r)) return; const tgt = document.querySelector(`#c-content [data-k="skin"][data-v="${d.i}"]`) || by; this.buyFx(tgt, `[data-k="skin"][data-v="${d.i}"]`); this.renderCustom(); setTimeout(() => this.reveal(d.i), this.calmUi() ? 350 : 820); }, "tab");
   }
-  pick(k, v) {
+  async pick(k, v) { // coin1: async (a purchase waits for the server)
     const p = this.p, S = this.S;
     if (k === "skin") { if (!S.unlocked("skin", v)) { this.sel = { k: "skin", i: v, e: p.eye, t: p.trail, n: p.nc }; this.renderCustom(); return; } p.skin = { k: "skin", i: v }; this.sel = null; }
-    else if (k === "flag") { if (!p.flags.includes(v)) { const r = S.buyFlag(v); if (!this.buyResult(r)) return; const tgt = document.querySelector(`#c-content [data-k="flag"][data-v="${v}"]`); p.skin = { k: "flag", i: v }; this.sel = null; S.save(); this.renderCustom(); this.buyFx(tgt, `[data-k="flag"][data-v="${v}"]`); this.toast(t("bought") + " " + flagEmoji(FLAGS[v].c), "good"); this.checkAch(); return; } p.skin = { k: "flag", i: v }; this.sel = null; }
+    else if (k === "flag") { if (!p.flags.includes(v)) { const r = await S.buyFlag(v); if (!this.buyResult(r)) return; const tgt = document.querySelector(`#c-content [data-k="flag"][data-v="${v}"]`); p.skin = { k: "flag", i: v }; this.sel = null; S.save(); this.renderCustom(); this.buyFx(tgt, `[data-k="flag"][data-v="${v}"]`); this.toast(t("bought") + " " + flagEmoji(FLAGS[v].c), "good"); this.checkAch(); return; } p.skin = { k: "flag", i: v }; this.sel = null; }
     else if (k === "pat") { p.custom.p = v; p.skin = { k: "custom", i: 0 }; this.sel = null; }
     else if (k === "eye") { if (!S.unlocked("eye", v)) { this.toast("🔒 " + t("unlockAt", { n: EYES[v].lv })); return; } p.eye = v; }
     else if (k === "trail") { if (!S.unlocked("trail", v)) { this.toast("🔒 " + t("unlockAt", { n: TRAILS[v].lv })); return; } p.trail = v; }
     else if (k === "gt") { // trail1
       if (v < 0 || S.unlocked("gtrail", v)) { S.equipGTrail(v); this.gtSel = -2; this.renderCustom(); if (v >= 0) this.toast("✓ " + t("equipped") + " · " + t("gt_" + GTRAILS[v].id), "good"); return; }
       if (this.gtSel !== v) { this.gtSel = v; this.renderCustom(); return; }
-      const r = S.buyGTrail(v); if (!this.buyResult(r)) return; S.equipGTrail(v); this.gtSel = -2; const sel = `[data-k="gt"][data-v="${v}"]`, tgt = document.querySelector("#c-content " + sel);
+      const r = await S.buyGTrail(v); if (!this.buyResult(r)) return; S.equipGTrail(v); this.gtSel = -2; const sel = `[data-k="gt"][data-v="${v}"]`, tgt = document.querySelector("#c-content " + sel);
       this.buyFx(tgt, sel); this.renderCustom(); this.toast(t("bought") + " " + t("gt_" + GTRAILS[v].id), "good"); this.checkAch(); return; }
     else if (k === "nc") p.nc = v;
     S.save(); this.renderCustom();
@@ -762,8 +765,11 @@ export class UI {
     const ready = this.S.spinReady(); $("sp-go").disabled = !ready || !!this._spinning; $("sp-go").textContent = ready ? t("spinGo") : t("spinDone"); $("sp-res").textContent = ready ? t("spinFree") : t("spinDone");
     $("m-spin").classList.remove("x-hide");
   }
-  doSpin() {
-    if (this._spinning) return; const r = this.S.spin(SPIN, () => this.pickCos()); if (!r) return; this._spinning = true; $("sp-go").disabled = true; $("sp-res").textContent = "…";
+  async doSpin() {
+    if (this._spinning || this._spinWait) return; this._spinWait = true; $("sp-go").disabled = true; $("sp-res").textContent = "…";
+    const r = await this.S.spin(SPIN, () => this.pickCos()); this._spinWait = false; // coin1: the server rolls the wheel
+    if (!r || r.err) { $("sp-go").disabled = !this.S.spinReady(); $("sp-res").textContent = r && r.err === "offline" ? t("w_spinOff") : r && r.err === "day" ? t("spinDone") : t("oops"); if (r && r.err === "offline") this.toast(t("w_spinOff"), "warn", 3500); return; }
+    this._spinning = true;
     const n = SPIN.length, seg = 360 / n, target = 360 - (r.i + 0.5) * seg + (Math.random() - 0.5) * seg * 0.6, base = Math.ceil((this._spinRot || 0) / 360) * 360 + 360 * 5; this._spinRot = base + target;
     const w = $("sp-wheel"); w.style.transform = `rotate(${this._spinRot}deg)`; this.app.audio.play("whoosh"); haptic.tap(10);
     let ticks = 0; const tk = setInterval(() => { if (++ticks > 16) clearInterval(tk); this.app.audio.play("tab"); }, 220);
@@ -808,7 +814,8 @@ export class UI {
         h += signInCard(this) + `<div class="set-row"><span>${esc(this.p.name)}<small>${g ? t("guestNote") : esc(a.email || "")}</small></span>${g ? `<button class="btn primary" data-act="signup">${t("signUp")}</button>` : `<button class="btn" data-act="signout">${t("signOut")}</button>`}</div>
           <div class="set-row redeem"><span>${t("redeem")}<small>${t("redeemSub")}</small></span><span class="rd-box"><input id="g-code" type="text" maxlength="32" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" placeholder="${t("redeemPh")}" aria-label="${t("redeem")}"><button class="btn primary" data-act="redeem">${t("redeemBtn")}</button></span></div>
           <div class="set-row"><span>${t("resetProg")}</span><button class="btn danger" data-act="reset">${t("resetProg")}</button></div>
-          <div class="set-row"><span>${t("privacy")}<small>${t("localNote")}</small></span><a class="btn" href="../privacy.html" target="_blank" rel="noopener">↗</a></div>
+          <div class="set-row"><span>${t("lg_privacy")} · ${t("lg_terms")}<small>${t("lg_dataSub")}</small></span></div>${legalButtons("ac-legal-row")}
+          <div class="set-row"><span>${t("fb_title")}<small>${contactNote()}</small></span><button class="btn" data-act="fb">${t("fb_send")}</button></div>
           <div class="set-row"><span>${t("credits")}<small>${t("creditsSub")}</small></span><a class="btn" href="CREDITS.md" target="_blank" rel="noopener">↗</a></div>
           <p class="fine" style="text-align:center;margin-top:10px">${t("version")}</p>`; }
     }
@@ -828,6 +835,7 @@ export class UI {
       if (a === "redeem") { const inp = $("g-code"), r = await this.S.redeem(inp ? inp.value : "");
         if (r === "ok") { this.toast("✓ " + t("redeemOk"), "good", 3500); this.app.audio.play("reveal"); this.coins && this.coins(this.p.coins); this.renderSettings(); }
         else { this.toast(t(r === "na" ? "redeemNa" : "redeemBad"), "warn"); this.app.audio.play("error"); if (inp) { inp.select(); } } }
+      if (a === "fb") { openFeedback(this, socialCall); return; } // coin1
       if (a === "reset") { if (await this.confirm(t("confirmReset"))) { this.S.resetProgress(); this.app.applyAll(); this.toast("✓", "good"); this.renderSettings(); } }
     }));
   }

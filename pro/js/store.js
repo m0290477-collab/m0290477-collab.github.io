@@ -1,17 +1,13 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex } from "./skins.js?v=srv2";
-export const SEASON = { id: "s1", tiers: 30, per: 400 };
-// free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
-export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
-export const CHAINS = {
-  hunter: { reward: "phantom", steps: [["kills", 5], ["kills", 20], ["kills", 50], ["teamWin", 1]] },
-  collector: { reward: "prism", steps: [["food", 300], ["food", 1500], ["mass", 800], ["mass", 1500]] },
-  survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
-};
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex } from "./skins.js?v=coin1";
+// coin1: season pass + chains + mission / achievement tables live in econ.js (shared with the worker, which prices every reward)
+import { SEASON, seasonReward, CHAINS, dailyMissions, ACH_COINS, levelCoins, UNLOCKS, bonusCoins, weeklyCoins } from "./econ.js?v=coin1";
+import { walletInit, claim, buy as wBuy, buySid, spin as wSpin, migrated } from "./wallet.js?v=coin1";
+export { SEASON, seasonReward, CHAINS };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=srv2";
-import { FRAMES, TITLES } from "./profile.js?v=srv2";
+import { WORLDS } from "./worlds.js?v=coin1";
+import { FRAMES, TITLES } from "./profile.js?v=coin1";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -135,6 +131,7 @@ export class Store {
     if (this.settings.renderer === "2d" && this.settings.rendererPick !== "2d") this.settings.renderer = "3d";
     this.remember = KV.get("ssp-rem") || "";
     this.fails = Object.create(null); this._t = 0;
+    walletInit(this, KV, jparse); // coin1: the server wallet (cached balance + claim queue per profile)
     addEventListener("storage", (e) => { if (e.key === "ssp-acc" && e.newValue) { const o2 = jparse(e.newValue); if (o2 && o2.a) for (const k of Object.keys(o2.a)) if (k !== this.cur && o2.a[k] && o2.a[k].p) { o2.a[k].p = fixProfile(o2.a[k].p); this.acc[k] = o2.a[k]; } } });
   }
   get p() { return this.cur ? this.acc[this.cur].p : this.guest; }
@@ -178,29 +175,29 @@ export class Store {
   // ---------- protected purchase (coins only; no real money anywhere) ----------
   // atomic: validate price + balance, deduct, grant, write; if the write fails while storage exists, everything is put
   // back exactly as it was. Re-entrant / double taps on the same item within 800 ms are refused.
-  purchase(key, price, grantFn, ownedFn) {
+  // coin1: the server decides. Local checks only spare a request; the price, ownership and balance are checked and paid
+  // on the server in one step, then the item is added here and the balance becomes the server's. Offline = refused.
+  async purchase(key, price, grantFn, ownedFn, desc) {
     const p = this.p, now = Date.now(); price = Number(price);
     if (this._buying) return "busy"; if (this._lastBuy && this._lastBuy.k === key && now - this._lastBuy.t < 800) return "busy";
     if (!Number.isFinite(price) || price <= 0 || Math.floor(price) !== price) return "badPrice";
-    if (!Number.isFinite(+p.coins) || p.coins < 0) { p.coins = Math.max(0, +p.coins || 0); return "badBalance"; }
-    if (ownedFn()) return "own"; if (p.coins < price) return "noCoins";
-    this._buying = true; const snap = { coins: p.coins, flags: p.flags.slice(), owned: p.owned.slice(), cos: p.cos.slice() };
-    try { p.coins -= price; grantFn(); const ok = this.flush(); if (!ok) { p.coins = snap.coins; p.flags = snap.flags; p.owned = snap.owned; p.cos = snap.cos; this.flush(); logErr("buy", "save failed, rolled back " + key); return "saveFail"; }
-      this._lastBuy = { k: key, t: now }; this._backup(JSON.stringify({ v: 1, a: this.acc }), JSON.stringify(this.guest), true); return "ok"; }
-    catch (e) { p.coins = snap.coins; p.flags = snap.flags; p.owned = snap.owned; p.cos = snap.cos; logErr("buy", e); return "saveFail"; }
+    if (ownedFn()) return "own"; if (migrated() && p.coins < price) return "noCoins";
+    this._buying = true;
+    try { const r = await wBuy({ ...desc, price }); if (r !== "ok") return r; grantFn(); this.flush(); this._lastBuy = { k: key, t: now }; this._backup(JSON.stringify({ v: 1, a: this.acc }), JSON.stringify(this.guest), true); return "ok"; }
+    catch (e) { logErr("buy", e); return "offline"; }
     finally { this._buying = false; }
   }
-  // srv1: a Special ID. The server has already given the id to this player (atomic, one buyer); this pays its coin price
-  // through the same protected purchase (all-or-nothing, saved). On anything but "ok" the caller hands the id back.
-  buySpecialId(n, price) { n = String(n); if (!/^[1-9]\d{4}$/.test(n)) return "na"; return this.purchase("sid:" + n, price, () => { if (!this.p.owned.includes("sid:" + n)) this.p.owned.push("sid:" + n); }, () => this.p.owned.includes("sid:" + n)); }
+  // coin1: a Special ID = one server transaction (who gets it + its coins); see social.js buyId
+  buySpecialId(n, price) { n = String(n); if (!/^[1-9]\d{4}$/.test(n)) return Promise.resolve({ err: "bad" }); return buySid(n, price).then((r) => { if (r && r.ok && !this.p.owned.includes("sid:" + n)) { this.p.owned.push("sid:" + n); this.flush(); } return r; }); }
   // comp1: atomic reward grant (contest / season / milestone). key is unique per reward (period + contest + rank/milestone):
   // a key already in p.rc is refused, so a reward can never be paid twice on this profile; all-or-nothing on a failed save.
-  grantReward(key, rw) {
+  grantReward(key, rw, a = {}) {
     const p = this.p; key = String(key || ""); if (!key || key.length > 40) return "bad"; if (this._granting) return "busy";
     if (p.rc.includes(key)) return "claimed"; const coins = Math.max(0, Math.min(10000, Math.floor(+(rw && rw.coins) || 0))), cos = ((rw && rw.cos) || []).filter((c) => typeof c === "string" && /^(av|fr|ti|bn|bd):[a-z0-9]{1,4}$/.test(c));
     this._granting = true; const snap = { coins: p.coins, cos: p.cos.slice(), rc: p.rc.slice() };
     try { p.coins += coins; for (const c of cos) if (!p.cos.includes(c)) p.cos.push(c); p.rc.push(key); if (p.rc.length > 300) p.rc.splice(0, p.rc.length - 300);
       const ok = this.flush(); if (!ok) { p.coins = snap.coins; p.cos = snap.cos; p.rc = snap.rc; this.flush(); logErr("grant", "save failed, rolled back " + key); return "saveFail"; }
+      claim("rw", "rw:" + key, { key, ...a }, coins); // coin1: the server pays it (priced from its own tables, once per key)
       this._backup(JSON.stringify({ v: 1, a: this.acc }), JSON.stringify(this.guest), true); return "ok"; }
     catch (e) { p.coins = snap.coins; p.cos = snap.cos; p.rc = snap.rc; logErr("grant", e); return "saveFail"; }
     finally { this._granting = false; }
@@ -257,7 +254,7 @@ export class Store {
 
   // ---------- progression ----------
   level() { return lvInfo(this.p.xp).n; }
-  addXp(n) { const before = this.level(); this.p.xp += Math.max(0, Math.round(n)); const after = this.level(); let coins = 0; for (let l = before + 1; l <= after; l++) coins += 25 * l + (l % 10 === 0 ? 500 : 0); this.p.coins += coins; return { up: after > before, level: after, coins }; }
+  addXp(n) { const before = this.level(); this.p.xp += Math.max(0, Math.round(n)); const after = this.level(); let coins = 0; for (let l = before + 1; l <= after; l++) { coins += levelCoins(l); claim("lv", "lv:" + l, { n: l }, levelCoins(l)); } this.p.coins += coins; return { up: after > before, level: after, coins }; }
   unlocked(kind, i) {
     const lv = this.level();
     if (kind === "skin") { const S = SKINS[i]; if (!S) return false; if (S.src) { if (this.p.owned.includes(S.id)) return true; const [k, n] = S.src.split(":"); return k === "level" && lv >= +n; } return lv >= S.lv; } if (kind === "flag") return this.p.flags.includes(i); if (kind === "eye") return lv >= EYES[i].lv;
@@ -269,30 +266,29 @@ export class Store {
   buyBundle(key, items, price) { if (!Array.isArray(items) || !items.length) return "na"; const own = (it) => (it.k === "skin" ? this.unlocked("skin", it.i) : this.p.flags.includes(it.i));
     for (const it of items) if (!(it.k === "skin" ? SKINS[it.i] && this.legendPrice(it.i) : FLAGS[it.i])) return "na";
     const sum = items.reduce((a, it) => a + (it.k === "skin" ? this.legendPrice(it.i) : FLAG_PRICE), 0); if (Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, sum)) return "badPrice";
-    return this.purchase("bundle:" + key, price, () => { for (const it of items) { if (it.k === "skin") { const id = SKINS[it.i].id; if (!this.p.owned.includes(id)) this.p.owned.push(id); } else if (!this.p.flags.includes(it.i)) this.p.flags.push(it.i); } }, () => items.some(own)); }
+    return this.purchase("bundle:" + key, price, () => { for (const it of items) { if (it.k === "skin") { const id = SKINS[it.i].id; if (!this.p.owned.includes(id)) this.p.owned.push(id); } else if (!this.p.flags.includes(it.i)) this.p.flags.push(it.i); } }, () => items.some(own), { k: "bundle", key, items: items.map((x) => ({ k: x.k, i: x.i })) }); }
   // a caller-supplied (offer) price must stay inside [60 % .. 100 %] of the catalogue price: the deepest offer is 40 % off
   _priceOk(price, base) { price = Number(price); return Number.isFinite(price) && price > 0 && Math.floor(price) === price && price <= base && price >= Math.ceil(base * 0.6); }
-  buyFlag(i, price = FLAG_PRICE) { if (!FLAGS[i]) return "na"; if (Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, FLAG_PRICE)) return "badPrice"; return this.purchase("flag:" + i, price, () => this.p.flags.push(i), () => this.p.flags.includes(i)); }
+  buyFlag(i, price = FLAG_PRICE) { if (!FLAGS[i]) return "na"; if (Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, FLAG_PRICE)) return "badPrice"; return this.purchase("flag:" + i, price, () => { if (!this.p.flags.includes(i)) this.p.flags.push(i); }, () => this.p.flags.includes(i), { k: "flag", ix: i }); }
   // 7-day login calendar: one claim per calendar day; a missed day restarts at day 1. Returns null when already claimed today.
   loginState() { const d = today(), L = this.p.login; if (L.d === d) return { day: L.n, claimed: true }; const y = new Date(); y.setDate(y.getDate() - 1); const yd = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, "0")}-${String(y.getDate()).padStart(2, "0")}`;
     const next = L.d === yd ? (L.n + 1) % 7 : 0; return { day: next, claimed: false, fresh: L.d !== yd }; }
-  claimLogin(LOGIN, pickCos) { const st = this.loginState(); if (st.claimed) return null; const n = st.day, coins = LOGIN[n]; this.p.login = { d: today(), n }; this.p.coins += coins; let cos = null; if (n === 6) { cos = pickCos(); if (cos) this.p.cos.push(cos); else this.p.coins += 500; } this.save(); return { day: n, coins, cos }; }
+  claimLogin(LOGIN, pickCos) { const st = this.loginState(); if (st.claimed) return null; const n = st.day, coins = LOGIN[n]; this.p.login = { d: today(), n }; this.p.coins += coins; let cos = null; if (n === 6) { cos = pickCos(); if (cos) this.p.cos.push(cos); else this.p.coins += 500; } claim("login", "login:" + this.p.login.d, { d: this.p.login.d, cos }, coins + (n === 6 && !cos ? 500 : 0)); this.save(); return { day: n, coins, cos }; }
   spinReady() { return this.p.spin !== today(); }
   // one free spin per day: weighted segment, coins / XP / a random locked cosmetic (coins if everything is owned)
-  spin(SEG, pickCos) { if (!this.spinReady()) return null; let w = 0; for (const s of SEG) w += s.w; let r = Math.random() * w, i = 0; for (; i < SEG.length - 1; i++) { r -= SEG[i].w; if (r < 0) break; }
-    const s = SEG[i], out = { i, coins: 0, xp: 0, cos: null, lv: null }; this.p.spin = today();
-    if (s.c) { out.coins = s.c; this.p.coins += s.c; } else if (s.x) { out.xp = s.x; out.lv = this.addXp(s.x); } else if (s.cos) { out.cos = pickCos(); if (out.cos) this.p.cos.push(out.cos); else { out.coins = 300; this.p.coins += 300; } }
+  // coin1: the wheel is rolled by the server (online only); XP stays on the device, coins / the cosmetic come from the server
+  async spin(SEG, pickCos) { if (!this.spinReady()) return null; const d = today(), cos = pickCos(), r = await wSpin(d, cos);
+    if (!r || !r.ok) { if (r && r.err === "day") { this.p.spin = d; this.save(); } return { err: (r && r.err) || "offline" }; }
+    const out = { i: r.i, coins: r.c | 0, xp: r.x | 0, cos: r.cos || null, lv: null }; this.p.spin = d; if (out.xp) out.lv = this.addXp(out.xp); if (out.cos && !this.p.cos.includes(out.cos)) this.p.cos.push(out.cos);
     this.save(); return out; }
   pushHistory(h) { this.p.hist.unshift(h); if (this.p.hist.length > 10) this.p.hist.length = 10; this.p.mg[h.m] = (this.p.mg[h.m] || 0) + 1; }
   favMode() { let b = null, n = 0; for (const k in this.p.mg) if (this.p.mg[k] > n) { n = this.p.mg[k]; b = k; } return b; }
-  claimDailyBonus() { const d = today(); if (this.p.bonus === d) return 0; this.p.bonus = d; const n = 50 + Math.min(10, this.level()) * 10; this.p.coins += n; this.save(); return n; }
+  claimDailyBonus() { const d = today(); if (this.p.bonus === d) return 0; this.p.bonus = d; const n = bonusCoins(this.level()); this.p.coins += n; claim("bonus", "bonus:" + d, { d, lv: this.level() }, n); this.save(); return n; }
 
   // ---------- daily missions (seeded by date, same 3 for everyone on a device that day) ----------
   daily() {
     const d = today(); if (this.p.daily.d === d && this.p.daily.m.length === 3) return this.p.daily.m;
-    let h = 0; for (const ch of d) h = (Math.imul(h, 31) + ch.charCodeAt(0)) | 0; const rnd = () => { h = (Math.imul(h ^ (h >>> 15), 2246822507) + 0x6d2b79f5) | 0; return ((h >>> 0) % 10000) / 10000; };
-    const T = [["eat", [150, 300, 500]], ["kill", [2, 5, 10]], ["mass", [300, 600, 1200]], ["games", [3, 5]], ["survive", [90, 180, 300]], ["boost", [30, 60]], ["online", [1, 2]]];
-    const pick = []; while (pick.length < 3) { const tt = T[(rnd() * T.length) | 0]; if (!pick.some((x) => x.id === tt[0])) { const gi = (rnd() * tt[1].length) | 0; pick.push({ id: tt[0], g: tt[1][gi], p: 0, r: 60 + gi * 50, c: 0 }); } }
+    const pick = dailyMissions(d); // coin1: econ.js (the worker prices mission claims from the same table)
     this.p.daily = { d, m: pick }; this.save(); return pick;
   }
   // progress from a finished life/match; returns missions newly completed
@@ -305,32 +301,32 @@ export class Store {
     }
     this.save(); return out;
   }
-  claimMission(i) { const m = this.daily()[i]; if (!m || m.p < m.g || m.c) return null; m.c = 1; this.p.coins += m.r; const lv = this.addXp(m.r); this.save(); return { coins: m.r, lv }; }
+  claimMission(i) { const m = this.daily()[i]; if (!m || m.p < m.g || m.c) return null; m.c = 1; this.p.coins += m.r; claim("ms", "ms:" + this.p.daily.d + ":" + i, { d: this.p.daily.d, i }, m.r); const lv = this.addXp(m.r); this.save(); return { coins: m.r, lv }; }
 
   // ---------- legendary ownership, season pass, weekly challenges, mission chains ----------
-  grant(id) { if (!this.p.owned.includes(id)) { this.p.owned.push(id); this.save(); return true; } return false; }
+  grant(id) { if (!this.p.owned.includes(id)) { this.p.owned.push(id); if (UNLOCKS.has(id)) claim("unl", "unl:" + id, { id }, 0); this.save(); return true; } return false; }
   legendPrice(i) { const S = SKINS[i]; if (!S || !S.src) return 0; const [k, n] = S.src.split(":"); return k === "coins" ? +n : 0; }
-  buyLegend(i, price) { const S = SKINS[i], base = this.legendPrice(i); if (!base) return "na"; if (price != null && Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, base)) return "badPrice"; return this.purchase("skin:" + i, price ?? base, () => { if (!this.p.owned.includes(S.id)) this.p.owned.push(S.id); }, () => this.unlocked("skin", i)); }
+  buyLegend(i, price) { const S = SKINS[i], base = this.legendPrice(i); if (!base) return "na"; if (price != null && Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, base)) return "badPrice"; return this.purchase("skin:" + i, price ?? base, () => { if (!this.p.owned.includes(S.id)) this.p.owned.push(S.id); }, () => this.unlocked("skin", i), { k: "skin", ix: i }); }
   // trail1: ground trails. Paid ones go through the same atomic coin purchase (price bounds, rollback on a failed save);
   // the free ones are never sold. equipGTrail(-1) clears the slot.
   gtPrice(i) { const G = GTRAILS[i]; return G ? G.price | 0 : 0; }
   buyGTrail(i, price) { const G = GTRAILS[i], base = this.gtPrice(i); if (!G || !base) return "na"; if (price != null && Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, base)) return "badPrice";
-    return this.purchase("gt:" + i, price ?? base, () => { if (!this.p.owned.includes("gt:" + G.id)) this.p.owned.push("gt:" + G.id); }, () => this.unlocked("gtrail", i)); }
+    return this.purchase("gt:" + i, price ?? base, () => { if (!this.p.owned.includes("gt:" + G.id)) this.p.owned.push("gt:" + G.id); }, () => this.unlocked("gtrail", i), { k: "gt", ix: i }); }
   equipGTrail(i) { if (i < 0) { this.p.gt = ""; this.save(); return "ok"; } const G = GTRAILS[i]; if (!G) return "na"; if (!this.unlocked("gtrail", i)) return "locked"; this.p.gt = G.id; this.save(); return "ok"; }
   seasonTier() { return Math.min(SEASON.tiers, Math.floor(this.p.season.xp / SEASON.per)); }
   addSeasonXp(n) { const b = this.seasonTier(); this.p.season.xp += Math.max(0, Math.round(n)); const a = this.seasonTier(); this.save(); return a > b ? a - b : 0; }
   claimTier(k) {
     const P = this.p.season; if (k < 1 || k > this.seasonTier() || P.claimed.includes(k)) return null; P.claimed.push(k); const r = seasonReward(k);
-    if (r.coins) this.p.coins += r.coins; let skin = null; if (r.skin) { const i = SKINS.findIndex((s) => s.id === r.skin); if (this.grant(r.skin)) skin = i; } this.save(); return { ...r, skinI: skin };
+    if (r.coins) this.p.coins += r.coins; claim("tier", "tier:" + SEASON.id + ":" + k, { k }, r.coins | 0); let skin = null; if (r.skin) { const i = SKINS.findIndex((s) => s.id === r.skin); if (this.grant(r.skin)) skin = i; } this.save(); return { ...r, skinI: skin };
   }
   weekly() {
     const w = isoWeek(); if (this.p.weekly.w === w && this.p.weekly.m.length === 3) return this.p.weekly.m;
     let h = 7; for (const ch of w) h = (Math.imul(h, 33) + ch.charCodeAt(0)) | 0; const rnd = () => { h = (Math.imul(h ^ (h >>> 13), 1597334677) + 0x9e3779b9) | 0; return ((h >>> 0) % 10000) / 10000; };
     const T = [["kill", 40], ["eat", 2500], ["games", 15], ["wins", 3], ["mass", 2000], ["modes", 4], ["boost", 300]]; const pick = [];
-    while (pick.length < 3) { const tt = T[(rnd() * T.length) | 0]; if (!pick.some((x) => x.id === tt[0])) pick.push({ id: tt[0], g: tt[1], p: 0, r: 450 + pick.length * 150, c: 0, ms: [] }); }
+    while (pick.length < 3) { const tt = T[(rnd() * T.length) | 0]; if (!pick.some((x) => x.id === tt[0])) pick.push({ id: tt[0], g: tt[1], p: 0, r: weeklyCoins(pick.length), c: 0, ms: [] }); }
     this.p.weekly = { w, m: pick, done: this.p.weekly.done || 0 }; this.save(); return pick;
   }
-  claimWeekly(i) { const m = this.weekly()[i]; if (!m || m.p < m.g || m.c) return null; m.c = 1; this.p.coins += m.r; const lv = this.addXp(m.r); let skin = null; if (this.weekly().every((x) => x.c)) { this.p.weekly.done++; if (this.p.weekly.done >= 3 && this.grant("neonpulse")) skin = SKINS.findIndex((s) => s.id === "neonpulse"); } this.save(); return { coins: m.r, lv, skinI: skin }; }
+  claimWeekly(i) { const m = this.weekly()[i]; if (!m || m.p < m.g || m.c) return null; m.c = 1; this.p.coins += m.r; claim("wk", "wk:" + this.p.weekly.w + ":" + i, { w: this.p.weekly.w, i }, m.r); const lv = this.addXp(m.r); let skin = null; if (this.weekly().every((x) => x.c)) { this.p.weekly.done++; if (this.p.weekly.done >= 3 && this.grant("neonpulse")) skin = SKINS.findIndex((s) => s.id === "neonpulse"); } this.save(); return { coins: m.r, lv, skinI: skin }; }
   chain(id) { const c = this.p.chains[id] || (this.p.chains[id] = { s: 0, p: 0 }); return c; }
   // one finished match feeds weekly + chains; returns freshly completed items and legendary unlocks
   matchProgress(ev) {
@@ -356,7 +352,7 @@ export class Store {
   async redeem(code) { const h = await Store.hashCode(code); if (!h) return globalThis.crypto && crypto.subtle ? "bad" : "na"; if (h !== Store.REDEEM) return "bad"; this.unlockAll(); return "ok"; }
   unlockAll() {
     const p = this.p; let xp = 0; for (let n = 1; n < LV_MAX; n++) xp += xpNeed(n);
-    p.xp = Math.max(p.xp, xp); p.coins = Math.max(p.coins, 999999);
+    p.xp = Math.max(p.xp, xp); if (!migrated()) p.coins = Math.max(p.coins, 999999); // coin1: once the wallet is on the server, coins come only from it
     for (const S of SKINS) { if (S.src && !p.owned.includes(S.id)) p.owned.push(S.id); if (S.fx && !p.seen.includes(S.id)) p.seen.push(S.id); }
     p.flags = FLAGS.map((_, i) => i);
     p.season.xp = Math.max(p.season.xp, SEASON.tiers * SEASON.per); for (let k = 1; k <= SEASON.tiers; k++) if (!p.season.claimed.includes(k)) p.season.claimed.push(k);
@@ -376,7 +372,7 @@ export class Store {
     ["a_online", "🌐", (p) => p.stats.online >= 1, 100], ["a_wave", "🌊", (p) => p.stats.wave >= 10, 300], ["a_time", "⏱️", (p) => p.stats.tbest >= 800, 200],
     ["a_level", "⭐", (p, s) => s.level() >= 10, 200], ["a_master", "🏆", (p, s) => s.level() >= 50, 1000], ["a_style", "🎨", (p) => p.presets.filter(Boolean).length >= 3, 100],
   ];
-  checkAch() { const out = []; for (const [id, ic, f, r] of Store.ACH) if (!this.p.ach[id] && f(this.p, this)) { this.p.ach[id] = Date.now(); this.p.coins += r; out.push({ id, ic, r }); } if (out.length) this.save(); return out; }
+  checkAch() { const out = []; for (const [id, ic, f, r] of Store.ACH) if (!this.p.ach[id] && f(this.p, this)) { this.p.ach[id] = Date.now(); const c = ACH_COINS[id] ?? r; this.p.coins += c; claim("ach", "ach:" + id, { id }, c); out.push({ id, ic, r: c }); } if (out.length) this.save(); return out; }
 
   addBest(mode, entry) {
     const L = this.p.bests[mode] || (this.p.bests[mode] = []); L.push(entry); L.sort((a, b) => b.s - a.s); L.length = Math.min(L.length, 10);

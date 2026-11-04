@@ -2,11 +2,11 @@
 // reset, weekly / monthly contests with milestones (work offline) and final-rank rewards (online, server-validated).
 // Rewards are coins + exclusive cosmetics only (frames, titles, badges); no real money anywhere.
 // Rules shared with the server live in sim.js (leagueOf, trophyDelta, seasonCarry, period ids).
-import { LEAGUES, TROPHY, leagueOf, trophyDelta, seasonCarry, seasonId, weekId, periodEnd, CONTESTS, botTrophies } from "./sim.js?v=srv2";
-import { t, fmtNum, addStrings } from "./i18n.js?v=srv2";
-import { KV, logErr } from "./store.js?v=srv2";
-import { stableNow } from "./offers.js?v=srv2";
-import { SERVER } from "./net.js?v=srv2";
+import { LEAGUES, TROPHY, leagueOf, trophyDelta, seasonCarry, seasonId, weekId, periodEnd, CONTESTS, botTrophies } from "./sim.js?v=coin1";
+import { t, fmtNum, addStrings } from "./i18n.js?v=coin1";
+import { KV, logErr } from "./store.js?v=coin1";
+import { stableNow } from "./offers.js?v=coin1";
+import { SERVER } from "./net.js?v=coin1";
 
 export { LEAGUES, TROPHY, leagueOf, CONTESTS, botTrophies };
 export const ROMAN = ["", "I", "II", "III", "IV", "V"];
@@ -18,18 +18,11 @@ export const nowMs = () => stableNow(KV).getTime(); // clock-back guard shared w
 // ---------- rewards (all coins / cosmetics) ----------
 // new cosmetics (profile.js): frames 15 conq, 16 champ, 17 podium · titles 14 conq, 15 wchamp, 16 mchamp, 17 crowned
 // badges (bd:*) are collected on the Competitions screen: one per contest for its top milestone, plus champion rosettes
-export const SEASON_COINS = [150, 300, 500, 800, 1200, 1800]; // by the highest league reached in the season
-export function seasonReward(li) { const r = { coins: SEASON_COINS[Math.max(0, Math.min(5, li))], cos: [] }; if (li >= 5) r.cos.push("ti:17"); return r; }
-export const CONQ_REWARD = { coins: 3000, cos: ["fr:15", "ti:14", "bd:cq"] };
-export function rankReward(per, rk) { // final rank in a contest (server snapshot)
-  const W = per === "w"; if (rk === 1) return { coins: W ? 1500 : 4000, cos: [W ? "ti:15" : "ti:16", "fr:16", W ? "bd:c1w" : "bd:c1m"] };
-  if (rk <= 3) return { coins: W ? 800 : 2000, cos: ["fr:17", W ? "bd:c3w" : "bd:c3m"] }; if (rk <= 10) return { coins: W ? 400 : 1000, cos: [] };
-  if (rk <= (W ? 50 : 100)) return { coins: W ? 150 : 300, cos: [] }; return null;
-}
+// coin1: reward tables live in econ.js (the worker prices every reward claim from them)
+import { SEASON_COINS, leagueSeasonReward as seasonReward, CONQ_REWARD, rankReward, MILE_COINS, BADGE_OF, mileReward } from "./econ.js?v=coin1";
+export { SEASON_COINS, seasonReward, CONQ_REWARD, rankReward, MILE_COINS, BADGE_OF, mileReward };
 // personal milestones per contest (count offline + online, claimable once per period)
 export const MILE = { w: { tr: [30, 80, 150], kl: [10, 30, 60], sc: [800, 2000, 4000] }, m: { tr: [120, 300, 600], kl: [40, 120, 250], sc: [1500, 4000, 8000] } };
-export const MILE_COINS = { w: [80, 200, 400], m: [150, 400, 800] };
-export const BADGE_OF = { w_rush: "wr", w_hunt: "wh", w_score: "ws", m_rush: "mr", m_hunt: "mh", m_score: "ms" };
 export const BADGES = { wr: "rw_c_rush", wh: "rw_c_hunt", ws: "rw_c_score", mr: "rw_c_rush", mh: "rw_c_hunt", ms: "rw_c_score", c1w: "rw_c_champ", c1m: "rw_c_champ", c3w: "rw_trophy", c3m: "rw_trophy", cq: "lg_conq" };
 const CK = (c) => c.per + (c.met === "tr" ? "tr" : c.met === "kl" ? "kl" : "sc"); // cx field: wtr / wkl / wsc / mtr ...
 
@@ -57,7 +50,7 @@ export function seasonTick(S, out = []) {
   if (!L.ss) { L.ss = cur; L.pk = Math.max(L.pk, trophies(p)); S.save(); return out; }
   if (L.ss === cur) return out;
   const old = L.ss, peak = Math.max(L.pk, trophies(p)), li = leagueOf(peak).li;
-  if (trophies(p) > 0 || peak > 0) { const rw = seasonReward(li), r = S.grantReward("ss:" + old, rw); if (r === "ok") out.push({ k: "season", ss: old, li, rw }); }
+  if (trophies(p) > 0 || peak > 0) { const rw = seasonReward(li), r = S.grantReward("ss:" + old, rw, { li }); if (r === "ok") out.push({ k: "season", ss: old, li, rw }); }
   const tot = seasonCarry(trophies(p)), on = seasonCarry(L.on); L.on = on; L.off = Math.max(0, tot - on); L.ss = cur; L.pk = trophies(p); L.conq = 0; L.rank = 0; S.save();
   return out;
 }
@@ -72,7 +65,6 @@ export function contestTick(S, out = []) {
   return out;
 }
 export const mileKey = (c, pid, i) => "ms:" + c.id + ":" + pid + ":" + i;
-export const mileReward = (c, i) => ({ coins: MILE_COINS[c.per][i], cos: i === 2 ? ["bd:" + BADGE_OF[c.id]] : [] });
 export const localVal = (p, c) => p.cx[CK(c)] | 0;
 export function claimMilestone(S, cid, i) {
   const c = CONTESTS.find((x) => x.id === cid); if (!c) return "bad"; contestTick(S); const p = S.p, g = MILE[c.per][c.met][i];

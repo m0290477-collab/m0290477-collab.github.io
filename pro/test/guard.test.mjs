@@ -24,16 +24,16 @@ mem.set("ssp-guest", mem.get("ssp-guest").slice(0, 40)); S = reload(); ok(S.p.co
 S.flush(); S._backup(JSON.stringify({ v: 1, a: S.acc }), JSON.stringify(S.guest), true); const g = JSON.parse(mem.get("ssp-guest")); g.coins = 999999; g.flags = [1, 2, 3]; mem.set("ssp-guest", JSON.stringify(g));
 S = reload(); ok(S.p.coins === 778 && S.p.flags.length === 0 && S.repairs.some((r) => /tamper-restored/.test(r)), "tampered coins/flags restored to last-known-good (" + S.p.coins + ")");
 ok(JSON.parse(mem.get("ssp-errlog") || "[]").some((e) => e.k === "tamper"), "tamper logged in the local error ring");
-// --- purchases
-S.p.coins = 1000; S.flush(); const fi = FLAGS.findIndex((f, i) => i > 0 && f); 
-ok(S.buyFlag(fi, 300) === "ok" && S.p.coins === 700 && S.p.flags.includes(fi), "buy: deducts and grants atomically");
-ok(S.buyFlag(fi, 300) !== "ok" && S.p.coins === 700 && S.p.flags.filter((x) => x === fi).length === 1, "double-buy refused (no second charge)");
-const fj = FLAGS.findIndex((f, i) => i > fi && f); S.p.coins = 200; ok(S.buyFlag(fj, 300) === "noCoins" && S.p.coins === 200 && !S.p.flags.includes(fj), "insufficient coins: refused, balance untouched"); S.p.coins = 700;
-ok(S.buyFlag(fj, 5000) === "badPrice" && S.buyFlag(fj, 100) === "badPrice" && S.buyFlag(fj, 12.5) === "badPrice" && S.p.coins === 700, "price outside 60-100 % of catalogue / fractional rejected (tampered offer)");
-ok(S.buyFlag(fj, -50) === "badPrice" && S.buyFlag(fj, NaN) === "badPrice" && S.p.coins === 700, "negative / NaN price rejected");
-S.p.coins = NaN; ok(S.buyFlag(fj, 300) === "badBalance" && S.p.coins === 0, "NaN balance rejected and clamped"); S.p.coins = 700;
-await sleep(900); failWrites = true; const r = S.buyFlag(fj, 200); failWrites = false;
-ok(r === "saveFail" && S.p.coins === 700 && !S.p.flags.includes(fj), "failed save: purchase rolled back (" + r + ", coins " + S.p.coins + ")");
-await sleep(900); ok(S.buyFlag(fj, 200) === "ok" && S.p.coins === 500, "after storage recovers the same purchase works");
-const S2 = reload(); ok(S2.p.coins === 500 && S2.p.flags.includes(fi) && S2.p.flags.includes(fj), "purchases persisted immediately (reload)");
+// --- purchases (coin1: decided by the server wallet; the in-process real worker stands in for it)
+const { useServerWallet } = await import("./_wallet_srv.mjs"); const WS = await useServerWallet(S);
+S.p.coins = 1000; S.flush(); await WS.online(); ok(WS.bal() === 1000, "first connect imports the device balance once (1,000)"); const fi = FLAGS.findIndex((f, i) => i > 0 && f);
+ok((await S.buyFlag(fi, 300)) === "ok" && S.p.coins === 700 && WS.bal() === 700 && S.p.flags.includes(fi), "buy: the server deducts, the device grants");
+S._lastBuy = null; const dbl = await S.buyFlag(fi, 300); ok(dbl === "own" && S.p.coins === 700 && WS.bal() === 700 && S.p.flags.filter((x) => x === fi).length === 1, "double-buy refused (no second charge)");
+const fj = FLAGS.findIndex((f, i) => i > fi && f); WS.add(-500); S.p.coins = 9999; ok((await S.buyFlag(fj, 300)) === "noCoins" && WS.bal() === 200 && S.p.coins === 200 && !S.p.flags.includes(fj), "insufficient coins on the server: refused even with a forged device balance (shown balance corrected to 200)"); WS.add(500); await WS.online();
+ok((await S.buyFlag(fj, 5000)) === "badPrice" && (await S.buyFlag(fj, 100)) === "badPrice" && (await S.buyFlag(fj, 12.5)) === "badPrice" && WS.bal() === 700, "price outside 60-100 % of catalogue / fractional rejected (tampered offer)");
+ok((await S.buyFlag(fj, -50)) === "badPrice" && (await S.buyFlag(fj, NaN)) === "badPrice" && WS.bal() === 700, "negative / NaN price rejected");
+WS.offline(true); const off = await S.buyFlag(fj, 300); ok(off === "offline" && WS.bal() === 700 && !S.p.flags.includes(fj), "offline: purchase refused, nothing granted"); WS.offline(false);
+await sleep(900); failWrites = true; const r = await S.buyFlag(fj, 300); failWrites = false; await sleep(900); S.flush();
+ok(r === "ok" && WS.bal() === 400 && S.p.flags.includes(fj), "a failed local write can't lose a purchase: the server holds it and the item stays (" + r + ")");
+const S2 = reload(); ok(S2.p.flags.includes(fi) && S2.p.flags.includes(fj), "purchases persisted (reload)");
 console.log(fail ? "FAILED " + fail : "ALL PASS"); process.exit(fail ? 1 : 0);

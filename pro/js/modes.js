@@ -4,10 +4,12 @@
 //   infection · two sides; anyone the infected kill comes back infected (you too); humans survive 2:30 to win
 //   duel      · best of three rounds against one champion-level bot in a small arena
 //   daily     · the same seed, world and difficulty for everyone on a given day, 3:00, local leaderboard
-import { t, fmtNum } from "./i18n.js?v=srv2";
-import { GOLD_FC, C } from "./sim.js?v=srv2";
-import { SKINS } from "./skins.js?v=srv2";
-import { haptic } from "./audio.js?v=srv2";
+import { t, fmtNum } from "./i18n.js?v=coin1";
+import { GOLD_FC, C } from "./sim.js?v=coin1";
+import { SKINS } from "./skins.js?v=coin1";
+import { haptic } from "./audio.js?v=coin1";
+import { WC_REWARD, DAILY_MODE_BONUS } from "./econ.js?v=coin1"; import { claim } from "./wallet.js?v=coin1"; // coin1
+export { WC_REWARD };
 
 export const XMODE_CFG = {
   goldrush: { bots: 18, R: 200, dur: 180, target: 30 },
@@ -133,7 +135,6 @@ const POOL = [
   ["fury", "gold15", "infect4", "survive180", "duelRound"],
   ["duelWin", "fury2", "rank1", "goldWin", "infWin"],
 ];
-export const WC_REWARD = [300, 700, 1500];
 const isoWeek = () => { const d = new Date(); const u = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = u.getUTCDay() || 7; u.setUTCDate(u.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(u.getUTCFullYear(), 0, 1)); return u.getUTCFullYear() + "-W" + Math.ceil(((u - y0) / 86400000 + 1) / 7); };
 export function wchain(p) {
   const w = isoWeek(); if (p.wchain && p.wchain.w === w && Array.isArray(p.wchain.m)) return p.wchain;
@@ -154,7 +155,7 @@ function met(id, e) {
 export function wcProgress(p, e) {
   const W = wchain(p), out = { done: [], tiers: [] };
   while (W.tier < 3) { const set = W.m[W.tier]; let any = false; for (const id of set) if (!W.done.includes(id) && met(id, e)) { W.done.push(id); out.done.push(id); any = true; }
-    if (set.every((x) => W.done.includes(x))) { const c = WC_REWARD[W.tier]; p.coins += c; out.tiers.push({ n: W.tier + 1, coins: c }); W.tier++; } else break; if (!any) break; }
+    if (set.every((x) => W.done.includes(x))) { const c = WC_REWARD[W.tier]; p.coins += c; claim("wc", "wc:" + W.w + ":" + W.tier, { w: W.w, t: W.tier }, c); out.tiers.push({ n: W.tier + 1, coins: c }); W.tier++; } else break; if (!any) break; }
   return out;
 }
 // finish hook: weekly chain + daily board; the UI reads game.xres for the results card
@@ -162,7 +163,7 @@ export function xFinish(g, score) {
   const p = g.app.store.p, st = g.stats, me = g.backend && g.backend.me, X = g.xt || {}, xm = XMODES[g.mode];
   const e = { mode: g.mode, win: !!g.win, comboMax: g.comboMax || 1, big: X.big || 0, fury: X.fury || 0, pu: st.pu || 0, rank: st.rankBest < 99 ? st.rankBest : 0, life: st.life || 0, duelMe: g.duel ? g.duel.me : 0, ...(xm && xm.stat ? xm.stat(g) : {}) };
   const res = { wc: wcProgress(p, e), daily: null };
-  if (g.mode === "daily") { const B = dailyBoard(p); B.n++; const first = B.n === 1; B.list.push({ s: Math.round(score), d: Date.now() }); B.list.sort((a, b) => b.s - a.s); B.list = B.list.slice(0, 10); const pos = B.list.findIndex((x) => x.s === Math.round(score)) + 1; let bonus = 0; if (first) { bonus = 150; p.coins += bonus; } res.daily = { pos, n: B.n, best: B.list[0].s, bonus, list: B.list.slice(0, 5) }; }
+  if (g.mode === "daily") { const B = dailyBoard(p); B.n++; const first = B.n === 1; B.list.push({ s: Math.round(score), d: Date.now() }); B.list.sort((a, b) => b.s - a.s); B.list = B.list.slice(0, 10); const pos = B.list.findIndex((x) => x.s === Math.round(score)) + 1; let bonus = 0; if (first) { bonus = DAILY_MODE_BONUS; p.coins += bonus; claim("dm", "dm:" + B.d, { d: B.d }, bonus); } res.daily = { pos, n: B.n, best: B.list[0].s, bonus, list: B.list.slice(0, 5) }; }
   return res;
 }
 export const wcText = (id) => t("wc_" + id);

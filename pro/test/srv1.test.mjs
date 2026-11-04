@@ -6,7 +6,7 @@ import { mkdtempSync, copyFileSync, readFileSync } from "node:fs"; import { tmpd
 import { DatabaseSync } from "node:sqlite"; import { createHash } from "node:crypto";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log("FAIL", m); } else console.log("ok", m); };
-const dir = mkdtempSync(join(tmpdir(), "ssp-s1-")); copyFileSync(ROOT + "/server/index.js", join(dir, "index.js")); copyFileSync(ROOT + "/js/sim.js", join(dir, "sim.js"));
+const dir = mkdtempSync(join(tmpdir(), "ssp-s1-")); copyFileSync(ROOT + "/server/index.js", join(dir, "index.js")); for (const f of ["sim.js", "econ.js", "skins.js", "offers.js"]) copyFileSync(ROOT + "/js/" + f, join(dir, f)); // coin1: the worker also bundles econ.js (+ skins.js, offers.js)
 const W = await import(join(dir, "index.js")); const M = await import(join(dir, "sim.js"));
 class Sql { constructor() { this.db = new DatabaseSync(":memory:"); }
   exec(q, ...b) { const st = this.db.prepare(q); if (/^\s*SELECT/i.test(q)) { const rows = st.all(...b).map((r) => ({ ...r })); return { toArray: () => rows, one: () => rows[0] }; } st.run(...b); return { toArray: () => [], one: () => undefined }; } }
@@ -46,18 +46,17 @@ if (CODE && createHash("sha256").update("ssp-own|" + CODE).digest("hex") === OWN
 ok(M.idKind("77777") === "rep" && M.idKind("12345") === "seq" && M.idKind("98765") === "seq" && M.idKind("48213") === "std" && M.idKind("01234") === "" && M.idKind("123456") === "", "idKind: repeated / sequence / ordinary, 5 digits only");
 ok(M.idPrice("11111") === 300000 && M.idPrice("12345") === 150000 && M.idPrice("40817") === 50000, "prices 300,000 / 150,000 / 50,000");
 let shop = await op(1, "shop"); ok(shop.rep.length === 9 && shop.seq.length === 10 && shop.std.length === 8 && shop.std.every((n) => M.idKind(n) === "std"), "shop lists repeated, sequences and 8 ordinary picks");
-ok((await op(1, "buyid", { n: "77777", price: 1 })).err === "price", "buy with the wrong price is refused");
-{ const r = await Promise.all([op(1, "buyid", { n: "77777", price: 300000 }), op(2, "buyid", { n: "77777", price: 300000 }), op(3, "buyid", { n: "77777", price: 300000 })]);
+// coin1: special ids are sold by the wallet in one transaction (w_sid); the undo-token flow is gone (see test/coin1.test.mjs)
+const fund = async (k, c) => { await op(k, "w_mig", { coins: 0 }); const so = objs.get("social-v1"); so.wAdd(await pidOf(pk(k)), c, "test", "seed"); };
+for (const k of [1, 2, 3, 30]) await fund(k, 400000);
+ok((await op(1, "w_sid", { n: "77777", price: 1 })).err === "price", "buy with the wrong price is refused");
+{ const r = await Promise.all([op(1, "w_sid", { n: "77777", price: 300000 }), op(2, "w_sid", { n: "77777", price: 300000 }), op(3, "w_sid", { n: "77777", price: 300000 })]);
   ok(r.filter((x) => x.ok).length === 1 && r.filter((x) => x.err === "sold").length === 2, "3 buyers at once: exactly one gets 77777, two see sold out"); }
 const buyer = (await op(1, "me")).me.prem.includes("77777") ? 1 : (await op(2, "me")).me.prem.includes("77777") ? 2 : 3;
 { const m = (await op(buyer, "me")).me; ok(m.id === "77777" && /^\d{7}$/.test(m.id7), "bought id replaces the visible 7-digit id"); ok((await op(5, "find", { id: m.id7 })).card.id === "77777", "the old 7-digit id stays reserved and still finds the player");
   shop = await op(5, "shop"); ok(shop.rep.find((x) => x.n === "77777").s === 1, "shop shows 77777 sold out"); }
-{ const r = await op(20, "buyid", { n: "12345", price: 150000 }); ok(r.ok && r.tok, "sale returns an undo token");
-  ok((await op(21, "undoid", { n: "12345", tok: r.tok })).err === "none", "someone else cannot undo the sale");
-  const u = await op(20, "undoid", { n: "12345", tok: r.tok }); ok(u.ok && /^\d{7}$/.test(u.me.id), "the buyer's failed coin payment gives the id back (visible id restored)");
-  ok((await op(21, "buyid", { n: "12345", price: 150000 })).ok, "a returned id can be bought again"); const t2 = await op(22, "buyid", { n: "54321", price: 150000 }); await op(22, "paid", { n: "54321" });
-  ok((await op(22, "undoid", { n: "54321", tok: t2.tok })).err === "none", "after 'paid' a sale is final"); }
-{ let rate = 0; for (let k = 0; k < 8; k++) { const r = await op(30, "buyid", { n: String(40000 + k * 7 + 1), price: 50000 }); if (r.err === "rate") rate++; } ok(rate >= 1, "special-id purchases are rate limited"); }
+ok((await op(20, "buyid", { n: "12345", price: 150000 })).err === "update", "the old grant-then-pay purchase answers 'update'");
+{ let rate = 0; for (let k = 0; k < 8; k++) { const r = await op(30, "w_sid", { n: String(40000 + k * 7 + 1), price: 50000 }); if (r.err === "rate") rate++; } ok(rate >= 1, "special-id purchases are rate limited"); }
 
 // ---- 3. friends over live sockets ----
 const a = await live(1), b = await live(2), c = await live(3);

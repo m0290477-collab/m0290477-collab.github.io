@@ -1,22 +1,23 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=srv2"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=srv2";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=srv2";
-import { GTrail } from "./gfx/gtrail.js?v=srv2"; // trail1: cosmetic ground trail decals (never in the sim)
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=srv2";
-import { NetBackend } from "./net.js?v=srv2";
-import { pidTier, PID_GLYPH } from "./pid.js?v=srv2"; // srv2
-import { onFind, findHide, accountMatchEnd } from "./account.js?v=srv2"; // srv2
-import { t, fmtNum } from "./i18n.js?v=srv2";
-import { haptic } from "./audio.js?v=srv2";
-import { rankOf, rpDelta } from "./profile.js?v=srv2";
-import { Replay } from "./replay.js?v=srv2";
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=srv2"; // comp1
-import { onServerTrophy } from "./compui.js?v=srv2";
-import { Governor } from "./gov.js?v=srv2"; // perf2: adaptive render governor
-import { emit } from "./events.js?v=srv2"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=coin1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=coin1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=coin1";
+import { GTrail } from "./gfx/gtrail.js?v=coin1"; // trail1: cosmetic ground trail decals (never in the sim)
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=coin1";
+import { NetBackend } from "./net.js?v=coin1";
+import { pidTier, PID_GLYPH } from "./pid.js?v=coin1"; // srv2
+import { onFind, findHide, accountMatchEnd } from "./account.js?v=coin1"; // srv2
+import { t, fmtNum } from "./i18n.js?v=coin1";
+import { haptic } from "./audio.js?v=coin1";
+import { rankOf, rpDelta } from "./profile.js?v=coin1";
+import { Replay } from "./replay.js?v=coin1";
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=coin1"; // comp1
+import { onServerTrophy } from "./compui.js?v=coin1";
+import { Governor } from "./gov.js?v=coin1"; // perf2: adaptive render governor
+import { claim, claimId } from "./wallet.js?v=coin1"; // coin1: offline match coins are claimed from the server wallet
+import { emit } from "./events.js?v=coin1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -351,7 +352,10 @@ export class Game {
     if (this.mode === "online") P.online++; if (this.mode === "zen") P.zen += Math.round(dur); if (this.mode === "survival") P.wave = Math.max(P.wave, st.wave); if (this.mode === "time") P.tbest = Math.max(P.tbest, score);
     if (this.win) { P.wins = (P.wins || 0) + 1; if (this.mode === "br") P.brWins = (P.brWins || 0) + 1; if (this.mode === "koth") P.kothWins = (P.kothWins || 0) + 1; if (this.mode === "team") P.teamWins = (P.teamWins || 0) + 1; if (this.mode === "boss") P.bossKills = (P.bossKills || 0) + 1; }
     if (st.rankBest === 1 && this.mode !== "zen") P.top++;
-    p.coins += coins; const lv = S.addXp(xp); const tiers = S.addSeasonXp(xp);
+    // coin1: online lives are paid by the room (server-observed); every other match is claimed with its numbers and the server
+    // recomputes the coins (plausibility for the time played, caps). The balance shown here becomes the server's when it answers.
+    if (this.mode !== "online") { p.coins += coins; claim("match", "m:" + claimId(), { mode: this.mode, diff: this.cfg.diff ?? 1, dur: Math.round(dur), best: Math.round(st.best), kills: st.kills | 0, wave: st.wave | 0, pu: st.pu | 0, bonus: Math.round(st.bonus || 0), bounty: st.bounty | 0, win: !!this.win, at: Date.now() }, coins); }
+    const lv = S.addXp(xp); const tiers = S.addSeasonXp(xp);
     const bestKey = this.mode; const pos = S.addBest(bestKey, { s: score, k: st.kills, d: Date.now(), w: this.world, m: Math.round(st.best) });
     const missions = S.missionProgress({ food: st.food, kills: st.kills, mass: st.best, life: st.life, boost: st.boost, online: this.mode === "online" });
     const mp = S.matchProgress({ food: st.food, kills: st.kills, mass: st.best, life: st.life, boost: st.boost, wave: st.wave, mode: this.mode, win: this.win || st.rankBest === 1 });

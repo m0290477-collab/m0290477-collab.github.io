@@ -3,13 +3,15 @@
 // while its client id is not configured on the server (/cfg). Profile snapshots: debounced ~10 s after a save + at match end,
 // versioned (a newer save from another device wins), restored on sign-in. Owner grants arrive live over the social socket.
 // Owner panel (only reachable from the founder's own Profile, every call checked on the server). Finding-a-server overlay.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=srv2";
-import { SERVER } from "./net.js?v=srv2";
-import { devKey } from "./league.js?v=srv2";
-import { SO, call, socialRestart, errText } from "./social.js?v=srv2";
-import { avatarHtml } from "./profile.js?v=srv2";
-import { KV, jparse, newProfile } from "./store.js?v=srv2";
-import { pidHtml } from "./pid.js?v=srv2";
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=coin1";
+import { SERVER } from "./net.js?v=coin1";
+import { devKey } from "./league.js?v=coin1";
+import { SO, call, socialRestart, errText } from "./social.js?v=coin1";
+import { avatarHtml } from "./profile.js?v=coin1";
+import { KV, jparse, newProfile } from "./store.js?v=coin1";
+import { pidHtml } from "./pid.js?v=coin1";
+import { legalButtons } from "./legal.js?v=coin1"; // coin1: Privacy / Terms
+import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=coin1"; // coin1
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -49,28 +51,31 @@ const snapText = (p) => { const o = { ...p }; delete o.dev; delete o._ck; delete
 export async function sync(force) {
   const S = S_(), p = S.p; if (!SO.pk) return; const js = snapText(p); if (!force && js === AC.lastSent) return; if (js.length > 63000) return;
   const r = await acall("snap", { sv: p.ssv | 0, js }); if (S.p !== p) return;
-  if (r && r.ok) { AC.lastSent = js; AC.lastOk = Date.now(); AC.sv = r.sv; if (r.adj) { if (Number.isFinite(r.adj.coins)) p.coins = r.adj.coins; if (Number.isFinite(r.adj.xp)) p.xp = r.adj.xp; AC.ui.coins && AC.ui.coins(p.coins); }
+  if (r && r.ok) { AC.lastSent = js; AC.lastOk = Date.now(); AC.sv = r.sv; if (r.adj) { if (Number.isFinite(r.adj.xp)) p.xp = r.adj.xp; if (migrated()) walletApply(WL.st); else if (Number.isFinite(r.adj.coins)) p.coins = r.adj.coins; AC.ui.coins && AC.ui.coins(p.coins); } // coin1: coins = the wallet
     p.ssv = r.sv; S.save(); if (r.adj) AC.lastSent = ""; }
   else if (r && r.err === "stale") adopt(r.js, r.sv);
 }
 async function pullAdopt() { const r = await acall("pull"); if (r && r.js && (r.sv | 0) > (S_().p.ssv | 0)) adopt(r.js, r.sv); }
 function adopt(js, sv) { // take the server's (newer) save; during a match it waits for the lobby
   if (inMatch()) { AC.pend = { js, sv }; return; } AC.pend = null;
-  const S = S_(), np = jparse(js); if (!np || typeof np !== "object") return; np.dev = S.p.dev; np.ssv = sv | 0; S.replaceProfile(np); AC.lastSent = snapText(S.p); AC.sv = sv | 0;
+  const S = S_(), np = jparse(js); if (!np || typeof np !== "object") return; np.dev = S.p.dev; np.ssv = sv | 0; S.replaceProfile(np); if (migrated()) walletApply(WL.st); // coin1: a restored save shows the wallet balance AC.lastSent = snapText(S.p); AC.sv = sv | 0;
   const ui = AC.ui; ui.app.applyAll(); ui.coins && ui.coins(S.p.coins); if (ui.cur) ui.show(ui.cur);
 }
 export function accountMatchEnd() { setTimeout(() => sync(true), 400); } // results are saved first
 export function accountLobby() { if (AC.pend) { const x = AC.pend; adopt(x.js, x.sv); } if (AC.banShow) showBan(); }
-function applyGrants(list) {
+// coin1: an owner gift. Its coins are already in the server wallet (the balance arrives with it); its items are shown here.
+// Before this device's one-time wallet import the grant waits on the server (the import adds it), so it is acked only after.
+function applyGrants(list, bal) {
   const S = S_(), p = S.p, done = []; let coins = 0, items = 0;
-  for (const g of list) { const key = "adm:" + g.id; done.push(g.id); if (p.rc.includes(key)) continue; p.coins += Math.max(0, g.c | 0); coins += g.c | 0;
+  for (const g of list) { const key = "adm:" + g.id; done.push(g.id); if (p.rc.includes(key)) continue; coins += g.c | 0;
     for (const it of g.it || []) { const L = /^(av|fr|ti|bn|bd):/.test(it) ? p.cos : p.owned; if (!L.includes(it)) { L.push(it); items++; } } p.rc.push(key); }
+  if (Number.isFinite(+bal)) walletPush({ bal });
   if (coins || items) { S.flush(); AC.ui.coins && AC.ui.coins(p.coins); AC.ui.toast(coins ? t("ac_gift", { n: fmtNum(coins) }) : t("ac_giftIt"), "gold", 5000); }
-  if (done.length) acall("gack", { ids: done });
+  if (done.length && migrated()) acall("gack", { ids: done });
 }
 function onEv(m) {
   const ui = AC.ui, S = S_(), p = S.p;
-  if (m.k === "grant") { const was = (p.ssv | 0) === (m.sv | 0) - 1; applyGrants([m.g]); if (was && m.sv) { p.ssv = m.sv; AC.lastSent = ""; S.save(); } }
+  if (m.k === "grant") { const was = (p.ssv | 0) === (m.sv | 0) - 1; applyGrants([m.g], m.bal); if (was && m.sv) { p.ssv = m.sv; AC.lastSent = ""; S.save(); } }
   else if (m.k === "ban") { setBan(m.u | 0); if (inMatch() && ui.app.game.mode === "online") { ui.app.game.stopMatch(); ui.goLobby(); } }
   else if (m.k === "unban") { setBan(0); ui.toast(t("ac_unbanned"), "good", 4000); }
   else if (m.k === "mute") { AC.mute = m.u | 0; ui.toast(t("ac_muted", { d: fmtD(AC.mute) }), "warn", 5000); }
@@ -88,15 +93,15 @@ export function signInCard(ui) {
   if (A) { const ms = [A.g && "Google", A.a && "Apple", A.e && t("ac_m_e") + " · " + A.e, A.tt && "Test"].filter(Boolean).join(" · ");
     const more = [C.g && !A.g ? `<div class="ac-gbtn" id="ac-g"></div>` : "", C.a && !A.a ? `<button class="btn ac-b ac-apple" id="ac-a">${APPLE_SVG}<span>${t("ac_apple")}</span></button>` : "", C.em && !A.e ? `<button class="btn ac-b" id="ac-e">${MAIL_SVG}<span>${t("ac_email")}</span></button>` : ""].join("");
     return `<div class="pv-card ac-card on"><div class="pv-h">☁ ${t("ac_in")}</div><p class="ac-st"><b>✓ ${t("ac_in")}</b> <span class="fine">${esc(ms)}</span></p><p class="fine">${AC.lastOk ? t("ac_saved", { t: ago(AC.lastOk) }) : t("ac_autosave")}</p>
-      ${more ? `<div class="pv-lab">${t("ac_add")}</div><div class="ac-btns">${more}</div>` : ""}<div class="ac-btns ac-row2"><button class="btn ac-b" id="ac-out">${t("ac_out")}</button>${A.own ? "" : `<button class="btn ac-b danger" id="ac-del">${t("ac_del")}</button>`}</div></div>`; }
+      ${more ? `<div class="pv-lab">${t("ac_add")}</div><div class="ac-btns">${more}</div>` : ""}<div class="ac-btns ac-row2"><button class="btn ac-b" id="ac-out">${t("ac_out")}</button>${A.own ? "" : `<button class="btn ac-b danger" id="ac-del">${t("ac_del")}</button>`}</div>${legalButtons()}</div>`; }
   return `<div class="pv-card ac-card"><div class="pv-h">☁ ${t("ac_title")}</div><p class="ac-sub">${t("ac_sub")}</p>
-    ${any ? `<div class="ac-btns">${C.g ? `<div class="ac-gbtn" id="ac-g"><button class="btn ac-b ac-google" id="ac-gf">${G_SVG}<span>${t("ac_google")}</span></button></div>` : ""}${C.a ? `<button class="btn ac-b ac-apple" id="ac-a">${APPLE_SVG}<span>${t("ac_apple")}</span></button>` : ""}${C.em ? `<button class="btn ac-b" id="ac-e">${MAIL_SVG}<span>${t("ac_email")}</span></button>` : ""}</div><p class="fine">${t("ac_note")}</p>` : `<p class="fine ac-soon">${t("ac_soon")}</p>`}</div>`;
+    ${any ? `<div class="ac-btns">${C.g ? `<div class="ac-gbtn" id="ac-g"><button class="btn ac-b ac-google" id="ac-gf">${G_SVG}<span>${t("ac_google")}</span></button></div>` : ""}${C.a ? `<button class="btn ac-b ac-apple" id="ac-a">${APPLE_SVG}<span>${t("ac_apple")}</span></button>` : ""}${C.em ? `<button class="btn ac-b" id="ac-e">${MAIL_SVG}<span>${t("ac_email")}</span></button>` : ""}</div><p class="fine">${t("ac_note")}</p><p class="fine ac-legal">${t("lg_agree")}</p>` : `<p class="fine ac-soon">${t("ac_soon")}</p>`}${legalButtons()}${SO.me && !SO.me.own ? `<div class="ac-btns ac-row2"><button class="btn ac-b danger" id="ac-delg">${t("ac_delG")}</button></div>` : ""}</div>`;
 }
 // owner panel entry: only on the founder's own Profile (id 1 per the server); every panel call is checked on the server again
 export function ownerEntry() { return SO.me && SO.me.own && SO.me.id === "1" ? `<div class="pv-card ad-entry"><div class="pv-h">♛ ${t("ac_admin")}</div><p class="fine">${t("ad_entrySub")}</p><button class="btn gold ac-b" id="ad-open">${t("ac_admin")}</button></div>` : ""; }
 export function bindSignIn(ui, el) {
   const on = (id, fn) => { const b = el.querySelector("#" + id); if (b) ui.click(b, fn, "tab"); };
-  on("ac-e", () => openEmail(ui)); on("ac-a", () => apple(ui)); on("ac-out", () => signOut(ui)); on("ac-del", () => delAcct(ui)); on("ad-open", () => { AC.adm.tab = "dash"; ui.go("admin"); });
+  on("ac-e", () => openEmail(ui)); on("ac-a", () => apple(ui)); on("ac-out", () => signOut(ui)); on("ac-del", () => delAcct(ui)); on("ac-delg", () => delGuest(ui)); on("ad-open", () => { AC.adm.tab = "dash"; ui.go("admin"); });
   const g = el.querySelector("#ac-g"); if (g && AC.cfg && AC.cfg.g) google(ui, g);
 }
 async function nonce() { if (AC.nonce && Date.now() - AC.nonce.t < 600000) return AC.nonce.n; const r = await acall("nonce"); if (!r || !r.n) return ""; AC.nonce = { n: r.n, t: Date.now() }; return r.n; }
@@ -122,6 +127,8 @@ function done(ui, r) {
   rerender();
 }
 async function signOut(ui) { if (!(await ui.confirm(t("ac_outQ")))) return; await sync(true); const r = await hpost("out"); if (!r || !r.ok) { ui.toast(acErr(r), "warn"); return; } leave(true); ui.toast(t("ac_outDone"), "good", 4500); }
+// coin1: a guest can delete its online data too (same real server delete); the device then starts a fresh profile
+async function delGuest(ui) { if (!(await ui.confirm(t("ac_delGQ")))) return; const r = await hpost("adel"); if (!r || !r.ok) { ui.toast(acErr(r), "warn"); return; } leave(false); ui.toast(t("ac_delGDone"), "good", 4500); }
 async function delAcct(ui) { if (!(await ui.confirm(t("ac_delQ")))) return; const r = await hpost("adel"); if (!r || !r.ok) { ui.toast(acErr(r), "warn"); return; } leave(false); ui.toast(t("ac_delDone"), "good", 4500); }
 function leave() { // signed out / deleted: this device gets its own profile back (or a fresh one with a new device id)
   const S = S_(), key = "ssp-pre:" + (S.cur || "guest"), pre = jparse(KV.get(key) || "null"), name = S.p.name;

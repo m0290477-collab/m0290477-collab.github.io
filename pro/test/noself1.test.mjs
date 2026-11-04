@@ -5,7 +5,7 @@ import { candySize2, candyBig, SPR_K, CANDY_SCALE as CS2 } from "../js/gfx/candy
 import { mkdtempSync, copyFileSync } from "node:fs"; import { tmpdir } from "node:os"; import { join } from "node:path";
 let fail = 0; const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fail++; };
 // ---- worker harness: the real Room class with the real sim.js, fake sockets, ticks driven by hand ----
-const dir = mkdtempSync(join(tmpdir(), "ssp-srv-")); copyFileSync(new URL("../server/index.js", import.meta.url), join(dir, "index.js")); copyFileSync(new URL("../js/sim.js", import.meta.url), join(dir, "sim.js"));
+const dir = mkdtempSync(join(tmpdir(), "ssp-srv-")); copyFileSync(new URL("../server/index.js", import.meta.url), join(dir, "index.js")); for (const f of ["sim.js", "econ.js", "skins.js", "offers.js"]) copyFileSync(new URL("../js/" + f, import.meta.url), join(dir, f)); // coin1
 const { Room } = await import(join(dir, "index.js"));
 function room() { const R = new Room({}, {}); R.init(new URLSearchParams("bots=0&name_room=test")); R.sim.pus.length = 0; R.sim.powerups = false; R.sim.events = []; R.sim.evt = null; return R; }
 function join_(R, name) { const c = { ws: { send() {}, close() {} }, snake: null, q: [], ack: 0xffff, extra: 0, name, skin: null, msgs: 0, win: Date.now(), joined: false, lastTa: 0, lastBoost: 0, out: [] };

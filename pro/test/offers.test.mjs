@@ -25,8 +25,10 @@ const ob = O.occasionBundle(S, new Date(2026, 9, 3, 12)); ok(ob && ob.items.some
 // clock jumps back: keep the last seen rotation
 mem.clear(); const t1 = new Date(2026, 10, 10).getTime(); O.stableNow(KV, t1); const back = O.stableNow(KV, t1 - 9 * 86400000); ok(back.getTime() === t1, "clock moved back 9 days -> last seen rotation kept");
 // bundle purchase is atomic
-S.p.coins = 100000; const b = O.monthlyBundle(S, new Date(2026, 10, 3)); const c0 = S.p.coins; ok(S.buyBundle(b.key, b.items, b.price) === "ok" && S.p.coins === c0 - b.price && b.items.every((it) => it.k === "skin" ? S.unlocked("skin", it.i) : S.p.flags.includes(it.i)), "bundle bought: one charge, all items granted");
-ok(S.buyBundle(b.key + "x", b.items, b.price) === "own" && S.p.coins === c0 - b.price, "bundle with owned items refused, no charge");
+// coin1: bundles are bought from the server wallet (in-process real worker): price checked against this month's bundle
+{ const { useServerWallet } = await import("./_wallet_srv.mjs"); const WS = await useServerWallet(S); S.p.coins = 100000; await WS.online();
+  const b = O.monthlyBundle(S, new Date()); const c0 = S.p.coins; ok((await S.buyBundle(b.key, b.items, b.price)) === "ok" && S.p.coins === c0 - b.price && WS.bal() === c0 - b.price && b.items.every((it) => it.k === "skin" ? S.unlocked("skin", it.i) : S.p.flags.includes(it.i)), "bundle bought: one charge on the server, all items granted");
+  S._lastBuy = null; ok((await S.buyBundle(b.key + "x", b.items, b.price)) === "own" && S.p.coins === c0 - b.price && WS.bal() === c0 - b.price, "bundle with owned items refused, no charge"); }
 // store1: table covers 2026-2030; weekly always 3-4 items at 15-40 % off with integer prices accepted by the store
 for (const y of [2026, 2027, 2028, 2029, 2030]) { const H = O.HIJRI[y]; ok(H && ["ramadan", "eidFitr", "eidAdha"].every((id, k) => { const [yy, mm, dd] = H[k].split("-").map(Number); return occ(yy, mm, dd + 1) === id; }), "Hijri occasions resolve in " + y); }
 { let bad = 0; const S3 = new Store(); for (let w = 0; w < 260; w++) { const d = new Date(2026, 0, 5 + w * 7, 12), o = O.weeklyOffers(S3, d); if (o.items.length < 3 || o.items.length > 4 || o.items.some((it) => it.off < 15 || it.off > 40 || !S3._priceOk(it.price, it.base))) bad++; } ok(bad === 0, "260 weeks 2026-2030: 3-4 items, 15-40 % off, prices within store bounds (bad " + bad + ")"); }

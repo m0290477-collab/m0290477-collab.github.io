@@ -1,7 +1,7 @@
 // Player identity: avatars (16 portraits + every flag), frames, titles, banners, ranked tiers, daily login calendar
 // and the free lucky spin. Rewards are coins / XP / cosmetics only (never paid). Pure data + rules, no DOM.
-import { WORLDS, worldAsset } from "./worlds.js?v=srv2";
-import { FLAGS, flagEmoji } from "./skins.js?v=srv2";
+import { WORLDS, worldAsset } from "./worlds.js?v=coin1";
+import { FLAGS, flagEmoji } from "./skins.js?v=coin1";
 
 // requirement shapes: null = free · {lv} · {ach} · {stat:[key,n]} · {season} (tier) · {owner}
 export const AVATARS = [
@@ -39,8 +39,7 @@ export function rpDelta(r) {
   if (r.mode === "zen") return 0; let d = r.rank === 1 ? 24 : r.rank <= 3 ? 14 : r.rank <= 10 ? 5 : -7; if (r.win) d += 18; d += Math.min(20, (r.kills | 0) * 2);
   if (r.mode === "online") d = Math.round(d * 1.2); return d;
 }
-export const LOGIN = [100, 150, 200, 250, 350, 500, 800]; // day 7 also grants a cosmetic
-export const SPIN = [{ c: 50, w: 24 }, { c: 100, w: 22 }, { x: 200, w: 10 }, { c: 150, w: 16 }, { cos: 1, w: 7 }, { c: 250, w: 12 }, { c: 500, w: 6 }, { c: 1000, w: 3 }];
+import { LOGIN, SPIN } from "./econ.js?v=coin1"; export { LOGIN, SPIN }; // coin1: shared with the worker (it prices the claims)
 
 // is a requirement met for this store (level/achievements/stats/season/owner) or the cosmetic granted outright (spin, calendar)
 export function reqMet(S, req, key) {

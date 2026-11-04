@@ -7,7 +7,7 @@ import { mkdtempSync, copyFileSync, readFileSync } from "node:fs"; import { tmpd
 import { DatabaseSync } from "node:sqlite";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log("FAIL", m); } else console.log("ok", m); };
-const dir = mkdtempSync(join(tmpdir(), "ssp-s2-")); copyFileSync(ROOT + "/server/index.js", join(dir, "index.js")); copyFileSync(ROOT + "/js/sim.js", join(dir, "sim.js"));
+const dir = mkdtempSync(join(tmpdir(), "ssp-s2-")); copyFileSync(ROOT + "/server/index.js", join(dir, "index.js")); for (const f of ["sim.js", "econ.js", "skins.js", "offers.js"]) copyFileSync(ROOT + "/js/" + f, join(dir, f)); // coin1: the worker also bundles econ.js (+ skins.js, offers.js)
 const W = await import(join(dir, "index.js"));
 class Sql { constructor() { this.db = new DatabaseSync(":memory:"); }
   exec(q, ...b) { const st = this.db.prepare(q); if (/^\s*SELECT/i.test(q)) { const rows = st.all(...b).map((r) => ({ ...r })); return { toArray: () => rows, one: () => rows[0] }; } st.run(...b); return { toArray: () => [], one: () => undefined }; } }

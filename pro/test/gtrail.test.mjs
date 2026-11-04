@@ -13,14 +13,15 @@ const S = new Store(); const p = S.p; ok(p.gt === "", "default slot: none");
 ok(S.equipGTrail(gtIndex("dust")) === "ok" && p.gt === "dust", "free trail equips without buying");
 const L = gtIndex("lava"), price = GTRAILS[L].price;
 ok(S.equipGTrail(L) === "locked" && p.gt === "dust", "paid trail cannot be equipped before buying");
-p.coins = price - 1; ok(S.buyGTrail(L) === "noCoins" && p.coins === price - 1 && !p.owned.includes("gt:lava"), "not enough coins: nothing changes");
+const { useServerWallet } = await import("./_wallet_srv.mjs"); const WS = await useServerWallet(S); p.coins = price - 1; await WS.online(); // coin1: server wallet (in-process real worker)
+ok((await S.buyGTrail(L)) === "noCoins" && p.coins === price - 1 && !p.owned.includes("gt:lava"), "not enough coins: nothing changes");
 ok(S.buyGTrail(gtIndex("dust")) === "na", "free trails are never sold");
-p.coins = price + 50; ok(S.buyGTrail(L, 1) === "badPrice" && p.coins === price + 50, "price below the 60% floor refused");
-ok(S.buyGTrail(L, price + 1) === "badPrice", "price above catalogue refused");
-const ck0 = econSum(p); ok(S.buyGTrail(L) === "ok" && p.coins === 50 && p.owned.includes("gt:lava"), "buy: coins deducted, owned");
+p.coins = price + 50; ok((await S.buyGTrail(L, 1)) === "badPrice" && p.coins === price + 50, "price below the 60% floor refused");
+ok((await S.buyGTrail(L, price + 1)) === "badPrice", "price above catalogue refused");
+WS.add(51); const ck0 = econSum(p); ok((await S.buyGTrail(L)) === "ok" && p.coins === 50 && WS.bal() === 50 && p.owned.includes("gt:lava"), "buy: coins deducted on the server, owned");
 ok(econSum(p) !== ck0, "ownership is part of the economy checksum");
-ok(S.buyGTrail(L) === "busy" || S.buyGTrail(L) === "own", "second buy refused");
-S._lastBuy = null; ok(S.buyGTrail(L) === "own", "already owned");
+{ const a = await S.buyGTrail(L); ok(a === "busy" || a === "own", "second buy refused"); }
+S._lastBuy = null; ok((await S.buyGTrail(L)) === "own" && WS.bal() === 50, "already owned (no second charge)");
 ok(S.equipGTrail(L) === "ok" && p.gt === "lava", "equip after buying"); ok(S.equipGTrail(-1) === "ok" && p.gt === "", "unequip -> none");
 S.equipGTrail(L); S.flush(); const S2 = new Store(); ok(S2.p.gt === "lava" && S2.p.owned.includes("gt:lava"), "slot + ownership survive a reload (autosave)");
 ok(S._sig().includes("~lava"), "autosave signature tracks the slot");

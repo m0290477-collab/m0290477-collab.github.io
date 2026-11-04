@@ -3,13 +3,14 @@
 // invites into the same online room, live notifications over one WebSocket to the "social-v1" object (reconnect with
 // back-off; a 30 s HTTP poll only while the socket is down), presence (online / in lobby / in a match), in-match player card.
 // No sound, no voice. Everything degrades to a friendly "offline" message when the server cannot be reached.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=srv2";
-import { SERVER } from "./net.js?v=srv2";
-import { devKey } from "./league.js?v=srv2";
-import { avatarHtml } from "./profile.js?v=srv2";
-import { idKind, idPrice, MSG_MAX } from "./sim.js?v=srv2";
-import { EMOTES } from "./game.js?v=srv2";
-import { pidHtml, pidBig } from "./pid.js?v=srv2";
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=coin1";
+import { SERVER } from "./net.js?v=coin1";
+import { devKey } from "./league.js?v=coin1";
+import { avatarHtml } from "./profile.js?v=coin1";
+import { idKind, idPrice, MSG_MAX } from "./sim.js?v=coin1";
+import { EMOTES } from "./game.js?v=coin1";
+import { pidHtml, pidBig } from "./pid.js?v=coin1";
+import { WL, online as walletOnline, onPush as walletPush } from "./wallet.js?v=coin1"; // coin1
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -29,7 +30,7 @@ const IC = {
 export const SO = { ui: null, ws: null, up: false, tries: 0, pk: "", me: null, fr: [], inq: [], outq: [], bl: [], inv: [], chats: new Map(), open: "", seq: 1, wait: new Map(), st: "lobby", tab: "fr", lastList: 0, lat: [] };
 function S_() { return SO.ui.S; }
 export function socialStart(ui) {
-  SO.ui = ui; injectDom(ui); const pk = devKey(ui.S);
+  SO.ui = ui; injectDom(ui); const pk = devKey(ui.S); WL.call = call; WL.up = () => SO.up; WL.onBal = (c) => ui.coins && ui.coins(c); // coin1: the wallet talks through this socket (HTTP fallback)
   if (pk !== SO.pk) { SO.pk = pk; SO.me = null; SO.fr = []; SO.inq = []; SO.outq = []; SO.bl = []; SO.inv = []; SO.chats.clear(); close(); connect(); } else if (SO.up) hello();
   badge();
 }
@@ -58,8 +59,10 @@ export function call(op, args = {}) {
 async function refresh() { const r = await call("list"); if (!r || r.err) return r; SO.lastList = Date.now(); if (r.me) setMe(r.me); SO.fr = r.fr || []; SO.inq = r.inq || []; SO.outq = r.outq || []; SO.bl = r.bl || []; SO.inv = (r.inv || []).filter((x) => x.from); badge(); rerender(); return r; }
 function onMsg(m) {
   if (m.t === "r") { const w = SO.wait.get(m.i); if (w) { SO.wait.delete(m.i); w.res(m); } return; }
-  if (m.t === "hi") { if (m.me) setMe(m.me); if (SO.onAcct) try { SO.onAcct(m); } catch (e) { console.warn("acct", e); } return; } // srv2: account status, ban, pending grants
+  if (m.t === "hi") { if (m.me) setMe(m.me); walletOnline(m.w).catch(() => {}); // coin1: the hello carries the wallet
+    if (SO.onAcct) try { SO.onAcct(m); } catch (e) { console.warn("acct", e); } return; } // srv2: account status, ban, pending grants
   if (m.t !== "ev") return; const ui = SO.ui, nm = (c) => (c && c.n) || "?";
+  if (m.k === "wal") { walletPush(m); return; } // coin1: an online life paid by the room
   if (["grant", "ban", "unban", "mute", "unmute", "rname", "snap", "gone"].includes(m.k)) { if (SO.onAcctEv) try { SO.onAcctEv(m); } catch (e) { console.warn("acct", e); } return; } // srv2
   if (m.k === "req") { if (!SO.inq.some((x) => x.id === m.from.id)) SO.inq.unshift(m.from); notify("👤", t("so_reqIn", { n: nm(m.from) }), "req"); }
   else if (m.k === "acc") { SO.outq = SO.outq.filter((x) => x.id !== m.from.id); if (!SO.fr.some((x) => x.id === m.from.id)) SO.fr.push({ ...m.from, un: 0 }); notify("🤝", t("so_accIn", { n: nm(m.from) }), "acc"); }
@@ -267,16 +270,15 @@ async function pickId(ui, n, btn) {
   if (SO.idSel !== n) { SO.idSel = n; renderIds(ui, $("c-content"), true); return; } // first tap selects, second buys (same as the trail shop)
   await buyId(ui, n, btn);
 }
-export async function buyId(ui, n, btn) {
+export async function buyId(ui, n, btn) { // coin1: one server transaction decides who gets the id AND takes its coins
   const S = ui.S, p = ui.p, price = idPrice(n); if (!price) return "bad";
   if (p.coins < price) { ui.buyResult("noCoins"); return "noCoins"; }
   if (SO._buying) return "busy"; SO._buying = true;
   try {
-    const r = await call("buyid", { n, price }); // 1) the server decides who gets the id (atomic, one buyer)
-    if (!r || !r.ok) { if (r && r.err === "sold") { ui.toast(t("so_e_sold"), "warn"); SO._shopT = 0; renderIds(ui, $("c-content")); } else ui.toast(errText(r && r.err), "warn"); return (r && r.err) || "offline"; }
-    const res = S.buySpecialId(n, r.price); // 2) the coins are paid through the protected purchase (all-or-nothing, saved)
-    if (res !== "ok") { await call("undoid", { n, tok: r.tok }); ui.buyResult(res); return res; } // 3) payment failed -> the id goes back
-    call("paid", { n }); setMe(r.me); SO.idSel = ""; SO.chk = null;
+    const r = await S.buySpecialId(n, price);
+    if (!r || !r.ok) { const e = (r && r.err) || "offline";
+      if (e === "sold") { ui.toast(t("so_e_sold"), "warn"); SO._shopT = 0; renderIds(ui, $("c-content")); } else if (e === "noCoins" || e === "offline") ui.buyResult(e); else ui.toast(errText(e), "warn"); return e; }
+    setMe(r.me); SO.idSel = ""; SO.chk = null;
     const sel = `[data-id5="${n}"]`, tgt = document.querySelector("#c-content " + sel) || btn; ui.buyFx(tgt, sel); ui.toast("✓ " + t("so_bought", { n }), "good", 3500);
     if (SO._shop && !SO._shop.err) for (const L of [SO._shop.rep, SO._shop.seq]) for (const x of L) if (x.n === n) x.s = 1;
     setTimeout(() => { if (ui.cur === "custom" && ui.cTab === "ids") renderIds(ui, $("c-content"), true); }, 650); return "ok";
