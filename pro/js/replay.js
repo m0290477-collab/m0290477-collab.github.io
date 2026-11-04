@@ -3,7 +3,7 @@
 // allocated once per match; recording a sample allocates nothing. On a match-ending death the clip is played back
 // through the existing 2D/3D renderers: Replay.view() fills a view object shaped exactly like Game.build()'s output,
 // with proxy snakes whose sx()/sy() read the interpolated recorded points, so no drawing code is duplicated.
-import { bodyPoints } from "./sim.js?v=resp2a";
+import { bodyPoints } from "./sim.js?v=resp2";
 
 const HZ = 20, STEP = 1000 / HZ, NS = 104, MAXS = 24, MAXP = 96, MAXF = 360, MAXPU = 16, MAXM = 8;
 export const RP_CLIP = 3600, RP_SLOW = 800, RP_SLOWK = 0.4, RP_HOLD = 450; // ms of game time shown, slow tail, speed, end hold

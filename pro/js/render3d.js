@@ -2,21 +2,21 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import { stageBox } from "./stage.js?v=resp2a";
-import * as THREE from "./vendor/three.module.min.js?v=resp2a";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=resp2a";
+import { stageBox } from "./stage.js?v=resp2";
+import * as THREE from "./vendor/three.module.min.js?v=resp2";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=resp2";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=resp2a";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=resp2a";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=resp2a";
-import { World, prefetchWorld } from "./gfx/env.js?v=resp2a";
-import { Post } from "./gfx/post.js?v=resp2a";
-import { Studio } from "./gfx/showcase.js?v=resp2a";
-import { SoftFx } from "./gfx/fx.js?v=resp2a";
-import { on as onEv } from "./events.js?v=resp2a";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=resp2a";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=resp2";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=resp2";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=resp2";
+import { World, prefetchWorld } from "./gfx/env.js?v=resp2";
+import { Post } from "./gfx/post.js?v=resp2";
+import { Studio } from "./gfx/showcase.js?v=resp2";
+import { SoftFx } from "./gfx/fx.js?v=resp2";
+import { on as onEv } from "./events.js?v=resp2";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=resp2";
 
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
 const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3];
@@ -332,9 +332,9 @@ export class Renderer3D {
     // stream the neighbouring world in the background
     const nx = WORLDS[(i + 1) % WORLDS.length]; setTimeout(() => prefetchWorld(nx, this.Q.texLo), 2500);
   }
-  // resp2 fix4: a calmer floor like 2D so candies and snakes stand out: exposure x0.93, hemi / sun x0.88, bloom x0.65
-  // (calm: x0.85 / x0.78 / x0.4); the World dims its ground (boost, desaturation, emissive), reflection and snow / stars.
-  _dim() { const W = this.W; if (!W) return; const c = !!this.calm; this.lk = c ? 0.78 : 0.88; this.r.toneMappingExposure = (W.exposure || 1.0) * (c ? 0.85 : 0.93);
+  // resp2 fix4: a calmer floor like 2D so candies and snakes stand out: exposure x0.97, hemi / sun x0.9 (adj1), bloom x0.65
+  // (calm: x0.92 / x0.84 / x0.4); the World dims its ground (boost, desaturation, emissive), reflection and snow / stars.
+  _dim() { const W = this.W; if (!W) return; const c = !!this.calm; this.lk = c ? 0.84 : 0.9; this.r.toneMappingExposure = (W.exposure || 1.0) * (c ? 0.92 : 0.97); // resp2 adj1: lifted (post shots read -11..-28%, calm -30..-43%: too murky)
     this.hemi.intensity = W.hemiI * this.lk; this.sun.intensity = W.sunI * this.lk; this._grade(); if (this.world && this.world.dim) this.world.dim(c); }
   _grade() { if (!this.W3) return; if (this.post.bloom) this.post.bloom.strength = this.W3.bloom * 0.5 * (this.calm ? 0.4 : 0.65); const gu = this.post.grade && this.post.grade.uniforms, G = this.W3.grade; if (gu) { gu.uLift.value.set(...G[0]); gu.uGain.value.set(...G[1]); gu.uSat.value = G[2]; gu.uCon.value = G[3]; } }
   setArena(R) { this.arenaR = R; if (this.world) this.world.fit(R); }

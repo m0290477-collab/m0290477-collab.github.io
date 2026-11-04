@@ -2,12 +2,13 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { stageBox } from "./stage.js?v=resp2a";
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=resp2a";
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=resp2a";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=resp2a";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=resp2a";
-import { on as onEv } from "./events.js?v=resp2a";
+import { stageBox } from "./stage.js?v=resp2";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=resp2";
+const TUBE_STEPS = [[1, 0.28], [0.9, 0.51], [0.78, 0.85], [0.66, 1]]; // tube1: [fraction of the spine from the head, half-width / r]
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=resp2";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=resp2";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=resp2";
+import { on as onEv } from "./events.js?v=resp2";
 const NO2 = 220;
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle cap
 const GOV_PR = [3, 2, 1.5, 1.25], GOV_PC = [300, 180, 100, 50];
@@ -215,19 +216,24 @@ export class Renderer2D {
       if (P && P[7] > 0 && n > 1) { g.strokeStyle = "#5ce8ff"; g.globalAlpha = 0.38 * d.alpha; g.lineWidth = r * 2.9; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.stroke(); g.globalAlpha = d.alpha; } // dash: soft steady cyan outline (harmless while active)
       if (n > 1) { g.strokeStyle = "rgba(0,0,0,0.38)"; g.lineWidth = r * 2.16; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.stroke(); } // dark rim so the body reads on any ground
       if (d.team) { g.strokeStyle = lin2css(d.team); g.lineWidth = r * 0.5; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.globalAlpha *= 0.55; g.lineWidth = r * 2.5; g.stroke(); g.globalAlpha = d.alpha; }
-      // body: consecutive segments of the same colour share one path
-      let cur = "", open = false;
-      for (let j = n - 1; j >= 0; j--) {
-        const u = j / Math.max(1, n - 1), rr = j ? r * taperAt(u) : r * HEAD_K; d.fn(j, n, t, col);
-        const c = frozen ? css(col[0] * 0.5 + 0.35, col[1] * 0.5 + 0.45, col[2] * 0.5 + 0.5) : css(col[0], col[1], col[2]);
-        if (c !== cur) { if (open) g.fill(); g.fillStyle = cur = c; g.beginPath(); open = true; }
-        g.moveTo(pts[j * 2] + rr, pts[j * 2 + 1]); g.arc(pts[j * 2], pts[j * 2 + 1], rr, 0, TAU);
-      }
-      if (open) g.fill();
-      // tube shading: a soft specular stripe on top + subtle scale bands
-      if (n > 2 && GL < 2) { g.strokeStyle = "rgba(0,0,0,0.13)"; g.lineWidth = r * 0.7; g.lineCap = g.lineJoin = "round"; g.beginPath(); g.moveTo(pts[0] + r * 0.4, pts[1] + r * 0.45); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] + r * 0.4, pts[j * 2 + 1] + r * 0.45); g.stroke(); }
-      if (n > 2 && GL < 2) { g.strokeStyle = "rgba(255,255,255,0.2)"; g.lineWidth = r * 0.55; g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0] - r * 0.32, pts[1] - r * 0.38); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] - r * 0.32, pts[j * 2 + 1] - r * 0.38); g.stroke();
+      // tube1: smooth body at every quality level. 1) one continuous round-joined stroke in the base colour (3 width steps for the
+      // taper) gives a clean silhouette on bends; 2) the pattern bands are stroked on top as runs along the spine, ~10% thinner,
+      // so colour changes never scallop the outline; 3) one cheap highlight stroke (plus a soft underside shade above Low).
+      const fz = (c0) => frozen ? css(c0[0] * 0.5 + 0.35, c0[1] * 0.5 + 0.45, c0[2] * 0.5 + 0.5) : css(c0[0], c0[1], c0[2]);
+      g.lineJoin = "round"; g.lineCap = "round";
+      if (n > 1) { d.fn(n >> 2, n, t, col); g.strokeStyle = fz(col);
+        for (const [e, w] of TUBE_STEPS) { const m = Math.max(1, Math.round(e * (n - 1))); g.lineWidth = 2 * r * w; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j <= m; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.stroke(); } }
+      { let cur = "", cw = -1, open = false; // bands tail -> head with round caps: each band's cap overlaps the next like a scale, no wedges on bends
+        for (let j = n - 1; j >= 0; j--) {
+          const u = j / Math.max(1, n - 1), rr = j ? r * taperAt(u) : r * HEAD_K; d.fn(j, n, t, col);
+          const c = fz(col), w = Math.round(rr / r * 10) / 10;
+          if (n === 1) { g.fillStyle = c; g.beginPath(); g.arc(pts[0], pts[1], rr, 0, TAU); g.fill(); break; }
+          if (c !== cur || w !== cw) { if (open) { g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.stroke(); } g.strokeStyle = cur = c; cw = w; g.lineWidth = 2 * r * Math.max(0.24, w) * 0.9; g.beginPath(); g.moveTo(pts[j * 2], pts[j * 2 + 1]); open = true; }
+          else g.lineTo(pts[j * 2], pts[j * 2 + 1]);
         }
+        if (open) g.stroke(); }
+      if (n > 2 && GL < 2) { g.strokeStyle = "rgba(0,0,0,0.13)"; g.lineWidth = r * 0.7; g.beginPath(); g.moveTo(pts[0] + r * 0.4, pts[1] + r * 0.45); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] + r * 0.4, pts[j * 2 + 1] + r * 0.45); g.stroke(); }
+      if (n > 2) { const hm = GL < 2 ? n : Math.max(2, Math.round(n * 0.85)); g.strokeStyle = "rgba(255,255,255,0.2)"; g.lineWidth = r * 0.55; g.beginPath(); g.moveTo(pts[0] - r * 0.32, pts[1] - r * 0.38); for (let j = 1; j < hm; j++) g.lineTo(pts[j * 2] - r * 0.32, pts[j * 2 + 1] - r * 0.38); g.stroke(); } // highlight kept at Low
       if (n > 1) {
         const a = Math.atan2(pts[1] - pts[3], pts[0] - pts[2]), E = EYES[d.eye] || EYES[0], er = r * 0.42 * E.s, la = d.me && this.meLook !== undefined ? this.meLook : d.look ?? a, ca = Math.cos(a), sa = Math.sin(a);
         // head: a snout-shaped oval in the head colour, lit from the top-left, nostrils, then big glossy eyes
