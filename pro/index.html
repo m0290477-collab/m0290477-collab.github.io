@@ -17,7 +17,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2305070d'/%3E%3Cpath d='M14 40c6-14 14 4 20-10s12-6 16-2' stroke='%23ffc845' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="preload" href="assets/fonts/oxanium.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/keyart_lo.webp" as="image" />
-<link rel="stylesheet" href="css/app.css?v=perf3" />
+<link rel="stylesheet" href="css/app.css?v=comp1" />
 <link rel="modulepreload" href="js/vendor/three.module.min.js" />
 </head>
 <body>
@@ -91,6 +91,7 @@
     <header class="topbar">
       <button class="chip prof" id="l-prof" data-ia="profile"><span id="l-av"></span><span class="pinfo"><b id="l-name">Guest</b><small id="l-title"></small><span class="lvrow"><em><span data-i="level"></span> <span id="l-lv">1</span></em><span class="xpbar"><i id="l-xp"></i></span></span></span><span id="l-rank" class="prk"></span></button>
       <button class="chip season" id="l-season" data-ia="seasonPass"><span class="sic">✦</span><b><span data-i="tier"></span> <span id="l-tier">0</span></b><i class="dot x-hide" id="l-sdot"></i><span class="sbar"><i id="l-sbar"></i></span></button>
+      <button class="chip comp" id="l-comp" data-ia="compT"></button>
       <div class="sp"></div>
       <div class="chip coins"><span class="coin"></span><b id="l-coins" class="coinsv">0</b></div>
       <button class="icon-btn" id="l-bell" data-ia="notifications"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2ZM10 20a2 2 0 0 0 4 0"/></svg><i class="badge x-hide" id="l-bdg">0</i></button>
@@ -143,6 +144,14 @@
       <div class="seg tabs" id="s-tabs"><button data-v="track" class="on" data-i="track"></button><button data-v="weekly" data-i="weekly"></button><button data-v="chains" data-i="chains"></button></div>
       <div class="chip coins"><span class="coin"></span><b class="coinsv">0</b></div></header>
     <div class="pbody"><div class="pcontent wide" id="s-content"></div></div>
+  </section>
+
+  <!-- COMPETITIONS (comp1): league + season, weekly / monthly contests, badges -->
+  <section id="s-comp" class="screen panel">
+    <header class="phead"><button class="icon-btn back" data-back data-ia="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 data-i="compT"></h2>
+      <div class="seg tabs" id="cp-tabs"><button data-v="league" class="on" data-i="leagueT"></button><button data-v="w" data-i="cWeekly"></button><button data-v="m" data-i="cMonthly"></button><button data-v="badges" data-i="myBadges"></button></div>
+      <div class="chip coins"><span class="coin"></span><b class="coinsv">0</b></div></header>
+    <div class="pbody"><div class="pcontent wide" id="cp-content"></div></div>
   </section>
 
   <!-- SETTINGS -->
@@ -227,6 +236,6 @@
 
 <div id="wipe" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="toasts" aria-live="polite"></div>
-<script type="module" src="js/main.js?v=perf3"></script>
+<script type="module" src="js/main.js?v=comp1"></script>
 </body>
 </html>

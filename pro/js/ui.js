@@ -1,16 +1,18 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=perf3";
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=perf3"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=perf3";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=perf3";
-import { WORLDS, worldAsset } from "./worlds.js?v=perf3";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=perf3";
-import { haptic } from "./audio.js?v=perf3";
-import { skinFn, MODES, EMOTES } from "./game.js?v=perf3";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=perf3";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=perf3";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=perf3";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=comp1";
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=comp1"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=comp1";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=comp1";
+import { WORLDS, worldAsset } from "./worlds.js?v=comp1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=comp1";
+import { haptic } from "./audio.js?v=comp1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=comp1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=comp1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=comp1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=comp1";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=comp1"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=comp1";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -62,7 +64,8 @@ export class Hud {
     const R = this._lbQ || (this._lbQ = []); R.length = 0; let ri = 0;
     const row = (cls, st, v) => { const o = R[ri] || (R[ri] = {}); ri++; o.cls = cls; o.v = String(v); // perf2: the rank cell <b>..</b> is split off, so a rank change rewrites one small cell, not the avatar row
       if (st.startsWith("<b>")) { const k = st.indexOf("</b>"); o.rk = st.slice(3, k); o.st = st.slice(k + 4); } else { o.rk = null; o.st = st; } };
-    const ic = (s) => (s.avt ? avatarHtml(s.avt, s.fr | 0, "s") : `<i style="background:${this.dot(s)}"></i>`);
+    const ic0 = (s) => (s.avt ? avatarHtml(s.avt, s.fr | 0, "s") : `<i style="background:${this.dot(s)}"></i>`), myT = trophies(this.app.store.p), onl = d.ping !== null && d.ping !== undefined;
+    const ic = (s) => ic0(s) + hudTag(s, d.me, myT, onl); // comp1: league tag next to every name
     if (d.scoreList) { d.scoreList.forEach((x, i) => row(x.s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(x.s)}<span>${esc(x.s.name || "?")}</span>`, `${x.v}/${d.target}`)); }
     else { d.top.forEach((s, i) => row(s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(s)}<span>${s.bounty ? "💰 " : ""}${esc(s.name || "?")}</span>`, fmtNum(s.m)));
       if (d.me && d.me.alive && d.rank > 5) row("me", `<b>${d.rank}</b>${ic(d.me)}<span>${esc(d.me.name)}</span>`, fmtNum(d.me.m)); }
@@ -211,13 +214,13 @@ export class UI {
   async go(id, kind) { await this.wipe(kind || "go"); this.show(id); }
   show(id) {
     document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("on", s.id === "s-" + id)); this.cur = id; $("l-notif").classList.add("x-hide");
-    if (id === "lobby") this.renderLobby(); if (id === "custom") this.renderCustom(); if (id === "profile") this.renderProfile(); if (id === "settings") this.renderSettings(); if (id === "season") this.renderSeason();
+    if (id === "lobby") this.renderLobby(); if (id === "custom") this.renderCustom(); if (id === "profile") this.renderProfile(); if (id === "settings") this.renderSettings(); if (id === "season") this.renderSeason(); if (id === "comp") renderComp(this);
     this.updateShow();
   }
   hideScreens() { document.querySelectorAll(".screen").forEach((s) => s.classList.remove("on")); this.cur = null; }
   // studio showcase framing per screen
   updateShow() {
-    const G = this.app.game; if (!["lobby", "custom", "season", "profile", "settings"].includes(this.cur)) return;
+    const G = this.app.game; if (!["lobby", "custom", "season", "profile", "settings", "comp"].includes(this.cur)) return;
     if (G.mode !== "show") G.startShow();
     const d = this.cur === "custom" && this.sel ? this.sel : this.app.game.mySkin(); const fx = skinFx(d), L = LEGEND[fx];
     const rtl = document.documentElement.dir === "rtl", x = (this.cur === "custom" ? 0.25 : this.cur === "lobby" ? 0.0 : 0.3) * (rtl ? -1 : 1); // pedestal on the side the panel leaves free
@@ -336,6 +339,7 @@ export class UI {
     this.click($("l-locker"), () => { this.sel = null; this.go("custom"); });
     this.click($("l-settings"), () => this.go("settings"));
     this.click($("l-season"), () => { this.sTab = "track"; this.go("season"); });
+    this.click($("l-comp"), () => { this.cpTab = "league"; $("cp-tabs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.v === "league")); this.go("comp"); }); // comp1
     this.click($("l-prof"), () => { this.prTab = "over"; this.go("profile"); });
     this.click($("l-login"), () => this.openLogin()); this.click($("l-spin"), () => this.openSpin());
     this.click($("lg-claim"), () => this.claimLogin(), "reward"); this.click($("sp-go"), () => this.doSpin());
@@ -350,7 +354,7 @@ export class UI {
     $("l-code").addEventListener("input", (e) => { e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24); this.p.last.room = e.target.value; this.S.save(); });
     document.querySelectorAll("[data-back]").forEach((b) => this.click(b, () => this.back(), "back"));
     const tabs = (id, key, fn) => $(id).querySelectorAll("button").forEach((b) => this.click(b, () => { this[key] = b.dataset.v; $(id).querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); fn.call(this); }, "tab"));
-    tabs("c-tabs", "cTab", this.renderCustom); tabs("pr-tabs", "prTab", this.renderProfile); tabs("g-tabs", "gTab", this.renderSettings); tabs("s-tabs", "sTab", this.renderSeason);
+    tabs("c-tabs", "cTab", this.renderCustom); tabs("pr-tabs", "prTab", this.renderProfile); tabs("g-tabs", "gTab", this.renderSettings); tabs("s-tabs", "sTab", this.renderSeason); tabs("cp-tabs", "cpTab", function () { renderComp(this); });
     // showcase drag-to-rotate on empty lobby/locker space
     let dx = null; const cv = () => this.app.game.show; addEventListener("pointerdown", (e) => { if (this.cur && (e.target.classList.contains("col-c") || e.target.classList.contains("lk-show") || e.target.id === "gl")) dx = e.clientX; });
     addEventListener("pointermove", (e) => { if (dx !== null && cv()) { const s = this.app.renderer && this.app.renderer.studio; if (s) s.rot = (s.rot || 0) + (e.clientX - dx) * 0.012; dx = e.clientX; } }); addEventListener("pointerup", () => (dx = null));
@@ -372,7 +376,7 @@ export class UI {
     if (this.fromPause && this.cur === "settings") { this.fromPause = false; this.hideScreens(); $("m-pause").classList.remove("x-hide"); return; }
     this.go("lobby", "fade");
   }
-  afterLogin() { this.selMode = this.p.last.mode || "classic"; this.app.applyAll(); this.goLobby(); setTimeout(() => this.toast(t("welcome", { n: this.p.name }), "good"), 700);
+  afterLogin() { this.selMode = this.p.last.mode || "classic"; this.app.applyAll(); this.goLobby(); compStartup(this); // comp1 setTimeout(() => this.toast(t("welcome", { n: this.p.name }), "good"), 700);
     const q = this.app.roomParam; if (q) { this.app.roomParam = ""; this.selMode = "online"; this.p.last.mode = "online"; this.p.last.room = q; this.S.save(); setTimeout(() => { if (this.cur === "lobby") this.renderLobby(); this.toast(t("roomJoined", { n: q }), "good", 4000); }, 1200); }
     else if (!this.S.loginState().claimed) setTimeout(() => { if (this.cur === "lobby" && $("m-reveal").classList.contains("x-hide")) this.openLogin(); }, 1500); }
   showAuth(tab = "in") {
@@ -412,7 +416,7 @@ export class UI {
     const p = this.p, S = this.S, lv = lvInfo(p.xp);
     // top bar: profile card (avatar + frame + name + title + level), ranked badge, compact season chip
     $("l-av").innerHTML = avatarHtml(p.av, p.frame, "m"); $("l-name").textContent = p.name; $("l-title").textContent = t("ti_" + (TITLES[p.title] || TITLES[0]).id);
-    $("l-lv").textContent = lv.n; $("l-xp").style.width = (lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)) + "%"; this.coins(p.coins); $("l-rank").innerHTML = rankBadge(p.rp);
+    $("l-lv").textContent = lv.n; $("l-xp").style.width = (lv.n >= 100 ? 100 : Math.round((lv.x / lv.need) * 100)) + "%"; this.coins(p.coins); { const L = myLeague(p); $("l-rank").innerHTML = leagueBadge(trophies(p), { size: "s", conq: L.conq }); } lobbyChip(this); // comp1: league replaces the old ranked-points badge
     const tier = S.seasonTier(), into = p.season.xp - tier * SEASON.per; $("l-tier").textContent = tier; $("l-sbar").style.width = (tier >= SEASON.tiers ? 100 : Math.round((into / SEASON.per) * 100)) + "%";
     const unclaimed = Array.from({ length: tier }, (_, i) => i + 1).some((k) => !p.season.claimed.includes(k)); $("l-sdot").classList.toggle("x-hide", !unclaimed);
     // modes: short, fully readable descriptions; the column scrolls with a fade + chevron hint
@@ -620,8 +624,8 @@ export class UI {
   }
 
   // ---------- profile: identity, cosmetics, stats, pinned achievements, history + leaderboard ----------
-  reqText(req) { if (!req) return ""; if (req.lv) return t("unlockAt", { n: req.lv }); if (req.ach) return t("reqAch", { n: t(req.ach) }); if (req.stat) return req.stat[0] === "wins" ? t("reqWins", { n: req.stat[1] }) : req.stat[0] === "online" ? t("reqOnline", { n: req.stat[1] }) : req.stat[1] > 1 ? t("reqBossN", { n: req.stat[1] }) : t("reqBoss"); if (req.season) return t("reqSeason", { n: req.season }); return t("reqOwner"); }
-  cosName(key) { const [k, v] = key.split(":"); if (k === "av") return t("avatar") + " #" + (+v.slice(1) + 1); if (k === "fr") return t("fr_" + FRAMES[+v].id); if (k === "ti") return t("ti_" + TITLES[+v].id); return this.bannerName(+v); }
+  reqText(req) { if (!req) return ""; if (req.lv) return t("unlockAt", { n: req.lv }); if (req.ach) return t("reqAch", { n: t(req.ach) }); if (req.stat) return req.stat[0] === "wins" ? t("reqWins", { n: req.stat[1] }) : req.stat[0] === "online" ? t("reqOnline", { n: req.stat[1] }) : req.stat[1] > 1 ? t("reqBossN", { n: req.stat[1] }) : t("reqBoss"); if (req.season) return t("reqSeason", { n: req.season }); if (req.grant) return t("reqComp"); return t("reqOwner"); }
+  cosName(key) { const [k, v] = key.split(":"); if (k === "av") return t("avatar") + " #" + (+v.slice(1) + 1); if (k === "fr") return t("fr_" + FRAMES[+v].id); if (k === "ti") return t("ti_" + TITLES[+v].id); if (k === "bd") return t("bd_" + v); return this.bannerName(+v); }
   bannerName(i) { const B = BANNERS[i]; return B && B.w ? t("w_" + B.w.id) : t("bn_" + (i === 7 ? 7 : 0)); }
   renderProfile() {
     const p = this.p, S = this.S, el = $("pr-content"), tab = this.prTab, lv = lvInfo(p.xp); this.coins(p.coins); let h = "";
@@ -643,8 +647,7 @@ export class UI {
         <div class="pv-acts" style="margin-top:12px"><button class="btn gold" id="pr-nmsave">${t("saveName")}</button><button class="btn" id="pv-cancel">${t("pvCancel")}</button></div></div>`;
       h += `<div class="pv-g2"><div class="pv-card"><div class="pv-h">${t("pvAbout")}${ed ? "" : `<button class="pv-link" data-pvedit="1">${t("pvEditShort")}</button>`}</div><p class="pv-bio" dir="auto">${p.bio ? esc(p.bio) : `<span class="fine">${t("pvNoBio")}</span>`}</p>
           <div class="pv-lab">${t("pvHobbies")}</div><div class="pv-chips">${hob.length ? hob.map(([id, ic]) => `<span class="pv-chip">${ic} ${t("hb_" + id)}</span>`).join("") : `<span class="fine">${t("pvNoHob")}</span>`}</div></div>
-        <div class="pv-card"><div class="pv-h">${t("pvRank")}</div><div class="pv-rk">${rankBadge(p.rp)}<div style="flex:1"><b>${t("rk_" + R.id)}</b> <span class="fine">· ${t("rpN", { n: fmtNum(p.rp) })}${R.span ? " · " + t("pvToNext", { n: fmtNum(R.span - R.into), r: t("rk_" + RANKS[R.i + 1].id) }) : ""}</span>${R.span ? `<div class="xpbar"><i style="width:${Math.round((R.into / R.span) * 100)}%"></i></div>` : ""}</div></div>
-          <div class="pv-ladder">` + RANKS.map((K, i) => `<div class="${i <= R.i ? "on" : ""}">${rankBadge(K.rp, true)}<small>${t("rk_" + K.id)}</small></div>`).join("") + `</div>
+        <div class="pv-card">${profileLeagueCard(p)}
           <div class="pv-mini"><div><small>${t("pvOnline")}</small><b>${fmtNum(st.online || 0)}</b></div><div><small>${t("st_wins")}</small><b>${fmtNum(st.wins || 0)}</b></div><div><small>${t("pvTop")}</small><b>${fmtNum(st.top || 0)}</b></div></div></div></div>
         <div class="pv-card"><div class="pv-h">${t("pvStats")}</div><div class="pv-stats">` + [["bestLen", fmtNum(st.best), 1], ["st_kills", fmtNum(st.kills)], ["st_wins", fmtNum(st.wins || 0)], ["st_games", fmtNum(st.games)], ["pvWinRate", wr], ["st_kd", kd], ["st_time", dur(st.time)], ["favMode", fav ? t("m_" + fav) : "—"]].map(([k, v, g]) => `<div class="stat"><small>${t(k)}</small><b class="${g ? "g" : ""}">${v}</b></div>`).join("") + `</div></div>
         <div class="pv-card"><div class="pv-h">${t("pvFav")}</div><div class="pv-favs"><div class="pv-fav" style="background:${skBg}"><small>${t("pvSkin")}</small><b>${skNm}</b></div><div class="pv-fav" style="background:url(${worldAsset(WORLDS[wI], "sky", true)}) center/cover"><small>${t("world")}</small><b>${t("w_" + WORLDS[wI].id)}</b></div><div class="pv-fav pv-favm"><small>${t("mode")}</small><b>${fav ? t("m_" + fav) : "—"}</b><span>${fav ? t("pvGames", { n: fmtNum(p.mg[fav] || 0) }) : ""}</span></div></div></div>
@@ -801,8 +804,8 @@ export class UI {
   hidePause() { $("m-pause").classList.add("x-hide"); }
   showResults(r) {
     const m = $("m-results"); m.classList.remove("x-hide"); this.app.hud.hide(); m.querySelector(".results").classList.toggle("win", !!r.win);
-    const p = this.p, R = rankOf(p.rp), d = r.rp | 0; $("r-who").innerHTML = `${avatarHtml(p.av, p.frame, "m")}<div class="who"><b>${esc(p.name)}</b><small>${t("ti_" + (TITLES[p.title] || TITLES[0]).id)}</small></div><div class="rp ${d >= 0 ? "up" : "dn"}">${rankBadge(p.rp)}<span>${t("rk_" + R.id)} · ${fmtNum(p.rp)}<br>${r.mode === "zen" ? "" : (d >= 0 ? "+" : "") + d + " RP"}</span></div>`;
-    if (r.rankUp) setTimeout(() => { this.toast("🏅 " + t("rankUpT", { n: t("rk_" + R.id) }), "gold", 3500); this.app.audio.play("level"); }, 900);
+    const p = this.p; this.lastCmp = r.cmp; $("r-who").innerHTML = `${avatarHtml(p.av, p.frame, "m")}<div class="who"><b>${esc(p.name)}</b><small>${t("ti_" + (TITLES[p.title] || TITLES[0]).id)}</small></div>${resultsWho(this, r.cmp)}`;
+    leagueToasts(this, r.cmp); // comp1: trophies + league instead of ranked points
     $("r-title").textContent = r.title; $("r-sub").textContent = r.sub || ""; $("r-best").classList.toggle("x-hide", !r.newBest);
     const sc = $("r-score"), target = r.score, t0 = performance.now(); const step = () => { const k = Math.min(1, (performance.now() - t0) / 900); sc.textContent = fmtNum(k >= 1 ? target : target * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); }; step();
     const cells = [["r_mass", fmtNum(r.mass)], ["r_kills", r.kills], ["r_rank", r.rank === "—" ? "—" : "#" + r.rank], ["r_time", fmtTime(r.time)]]; if (r.mode === "survival") cells[2] = ["wave", r.wave];

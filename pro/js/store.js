@@ -1,6 +1,6 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=perf3";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=comp1";
 export const SEASON = { id: "s1", tiers: 30, per: 400 };
 // free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
 export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
@@ -10,7 +10,8 @@ export const CHAINS = {
   survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
 };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=perf3";
+import { WORLDS } from "./worlds.js?v=comp1";
+import { FRAMES, TITLES } from "./profile.js?v=comp1";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -32,9 +33,13 @@ export function logErr(k, m) { try { const L = jparse(KV.get("ssp-errlog") || "[
 // catches hand-edited saves, which are then restored from the last-known-good backup instead of being trusted.
 export function readErrLog() { const L = jparse(KV.get("ssp-errlog") || "[]"); return Array.isArray(L) ? L : []; }
 const ECON_K = "ssp-econ-v1";
-export function econSum(p) { const srt = (a) => (Array.isArray(a) ? a.slice().sort().join(",") : ""); const str = ECON_K + "|" + (+p.coins || 0) + "|" + (+p.xp || 0) + "|" + srt(p.owned) + "|" + srt(p.flags) + "|" + srt(p.cos) + "|" + ((p.season && +p.season.xp) || 0);
+export function econSum(p) { const srt = (a) => (Array.isArray(a) ? a.slice().sort().join(",") : ""); const str = ECON_K + "|" + (+p.coins || 0) + "|" + (+p.xp || 0) + "|" + srt(p.owned) + "|" + srt(p.flags) + "|" + srt(p.cos) + "|" + ((p.season && +p.season.xp) || 0) + compSig(p);
   let h = 0x811c9dc5, g = 0x01000193; for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h = Math.imul(h ^ c, 16777619) >>> 0; g = (Math.imul(g, 31) + c + (h >>> 7)) >>> 0; } return h.toString(36) + g.toString(36); }
-const ECON = ["coins", "xp", "owned", "flags", "cos", "season"];
+const ECON = ["coins", "xp", "owned", "flags", "cos", "season", "lg", "cx", "rc"];
+// comp1: trophies / contest progress / claimed reward keys join the checksum, but only once they hold something, so a save
+// written by an older build (no such fields) still verifies unchanged
+function compSig(p) { const L = p.lg, X = p.cx, R = p.rc; const has = (L && (L.on || L.off || L.pk || L.dg)) || (Array.isArray(R) && R.length) || (X && X.w);
+  if (!has) return ""; const x = X || {}; return "|lg:" + (+L.on || 0) + "," + (+L.off || 0) + "," + (+L.pk || 0) + "," + (+L.dg || 0) + "," + (L.ss || "") + "," + (L.day || "") + "|cx:" + [x.w, x.wtr, x.wkl, x.wsc, x.m, x.mtr, x.mkl, x.msc].join(",") + "|rc:" + (Array.isArray(R) ? R.slice().sort().join(",") : ""); }
 const sane = (p) => p && typeof p === "object" && Number.isFinite(+p.coins) && +p.coins >= 0 && Number.isFinite(+p.xp) && +p.xp >= 0;
 export const LV_MAX = 100, xpNeed = (n) => Math.round(100 * n ** 1.6);
 export function lvInfo(xp) { let n = 1, x = xp, need = xpNeed(1); while (n < LV_MAX && x >= need) { x -= need; n++; need = xpNeed(n); } return { n, x: Math.floor(x), need }; }
@@ -58,6 +63,9 @@ export function newProfile(name) {
     // identity (M2): avatar "p0".."p15" or "f<flag>", frame/title/banner index, pinned achievements, last 10 matches,
     // games per mode, ranked points, login calendar, free daily spin, cosmetics granted by rewards
     av: "p0", frame: 0, title: 0, banner: 0, pins: [], hist: [], mg: {}, rp: 0, login: { d: "", n: 0 }, spin: "", cos: [], bio: "", hob: [],
+    // comp1: trophies (on = last server-confirmed online total, off = offline part, pk = season peak, ss = season id,
+    // dg/day = offline trophies gained today), local contest progress (cx), claimed reward keys (rc), device secret (dev)
+    lg: { on: 0, off: 0, pk: 0, ss: "", dg: 0, day: "", conq: 0, rank: 0, sync: 0 }, cx: {}, rc: [], dev: "",
   };
 }
 function fixProfile(p) { // fill any missing field from defaults (older or imported profiles)
@@ -72,12 +80,16 @@ function fixProfile(p) { // fill any missing field from defaults (older or impor
   p.xp = Math.max(0, +p.xp || 0); p.coins = Math.max(0, +p.coins || 0); p.flags = p.flags.filter((i) => Number.isInteger(i) && FLAGS[i]);
   while (p.presets.length < 4) p.presets.push(null);
   if (!/^(p([0-9]|1[0-5])|f\d{1,3})$/.test(p.av) || (p.av[0] === "f" && !FLAGS[+p.av.slice(1)])) p.av = "p0";
-  for (const k of ["frame", "title", "banner", "rp"]) p[k] = Math.max(0, Math.floor(+p[k] || 0)); if (p.frame > 6) p.frame = 0; if (p.title > 13) p.title = 0; if (p.banner > 7) p.banner = 0;
-  p.pins = p.pins.filter((x) => typeof x === "string" && Store.ACH.some((a) => a[0] === x)).slice(0, 3); p.cos = p.cos.filter((x) => typeof x === "string" && /^(av|fr|ti|bn):[a-z0-9]{1,4}$/.test(x));
+  for (const k of ["frame", "title", "banner", "rp"]) p[k] = Math.max(0, Math.floor(+p[k] || 0)); if (p.frame >= FRAMES.length) p.frame = 0; if (p.title >= TITLES.length) p.title = 0; // comp1: was > 6 / > 13 (reset frames 7..14 on load) if (p.banner > 7) p.banner = 0;
+  p.pins = p.pins.filter((x) => typeof x === "string" && Store.ACH.some((a) => a[0] === x)).slice(0, 3); p.cos = p.cos.filter((x) => typeof x === "string" && /^(av|fr|ti|bn|bd):[a-z0-9]{1,4}$/.test(x));
   p.hist = p.hist.filter((h) => h && typeof h === "object" && typeof h.m === "string").slice(0, 10); if (!p.mg || typeof p.mg !== "object" || Array.isArray(p.mg)) p.mg = {};
   for (const k of Object.keys(p.mg)) if (typeof p.mg[k] !== "number" || !isFinite(p.mg[k])) delete p.mg[k];
   p.bio = String(p.bio).replace(/[<>]/g, "").slice(0, 90); p.hob = p.hob.filter((x) => typeof x === "string" && /^[a-z]{2,12}$/.test(x)).slice(0, 5);
   if (!p.login || typeof p.login.d !== "string") p.login = { d: "", n: 0 }; p.login.n = Math.max(0, Math.min(6, p.login.n | 0));
+  { const L = p.lg, D = d.lg; for (const k in D) if (typeof L[k] !== typeof D[k]) L[k] = D[k]; for (const k of ["on", "off", "pk", "dg", "rank", "sync"]) L[k] = Math.max(0, Math.min(k === "sync" ? 9e15 : 99999, Math.floor(+L[k] || 0))); L.conq = L.conq ? 1 : 0;
+    if (!/^(\d{4}-\d{2})?$/.test(L.ss)) L.ss = ""; if (!/^(\d{4}-\d{2}-\d{2})?$/.test(L.day)) L.day = "";
+    const X = p.cx; if (!X || typeof X !== "object" || Array.isArray(X)) p.cx = {}; else for (const k of Object.keys(X)) { if (k === "w" || k === "m") { if (typeof X[k] !== "string" || X[k].length > 10) delete X[k]; } else if (["wtr", "wkl", "wsc", "mtr", "mkl", "msc"].includes(k)) X[k] = Math.max(0, Math.min(1e7, Math.floor(+X[k] || 0))); else delete X[k]; }
+    p.rc = p.rc.filter((x) => typeof x === "string" && x.length <= 40).slice(-300); if (!/^([0-9a-f]{32})?$/.test(p.dev)) p.dev = ""; }
   return p;
 }
 
@@ -175,6 +187,18 @@ export class Store {
     catch (e) { p.coins = snap.coins; p.flags = snap.flags; p.owned = snap.owned; p.cos = snap.cos; logErr("buy", e); return "saveFail"; }
     finally { this._buying = false; }
   }
+  // comp1: atomic reward grant (contest / season / milestone). key is unique per reward (period + contest + rank/milestone):
+  // a key already in p.rc is refused, so a reward can never be paid twice on this profile; all-or-nothing on a failed save.
+  grantReward(key, rw) {
+    const p = this.p; key = String(key || ""); if (!key || key.length > 40) return "bad"; if (this._granting) return "busy";
+    if (p.rc.includes(key)) return "claimed"; const coins = Math.max(0, Math.min(10000, Math.floor(+(rw && rw.coins) || 0))), cos = ((rw && rw.cos) || []).filter((c) => typeof c === "string" && /^(av|fr|ti|bn|bd):[a-z0-9]{1,4}$/.test(c));
+    this._granting = true; const snap = { coins: p.coins, cos: p.cos.slice(), rc: p.rc.slice() };
+    try { p.coins += coins; for (const c of cos) if (!p.cos.includes(c)) p.cos.push(c); p.rc.push(key); if (p.rc.length > 300) p.rc.splice(0, p.rc.length - 300);
+      const ok = this.flush(); if (!ok) { p.coins = snap.coins; p.cos = snap.cos; p.rc = snap.rc; this.flush(); logErr("grant", "save failed, rolled back " + key); return "saveFail"; }
+      this._backup(JSON.stringify({ v: 1, a: this.acc }), JSON.stringify(this.guest), true); return "ok"; }
+    catch (e) { p.coins = snap.coins; p.cos = snap.cos; p.rc = snap.rc; logErr("grant", e); return "saveFail"; }
+    finally { this._granting = false; }
+  }
   lockLeft(k) { const f = this.fails[k]; return f && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 1000) : 0; }
   _fail(k) { const f = this.fails[k] || (this.fails[k] = { n: 0, until: 0, x: 0 }); if (++f.n >= 5) { f.n = 0; f.until = Date.now() + Math.min(900000, 30000 * 2 ** f.x++); } }
 
@@ -188,7 +212,7 @@ export class Store {
     if (this.acc[k] || this._old()[k]) return { err: "errTaken" };
     const s = crypto.getRandomValues(new Uint8Array(16)), h = await pwHash(pw, s, IT);
     const p = newProfile(u); // keep anything earned as guest this session
-    if (this.guest.xp > 0) { p.xp = this.guest.xp; p.coins = this.guest.coins; p.stats = { ...this.guest.stats }; p.flags = [...this.guest.flags]; p.ach = { ...this.guest.ach }; p.bests = JSON.parse(JSON.stringify(this.guest.bests)); p.tut = this.guest.tut; }
+    if (this.guest.xp > 0) { p.xp = this.guest.xp; p.coins = this.guest.coins; p.stats = { ...this.guest.stats }; p.flags = [...this.guest.flags]; p.ach = { ...this.guest.ach }; p.bests = JSON.parse(JSON.stringify(this.guest.bests)); p.tut = this.guest.tut; p.lg = { ...this.guest.lg }; p.cx = { ...this.guest.cx }; p.dev = this.guest.dev; this.guest.dev = ""; this.guest.lg.on = 0; } // comp1: the online id moves with the progress
     this.acc[k] = { u, email: em, h, s: hex(s), it: IT, p }; this.cur = k; this.flush(); return { ok: true };
   }
   async signIn(u, pw, remember) {

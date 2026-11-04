@@ -1,14 +1,19 @@
 // super-snake-online — Cloudflare Worker + Durable Object (one DO per room). No database, no payments, nothing stored.
 // The room runs the SAME sim.js as the client at 30 Hz and is authoritative for movement, food, mass, collisions and kills.
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
-import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName } from "./sim.js";
+import { Sim, C, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies } from "./sim.js";
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 3; // v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 4; // v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 // look1: bots never share a look with any live snake (players included)
 const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
 const BOT_SKINS = (i) => ({ k: i % 3 === 0 ? "flag" : "skin", i: i % 3 === 0 ? (i * 37) % 197 : i % 24, e: i % 4, t: 0, n: 0, av: i % 3 === 0 ? "f" + ((i * 37) % 197) : "p" + ((i * 7) % 24), fr: i % 5 === 0 ? 0 : 1 + (i % 4) });
 const cors = { "access-control-allow-origin": "*", "content-type": "application/json" };
+const BOARD = "board-v1"; // name of the single leaderboard object (same Room class, SQLite-backed; no new migration needed)
+// anonymous device player id: the client keeps a random secret (pk); the public id is a hash of it, so nobody can write to
+// or claim for another player's id without the secret. Sign-in can later link a pid to an account.
+async function pidOf(pk) { if (typeof pk !== "string" || !/^[0-9a-f]{32,64}$/.test(pk)) return ""; const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("ssp-pid|" + pk)); return [...new Uint8Array(h)].slice(0, 10).map((b) => b.toString(16).padStart(2, "0")).join(""); }
+const J = (o, st = 200) => new Response(JSON.stringify(o), { status: st, headers: cors });
 
 export default {
   async fetch(req, env) {
@@ -22,6 +27,14 @@ export default {
       if (!/^[a-z0-9-]{1,24}$/.test(room)) room = "pub-1";
       const id = env.ROOMS.idFromName(room);
       return env.ROOMS.get(id).fetch(new Request("https://room/ws?" + url.searchParams.toString() + "&name_room=" + room, req));
+    }
+    // comp1: public leaderboard / contest / season API -> the one board object (SQLite storage). /b/rec is internal only (room -> board).
+    if (url.pathname === "/lb/top" || url.pathname === "/lb/me" || url.pathname === "/lb/claim") {
+      if (req.method === "OPTIONS") return new Response(null, { headers: { ...cors, "access-control-allow-methods": "GET, POST", "access-control-allow-headers": "content-type", "access-control-max-age": "86400" } });
+      const origin = req.headers.get("Origin"); if (origin && !ORIGINS.some((r) => r.test(origin))) return new Response("origin not allowed", { status: 403 });
+      if (req.method === "POST" && +(req.headers.get("content-length") || 0) > 600) return new Response('{"err":"big"}', { status: 413, headers: cors });
+      const body = req.method === "POST" ? await req.text() : null;
+      return env.ROOMS.get(env.ROOMS.idFromName(BOARD)).fetch(new Request("https://board/b/" + url.pathname.slice(4) + url.search, { method: req.method === "POST" ? "POST" : "GET", body: body ? body.slice(0, 600) : null }));
     }
     return new Response("Super Snake online server", { headers: { "content-type": "text/plain" } });
   },
@@ -40,10 +53,11 @@ export class Room {
   fill() {
     if (this.noBots) return;
     const alive = this.sim.snakes.filter((s) => s.alive).length; let want = TARGET_SNAKES - alive;
-    while (want-- > 0) { const i = this.botSeq++; this.sim.addSnake(pickBotName(this.sim.snakes, i), uniqSkin(this.sim.snakes, i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5] }); }
+    while (want-- > 0) { const i = this.botSeq++; const b = this.sim.addSnake(pickBotName(this.sim.snakes, i), uniqSkin(this.sim.snakes, i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5] }); if (b) b.tr = botTrophies(i); }
   }
   async fetch(req) {
     const url = new URL(req.url);
+    if (url.pathname.startsWith("/b/")) return this.board(req, url); // comp1: this instance is the board object
     if (!this.sim) this.init(url.searchParams);
     const humans = [...this.clients].length;
     const pair = new WebSocketPair(); const [client, server] = Object.values(pair); server.accept();
@@ -58,7 +72,7 @@ export class Room {
   }
   drop(c) {
     if (!this.clients.has(c)) return; this.clients.delete(c);
-    if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4);
+    if (c.snake && c.snake.alive) { this.sim.kill(c.snake, 0, 4); this.score(c, c.snake); }
     if (!this.clients.size && this.timer) { clearInterval(this.timer); this.timer = null; }
   }
   send(c, m) { try { c.ws.send(typeof m === "string" ? m : m); } catch (_) {} }
@@ -66,7 +80,7 @@ export class Room {
   snakeMsg(s) { // full description of one snake incl. its recent path (enough to draw the whole body)
     const pts = []; const k = Math.min(s.n, Math.ceil(s.len / (C.SPEED * TICK)) + 4);
     for (let i = k - 1; i >= 0; i--) pts.push(Math.round(s.sx(i) * 100) / 100, Math.round(s.sy(i) * 100) / 100);
-    return { id: s.id, name: s.name, skin: s.skin, bot: s.bot ? 1 : 0, m: Math.round(s.m), a: s.a, path: pts, tick: this.sim.tick };
+    return { id: s.id, name: s.name, skin: s.skin, bot: s.bot ? 1 : 0, m: Math.round(s.m), a: s.a, path: pts, tick: this.sim.tick, tr: Number.isFinite(s.tr) ? s.tr : -1 };
   }
   onMsg(c, data) {
     const now = Date.now(); if (now - c.win > 1000) { c.win = now; c.msgs = 0; } if (++c.msgs > 90) { c.ws.close(4008, "rate"); return; }
@@ -80,6 +94,7 @@ export class Room {
     if (!m || typeof m.t !== "string") return;
     if (m.t === "hello") {
       c.name = cleanName(m.name); c.skin = sanitizeSkin(m.skin); c.joined = true;
+      if (!c.pidP && typeof m.pk === "string") c.pidP = pidOf(m.pk).then(async (pid) => { c.pid = pid; if (!pid || !this.ranked()) return; try { const r = await (await this.boardStub().fetch("https://board/b/get?pid=" + pid)).json(); if (r && Number.isFinite(r.tr)) { c.tr = r.tr; if (c.snake) c.snake.tr = r.tr; this.send(c, JSON.stringify({ t: "tro0", tr: r.tr, ss: r.ss })); } } catch (_) {} });
       this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, tick: this.sim.tick, dt: TICK, R: this.sim.R, snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
       this.send(c, this.foodFull());
       this.send(c, JSON.stringify({ t: "pus", l: this.sim.pus.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
@@ -92,6 +107,7 @@ export class Room {
       // a human replaces one bot so rooms stay the same size
       const bot = this.sim.snakes.find((s) => s.bot && s.alive); if (bot && !this.noBots) { bot.alive = false; this.sim.evDie.push(bot.id, 0, 5); }
       const s = this.sim.addSnake(c.name, c.skin, {}); c.snake = s; c.q.length = 0; c.ack = 0xffff; c.extra = 0;
+      s.tr = c.tr; c.life = { t0: Date.now(), best: 99, field: this.sim.snakes.filter((o) => o.alive).length, bm: s.m, done: false }; // comp1: what this life is judged on
       this.send(c, JSON.stringify({ t: "you", id: s.id, x: s.x, y: s.y, a: s.a, m: s.m, tick: this.sim.tick, seq: (m.seq | 0) & 0xffff }));
       c.q.length = 0; c.seq0 = (m.seq | 0) & 0xffff; c.buf = true;
     } else if (m.t === "die") { // the client saw its own head touch a body: accept at once (it can only hurt itself), credit the hit snake
@@ -103,6 +119,78 @@ export class Room {
       const s = c.snake, e = m.e | 0; if (!s || !s.alive || e < 0 || e > 5 || now - (c.lastEmo || 0) < 1000) return; c.lastEmo = now;
       const msg = JSON.stringify({ t: "emo", id: s.id, e }); for (const o of this.clients) if (o !== c && o.joined) this.send(o, msg);
     } else if (m.t === "ping") this.send(c, JSON.stringify({ t: "pong", c: m.c, s: Date.now(), tick: this.sim.tick }));
+  }
+  // ---------- comp1: trophies (server-decided), board object (leaderboards, weekly/monthly contests, monthly seasons) ----------
+  ranked() { return this.room.startsWith("pub-") && !this.noBots; } // private rooms never move trophies (no farming with friends)
+  boardStub() { return this.env.ROOMS.get(this.env.ROOMS.idFromName(BOARD)); }
+  score(c, s) { // one finished life of a human -> trophies, judged only on what this server saw
+    const L = c.life; if (!L || L.done) return; L.done = true; if (!c.pid || !this.ranked()) return;
+    const alive = this.sim.snakes.filter((o) => o.alive).length, field = Math.max(L.field, alive + 1, 2);
+    const atDeath = 1 + this.sim.snakes.filter((o) => o.alive && o !== s && o.m > s.m).length, place = Math.min(L.best, atDeath);
+    const kills = s.kills | 0, life = (Date.now() - L.t0) / 1000, sc = Math.round(Math.max(L.bm, s.m));
+    const d = trophyDelta({ place, field, kills, life, t: c.tr | 0, online: 1 });
+    const body = JSON.stringify({ pid: c.pid, name: c.name, d, kl: kills, sc: life >= TROPHY.LIFE_MIN ? sc : 0 });
+    this.boardStub().fetch("https://board/b/rec", { method: "POST", body }).then((r) => r.json()).then((r) => {
+      if (!r || !r.ok) return; c.tr = r.tr; if (c.snake === s) s.tr = r.tr;
+      if (this.clients.has(c)) this.send(c, JSON.stringify({ t: "tro", d: r.d, tr: r.tr, ss: r.ss, pl: place, f: field, k: kills, sc, life: Math.round(life) }));
+    }).catch(() => { if (this.clients.has(c)) this.send(c, JSON.stringify({ t: "tro", err: 1 })); });
+  }
+  db() {
+    if (this._db) return this._db; const q = this.state.storage.sql; this._db = q; this.lbc = new Map();
+    q.exec("CREATE TABLE IF NOT EXISTS pl (pid TEXT PRIMARY KEY, name TEXT, tr INTEGER, ss TEXT, pk INTEGER, wk TEXT, wtr INTEGER, wkl INTEGER, wsc INTEGER, mo TEXT, mtr INTEGER, mkl INTEGER, msc INTEGER, n INTEGER, upd INTEGER)");
+    for (const [n, c] of [["ss", "tr"], ["wk", "wtr"], ["wk", "wkl"], ["wk", "wsc"], ["mo", "mtr"], ["mo", "mkl"], ["mo", "msc"]]) q.exec(`CREATE INDEX IF NOT EXISTS i_${n}_${c} ON pl(${n}, ${c} DESC)`);
+    q.exec("CREATE TABLE IF NOT EXISTS fin (per TEXT, met TEXT, pid TEXT, rk INTEGER, v INTEGER, cl INTEGER DEFAULT 0, PRIMARY KEY (per, met, pid))");
+    q.exec("CREATE INDEX IF NOT EXISTS i_fin_pid ON fin(pid, cl)"); q.exec("CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT)");
+    return q;
+  }
+  // period rollover (lazy, on the first request of a new week / month): freeze the final top lists that earn rewards
+  roll(now) {
+    const q = this.db(), get = (k) => { const r = q.exec("SELECT v FROM meta WHERE k = ?", k).toArray()[0]; return r ? r.v : ""; }, set = (k, v) => q.exec("INSERT OR REPLACE INTO meta (k, v) VALUES (?, ?)", k, v);
+    const W = weekId(now), M = seasonId(now), w0 = get("w"), m0 = get("m");
+    const snap = (per, met, col, where, id, lim) => q.exec(`INSERT OR IGNORE INTO fin (per, met, pid, rk, v) SELECT ?, ?, pid, ROW_NUMBER() OVER (ORDER BY ${col} DESC, upd ASC), ${col} FROM pl WHERE ${where} ORDER BY ${col} DESC, upd ASC LIMIT ${lim}`, per, met, ...id);
+    if (w0 !== W) { if (w0) for (const [met, col] of [["tr", "wtr"], ["kl", "wkl"], ["sc", "wsc"]]) snap("w:" + w0, met, col, `wk = ? AND ${col} > 0`, [w0], 50); set("w", W); this.lbc.clear(); }
+    if (m0 !== M) { if (m0) { for (const [met, col] of [["tr", "mtr"], ["kl", "mkl"], ["sc", "msc"]]) snap("m:" + m0, met, col, `mo = ? AND ${col} > 0`, [m0], 100); snap("s:" + m0, "cq", "tr", "ss = ? AND tr >= ?", [m0, TROPHY.CONQ_MIN], TROPHY.CONQ_N); } set("m", M); this.lbc.clear(); }
+    return { W, M };
+  }
+  async board(req, url) {
+    try {
+      const now = Date.now(), { W, M } = this.roll(now), q = this.db(), op = url.pathname.slice(3);
+      const row = (pid) => q.exec("SELECT * FROM pl WHERE pid = ?", pid).toArray()[0] || null;
+      const view = (r) => { // the player's state as of now (season soft reset + period counters applied, nothing written)
+        if (!r) return { tr: 0, ss: M, pk: 0, wtr: 0, wkl: 0, wsc: 0, mtr: 0, mkl: 0, msc: 0 };
+        const o = { ...r }; if (o.ss !== M) { o.tr = seasonCarry(o.tr); o.pk = o.tr; o.ss = M; } if (o.wk !== W) { o.wk = W; o.wtr = o.wkl = o.wsc = 0; } if (o.mo !== M) { o.mo = M; o.mtr = o.mkl = o.msc = 0; } return o; };
+      let B = {}; if (req.method === "POST") { try { B = JSON.parse((await req.text()).slice(0, 600)) || {}; } catch (_) { B = {}; } }
+      if (op === "get") { const pid = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400); const v = view(row(pid)); return J({ tr: v.tr, ss: M }); }
+      if (op === "rec") { // internal: a room reports one finished life
+        const pid = String(B.pid || ""); if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400);
+        const d = Math.max(TROPHY.ON_MIN, Math.min(TROPHY.ON_MAX, B.d | 0)), kl = Math.max(0, Math.min(60, B.kl | 0)), sc = Math.max(0, Math.min(1e6, B.sc | 0));
+        const v = view(row(pid)), tr = Math.max(0, Math.min(TROPHY.MAX, v.tr + d)), ap = tr - v.tr;
+        q.exec("INSERT OR REPLACE INTO pl (pid, name, tr, ss, pk, wk, wtr, wkl, wsc, mo, mtr, mkl, msc, n, upd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          pid, cleanName(B.name), tr, M, Math.max(v.pk | 0, tr), W, (v.wtr | 0) + ap, (v.wkl | 0) + kl, Math.max(v.wsc | 0, sc), M, (v.mtr | 0) + ap, (v.mkl | 0) + kl, Math.max(v.msc | 0, sc), ((v.n | 0) + 1), now);
+        return J({ ok: 1, d: ap, tr, ss: M });
+      }
+      if (op === "top") { // ?k=tr|wtr|wkl|wsc|mtr|mkl|msc  -> top 50 (cached 20 s; ids shown shortened)
+        const k = url.searchParams.get("k") || "tr"; if (!["tr", "wtr", "wkl", "wsc", "mtr", "mkl", "msc"].includes(k)) return J({ err: "k" }, 400);
+        const c = this.lbc.get(k); if (c && now - c.t < 20000) return J(c.o);
+        const where = k === "tr" ? "ss = ?" : k[0] === "w" ? `wk = ? AND ${k} > 0` : `mo = ? AND ${k} > 0`, per = k === "tr" || k[0] === "m" ? M : W;
+        const list = q.exec(`SELECT pid, name, ${k} AS v FROM pl WHERE ${where} ORDER BY ${k} DESC, upd ASC LIMIT 50`, per).toArray().map((r, i) => ({ r: i + 1, n: r.name, v: r.v, id: r.pid.slice(0, 6) }));
+        const o = { k, per, list, conqN: TROPHY.CONQ_N, conqMin: TROPHY.CONQ_MIN, t: now }; this.lbc.set(k, { t: now, o }); return J(o);
+      }
+      if (op === "me" || op === "claim") {
+        const pid = await pidOf(String(B.pk || "")); if (!pid) return J({ err: "pk" }, 400);
+        if (op === "claim") { const per = String(B.per || ""), met = String(B.met || ""); if (!/^[wms]:\d{4}-(W\d{2}|\d{2})$/.test(per) || !["tr", "kl", "sc", "cq"].includes(met)) return J({ err: "bad" }, 400);
+          const r = q.exec("SELECT rk, v FROM fin WHERE per = ? AND met = ? AND pid = ? AND cl = 0", per, met, pid).toArray()[0]; if (!r) return J({ err: "none" });
+          q.exec("UPDATE fin SET cl = 1 WHERE per = ? AND met = ? AND pid = ?", per, met, pid); return J({ ok: 1, per, met, rk: r.rk, v: r.v }); }
+        const v = view(row(pid)), rank = (col, val, where, per) => (val > 0 ? q.exec(`SELECT COUNT(*) AS n FROM pl WHERE ${where} AND ${col} > ?`, per, val).one().n + 1 : 0);
+        const rk = rank("tr", v.tr, "ss = ?", M);
+        const out = { pid: pid.slice(0, 6), tr: v.tr, ss: M, pk: v.pk | 0, rank: rk, conq: rk > 0 && rk <= TROPHY.CONQ_N && v.tr >= TROPHY.CONQ_MIN ? 1 : 0, w: W, m: M,
+          c: { w_rush: [v.wtr | 0, rank("wtr", v.wtr | 0, "wk = ?", W)], w_hunt: [v.wkl | 0, rank("wkl", v.wkl | 0, "wk = ?", W)], w_score: [v.wsc | 0, rank("wsc", v.wsc | 0, "wk = ?", W)],
+            m_rush: [v.mtr | 0, rank("mtr", v.mtr | 0, "mo = ?", M)], m_hunt: [v.mkl | 0, rank("mkl", v.mkl | 0, "mo = ?", M)], m_score: [v.msc | 0, rank("msc", v.msc | 0, "mo = ?", M)] },
+          claims: q.exec("SELECT per, met, rk, v FROM fin WHERE pid = ? AND cl = 0 LIMIT 20", pid).toArray(), t: now };
+        return J(out);
+      }
+      return J({ err: "op" }, 404);
+    } catch (e) { return J({ err: "server", m: String(e && e.message).slice(0, 120) }, 500); }
   }
   foodFull() {
     const S = this.sim, idx = []; for (let i = 0; i < S.FM; i++) if (S.fa[i]) idx.push(i);
@@ -130,6 +218,7 @@ export class Room {
     const dead = []; for (let i = 0; i < S.evDie.length; i += 3) dead.push([S.evDie[i], S.evDie[i + 1], S.evDie[i + 2]]);
     for (const id of S.evNew) { const s = S.byId.get(id); if (s && s.alive) this.bcast(JSON.stringify({ t: "sn", ...this.snakeMsg(s) })); }
     for (const [id, by, cause] of dead) this.bcast(JSON.stringify({ t: "dead", id, by, cause }));
+    if (dead.length) for (const c of this.clients) if (c.snake && !c.snake.alive && c.life && !c.life.done && dead.some((d) => d[0] === c.snake.id)) this.score(c, c.snake);
     if (S.evPuNew.length) this.bcast(JSON.stringify({ t: "pu+", l: S.evPuNew.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
     if (S.evPu.length) { const l = []; for (let i = 0; i < S.evPu.length; i += 3) l.push([S.evPu[i].id, S.evPu[i + 1], S.evPu[i].k, S.evPu[i + 2] || []]); this.bcast(JSON.stringify({ t: "pu-", l })); }
     for (let i = 0; i < S.evShield.length; i += 2) this.bcast(JSON.stringify({ t: "sh", id: S.evShield[i], by: S.evShield[i + 1] }));
@@ -156,7 +245,8 @@ export class Room {
     for (const [id] of dead) { const s = S.byId.get(id); if (s) S.removeSnake(s); }
     if (S.tick % 30 === 0) {
       this.fill();
-      const lb = alive.slice().sort((a, b2) => b2.m - a.m).slice(0, 10).map((s) => [s.id, Math.round(s.m), s.kills]);
+      const srt = alive.slice().sort((a, b2) => b2.m - a.m), lb = srt.slice(0, 10).map((s) => [s.id, Math.round(s.m), s.kills]);
+      for (const c of this.clients) { const L = c.life, s = c.snake; if (!L || L.done || !s || !s.alive) continue; const r = srt.indexOf(s) + 1; if (r > 0 && r < L.best) L.best = r; if (srt.length > L.field) L.field = srt.length; if (s.m > L.bm) L.bm = s.m; }
       this.bcast(JSON.stringify({ t: "lb", lb, humans: [...this.clients].filter((c) => c.joined).length }));
     }
   }

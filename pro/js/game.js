@@ -1,17 +1,19 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=perf3"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=perf3";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=perf3";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=perf3";
-import { NetBackend } from "./net.js?v=perf3";
-import { t, fmtNum } from "./i18n.js?v=perf3";
-import { haptic } from "./audio.js?v=perf3";
-import { rankOf, rpDelta } from "./profile.js?v=perf3";
-import { Replay } from "./replay.js?v=perf3";
-import { Governor } from "./gov.js?v=perf3"; // perf2: adaptive render governor
-import { emit } from "./events.js?v=perf3"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=comp1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=comp1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=comp1";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=comp1";
+import { NetBackend } from "./net.js?v=comp1";
+import { t, fmtNum } from "./i18n.js?v=comp1";
+import { haptic } from "./audio.js?v=comp1";
+import { rankOf, rpDelta } from "./profile.js?v=comp1";
+import { Replay } from "./replay.js?v=comp1";
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=comp1"; // comp1
+import { onServerTrophy } from "./compui.js?v=comp1";
+import { Governor } from "./gov.js?v=comp1"; // perf2: adaptive render governor
+import { emit } from "./events.js?v=comp1"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -133,9 +135,11 @@ export class Game {
       onStatus: (st, n) => this.onNet(st, n), onAnyDeath: (s, by) => this.onAnyDeath(s, by),
       onPu: (s, k, hit, p) => this.onPu(s, k, hit, p), onShield: (s) => this.onShield(s),
       onEvt: (e) => this.onEvt(e), onMeteor: (M) => this.onMeteor(M), onImpact: (x, y, r) => this.onImpact(x, y, r),
+      onTrophy: (m) => this.onTrophy(m),
     };
+    this.troMsg = null;
     if (cfg.mode === "online") {
-      this.backend = new NetBackend({ room: cfg.room, name: p.name, skin, cb, bots: cfg.bots }); this.backend.connect(); this.hud.net(t("connecting"));
+      this.backend = new NetBackend({ room: cfg.room, name: p.name, skin, cb, bots: cfg.bots, pk: devKey(this.app.store) }); this.backend.connect(); this.hud.net(t("connecting"));
     } else {
       this.backend = new LocalBackend(cfg.mode, { diff: cfg.diff, seed: cfg.seed ?? (Math.random() * 1e9) | 0 }, cb); this.backend.spawn(p.name, skin);
       if (cfg.mode === "time") this.stats.timeLeft = MODES.time.dur;
@@ -321,6 +325,10 @@ export class Game {
       this.r.ring(p.x, p.y, [1, 0.85, 0.3], 20); this.r.kick && this.r.kick(0.4, [1, 0.95, 0.8], 0.25);
     } else { A.audio.play("defeat"); this.endAt = performance.now() + 600; this.hud.cinematic(t("defeat"), t("def_" + reason), true); A.input.enabled = false; }
   }
+  onTrophy(m) { // comp1
+    if (m.t === "tro0") { applyServer(this.app.store, m); if (this.backend && this.backend.me) this.backend.me.tr = trophies(this.app.store.p); return; }
+    if (this.ended && this.app.ui.lastCmp && this.app.ui.lastCmp.pending) onServerTrophy(this.app.ui, m); else this.troMsg = m;
+  }
   finish(reason) {
     if (this.ended) return; this.ended = true; this.victory = null; this.killcam = null; const A = this.app, S = A.store, p = S.p, st = this.stats, me = this.backend && this.backend.me;
     A.input.enabled = false; A.audio.boost(false);
@@ -344,10 +352,15 @@ export class Game {
     // ranked points + history (last 10) + games per mode for the profile
     const rk0 = rankOf(p.rp).i, rp = rpDelta({ mode: this.mode, rank: typeof rank === "number" ? rank : 99, win: this.win, kills: st.kills }); p.rp = Math.max(0, p.rp + rp); const rankUp = rankOf(p.rp).i > rk0;
     S.pushHistory({ m: this.mode, s: score, k: st.kills, r: typeof rank === "number" ? rank : 0, w: this.win ? 1 : 0, ms: Math.round(st.best), t: Math.round(dur), d: Date.now(), rp });
+    // comp1: trophies. Offline: decided now (capped). Online: the server's "tro" for this life (maybe already here) decides.
+    const field = Math.max(2, st.field | 0, typeof rank === "number" ? rank : 2), room = this.cfg.room || "";
+    let cmp = afterMatch(S, { mode: this.mode, place: this.win ? 1 : typeof rank === "number" ? rank : field, field, kills: st.kills, life: this.mode === "online" ? Math.max(st.life, 0) : dur, score, online: this.mode === "online", priv: this.mode === "online" && !!room && !/^pub-/.test(room) });
+    if (cmp.pending && this.troMsg) { const m = this.troMsg; this.troMsg = null; const res = applyServer(S, m); cmp = m.err ? { none: "err" } : { ...res, d: res.d }; }
+    else if (cmp.pending) setTimeout(() => { const U = A.ui; if (U.lastCmp === cmp && cmp.pending) onServerTrophy(U, { err: 1 }); }, 9000);
     const ach = S.checkAch(); S.save();
     const title = this.win ? t("victory") : reason === "time" ? t("timeUp") : this.mode === "zen" ? t("zenDone") : t("gameOver");
     const sub = this.win ? t("vic_" + this.mode) : this.killer ? t("killedBy", { n: this.killer.name }) : this.deathCause === 6 ? t("meteorDeath") : this.deathCause === 3 && this.mode === "br" ? t("stormDeath") : this.deathCause === 1 ? t("hitWall") : "";
-    this.watching = false; A.ui.showResults({ replay: !!(this.rec && this.rec.clip), killer: this.killer && this.killer.alive && !this.win ? this.killer : null, seasonXp: xp, pu: st.pu || 0, title, sub, score, mass: Math.round(st.best), kills: st.kills, rank, time: dur, xp, coins: coins + lv.coins, lv, newBest: pos === 0 && score > 0, missions, ach, mode: this.mode, wave: st.wave, win: this.win, tiers, mp, rp, rankUp });
+    this.watching = false; A.ui.showResults({ cmp, replay: !!(this.rec && this.rec.clip), killer: this.killer && this.killer.alive && !this.win ? this.killer : null, seasonXp: xp, pu: st.pu || 0, title, sub, score, mass: Math.round(st.best), kills: st.kills, rank, time: dur, xp, coins: coins + lv.coins, lv, newBest: pos === 0 && score > 0, missions, ach, mode: this.mode, wave: st.wave, win: this.win, tiers, mp, rp, rankUp });
     if (lv.up) A.audio.play("level"); else if (ach.length) A.audio.play("ach");
     if (pos === 0 && score > 0 && this.r.confetti && me) this.r.confetti(me.x, me.y, 120);
   }
@@ -517,7 +530,7 @@ export class Game {
     const b = this.backend, me = b.me, st = this.stats; if (!b) return;
     let all = b.sim ? b.sim.snakes.filter((s) => s.alive) : [...b.mirrors.values()].map((m) => m.s).filter((s) => s.alive);
     if (me && me.alive && !b.sim) all.push(me);
-    all.sort((a, c) => c.m - a.m); const rank = me && me.alive ? all.indexOf(me) + 1 : 0; if (rank > 0) st.rankBest = Math.min(st.rankBest, rank);
+    all.sort((a, c) => c.m - a.m); const rank = me && me.alive ? all.indexOf(me) + 1 : 0; if (rank > 0) st.rankBest = Math.min(st.rankBest, rank); if (all.length > (st.field | 0)) st.field = all.length; // comp1: field size for trophies
     let top = all.slice(0, 5), scoreList = null;
     if (this.xm && this.xm.lb) scoreList = this.xm.lb(this); // Track B
     if (this.mode === "koth") scoreList = [...this.kothPts.entries()].sort((a, c) => c[1] - a[1]).slice(0, 5).map(([id, v]) => ({ s: this.findSnake(id), v: Math.floor(v) })).filter((x) => x.s);

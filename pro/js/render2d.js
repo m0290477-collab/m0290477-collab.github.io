@@ -2,11 +2,11 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=perf3";
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=perf3";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=perf3";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=perf3";
-import { on as onEv } from "./events.js?v=perf3";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=comp1";
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=comp1";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=comp1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=comp1";
+import { on as onEv } from "./events.js?v=comp1";
 const NO2 = 220;
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle cap
 const GOV_PR = [3, 2, 1.5, 1.25], GOV_PC = [300, 180, 100, 50];

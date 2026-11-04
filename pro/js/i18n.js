@@ -464,6 +464,8 @@ export function t(k, v) {
   if (v) for (const key in v) s = s.split("{" + key + "}").join(v[key]);
   return s;
 }
+// comp1: feature modules register their own rows ([en, ar, ...]; a missing language falls back to English)
+export function addStrings(o) { for (const k in o) if (!S[k] && Array.isArray(o[k])) S[k] = o[k]; }
 export function achDesc(id) { const r = AD[id]; return r ? (LANG === "ar" ? r[1] : r[0]) : ""; }
 export function applyI18n(root = document) {
   root.querySelectorAll("[data-i]").forEach((el) => { el.textContent = t(el.dataset.i); });

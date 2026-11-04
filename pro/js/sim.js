@@ -573,7 +573,42 @@ export function sanitizeSkin(d) {
   o.i = Math.max(0, Math.min(400, d.i | 0)); o.p = Math.max(0, Math.min(15, d.p | 0));
   if (Array.isArray(d.c)) o.c = d.c.slice(0, 3).map((h) => (typeof h === "string" && /^#[0-9a-fA-F]{6}$/.test(h) ? h : "#18c964"));
   o.e = Math.max(0, Math.min(11, d.e | 0)); o.t = Math.max(0, Math.min(12, d.t | 0)); o.n = Math.max(0, Math.min(19, d.n | 0));
-  if (typeof d.av === "string" && /^(p([0-9]|1[0-9]|2[0-3])|f\d{1,3})$/.test(d.av)) o.av = d.av; o.fr = Math.max(0, Math.min(14, d.fr | 0)); // profile avatar + frame (HUD rows)
+  if (typeof d.av === "string" && /^(p([0-9]|1[0-9]|2[0-3])|f\d{1,3})$/.test(d.av)) o.av = d.av; o.fr = Math.max(0, Math.min(17, d.fr | 0)); /* comp1: 15..17 competition frames */ // profile avatar + frame (HUD rows)
   return o;
 }
 export const cleanName = (n) => String(n || "").replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, 16) || "Guest";
+
+// ---------- comp1: trophies, leagues, seasons, contests. Shared by the client and the online server (pure, no DOM). ----------
+// Online the server alone computes the delta from what IT saw (placement, kills, life); offline the same rule runs at half
+// weight with a per-match / per-day cap and a ceiling (Diamond and above need online play).
+export const LEAGUES = [{ id: "bronze", t0: 0, step: 80 }, { id: "silver", t0: 400, step: 120 }, { id: "gold", t0: 1000, step: 160 }, { id: "platinum", t0: 1800, step: 200 }, { id: "diamond", t0: 2800, step: 260 }, { id: "crown", t0: 4100, step: 340 }];
+export const TROPHY = { ON_MAX: 40, ON_MIN: -16, OFF_MAX: 12, OFF_DAY: 120, OFF_CEIL: 2800, LIFE_MIN: 15, SAFE: 300, CONQ_N: 50, CONQ_MIN: 4100, MAX: 99999 };
+export function leagueOf(t) {
+  t = Math.max(0, Math.min(TROPHY.MAX, Math.floor(+t || 0))); let li = 0; while (li < LEAGUES.length - 1 && t >= LEAGUES[li + 1].t0) li++;
+  const L = LEAGUES[li], d = Math.min(4, Math.floor((t - L.t0) / L.step)), lo = L.t0 + d * L.step, hi = d < 4 ? lo + L.step : li < LEAGUES.length - 1 ? LEAGUES[li + 1].t0 : 0;
+  return { li, id: L.id, tier: 5 - d, div: li * 5 + d, lo, hi, t }; // tier 5 = V (lowest) .. 1 = I; hi 0 = open-ended (Crown I)
+}
+// one finished life / match -> trophy change. place 1 = best; field = snakes in the match
+export function trophyDelta(o) {
+  const f = Math.max(2, Math.min(200, o.field | 0)), pl = Math.max(1, Math.min(f, o.place | 0 || f)), k = Math.max(0, Math.min(40, o.kills | 0)), q = (pl - 1) / (f - 1), t = Math.max(0, o.t | 0);
+  let d = pl === 1 ? 22 : pl <= 3 ? 15 : q <= 0.2 ? 9 : q <= 0.4 ? 4 : q <= 0.6 ? 0 : q <= 0.8 ? -5 : -9;
+  d += Math.min(16, k * 2);
+  if ((+o.life || 0) < TROPHY.LIFE_MIN && d > 0) d = 0; // a quick death never gains
+  const li = leagueOf(t).li;
+  if (d < 0) d = t < TROPHY.SAFE ? 0 : Math.round(d * (1 + li * 0.12)); else d = Math.round(d * (1 - li * 0.06)); // higher leagues: gain a bit less, lose a bit more
+  if (!o.online) d = d > 0 ? Math.min(TROPHY.OFF_MAX, Math.round(d * 0.5)) : Math.round(d * 0.5);
+  d = Math.max(TROPHY.ON_MIN, Math.min(TROPHY.ON_MAX, d)); return Math.max(-t, d);
+}
+// monthly season soft reset: everything above 1,000 trophies is halved
+export const seasonCarry = (t) => { t = Math.max(0, Math.floor(+t || 0)); return t <= 1000 ? t : 1000 + Math.floor((t - 1000) * 0.5); };
+export const seasonId = (ms) => { const d = new Date(ms); return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0"); };
+export const weekId = (ms) => { const d = new Date(ms), t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())), day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = Date.UTC(t.getUTCFullYear(), 0, 1); return t.getUTCFullYear() + "-W" + String(Math.ceil(((t - y0) / 86400000 + 1) / 7)).padStart(2, "0"); };
+export const periodId = (per, ms) => (per === "w" ? weekId(ms) : seasonId(ms));
+// end of the current period (UTC): week = next Monday 00:00, month = the 1st 00:00
+export function periodEnd(per, ms) { const d = new Date(ms); if (per === "w") { const day = d.getUTCDay() || 7; return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 8 - day); } return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1); }
+export const periodStart = (per, ms) => { const d = new Date(ms); if (per === "w") { const day = d.getUTCDay() || 7; return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1 - day); } return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1); };
+export const prevPeriodId = (per, ms) => periodId(per, periodStart(per, ms) - 1000);
+// contests: per = w (weekly) | m (monthly); met = tr (trophies gained) | kl (kills) | sc (best single-match score)
+export const CONTESTS = [{ id: "w_rush", per: "w", met: "tr" }, { id: "w_hunt", per: "w", met: "kl" }, { id: "w_score", per: "w", met: "sc" }, { id: "m_rush", per: "m", met: "tr" }, { id: "m_hunt", per: "m", met: "kl" }, { id: "m_score", per: "m", met: "sc" }];
+// bots get a stable league from their index (online + offline), close to the player's own league offline
+export const botTrophies = (i, near) => { let h = (i * 2654435761) >>> 0; h ^= h >>> 15; const r = (h % 1000) / 1000; return near == null ? Math.round(r * r * 4600) : Math.max(0, Math.round(near + (r - 0.5) * 900)); };

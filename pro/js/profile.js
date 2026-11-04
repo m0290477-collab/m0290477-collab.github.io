@@ -1,7 +1,7 @@
 // Player identity: avatars (16 portraits + every flag), frames, titles, banners, ranked tiers, daily login calendar
 // and the free lucky spin. Rewards are coins / XP / cosmetics only (never paid). Pure data + rules, no DOM.
-import { WORLDS, worldAsset } from "./worlds.js?v=perf3";
-import { FLAGS, flagEmoji } from "./skins.js?v=perf3";
+import { WORLDS, worldAsset } from "./worlds.js?v=comp1";
+import { FLAGS, flagEmoji } from "./skins.js?v=comp1";
 
 // requirement shapes: null = free · {lv} · {ach} · {stat:[key,n]} · {season} (tier) · {owner}
 export const AVATARS = [
@@ -16,12 +16,15 @@ export const FRAMES = [
   // cos1
   { id: "emerald", req: { lv: 10 } }, { id: "ruby", req: { lv: 20 } }, { id: "babylon", req: { lv: 35 } }, { id: "flame", req: { stat: ["wins", 25] } },
   { id: "ice", req: { stat: ["bossKills", 3] } }, { id: "obsidian", req: { lv: 60 } }, { id: "tigris", req: { lv: 12 } }, { id: "sakura", req: { season: 10 } },
+  // comp1: exclusive, only granted by competitions (grant: never unlocked by level / spin / calendar)
+  { id: "conq", req: { grant: 1 } }, { id: "champ", req: { grant: 1 } }, { id: "podium", req: { grant: 1 } },
 ];
 export const TITLES = [
   { id: "rookie", req: null }, { id: "hunter", req: { ach: "a_hunter" } }, { id: "predator", req: { ach: "a_predator" } }, { id: "glutton", req: { ach: "a_glutton" } },
   { id: "titan", req: { ach: "a_titan" } }, { id: "survivor", req: { ach: "a_survivor" } }, { id: "speedster", req: { ach: "a_speed" } }, { id: "zen", req: { ach: "a_zen" } },
   { id: "globe", req: { ach: "a_globe" } }, { id: "champion", req: { stat: ["wins", 10] } }, { id: "slayer", req: { stat: ["bossKills", 1] } }, { id: "legend", req: { lv: 50 } },
   { id: "ascendant", req: { season: 30 } }, { id: "owner", req: { owner: 1 } },
+  { id: "conq", req: { grant: 1 } }, { id: "wchamp", req: { grant: 1 } }, { id: "mchamp", req: { grant: 1 } }, { id: "crowned", req: { grant: 1 } }, // comp1
 ];
 // 0 = default glass, 1..6 = the six worlds (unlocked with the world), 7 = royal gold (season tier 20)
 export const BANNERS = [{ req: null }, ...WORLDS.map((w) => ({ req: w.lv > 1 ? { lv: w.lv } : null, w })), { req: { season: 20 } }];
@@ -51,8 +54,8 @@ export const titleOk = (S, i) => !!TITLES[i] && reqMet(S, TITLES[i].req, "ti:" +
 export const bannerOk = (S, i) => !!BANNERS[i] && reqMet(S, BANNERS[i].req, "bn:" + i);
 // locked cosmetics a reward can hand out (owner-only title excluded)
 export function lockedCosmetics(S) {
-  const out = []; AVATARS.forEach((_, i) => { if (!avOk(S, "p" + i)) out.push("av:p" + i); }); FRAMES.forEach((_, i) => { if (i && !frameOk(S, i)) out.push("fr:" + i); });
-  TITLES.forEach((T, i) => { if (!T.req || !T.req.owner) if (!titleOk(S, i)) out.push("ti:" + i); }); BANNERS.forEach((_, i) => { if (!bannerOk(S, i)) out.push("bn:" + i); }); return out;
+  const out = []; AVATARS.forEach((_, i) => { if (!avOk(S, "p" + i)) out.push("av:p" + i); }); FRAMES.forEach((F, i) => { if (i && !(F.req && F.req.grant) && !frameOk(S, i)) out.push("fr:" + i); });
+  TITLES.forEach((T, i) => { if (!T.req || !(T.req.owner || T.req.grant)) if (!titleOk(S, i)) out.push("ti:" + i); }); // comp1: competition-only cosmetics never come from spins / calendar BANNERS.forEach((_, i) => { if (!bannerOk(S, i)) out.push("bn:" + i); }); return out;
 }
 // avatar markup: portrait webp or flag emoji on a tinted disc, wrapped in the frame ring. size: "s" (rows), "m" (cards), "l" (profile)
 export function avatarHtml(av, frame, size = "m") {
