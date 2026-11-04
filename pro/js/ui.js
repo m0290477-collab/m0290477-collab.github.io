@@ -1,14 +1,16 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=look1";
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=look1";
-import { WORLDS, worldAsset } from "./worlds.js?v=look1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=look1";
-import { haptic } from "./audio.js?v=look1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=look1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=look1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=look1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=look1";
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=perf3";
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=perf3"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=perf3";
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=perf3";
+import { WORLDS, worldAsset } from "./worlds.js?v=perf3";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=perf3";
+import { haptic } from "./audio.js?v=perf3";
+import { skinFn, MODES, EMOTES } from "./game.js?v=perf3";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=perf3";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=perf3";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=perf3";
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -38,6 +40,7 @@ const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const HOBBIES = [["football", "⚽"], ["gaming", "🎮"], ["cars", "🚗"], ["music", "🎧"], ["travel", "✈️"], ["gym", "🏋️"], ["reading", "📚"], ["movies", "🎬"], ["art", "🎨"], ["cooking", "🍳"], ["coding", "💻"], ["basketball", "🏀"], ["swimming", "🏊"], ["fishing", "🎣"]];
 const skinName = (i) => { const S = SKINS[i]; if (!S) return "?"; const k = "s_" + S.id; const v = t(k); return v === k ? cap(S.id) : v; };
 
+const MINI_FS = ["#ffd23a", "#ff3040", "#4da3ff", "#ff4d5e", "rgba(255,255,255,0.45)", "rgba(120,200,255,0.9)"];
 export class Hud {
   constructor(app) { this.app = app; this.mini = $("h-mini").getContext("2d"); this.bt = 0; this.lastLb = ""; addEventListener("resize", () => setTimeout(() => this.layout(), 60)); }
   show(mode) {
@@ -57,20 +60,25 @@ export class Hud {
     // and the mass/score cell is a textContent write. (Rebuilding the whole list with innerHTML 4x a second re-created
     // every avatar <img>: a style/layout/decode hitch every 250 ms on phones.)
     const R = this._lbQ || (this._lbQ = []); R.length = 0; let ri = 0;
-    const row = (cls, st, v) => { const o = R[ri] || (R[ri] = {}); ri++; o.cls = cls; o.st = st; o.v = String(v); };
+    const row = (cls, st, v) => { const o = R[ri] || (R[ri] = {}); ri++; o.cls = cls; o.v = String(v); // perf2: the rank cell <b>..</b> is split off, so a rank change rewrites one small cell, not the avatar row
+      if (st.startsWith("<b>")) { const k = st.indexOf("</b>"); o.rk = st.slice(3, k); o.st = st.slice(k + 4); } else { o.rk = null; o.st = st; } };
     const ic = (s) => (s.avt ? avatarHtml(s.avt, s.fr | 0, "s") : `<i style="background:${this.dot(s)}"></i>`);
     if (d.scoreList) { d.scoreList.forEach((x, i) => row(x.s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(x.s)}<span>${esc(x.s.name || "?")}</span>`, `${x.v}/${d.target}`)); }
     else { d.top.forEach((s, i) => row(s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(s)}<span>${s.bounty ? "💰 " : ""}${esc(s.name || "?")}</span>`, fmtNum(s.m)));
       if (d.me && d.me.alive && d.rank > 5) row("me", `<b>${d.rank}</b>${ic(d.me)}<span>${esc(d.me.name)}</span>`, fmtNum(d.me.m)); }
-    if (d.ping !== null) row("", `<span>${t("online", { n: d.ping })}</span>`, d.humans ? "👤" + d.humans : "");
-    const box = $("h-lb"), E = this._lbE || (this._lbE = []); let relayout = false;
-    if (box.childElementCount !== E.length || (E.length && E[0].el.parentNode !== box)) { box.textContent = ""; E.length = 0; }
-    for (let i = 0; i < ri; i++) { const o = R[i]; let e = E[i];
-      if (!e) { const el = document.createElement("div"); box.appendChild(el); e = E[i] = { el, st: null, cls: null, em: null, v: null }; relayout = true; }
-      if (e.st !== o.st) { e.el.innerHTML = o.st + "<em></em>"; e.st = o.st; e.em = e.el.lastChild; e.v = null; }
+    if (d.ping !== null) row("", `<span><s class="nq ${d.nq || "good"}" aria-label="${esc(t("net_" + (d.nq || "good")))}"></s>${t("online", { n: d.ping })}</span>`, d.humans ? "👤" + d.humans : ""); // perf2: steady connection-quality dot
+    // perf2: rows are keyed by their content (avatar + name), so a reorder moves existing nodes instead of re-parsing them
+    const box = $("h-lb"), K = this._lbK || (this._lbK = new Map()), n0 = box.childElementCount; let relayout = false;
+    if (K.size && [...K.values()].some((e) => e.el.parentNode !== box)) { box.textContent = ""; K.clear(); }
+    const used = this._lbU || (this._lbU = new Set()); used.clear();
+    for (let i = 0; i < ri; i++) { const o = R[i], key = (o.rk !== null ? "b|" : "") + o.st; let e = K.get(key); if (e && used.has(e)) e = null;
+      if (!e) { const el = document.createElement("div"); el.innerHTML = (o.rk !== null ? "<b></b>" : "") + o.st + "<em></em>"; e = { el, cls: null, v: null, rk: undefined, em: el.lastChild, b: o.rk !== null ? el.firstChild : null }; K.set(key, e); relayout = true; }
+      used.add(e); if (box.children[i] !== e.el) box.insertBefore(e.el, box.children[i] || null);
       if (e.cls !== o.cls) { e.el.className = o.cls; e.cls = o.cls; }
+      if (e.b && e.rk !== o.rk) { e.rk = o.rk; if (/^\d+$/.test(o.rk)) e.b.textContent = o.rk; else e.b.innerHTML = o.rk; }
       if (e.v !== o.v) { e.em.textContent = o.v; e.v = o.v; } }
-    while (E.length > ri) { box.removeChild(E.pop().el); relayout = true; }
+    for (const [k, e] of K) if (!used.has(e)) { if (e.el.parentNode === box) box.removeChild(e.el); K.delete(k); }
+    relayout = box.childElementCount !== n0; // only a different row count moves the minimap / feed
     this.lastLb = "x"; if (relayout) this.layout();
     if (d.alive !== null && d.alive !== undefined) this.modeLine(`<div class="mode-pill hot">${t("aliveN", { n: d.alive })}${d.zone ? " · " + t("zoneIn", { n: d.zone }) : ""}</div>`);
     if (d.kothMine !== null && d.kothMine !== undefined) this.modeLine(`<div class="mode-pill koth ${d.hill && d.hill.mine ? "hot" : ""} ${d.hill && d.hill.contested ? "contest" : ""}">♛ ${d.kothMine}/${d.target} ${d.hill && d.hill.mine ? "· " + t("holding") : d.hill && d.hill.contested ? "· " + t("contested") : "· " + t("goHill")}<div class="cap"><i style="width:${Math.min(100, (d.kothMine / d.target) * 100)}%"></i></div></div>`);
@@ -87,8 +95,12 @@ export class Hud {
   }
   dot(s) { if (s.team === 0) return "#4da3ff"; if (s.team === 1) return "#ff4d5e"; const k = s.skin ? JSON.stringify(s.skin) : ""; this._dots = this._dots || new Map(); let c = this._dots.get(k); if (!c) { c = s.skin ? primaryColor(s.skin) : "#888"; this._dots.set(k, c); } return c; }
   minimap(all, me, R, pal, zone, hill, boss, pus) {
-    const g = this.mini, S = 180; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, 276, 276); g.setTransform(276 / S, 0, 0, 276 / S, 0, 0); const k = (S / 2 - 6) / R;
-    if (!this.miniBg) { const c = (this.miniBg = document.createElement("canvas")); c.width = c.height = 276; const x = c.getContext("2d"); x.scale(276 / S, 276 / S); // static disc + rim, painted once
+    // perf3: the backing store follows the minimap's real CSS size (70-92 px) x DPR (<= 3; <= 2 when the render governor is at L2+)
+    // instead of a fixed 276 px square: up to ~4x fewer pixels cleared, composited and rasterised 4x a second
+    const L = this.app.gov ? this.app.gov.level : 0, P = Math.max(48, Math.min(276, Math.round((this._mmCss || 92) * Math.min(L >= 2 ? 2 : 3, devicePixelRatio || 1))));
+    const g = this.mini, S = 180; if (g.canvas.width !== P) { g.canvas.width = g.canvas.height = P; this.miniBg = null; }
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, P, P); g.setTransform(P / S, 0, 0, P / S, 0, 0); const k = (S / 2 - 6) / R;
+    if (!this.miniBg) { const c = (this.miniBg = document.createElement("canvas")); c.width = c.height = P; const x = c.getContext("2d"); x.scale(P / S, P / S); // static disc + rim, painted once per size
       const gr = x.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S / 2); gr.addColorStop(0, "rgba(255,255,255,0.02)"); gr.addColorStop(1, "rgba(255,255,255,0.05)"); x.fillStyle = gr; x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); x.fill();
       x.strokeStyle = "rgba(255,255,255,0.22)"; x.lineWidth = 2; x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 4, 0, 6.283); x.stroke(); }
     g.drawImage(this.miniBg, 0, 0, S, S);
@@ -98,7 +110,11 @@ export class Hud {
     if (pus) for (const p of pus) { g.fillStyle = PU_COL[p.k]; g.beginPath(); const x = S / 2 + p.x * k, y = S / 2 + p.y * k; g.moveTo(x, y - 4); g.lineTo(x + 4, y); g.lineTo(x, y + 4); g.lineTo(x - 4, y); g.fill(); }
     const pulse = 0.5; // calm1: steady markers
     for (const s of all) { if (s === me || !me || !me.alive) continue; const d = Math.hypot(s.x - me.x, s.y - me.y); if (d < 40 && s.m > me.m * 1.2 && !(s.team !== undefined && s.team === me.team)) { g.strokeStyle = `rgba(255,60,70,${0.5 + pulse * 0.5})`; g.lineWidth = 2; g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, 7 + pulse * 3, 0, 6.283); g.stroke(); } }
-    for (const s of all) { if (s === me) continue; g.fillStyle = s.bounty ? "#ffd23a" : s.boss ? "#ff3040" : s.team === 0 ? "#4da3ff" : s.team === 1 ? "#ff4d5e" : s.bot ? "rgba(255,255,255,0.45)" : "rgba(120,200,255,0.9)"; const r = s.boss ? 8 : s.bounty ? 6 : Math.max(2.5, Math.min(7, s.r * 2.2)); g.beginPath(); g.arc(S / 2 + s.x * k, S / 2 + s.y * k, r, 0, 6.283); g.fill(); }
+    // perf2: one path per dot colour (was one beginPath/fill per snake)
+    for (let pass = 0; pass < 6; pass++) { const fs = MINI_FS[pass]; let any = false;
+      for (const s of all) { if (s === me) continue; const c = s.bounty ? 0 : s.boss ? 1 : s.team === 0 ? 2 : s.team === 1 ? 3 : s.bot ? 4 : 5; if (c !== pass) continue;
+        if (!any) { any = true; g.fillStyle = fs; g.beginPath(); } const r = s.boss ? 8 : s.bounty ? 6 : Math.max(2.5, Math.min(7, s.r * 2.2)), x = S / 2 + s.x * k, y = S / 2 + s.y * k; g.moveTo(x + r, y); g.arc(x, y, r, 0, 6.283); }
+      if (any) g.fill(); }
     if (me && me.alive) { // you: the area your screen shows, a heading arrow and a pulsing gold marker
       const mx = S / 2 + me.x * k, my = S / 2 + me.y * k, vw = Math.max(10, 22 * k * (innerWidth / Math.max(1, innerHeight)) * 0.5 + 8), vh = Math.max(8, 12 * k + 6);
       g.strokeStyle = "rgba(255,255,255,0.55)"; g.lineWidth = 1.5; g.strokeRect(mx - vw, my - vh, vw * 2, vh * 2);
@@ -106,7 +122,7 @@ export class Hud {
       g.strokeStyle = `rgba(255,200,69,${0.4 + pulse * 0.5})`; g.lineWidth = 2; g.beginPath(); g.arc(mx, my, 9 + pulse * 4, 0, 6.283); g.stroke(); }
   }
   net(txt) { const n = $("h-net"); n.textContent = txt; n.classList.toggle("x-hide", !txt); n.classList.toggle("bad", !!txt); }
-  fps(n) { $("h-fps").textContent = n + " FPS"; }
+  fps(n, tier) { const v = n + " FPS" + (tier ? " · " + tier : ""), e = $("h-fps"); if (e._v !== v) { e._v = v; e.textContent = v; } }
   // keeps the kill feed under the top-centre mode/timer strip, pushes the centre banners below it, and stops the
   // leaderboard short of the boost button, so nothing overlaps a touch control (safe-area insets come in via the rects)
   // left column: score cluster -> power-up chips -> kill feed (max 3); the centre banner sits under the top-centre pill
@@ -124,7 +140,8 @@ export class Hud {
     };
     if (!fit()) { hud.classList.add("lb-c"); if (!fit()) { // very short screens (Safari toolbars): beside the leaderboard, level with its top, same size
         const lr = R(lb), S = 56; mm.style.width = mm.style.height = S + "px"; hud.style.setProperty("--miniT", Math.round(lr.top) + "px");
-        hud.style.setProperty("--miniE", Math.round((document.documentElement.dir === "rtl" ? lr.right : W - lr.left) + 8) + "px"); } } }
+        hud.style.setProperty("--miniE", Math.round((document.documentElement.dir === "rtl" ? lr.right : W - lr.left) + 8) + "px"); } }
+      if (!mm.classList.contains("x-hide")) this._mmCss = Math.round(R(mm).width) || this._mmCss; } // perf3: minimap backing size
     // fix1: kill feed back at the top centre (max 3 lines), under the mode/timer pill, between the score cluster and the leaderboard
     let top = 0; for (const id of ["h-mode", "h-net"]) { const el = $(id); if (vis(el) && el.offsetHeight) top = Math.max(top, R(el).bottom); }
     let leftEdge = 0; if (tl) leftEdge = Math.max(leftEdge, document.documentElement.dir === "rtl" ? W - R(tl).left : R(tl).right); if (pu && pu.childElementCount) { const r = R(pu); leftEdge = Math.max(leftEdge, document.documentElement.dir === "rtl" ? W - r.left : r.right); }
@@ -155,11 +172,17 @@ export class Hud {
   popup(txt, kind) { if (kind === "rank" || kind === "kill") this.banner(txt, 1200, "sub"); }
   popupOld(txt, kind, pos, col) { const p = document.createElement("div"); p.className = "pop " + (kind || ""); p.textContent = txt; if (col) p.style.color = col; if (pos && pos[2]) { p.style.left = pos[0] + "px"; p.style.top = pos[1] + "px"; } const box = $("h-pop"); box.appendChild(p); while (box.children.length > 6) box.firstChild.remove(); setTimeout(() => p.remove(), 1000); }
   combo(mul) { const c = $("h-combo"); if (!mul || mul < 2) { if (c.dataset.k) { c.classList.add("x-hide"); c.dataset.k = ""; } return; } const k = "×" + mul; if (c.dataset.k !== k) { c.dataset.k = k; c.textContent = `${t("combo")} ${k}`; c.classList.remove("x-hide", "pump"); void c.offsetWidth; c.classList.add("pump"); } }
+  // perf2: chips are kept and only their fill (--f) and seconds text are written; the markup is rebuilt only when the set
+  // of active power-ups changes (it used to be re-parsed with innerHTML 4x a second while any timer ran)
   pu(P, slow) {
-    const box = $("h-pu"); if (!P) { if (box.innerHTML) box.innerHTML = ""; return; } let h = "";
-    for (const k of PU_TIMED) if (P[k] > 0) { const f = Math.max(0, Math.min(1, P[k] / PU_DUR[k])); h += `<div class="pu-chip" aria-label="${esc(t("pu_" + k))}" title="${esc(t("pu_" + k))}" style="--c:${PU_COL[k]};--f:${f.toFixed(3)}"><i>${puSvg(k)}</i><span>${k === 1 ? "1×" : Math.ceil(P[k]) + "s"}</span></div>`; }
-    if (slow > 0) h += `<div class="pu-chip bad" style="--c:#9ff3ff;--f:${(slow / PU_DUR[5]).toFixed(3)}"><i>${puSvg(5)}</i><span>${Math.ceil(slow)}s</span></div>`;
-    if (box.dataset.k !== h) { const n0 = box.childElementCount; box.innerHTML = h; box.dataset.k = h; if (n0 !== box.childElementCount) this.layout(); }
+    const box = $("h-pu"); if (!P) { if (box.innerHTML) { box.innerHTML = ""; box.dataset.k = ""; } return; }
+    const act = this._puAct || (this._puAct = []); act.length = 0; for (const k of PU_TIMED) if (P[k] > 0) act.push(k); if (slow > 0) act.push(-1);
+    const key = act.join(","); let h = "";
+    if (box.dataset.k !== key) { for (const k of act) h += k < 0 ? `<div class="pu-chip bad" style="--c:#9ff3ff"><i>${puSvg(5)}</i><span></span></div>` : `<div class="pu-chip" aria-label="${esc(t("pu_" + k))}" title="${esc(t("pu_" + k))}" style="--c:${PU_COL[k]}"><i>${puSvg(k)}</i><span></span></div>`;
+      const n0 = box.childElementCount; box.innerHTML = h; box.dataset.k = key; this._puEl = [...box.children].map((el) => ({ el, sp: el.lastChild, f: "", v: "" })); if (n0 !== box.childElementCount) this.layout(); }
+    const E = this._puEl || []; for (let i = 0; i < act.length && i < E.length; i++) { const k = act[i], e = E[i];
+      const f = (k < 0 ? Math.max(0, Math.min(1, slow / PU_DUR[5])) : Math.max(0, Math.min(1, P[k] / PU_DUR[k]))).toFixed(2), v = k === 1 ? "1×" : Math.ceil(k < 0 ? slow : P[k]) + "s";
+      if (e.f !== f) { e.f = f; e.el.style.setProperty("--f", f); } if (e.v !== v) { e.v = v; e.sp.textContent = v; } }
   }
   puClear() { $("h-pu").innerHTML = ""; $("h-pu").dataset.k = ""; }
   puFlash(k) { const f = $("pu-flash"); f.style.setProperty("--c", PU_COL[k]); f.classList.remove("on"); void f.offsetWidth; f.classList.add("on"); }
@@ -214,6 +237,86 @@ export class UI {
   countUp(el, to, fmt = (v) => fmtNum(v), ms = 900, from = 0) { if (!el) return; el.classList.add("lx-up"); if (this.S.settings.reduceMotion || to === from) { el.textContent = fmt(to); return; } const t0 = performance.now(); const step = () => { const k = Math.min(1, (performance.now() - t0) / ms), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(Math.round(from + (to - from) * e)); if (k < 1) requestAnimationFrame(step); }; step(); }
   fly(el, txt) { if (!el || this.S.settings.reduceMotion) return; const r = el.getBoundingClientRect(), f = document.createElement("div"); f.className = "lx-fly"; f.textContent = txt; f.style.left = r.left + r.width / 2 + "px"; f.style.top = r.top - 4 + "px"; document.body.appendChild(f); setTimeout(() => f.remove(), 950); }
   glow(el) { if (!el) return; el.classList.remove("lx-glow"); void el.offsetWidth; el.classList.add("lx-glow"); }
+  // ---------- perf2: offers tab (weekly / monthly / occasion), all through the protected purchase + purchase animation ----------
+  offerState() { const now = stableNow(KV); return { now, w: weeklyOffers(this.S, now), m: monthlyBundle(this.S, now), o: occasionBundle(this.S, now) }; }
+  renderOffers(el) {
+    const st = this.offerState(), now = st.now.getTime(), nm = (it) => (it.k === "skin" ? esc(skinName(it.i)) : flagEmoji(FLAGS[it.i].c) + " " + esc(flagName(FLAGS[it.i], LANG)));
+    const price = (base, p) => `<span class="ofp"><s>${fmtNum(base)}</s><span class="coin"></span><b>${fmtNum(p)}</b></span>`;
+    const left = (ends) => `<small class="ofleft" data-ends="${ends}">${t("offEnds", { n: fmtLeft(ends - now) })}</small>`;
+    const sw = (it) => `<div class="sw" style="background:${swatchCss({ k: it.k, i: it.i })}"></div>`;
+    const bundleCard = (b, cls, title) => `<div class="ofb ${cls}" data-ofb="${esc(b.key)}"><div class="ofsw">${b.items.map(sw).join("")}</div><div class="ofmeta"><b>${title}</b><span>${b.items.map(nm).join(" + ")}</span>${price(b.base, b.price)}</div><span class="ofoff">-${b.off}%</span><button class="btn gold ofbuy" data-buyb="${esc(b.key)}">${t("offBuy")}</button></div>`;
+    let h = "";
+    if (st.o) { const o = st.o.occ; h += `<div class="occ th-${o.theme}"><canvas class="occfx" aria-hidden="true"></canvas><div class="occtx"><h4>${t("occ_" + o.id)}</h4>${left(st.o.ends)}</div></div>`; if (st.o.items.length) h += bundleCard(st.o, "occb", t("occ_" + o.id) + " · " + t("offBundle")); }
+    h += `<div class="lk-head"><h4 class="sub">${t("offWeekly")}</h4>${left(st.w.ends)}</div>`;
+    h += st.w.items.length ? `<div class="grid ofgrid">` + st.w.items.map((it) => `<div class="item lk2 ofi r-${it.rar}" data-ofi="${it.k}:${it.i}">${sw(it)}<span class="ofoff">-${it.off}%</span><div class="meta"><b>${nm(it)}</b></div>${price(it.base, it.price)}<button class="btn gold ofbuy" data-buyi="${it.k}:${it.i}">${t("offBuy")}</button></div>`).join("") + `</div>` : `<p class="ofnone">${t("offAll")}</p>`;
+    if (st.m) h += `<div class="lk-head"><h4 class="sub">${t("offMonthly")}</h4>${left(st.m.ends)}</div>` + bundleCard(st.m, "mob", t("offMonthly"));
+    h += `<p class="ofnote">${t("offCoins")}</p>`;
+    el.innerHTML = h;
+    // buy: the offer is recomputed at the moment of the tap (never trusted from the page)
+    el.querySelectorAll("[data-buyi]").forEach((b) => this.click(b, () => { const [k, i] = b.dataset.buyi.split(":"), S2 = this.offerState(), it = S2.w.items.find((x) => x.k === k && x.i === +i); if (!it) { this.renderCustom(); return; }
+      const r = k === "skin" ? this.S.buyLegend(it.i, it.price) : this.S.buyFlag(it.i, it.price); if (!this.buyResult(r)) return; const card = b.closest(".item"); this.buyFx(card, null); b.disabled = true; b.textContent = "✓"; setTimeout(() => { if (this.cTab === "offers" && this.cur === "custom") this.renderCustom(); }, 1100); }, "tab"));
+    el.querySelectorAll("[data-buyb]").forEach((b) => this.click(b, () => { const S2 = this.offerState(), key = b.dataset.buyb, bb = [S2.o, S2.m].find((x) => x && x.key === key && x.items && x.items.length); if (!bb) { this.renderCustom(); return; }
+      const r = this.S.buyBundle(bb.key, bb.items, bb.price); if (!this.buyResult(r)) return; const card = b.closest(".ofb"); this.buyFx(card, null); b.disabled = true; b.textContent = "✓"; setTimeout(() => { if (this.cTab === "offers" && this.cur === "custom") this.renderCustom(); }, 1100); }, "tab"));
+    const pf0 = performance.now(); // countdowns tick from the (clock-back protected) time the offers were built with, never from a clock that jumped backwards
+    clearInterval(this._ofT); this._ofT = setInterval(() => { if (this.cur !== "custom" || this.cTab !== "offers") { clearInterval(this._ofT); return; } const n0 = Date.now(), n = n0 < now - 3600000 ? now + (performance.now() - pf0) : n0; let roll = false;
+      el.querySelectorAll(".ofleft").forEach((x) => { const e = +x.dataset.ends; if (n >= e) roll = true; x.textContent = t("offEnds", { n: fmtLeft(e - n) }); }); if (roll) this.renderCustom(); }, 1000);
+    const cv = el.querySelector(".occfx"); if (cv && st.o) this.occFx(cv, st.o.occ.theme);
+  }
+  // calm themed animation for the occasion banner: <= 22 soft vector shapes at <= 30 fps, fewer as the render governor
+  // steps down, a single still frame under calm / reduced motion / Reduce effects. Stops as soon as the tab closes.
+  occFx(cv, theme) {
+    cancelAnimationFrame(this._occR); const g = cv.getContext("2d"), dpr = Math.min(2, devicePixelRatio || 1), W = cv.clientWidth || 300, Hh = cv.clientHeight || 90; cv.width = W * dpr; cv.height = Hh * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const calm = this.calmUi(), L = this.app.gov ? this.app.gov.level : 0, N = calm || L >= 3 ? 10 : L >= 2 ? 12 : 22; let seed = 9; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const P = Array.from({ length: N }, (_, i) => ({ x: rnd() * W, y: rnd() * Hh, s: 0.6 + rnd() * 0.8, v: 0.3 + rnd() * 0.7, ph: rnd() * 6.28, i }));
+    const COL = { ramadan: ["#ffd98a", "#ff9f43"], eid: ["#ffe7a3", "#7ad7a8"], fireworks: ["#ffd23a", "#7ad7ff", "#ff7a9a", "#b6ff8a"], hearts: ["#ff7a9a", "#ffb3c6"], pumpkins: ["#ff8a2a", "#ffd23a"], snow: ["#ffffff", "#cfe8ff"], iraq: ["#ce1126", "#ffffff", "#007a3d"], stars: ["#ffe7a3", "#cfe8ff"] }[theme] || ["#ffe7a3"];
+    const star = (x, y, r) => { g.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill(); };
+    const heart = (x, y, r) => { g.beginPath(); g.moveTo(x, y + r * 0.9); g.bezierCurveTo(x - r * 1.4, y - r * 0.2, x - r * 0.6, y - r * 1.2, x, y - r * 0.4); g.bezierCurveTo(x + r * 0.6, y - r * 1.2, x + r * 1.4, y - r * 0.2, x, y + r * 0.9); g.fill(); };
+    const lantern = (x, y, r, c) => { g.strokeStyle = "rgba(255,231,163,.55)"; g.lineWidth = 1; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, y - r * 1.4); g.stroke(); g.fillStyle = c; g.beginPath(); g.moveTo(x, y - r * 1.4); g.lineTo(x + r * 0.8, y - r * 0.6); g.lineTo(x + r * 0.8, y + r * 0.6); g.lineTo(x, y + r * 1.3); g.lineTo(x - r * 0.8, y + r * 0.6); g.lineTo(x - r * 0.8, y - r * 0.6); g.closePath(); g.globalAlpha *= 0.85; g.fill(); g.globalAlpha = 1; g.fillStyle = "rgba(255,250,220,.9)"; g.beginPath(); g.arc(x, y, r * 0.3, 0, 6.28); g.fill(); };
+    const pumpkin = (x, y, r) => { g.fillStyle = "#ff8a2a"; for (const dx of [-0.45, 0, 0.45]) { g.beginPath(); g.ellipse(x + dx * r, y, r * 0.55, r * 0.7, 0, 0, 6.28); g.fill(); } g.fillStyle = "#3d7a2a"; g.fillRect(x - r * 0.08, y - r * 0.95, r * 0.16, r * 0.3); };
+    const flake = (x, y, r) => { g.strokeStyle = "rgba(255,255,255,.85)"; g.lineWidth = 1.2; g.beginPath(); for (let k = 0; k < 3; k++) { const a = k * Math.PI / 3; g.moveTo(x - Math.cos(a) * r, y - Math.sin(a) * r); g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } g.stroke(); };
+    const crescent = (x, y, r) => { g.fillStyle = "#ffe7a3"; g.beginPath(); g.arc(x, y, r, 0, 6.28); g.fill(); g.globalCompositeOperation = "destination-out"; g.beginPath(); g.arc(x + r * 0.42, y - r * 0.15, r * 0.86, 0, 6.28); g.fill(); g.globalCompositeOperation = "source-over"; };
+    let last = 0; const draw = (ts) => {
+      if (!cv.isConnected) return; if (!calm && L < 3) this._occR = requestAnimationFrame(draw); if (ts - last < 33) return; const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0; last = ts; const tt = ts / 1000;
+      g.clearRect(0, 0, W, Hh);
+      if (theme === "ramadan" || theme === "eid") crescent(W - 42, 32, 18);
+      for (const p of P) { const c = COL[p.i % COL.length];
+        if (theme === "snow" || theme === "hearts" || theme === "stars") { p.y += (theme === "hearts" ? -1 : 1) * p.v * 14 * dt; p.x += Math.sin(tt * 0.8 + p.ph) * 6 * dt; if (p.y > Hh + 8) p.y = -8; if (p.y < -8) p.y = Hh + 8; }
+        const a = 0.55 + 0.35 * Math.sin(tt * 0.9 + p.ph); g.globalAlpha = a; g.fillStyle = c;
+        if (theme === "snow") flake(p.x, p.y, 3 + p.s * 2); else if (theme === "hearts") heart(p.x, p.y, 4 + p.s * 3); else if (theme === "pumpkins") { if (p.i < 5) pumpkin((document.documentElement.dir === "rtl" ? 14 : W * 0.5 + 10) + p.i * (W * 0.46 / 5), Hh - 16 + Math.sin(tt + p.ph) * 2, 9 + p.s * 3); }
+        else if (theme === "ramadan" || theme === "eid") { if (p.i < 5) lantern(24 + p.i * (W - 90) / 5, 34 + Math.sin(tt * 0.7 + p.ph) * 3, 7 + p.s * 2, c); else star(p.x, p.y * 0.7, 1.5 + p.s); }
+        else if (theme === "fireworks") { const u = ((tt * 0.25 + p.ph) % 1), R = 6 + u * 26, cx = 30 + (p.i % 6) * (W - 60) / 5, cy = 18 + (p.i % 3) * 22; g.globalAlpha = (1 - u) * 0.7; for (let k = 0; k < 8; k++) { const aa = k * 0.785; g.beginPath(); g.arc(cx + Math.cos(aa) * R, cy + Math.sin(aa) * R, 1.6, 0, 6.28); g.fill(); } }
+        else if (theme === "iraq") { g.globalAlpha = 0.5; g.fillRect(((p.x + tt * 12 * p.v) % (W + 40)) - 20, p.y, 16, 3); }
+        else star(p.x, p.y, 1.5 + p.s * 1.5); }
+      g.globalAlpha = 1; };
+    requestAnimationFrame(draw);
+  }
+  calmUi() { const H = document.documentElement; let rm = false; try { rm = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) {} return H.classList.contains("calm") || !!this.S.settings.reduceMotion || !!this.S.settings.calmFx || rm; }
+  // perf2: purchase results (coins only). Returns true on success; every refusal is explained, double taps are silent.
+  buyResult(r) {
+    if (r === "ok") return true; if (r === "busy") return false;
+    if (r === "noCoins") { this.toast(t("noCoins"), "warn"); this.app.audio.play("error"); return false; }
+    if (r === "own") { this.toast("✓ " + t("lk_owned"), ""); return false; }
+    this.toast(t(r === "saveFail" ? "buyFail" : "oops"), "warn"); this.app.audio.play("error"); return false;
+  }
+  // purchase animation (~850 ms total: coins 0-810 ms, glow from 500 ms, sparkles 500-880 ms): coins fly from the balance chip into the item, the item gets a soft gold glow + a few
+  // sparkles, the balance counts down. Calm / reduced motion / Reduce effects: a simple check that fades in and out.
+  // Only transform / opacity are animated (compositor), no backdrop-filter, nothing flashes.
+  buyFx(el, sel) {
+    const calm = this.calmUi(), A = this.app.audio, chip = [...document.querySelectorAll(".screen.on .chip.coins, #s-custom .chip.coins")].find((c) => c.offsetWidth);
+    this.coins(this.p.coins); A.play("coin");
+    const r = el && el.getBoundingClientRect && el.getBoundingClientRect(); if (!r || !r.width) return;
+    const fx = document.createElement("div"); fx.className = "buyfx"; document.body.appendChild(fx); setTimeout(() => fx.remove(), 1400);
+    const tx = r.left + r.width / 2, ty = r.top + r.height / 2;
+    const glow = () => { const live = (sel && document.querySelector("#c-content " + sel)) || el; if (live && live.classList) { live.classList.remove("bought", "bought-calm"); void live.offsetWidth; live.classList.add(calm ? "bought-calm" : "bought"); setTimeout(() => live.classList.remove("bought", "bought-calm"), 1100); } };
+    if (calm) { const ck = document.createElement("div"); ck.className = "buyck"; ck.style.left = tx + "px"; ck.style.top = ty + "px"; ck.textContent = "✓"; fx.appendChild(ck); glow(); return; }
+    const c = chip ? chip.getBoundingClientRect() : { left: tx, top: 0, width: 0, height: 0 }, sx = c.left + c.width / 2, sy = c.top + c.height / 2;
+    for (let i = 0; i < 7; i++) { const d = document.createElement("i"); d.className = "flyc"; d.style.left = sx + "px"; d.style.top = sy + "px"; fx.appendChild(d);
+      const mx = (sx + tx) / 2 + (i - 3) * 14, my = Math.min(sy, ty) - 40 - (i % 3) * 12;
+      d.animate([{ transform: "translate(-50%,-50%) scale(.6)", opacity: 0 }, { transform: `translate(calc(${mx - sx}px - 50%), calc(${my - sy}px - 50%)) scale(1)`, opacity: 1, offset: 0.45 }, { transform: `translate(calc(${tx - sx}px - 50%), calc(${ty - sy}px - 50%)) scale(.5)`, opacity: 0 }], { duration: 480 + i * 25, delay: i * 30, easing: "cubic-bezier(.45,.05,.4,1)", fill: "forwards" }); }
+    setTimeout(() => { glow(); A.play("reward");
+      for (let i = 0; i < 6; i++) { const sp = document.createElement("b"); sp.className = "spk"; sp.style.left = tx + "px"; sp.style.top = ty + "px"; fx.appendChild(sp); const a = (i / 6) * 6.283 + 0.4, R = Math.min(r.width, r.height) * 0.55 + 10;
+        sp.animate([{ transform: "translate(-50%,-50%) scale(.3)", opacity: 0 }, { transform: `translate(calc(${Math.cos(a) * R}px - 50%), calc(${Math.sin(a) * R}px - 50%)) scale(1)`, opacity: 0.9, offset: 0.4 }, { transform: `translate(calc(${Math.cos(a) * R * 1.25}px - 50%), calc(${Math.sin(a) * R * 1.25}px - 50%)) scale(.4)`, opacity: 0 }], { duration: 380, easing: "ease-out", fill: "forwards" }); } }, 500);
+  }
   coins(target) { // animated currency counter
     document.querySelectorAll(".coinsv").forEach((el) => { const from = +(el.dataset.v || target), to = target; el.dataset.v = to; if (from === to || this.S.settings.reduceMotion) { el.textContent = fmtNum(to); return; }
       const t0 = performance.now(), step = () => { const k = Math.min(1, (performance.now() - t0) / 900), e = 1 - Math.pow(1 - k, 3); el.textContent = fmtNum(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); }; step(); const c = el.closest(".chip"); if (c && to > from) { c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); this.app.audio.play("coin"); } });
@@ -442,6 +545,7 @@ export class UI {
         <button class="btn gold" id="c-useed">${p.skin.k === "custom" ? "✓ " + t("equipped") : t("equip")}</button></div>`;
     } else if (tab === "eyes") { const own = EYES.filter((e, i) => S.unlocked("eye", i)).length; h = head(t("eyes"), own, EYES.length) + `<div class="grid">` + EYES.map((e, i) => { const ok = S.unlocked("eye", i), on = p.eye === i; return `<button class="item lk2 ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="eye" data-v="${i}"><div class="sw eyesw">${eyeSvg(e)}${i >= 7 ? `<span class="nw">${t("lk_new")}</span>` : ""}</div><div class="meta"><b>${cap(e.id)}</b></div>${st(on, ok, t("lockedLv", { n: e.lv }))}</button>`; }).join("") + `</div>`; }
     else if (tab === "trails") { const own = TRAILS.filter((e, i) => S.unlocked("trail", i)).length; h = head(t("trails"), own, TRAILS.length) + `<div class="grid">` + TRAILS.map((tr, i) => { const ok = S.unlocked("trail", i), on = p.trail === i; return `<button class="item lk2 ${on ? "on" : ""} ${ok ? "" : "lock"}" data-k="trail" data-v="${i}"><div class="sw trsw" style="${tr.c ? `--a:${tr.c[0]};--b:${tr.c[1]}` : ""}">${tr.c ? "<i></i><i></i><i></i><i></i><i></i>" : ""}${i >= 7 ? `<span class="nw">${t("lk_new")}</span>` : ""}</div><div class="meta"><b>${cap(tr.id)}</b></div>${st(on, ok, t("lockedLv", { n: tr.lv }))}</button>`; }).join("") + `</div>`; }
+    else if (tab === "offers") { this.renderOffers(el); return; }
     else if (tab === "name") h = head(t("nameColor"), NAME_COLORS.length, NAME_COLORS.length) + `<div class="ncprev"><b style="color:${NAME_COLORS[p.nc] || "#fff"}">${esc(p.name || "Player")}</b></div><div class="namecols">` + NAME_COLORS.map((c, i) => `<button data-k="nc" data-v="${i}" class="${p.nc === i ? "on" : ""}" style="background:${c}" aria-label="${c}"></button>`).join("") + `</div>`;
     el.innerHTML = h;
     el.querySelectorAll("[data-k]").forEach((b) => this.click(b, () => this.pick(b.dataset.k, +b.dataset.v), "tab"));
@@ -463,12 +567,12 @@ export class UI {
     else h = `<span class="rar epic">${t("rar_epic")}</span><b>${t("custom")}</b>`;
     $("c-info").innerHTML = h;
     const eq = $("ci-eq"); if (eq) this.click(eq, () => { p.skin = { k: "skin", i: d.i }; S.save(); this.sel = null; this.renderCustom(); this.toast("✓ " + t("equipped"), "good"); });
-    const by = $("ci-buy"); if (by) this.click(by, () => { const r = S.buyLegend(d.i); if (r === "noCoins") { this.toast(t("noCoins"), "warn"); this.app.audio.play("error"); return; } if (r === "ok") { this.coins(p.coins); this.reveal(d.i); this.renderCustom(); } }, "reward");
+    const by = $("ci-buy"); if (by) this.click(by, () => { const r = S.buyLegend(d.i); if (!this.buyResult(r)) return; const tgt = document.querySelector(`#c-content [data-k="skin"][data-v="${d.i}"]`) || by; this.buyFx(tgt, `[data-k="skin"][data-v="${d.i}"]`); this.renderCustom(); setTimeout(() => this.reveal(d.i), this.calmUi() ? 350 : 820); }, "tab");
   }
   pick(k, v) {
     const p = this.p, S = this.S;
     if (k === "skin") { if (!S.unlocked("skin", v)) { this.sel = { k: "skin", i: v, e: p.eye, t: p.trail, n: p.nc }; this.renderCustom(); return; } p.skin = { k: "skin", i: v }; this.sel = null; }
-    else if (k === "flag") { if (!p.flags.includes(v)) { const r = S.buyFlag(v); if (r === "noCoins") { this.toast(t("noCoins"), "warn"); this.app.audio.play("error"); return; } this.toast(t("bought") + " " + flagEmoji(FLAGS[v].c), "good"); this.coins(p.coins); this.checkAch(); } p.skin = { k: "flag", i: v }; this.sel = null; }
+    else if (k === "flag") { if (!p.flags.includes(v)) { const r = S.buyFlag(v); if (!this.buyResult(r)) return; const tgt = document.querySelector(`#c-content [data-k="flag"][data-v="${v}"]`); p.skin = { k: "flag", i: v }; this.sel = null; S.save(); this.renderCustom(); this.buyFx(tgt, `[data-k="flag"][data-v="${v}"]`); this.toast(t("bought") + " " + flagEmoji(FLAGS[v].c), "good"); this.checkAch(); return; } p.skin = { k: "flag", i: v }; this.sel = null; }
     else if (k === "pat") { p.custom.p = v; p.skin = { k: "custom", i: 0 }; this.sel = null; }
     else if (k === "eye") { if (!S.unlocked("eye", v)) { this.toast("🔒 " + t("unlockAt", { n: EYES[v].lv })); return; } p.eye = v; }
     else if (k === "trail") { if (!S.unlocked("trail", v)) { this.toast("🔒 " + t("unlockAt", { n: TRAILS[v].lv })); return; } p.trail = v; }

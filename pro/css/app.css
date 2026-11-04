@@ -1219,3 +1219,32 @@ html[lang="ar"] .item.lk2 .nw { letter-spacing: 0; font-size: 10px; }
 .pre2 .pre-act button[data-pl] { color: var(--champ2, #f3e2b8); }
 .pre2 .pre-act button.only { color: var(--tx3); }
 @media (max-height: 460px) { .item.lk2 .sw { height: 50px; } .item.lk2.r-legendary .sw { height: 56px; } #c-content .grid { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; } .pre2 { width: 84px; } }
+/* perf2: steady connection-quality dot in the online leaderboard row (no animation) */
+.h-lb .nq { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-inline-end: 5px; vertical-align: 1px; background: #5fd38a; text-decoration: none; } .h-lb .nq.fair { background: #f2c14e; } .h-lb .nq.poor { background: #ff6b6b; }
+/* perf2: purchase animation (transform/opacity only, no blur layers; calm = a fading check) */
+.buyfx { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+.buyfx .flyc { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff6c8, #ffc845 45%, #b97a10); box-shadow: 0 0 6px rgba(255, 200, 69, 0.55); opacity: 0; will-change: transform, opacity; }
+.buyfx .spk { position: absolute; width: 8px; height: 8px; background: #ffe7a3; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); opacity: 0; will-change: transform, opacity; }
+.buyfx .buyck { position: absolute; transform: translate(-50%, -50%); width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; font-weight: 900; color: #0a0c18; background: #ffc845; animation: buyCk 0.8s ease both; }
+@keyframes buyCk { 0% { opacity: 0; } 25% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+.item.bought, .ofb.bought { animation: buyGlow 0.8s ease-out both; }
+@keyframes buyGlow { 0% { box-shadow: 0 0 0 0 rgba(255, 200, 69, 0); } 35% { box-shadow: 0 0 0 3px rgba(255, 200, 69, 0.85), 0 0 26px 6px rgba(255, 200, 69, 0.45); } 100% { box-shadow: 0 0 0 2px rgba(255, 200, 69, 0.35), 0 0 0 0 rgba(255, 200, 69, 0); } }
+.item.bought-calm, .ofb.bought-calm { box-shadow: 0 0 0 2px rgba(255, 200, 69, 0.7); transition: box-shadow 0.6s ease; }
+html.calm .buyfx .flyc, html.calm .buyfx .spk { display: none; }
+@media (prefers-reduced-motion: reduce) { .item.bought, .ofb.bought { animation: none; box-shadow: 0 0 0 2px rgba(255, 200, 69, 0.7); } .buyfx .buyck { animation-duration: 0.01s; opacity: 1; } }
+/* perf2: shop offers (coins only). Buttons >= 44px; no blur layers; the occasion canvas stops under calm (ui.js) */
+.ofgrid .item { position: relative; cursor: default; }
+.ofp { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; } .ofp s { color: var(--tx3); font-size: 11px; } .ofp b { color: var(--gold1); font-size: 14px; } .ofp .coin { width: 11px; height: 11px; }
+.ofoff { position: absolute; top: 8px; inset-inline-end: 8px; padding: 2px 7px; border-radius: 99px; background: #ffc845; color: #1a1200; font-size: 11px; font-weight: 900; }
+.ofbuy { height: 44px; min-height: 44px; width: 100%; padding: 0 10px; font-size: 13px; }
+.ofleft { color: var(--tx2); font-variant-numeric: tabular-nums; font-size: 11.5px; margin-inline-start: auto; }
+.ofb { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 10px; margin-bottom: 12px; border-radius: 14px; background: linear-gradient(120deg, rgba(255, 200, 69, 0.12), rgba(8, 12, 22, 0.6)); border: 1px solid rgba(255, 200, 69, 0.45); }
+.ofb .ofoff { top: -8px; } .ofb .ofbuy { width: auto; min-width: 96px; }
+.ofsw { display: flex; } .ofsw .sw { width: 46px; height: 46px; border-radius: 10px; border: 2px solid rgba(8, 12, 22, 0.9); } .ofsw .sw + .sw { margin-inline-start: -14px; }
+.ofmeta { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .ofmeta b { font-size: 13.5px; } .ofmeta > span { font-size: 11.5px; color: var(--tx2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.occ { position: relative; height: 92px; margin-bottom: 10px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255, 231, 163, 0.35); background: linear-gradient(120deg, #141c33, #0a0f1d); }
+.occ.th-ramadan, .occ.th-eid { background: linear-gradient(120deg, #1b1640, #0b1a2e 60%, #10283a); } .occ.th-fireworks { background: linear-gradient(120deg, #0b0f24, #1a1038); } .occ.th-hearts { background: linear-gradient(120deg, #3a1024, #1a0b18); }
+.occ.th-pumpkins { background: linear-gradient(120deg, #2a1406, #120a14); } .occ.th-snow { background: linear-gradient(120deg, #0e2238, #0a1424); } .occ.th-iraq { background: linear-gradient(180deg, rgba(206, 17, 38, 0.35), rgba(255, 255, 255, 0.06) 50%, rgba(0, 0, 0, 0.5)); } .occ.th-stars { background: linear-gradient(120deg, #101a36, #0a0f1d); }
+.occfx { position: absolute; inset: 0; width: 100%; height: 100%; }
+.occtx { position: absolute; inset-inline-start: 14px; bottom: 10px; display: flex; flex-direction: column; gap: 2px; } .occtx h4 { margin: 0; font-size: 17px; color: #fff3cf; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); } .occtx .ofleft { margin: 0; }
+.ofnote, .ofnone { color: var(--tx3); font-size: 11.5px; margin: 6px 2px 0; }

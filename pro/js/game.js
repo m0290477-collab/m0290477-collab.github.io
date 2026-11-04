@@ -1,16 +1,17 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=look1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=look1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=look1";
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=look1";
-import { NetBackend } from "./net.js?v=look1";
-import { t, fmtNum } from "./i18n.js?v=look1";
-import { haptic } from "./audio.js?v=look1";
-import { rankOf, rpDelta } from "./profile.js?v=look1";
-import { Replay } from "./replay.js?v=look1";
-import { emit } from "./events.js?v=look1"; // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=perf3"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=perf3";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND } from "./skins.js?v=perf3";
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=perf3";
+import { NetBackend } from "./net.js?v=perf3";
+import { t, fmtNum } from "./i18n.js?v=perf3";
+import { haptic } from "./audio.js?v=perf3";
+import { rankOf, rpDelta } from "./profile.js?v=perf3";
+import { Replay } from "./replay.js?v=perf3";
+import { Governor } from "./gov.js?v=perf3"; // perf2: adaptive render governor
+import { emit } from "./events.js?v=perf3"; // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -102,7 +103,7 @@ export class Game {
     this.entries = new Map(); this.ft = new Float32Array(240); this.fi = 0; this.fpsShown = 0; this.lastFrame = 0; this.attract = null; this.t = 0;
     this.hud = app.hud; this._loop = (ts) => this.loop(ts); this.raf = 0; this.goodWins = 0; this.autoToasted = false; this.camX = 0; this.camY = 0; this.show = null;
   }
-  setRenderer(r) { this.r = r; }
+  setRenderer(r) { this.r = r; if (r && r.setGov && this.gov) r.setGov(this.gov.level); }
   // calm food palette: four soft hues (less colour noise) + gold for event orbs; colour-blind mode keeps its own set
   palettes(w) { const W = WORLDS[w ?? this.world ?? 0] || WORLDS[0], wf = W.calm && W.calm.food; const P = this.app.store.settings.cb ? FOOD_COLORS_CB : wf ? Array.from({ length: 13 }, (_, i) => (i === 12 ? "#e6c36a" : wf[i % wf.length])) : FOOD_CALM; this.view.foodPal = P.map(hexLin); this.view.foodPalCss = P; }
   startLoop() { if (!this.raf) this.raf = requestAnimationFrame(this._loop); }
@@ -355,7 +356,12 @@ export class Game {
   loop(ts) {
     this.raf = requestAnimationFrame(this._loop);
     const A = this.app, set = A.store.settings;
-    const cap = set.fpsCap; if (cap && this.lastFrame && ts - this.lastFrame < 1000 / cap - 2.5) return;
+    // perf2: nothing is drawn while the page is hidden (the clock keeps running, so dt on return is clamped as before)
+    if (document.hidden) return;
+    const G = this.gov || (this.gov = new Governor()); if (!this.app.gov) this.app.gov = G;
+    const cap = G.fpsCap(set.fpsCap); if (cap && this.lastFrame && ts - this.lastFrame < 1000 / cap - 2.5) return;
+    if (this.lastFrame) { const menu = this.mode === "show" || !!this._frozen, live = !menu && this.mode !== "attract" && !!this.backend && !this.replay && !(this.countdown > 0);
+      G.sample(ts - this.lastFrame, ts, { auto: set.quality === "auto", menu, inMatch: live, target: 1000 / Math.min(60, set.fpsCap || 60), apply: (L) => { if (this.r && this.r.setGov) this.r.setGov(L); } }); }
     const dt = this.lastFrame ? Math.min(0.1, (ts - this.lastFrame) / 1000) : 1 / 60; this.lastFrame = ts; this.t += dt;
     const c0 = performance.now();
     try { this.tick(dt, ts); } catch (e) { console.error(e); A.ui.toast(t("oops"), "warn"); if (this.mode !== "attract" && this.mode !== "show") { this.ended = true; this.stopMatch(); A.ui.goLobby(); } }
@@ -364,9 +370,9 @@ export class Game {
   tick(dt, ts) {
     const A = this.app, set = A.store.settings; if (!this.r) return;
     this.ft[this.fi++ % this.ft.length] = dt * 1000;
-    if (set.showFps && ts - this.fpsShown > 500) { this.fpsShown = ts; const n = Math.min(this.fi, 60); let s = 0; for (let k = 1; k <= n; k++) s += this.ft[(this.fi - k + this.ft.length) % this.ft.length]; this.hud.fps(Math.round(1000 / (s / n))); }
+    if (set.showFps && ts - this.fpsShown > 500) { this.fpsShown = ts; const n = Math.min(this.fi, 60); let s = 0; for (let k = 1; k <= n; k++) s += this.ft[(this.fi - k + this.ft.length) % this.ft.length]; this.hud.fps(Math.round(1000 / (s / n)), set.quality === "auto" && this.gov ? (this.r.is2D ? "2D " : (this.r.qName || "") + " ") + this.gov.tier : ""); }
     if (set.quality === "auto" && this.fi % 120 === 0 && this.fi > 240 && !document.hidden && this.mode !== "show") this.autoQuality();
-    if (this.mode === "show") { const v = this.view; v.t = this.t; v.dt = dt; v.scene = "show"; v.show = this.show; v.fpsTarget = set.fpsCap || 60; this.r.frame(v); return; }
+    if (this.mode === "show") { const v = this.view; v.t = this.t; v.dt = dt; v.scene = "show"; v.show = this.show; v.fpsTarget = (this.gov ? this.gov.fpsCap(set.fpsCap) : set.fpsCap) || 60; this.r.frame(v); return; }
     const b = this.backend; if (!b) return; this.view.scene = "world";
     // calm1: behind the results card or the pause menu the last frame stays on screen; nothing is re-rendered
     if ((this.ended && !this.watching && !this.replay) || (this.paused && this.mode !== "online")) { if (this._frozen) return; this._frozen = true; } else this._frozen = false;
@@ -392,7 +398,7 @@ export class Game {
     if (this.mode === "attract") { const S = b.sim; if (S.snakes.filter((s) => s.alive).length < 14) b.addBot(2); }
     if (this.mode !== "attract" && !this.ended && !this.paused && !(this.countdown > 0)) this.rules(dt * this.timeScale, dt);
     if (this.watching && (!this.spectate || !this.spectate.alive)) this.stopWatch();
-    this.build(dt); this.view.fpsTarget = set.fpsCap || 60; this.r.frame(this.view);
+    this.build(dt); this.view.fpsTarget = (this.gov ? this.gov.fpsCap(set.fpsCap) : set.fpsCap) || 60; this.r.frame(this.view);
     // replay1: ring buffer of the last 5 s near the player (20 Hz, typed arrays, no allocation per sample)
     if (this.rec && me && me.alive && !this.ended && !this.victory && this.mode !== "attract" && this.mode !== "zen" && !(this.countdown > 0) && set.replay !== false) {
       if (this.rec.meRef !== me) { this.rec.reset(); this.rec.meRef = me; } const r0 = performance.now(), c0 = this.rec.count, h0 = this.rec.head; this.rec.record(now, this.view, me, false); if (this.rec.head !== h0 || this.rec.count !== c0) { this.recMs += performance.now() - r0; this.recN++; } }
@@ -515,7 +521,7 @@ export class Game {
     let top = all.slice(0, 5), scoreList = null;
     if (this.xm && this.xm.lb) scoreList = this.xm.lb(this); // Track B
     if (this.mode === "koth") scoreList = [...this.kothPts.entries()].sort((a, c) => c[1] - a[1]).slice(0, 5).map(([id, v]) => ({ s: this.findSnake(id), v: Math.floor(v) })).filter((x) => x.s);
-    this.hud.update({ mass: me && me.alive ? me.m : 0, rank, total: all.length, top, me, kills: st.kills, timeLeft: this.M && (this.mode === "time" || this.M.dur) ? st.timeLeft : null, wave: this.mode === "survival" ? st.wave : null, ping: b.online ? b.ping : null, humans: b.online ? b.humans : null, scoreList, kothMine: this.mode === "koth" && me ? Math.floor(this.kothPts.get(me.id) || 0) : null, target: this.M && this.M.target, alive: this.mode === "br" ? all.length : null, zone: this.zone && this.zone.phase === "wait" ? Math.ceil(this.zoneNext) : null, hill: this.hill });
+    this.hud.update({ mass: me && me.alive ? me.m : 0, rank, total: all.length, top, me, kills: st.kills, timeLeft: this.M && (this.mode === "time" || this.M.dur) ? st.timeLeft : null, wave: this.mode === "survival" ? st.wave : null, ping: b.online ? b.ping : null, nq: b.online ? b.quality : null, humans: b.online ? b.humans : null, scoreList, kothMine: this.mode === "koth" && me ? Math.floor(this.kothPts.get(me.id) || 0) : null, target: this.M && this.M.target, alive: this.mode === "br" ? all.length : null, zone: this.zone && this.zone.phase === "wait" ? Math.ceil(this.zoneNext) : null, hill: this.hill });
     if (this.app.store.settings.minimap) this.hud.minimap(all, me, b.R || C.R, this.view.foodPalCss, this.zone, this.hill, this.boss && this.boss.s, b.pus);
     if (me && me.alive && !this.ended) {
       this.hud.pu(me.pu, me.slow);
@@ -567,7 +573,7 @@ export class Game {
   replayAgain() { if (this.replay && this.rec && this.rec.clip) { this.rec.start(); this.r.clearFx && this.r.clearFx(); } }
   replayTick(dt, now) {
     const R = this.rec, Rp = this.replay; R.advance(dt);
-    const v = R.view(this.view, dt, this.t, Rp.killer); v.fpsTarget = this.app.store.settings.fpsCap || 60; this.r.frame(v); R.cam.snap = false;
+    const v = R.view(this.view, dt, this.t, Rp.killer); v.fpsTarget = (this.gov ? this.gov.fpsCap(this.app.store.settings.fpsCap) : this.app.store.settings.fpsCap) || 60; this.r.frame(v); R.cam.snap = false;
     if (!R.impactFired && R.c >= R.clip.t1) { R.impactFired = true; this.r.ring(R.clip.ix, R.clip.iy, [0.55, 0.32, 0.28], 2.2); } // fix1: small, soft, centred on the contact
     this.app.ui.replayProg(R.progress());
     if (R.done) this.endReplay();
@@ -587,7 +593,7 @@ export class Game {
   autoQuality() {
     const A = this.app; if (this.r.is2D) return;
     const n = this.ft.length, arr = this._ftS || (this._ftS = new Float32Array(n)); arr.set(this.ft); arr.sort(); const p90 = arr[Math.floor(n * 0.9)];
-    const target = 1000 / (A.store.settings.fpsCap || 60), order = ["low", "medium", "high", "ultra"], cur = this.r.qName, i = order.indexOf(cur), now = performance.now(), calm = now - (this.qChangeT || 0) > 10000;
+    const target = 1000 / ((this.gov ? this.gov.fpsCap(A.store.settings.fpsCap) : A.store.settings.fpsCap) || 60), order = ["low", "medium", "high", "ultra"], cur = this.r.qName, i = order.indexOf(cur), now = performance.now(), calm = now - (this.qChangeT || 0) > 10000;
     if (p90 > target * 1.45) {
       this.goodWins = 0; this.slowQ = (this.slowQ || 0) + 1;
       if (i > 0 && this.slowQ >= 2 && calm) { this.slowQ = 0; this.qChangeT = now; A.applyQuality(order[i - 1]); this.ft.fill(target); if (!this.autoToasted) { this.autoToasted = true; A.ui.toast(t("autoLow")); } }

@@ -2,21 +2,23 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import * as THREE from "./vendor/three.module.min.js?v=look1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=look1";
+import * as THREE from "./vendor/three.module.min.js?v=perf3";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=perf3";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=look1";
-import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=look1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=look1";
-import { World, prefetchWorld } from "./gfx/env.js?v=look1";
-import { Post } from "./gfx/post.js?v=look1";
-import { Studio } from "./gfx/showcase.js?v=look1";
-import { SoftFx } from "./gfx/fx.js?v=look1";
-import { on as onEv } from "./events.js?v=look1";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=look1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=perf3";
+import { EYES, TRAILS, LEGEND, SKINS } from "./skins.js?v=perf3";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=perf3";
+import { World, prefetchWorld } from "./gfx/env.js?v=perf3";
+import { Post } from "./gfx/post.js?v=perf3";
+import { Studio } from "./gfx/showcase.js?v=perf3";
+import { SoftFx } from "./gfx/fx.js?v=perf3";
+import { on as onEv } from "./events.js?v=perf3";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=perf3";
 
+// perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
+const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3];
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
   medium: { mat: "standard", food: 1, halo: false, dpr: 1.5, post: true, msaa: 0, shadows: 1, physical: true, irid: false, rings: 72, radial: 12, particles: 320, decor: 0.75, foliage: 0.5, creatures: true, ambient: 0.7, reflect: 0, texLo: false, normalMaps: true, names: 2, gtao: false, dof: false, bits: 220 },
@@ -76,7 +78,10 @@ export class Renderer3D {
     for (const m of this.snakes.showMeshes) { force(m, "visible"); m.visible = true; }
     const restore = () => { for (const [o, k, v] of saved) o[k] = v; };
     const t0 = performance.now(); let p;
-    try { p = this.r.compileAsync ? Promise.all([this.r.compileAsync(this.scene, this.cam), this.r.compileAsync(this.studio.scene, this.studio.cam)]) : (this.r.compile(this.scene, this.cam), this.r.compile(this.studio.scene, this.studio.cam), Promise.resolve()); } catch (e) { p = Promise.resolve(); }
+    // perf2: same as renderer.compileAsync, but a material disposed while it is still polling (a tier change during the
+    // warm-up) ends the wait instead of throwing "currentProgram.isReady of undefined" from a timer (an app-level error)
+    const R = this.r, safeAsync = (sc, cm) => { const mats = R.compile(sc, cm); return new Promise((res) => { const tick = () => { try { for (const m of mats) { const pr = R.properties.get(m).currentProgram; if (!pr || pr.isReady()) mats.delete(m); } } catch (_) { res(); return; } if (mats.size) setTimeout(tick, 10); else res(); }; tick(); }); };
+    try { p = Promise.all([safeAsync(this.scene, this.cam), safeAsync(this.studio.scene, this.studio.cam)]); } catch (e) { p = Promise.resolve(); }
     restore();
     return p.then(() => { this.prewarmMs = performance.now() - t0; }).catch(() => {});
   }
@@ -237,7 +242,7 @@ export class Renderer3D {
   // ---------- quality ----------
   setQuality(name) { if (!QUALITY[name]) return; if (name === this.qName && this._built) { this._applyDpr(); return; } this.qName = name; this.Q = QUALITY[name]; this._applyQ(); }
   _applyQ(first) {
-    const Q = this.Q; this.pMax = Q.particles;
+    const Q = this.Q; this.pMax = Math.round(Q.particles * GOV_PK[this.govL | 0]); this.pHead = 0;
     this.r.shadowMap.enabled = Q.shadows > 0; this.r.shadowMap.type = Q.shadows > 1 ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
     this.sun.castShadow = Q.shadows > 0; const ms = Q.shadows > 1 ? 2048 : 512; // calm1: one small shadow map on low/medium (phones) if (this.sun.shadow.map && this.sun.shadow.mapSize.x !== ms) { this.sun.shadow.map.dispose(); this.sun.shadow.map = null; } this.sun.shadow.mapSize.set(ms, ms);
     this.fxLight.visible = true; // constant light count: toggling a light recompiles every lit material mid-match this.studio.key.castShadow = Q.shadows > 0; this.studio.setQuality(Q);
@@ -248,6 +253,9 @@ export class Renderer3D {
     this._built = true; this._applyDpr(); this.warm = this.prewarm && this.studio ? this.prewarm() : null;
   }
   setOptions(o) { Object.assign(this, o); this._applyDpr(); }
+  // perf2: cheap live knobs only (no material/mesh rebuild): see gov.js
+  setGov(L) { L = Math.max(0, Math.min(3, L | 0)); if (L === (this.govL | 0) && this._govSet) return; this._govSet = true; this.govL = L; this.pMax = Math.round(this.Q.particles * GOV_PK[L]); this.pHead = 0;
+    if (this.halo) this.halo.visible = L < 2; this.r.shadowMap.autoUpdate = GOV_SH[L] === 1; this.r.shadowMap.needsUpdate = true; this._applyDpr(); }
   // sharp1: pixel ratio comes from the Resolution setting, not the effects tier. High = min(dpr, 2), Max = min(dpr, 3),
   // Auto = High that may step down (>=0.25 at a time, never below 1.25) only after sustained slow frames. The drawing
   // buffer is only reallocated when the size or ratio really changes (setSize on every call reallocated it).
@@ -255,10 +263,10 @@ export class Renderer3D {
   _ptScale() { this.ptScale.value = (this.h || 400) * this.dpr * 0.5 / Math.tan((this.cam.fov * Math.PI) / 360); }
   _applyDpr() {
     const base = this._basePR(); if (this.resMode !== "auto" || this.userLow) this.prDyn = 0;
-    const dpr = this.prDyn ? Math.min(base, this.prDyn) : base; this.dpr = dpr; this.dyn = dpr / base;
+    let dpr = this.prDyn ? Math.min(base, this.prDyn) : base; dpr = Math.max(Math.min(base, 1), Math.min(dpr, GOV_PR[this.govL | 0])); this.dpr = dpr; this.dyn = dpr / base;
     const key = (this.w || 1) + "x" + (this.h || 1) + "@" + dpr, changed = key !== this._sz;
     if (changed) { this._sz = key; this.r.setPixelRatio(dpr); this.r.setSize(this.w || 1, this.h || 1, false); }
-    const want = this.Q.post && this.postFx;
+    const want = this.Q.post && this.postFx && (this.govL | 0) < 3;
     if (want && (!this.post.on || this.post.Q !== this.Q)) { this.post.build(this.Q, this.scene, this.cam); this._grade(); }
     else if (changed && this.post.on) this.post.setSize();
     if (!want && this.post.on) this.post.dispose();
@@ -522,6 +530,7 @@ export class Renderer3D {
     // planar reflection (high/ultra): mirrored camera renders the scene minus ground/water into a half-res target
     const gu = this.world.groundU; gu.uRefl.value = 0;
     if (this.mirrorRT && Q.reflect && (this.W3.reflect || (this.world.water && this.W3.water !== "lava"))) { this._mirror(); gu.tRefl.value = this.mirrorRT.texture; gu.uRefl.value = this.W3.reflect || 0.0001; }
+    const shN = GOV_SH[this.govL | 0]; if (shN > 1 && this.r.shadowMap.enabled) { this.r.shadowMap.autoUpdate = false; if (this._fno % shN === 0) this.r.shadowMap.needsUpdate = true; }
     if (this.post.on) this.post.render(dt); else this.r.render(this.scene, cam);
   }
   _mirror() {

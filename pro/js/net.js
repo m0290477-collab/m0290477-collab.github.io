@@ -2,11 +2,18 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=look1";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=perf3";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
 function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && !(s.pu && (s.pu[2] > 0 || s.pu[7] > 0))) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
 export const SERVER = (typeof window !== "undefined" && window.__SSP_SERVER) || "wss://super-snake-online.molierk.workers.dev/ws";
-const DT = 1 / 30, INTERP = 3; // render remote snakes 3 server ticks (100 ms) behind: absorbs network jitter
+const DT = 1 / 30, INTERP = 3; // render remote snakes >= 3 server ticks (100 ms) behind: absorbs network jitter
+// perf2 network governor: the interpolation delay follows measured snapshot jitter / loss. It grows fast on a spike
+// (6 ticks/s) and shrinks slowly (0.25 tick/s, only after 3 s without a spike), between INTERP (the old fixed value, so a
+// clean connection behaves exactly as before) and INTERP_MAX. Rendering only: the local death check uses the same
+// positions that are drawn (prepareOthers), and the server stays authoritative, so rules and fairness are unchanged.
+const INTERP_MAX = 8;
+export function interpTarget(jit, lossRate) { return Math.max(INTERP, Math.min(INTERP_MAX, 2 + (jit + 6) / (DT * 1000) + Math.min(2, lossRate * 20))); }
+export function netQuality(rtt, jit, lossRate) { const sc = rtt / 1000 * 2 + jit / 30 + lossRate * 25; return sc < 0.6 ? "good" : sc < 1.4 ? "fair" : "poor"; }
 
 export class NetBackend {
   constructor(opts) {
@@ -16,7 +23,8 @@ export class NetBackend {
     this.batch = []; this.acc = 0; this.R = C.R; this.tick = 0; this.clock = null; this.lb = []; this.humans = 0; this.ping = 0; this.pings = [];
     this.FM = 6200; this.fx = new Float32Array(this.FM); this.fy = new Float32Array(this.FM); this.fv = new Float32Array(this.FM); this.fc = new Uint8Array(this.FM); this.fa = new Uint8Array(this.FM); this.fb = new Float64Array(this.FM);
     this.free = []; for (let i = this.FM - 1; i >= 0; i--) this.free.push(i); this.fmap = new Map(); this.ghosts = []; this.tmp = new Float32Array(1600);
-    this.status = "connecting"; this.tries = 0; this.closed = false; this.stats = { rtt: [], corrections: 0, corrDist: 0, selfDeaths: 0, serverDeaths: 0, packets: 0, gaps: 0 };
+    this.status = "connecting"; this.tries = 0; this.closed = false; this.stats = { rtt: [], corrections: 0, corrDist: 0, selfDeaths: 0, serverDeaths: 0, packets: 0, gaps: 0, snaps: 0 };
+    this.interp = INTERP; this.jit = 0; this.jitPk = 0; this.spikeT = 0; this.lastArr = 0; this.loss = 0; this.quality = "good"; this._qN = 0;
     this.age = (i) => Math.min(1, (performance.now() - this.fb[i]) / 300);
     this.ta = 0; this.boostIn = 0; this.publicIdx = 1; this.pus = []; this.mets = [];
   }
@@ -25,7 +33,7 @@ export class NetBackend {
     let ws; try { ws = new WebSocket(SERVER + "?room=" + encodeURIComponent(room) + (this.o.bots === 0 ? "&bots=0" : "")); } catch (e) { this.fail(); return; }
     ws.binaryType = "arraybuffer"; this.ws = ws; this.room = room;
     const to = setTimeout(() => { if (ws.readyState !== 1) { try { ws.close(); } catch (_) {} } }, 6000);
-    ws.onopen = () => { clearTimeout(to); this.tries = 0; this.status = "online"; ws.send(JSON.stringify({ t: "hello", name: this.o.name, skin: this.o.skin, v: 1 })); this._pingT = setInterval(() => this.sendPing(), 2000); this.sendPing(); this.cb.onStatus && this.cb.onStatus("online"); };
+    ws.onopen = () => { clearTimeout(to); this.tries = 0; this.status = "online"; ws.send(JSON.stringify({ t: "hello", name: this.o.name, skin: this.o.skin, v: 1 })); this._pingT = setInterval(() => { if (this.quality === "poor" && (this._pk = !this._pk)) return; this.sendPing(); }, 2000); this.sendPing(); this.cb.onStatus && this.cb.onStatus("online"); };
     ws.onmessage = (e) => { try { typeof e.data === "string" ? this.onJson(JSON.parse(e.data)) : this.onBin(e.data); } catch (err) { console.warn("net msg", err); } };
     ws.onclose = (e) => {
       clearTimeout(to); clearInterval(this._pingT); if (this.closed) return;
@@ -93,7 +101,14 @@ export class NetBackend {
     if (type === 3) { const n = v.getUint16(1, true); let o = 3; for (let k = 0; k < n; k++) { this.allocFood(v.getUint16(o, true), v.getFloat32(o + 2, true), v.getFloat32(o + 6, true), v.getUint8(o + 10) / 10, v.getUint8(o + 11), false); o += 12; } return; }
     if (type !== 1) return;
     this.stats.packets++;
-    const tick = v.getUint32(1, true); if (this.tick && tick !== this.tick + 1) this.stats.gaps++; this.tick = tick;
+    const tick = v.getUint32(1, true); if (this.tick && tick !== this.tick + 1) this.stats.gaps++;
+    { // perf2: jitter = how late this snapshot is versus the server's tick spacing; loss = share of skipped ticks (EWMA)
+      const now = performance.now(), dTick = this.tick ? tick - this.tick : 1;
+      if (this.lastArr && dTick > 0 && dTick < 30) { const late = Math.abs(now - this.lastArr - dTick * DT * 1000); this.jit += (late - this.jit) * 0.1; this.loss += ((dTick > 1 ? (dTick - 1) / dTick : 0) - this.loss) * 0.05;
+        const L = this.lateR || (this.lateR = new Float32Array(90)), S2 = this.lateS || (this.lateS = new Float32Array(90)); L[this.lateI = ((this.lateI | 0) + 1) % 90] = late; this.lateN = Math.min(90, (this.lateN | 0) + 1);
+        if (this.lateI % 10 === 0 && this.lateN >= 20) { S2.set(L); S2.sort(); const p95 = S2[90 - Math.max(1, Math.round(this.lateN * 0.05))]; if (p95 > this.jitPk + 4) this.spikeT = now; this.jitPk = p95; } } // ~3 s window, p95 lateness
+      this.lastArr = now; }
+    this.tick = tick;
     // clock: snap on big drift, otherwise ease toward the newest tick so interpolation never stutters
     const est = this.estTick(); if (!this.clock || Math.abs(est - tick) > 4) this.setClock(tick); else this.clock.base += (tick - est) * 0.08;
     const ack = v.getUint16(5, true), extra = v.getUint8(7), n = v.getUint8(24); let o = 25;
@@ -124,7 +139,7 @@ export class NetBackend {
         for (let q = pending - 1; q >= 0; q--) { const sq = (this.seq - q) & 255; s.ta = this.hist[sq * 2]; s.boost = this.hist[sq * 2 + 1]; predict(s, DT); }
         const err = Math.hypot(s.x - px, s.y - py);
         if (err < 0.01) { s.h = h0; s.n = n0; s.x = px; s.y = py; s.a = pa; s.av = pav; if (Math.abs(s.m - pm) < 0.3) s.setMass(pm); } // tiny float noise: keep the smooth local path
-        else { this.stats.corrections++; this.stats.corrDist += err; if (this.debug) this.debug.push([tick, pending, extra, +err.toFixed(3), +this.me.m.toFixed(1), this.boostIn]); if (err < 6) { this.vox = (this.vox || 0) + px - s.x; this.voy = (this.voy || 0) + py - s.y; } } // visual offset decays, so a correction never pops
+        else { this.stats.corrections++; this.stats.corrDist += err; if (this.debug) this.debug.push([tick, pending, extra, +err.toFixed(3), +this.me.m.toFixed(1), this.boostIn]); if (err < 10) { this.vox = (this.vox || 0) + px - s.x; this.voy = (this.voy || 0) + py - s.y; const m = Math.hypot(this.vox, this.voy); if (m > 8) { this.vox *= 8 / m; this.voy *= 8 / m; } } } // visual offset decays, so a correction never pops (perf2: up to 10 units, spread longer when large)
         s.ta = this.ta; s.boost = this.boostIn;
       }
     }
@@ -142,7 +157,7 @@ export class NetBackend {
       puTick(s, DT);
       s.ta = taQ; s.boost = this.boostIn; this.prevX = s.x; this.prevY = s.y; predict(s, DT);
       this.batch.push(this.seq, q, this.boostIn);
-      if (this.batch.length >= 6) this.flush();
+      if (this.batch.length >= (this.quality === "poor" ? 9 : 6)) this.flush(); // perf3: weak link -> 3 inputs per packet (10 packets/s instead of 15); the server still applies one per tick
       // instant death: head vs bodies exactly as drawn this frame, and the wall
       this.prepareOthers();
       let hit = s.inv > 0 ? 0 : s.pu[7] > 0 ? 0 : Sim.hitTest(s.x, s.y, s.r, this._others, this.tmp, s, this.tmp2 || (this.tmp2 = new Float32Array(1200))); // noself1: own body never kills (me is skipped); head-on = only the deeper head dies
@@ -152,7 +167,11 @@ export class NetBackend {
       if (hit || wall) { this.dead = true; this.stats.selfDeaths++; this.send(JSON.stringify({ t: "die", hit: hit || 0, seq: this.seq })); this.flush(); this.cb.onMyDeath(hit, hit ? 3 : 1, true); }
     }
     if (steps >= 5) this.acc = 0;
-    if (this.vox || this.voy) { const k = Math.exp(-dt * 12); this.vox *= k; this.voy *= k; if (Math.abs(this.vox) + Math.abs(this.voy) < 0.002) this.vox = this.voy = 0; }
+    if (this.vox || this.voy) { const m = Math.abs(this.vox) + Math.abs(this.voy), k = Math.exp(-dt * (m < 0.6 ? 12 : m < 3 ? 8 : 5)); this.vox *= k; this.voy *= k; if (m < 0.002) this.vox = this.voy = 0; }
+    { // perf2: interpolation delay governor (see interpTarget)
+      const now = performance.now(), tgt = interpTarget(Math.max(this.jit * 1.5, this.jitPk), this.loss);
+      if (tgt > this.interp) this.interp = Math.min(tgt, this.interp + dt * 6); else if (now - this.spikeT > 3000) this.interp = Math.max(tgt, this.interp - dt * 0.25);
+      if (!this._qT || now - this._qT > 1000) { this._qT = now; const nq = netQuality(this.ping || 0, this.jit, this.loss); if (nq === this.quality) this._qN = 0; else if (++this._qN >= (nq === "poor" ? 2 : 3)) { this.quality = nq; this._qN = 0; } } } // perf3: hysteresis, 2 s to drop, 3 s to rise (no flicker)
     const now = performance.now();
     for (const [id, mr] of this.mirrors) if (!mr.s.alive && now - mr.deadAt > 600) this.mirrors.delete(id);
     for (const mr of this.mirrors.values()) puTick(mr.s, dt);
@@ -161,7 +180,7 @@ export class NetBackend {
   }
   flush() { if (!this.batch.length) return; const n = this.batch.length / 3, b = new ArrayBuffer(2 + n * 5), v = new DataView(b); v.setUint8(0, 2); v.setUint8(1, n); for (let k = 0; k < n; k++) { v.setUint16(2 + k * 5, this.batch[k * 3], true); v.setUint16(4 + k * 5, this.batch[k * 3 + 1], true); v.setUint8(6 + k * 5, this.batch[k * 3 + 2]); } this.send(b); this.batch.length = 0; }
   prepareOthers() {
-    const rt = this.estTick() - INTERP, fl = Math.floor(rt), fr = rt - fl; const out = this._others || (this._others = []); out.length = 0;
+    const rt = this.estTick() - this.interp, fl = Math.floor(rt), fr = rt - fl; const out = this._others || (this._others = []); out.length = 0;
     for (const mr of this.mirrors.values()) { const s = mr.s; let o = mr.lastTick - fl, f = fr; if (o < 1) { o = 0; f = 0; } if (o > s.n - 3) o = s.n - 3; s._ro = o; s._rf = f; if (s.alive) out.push(s); }
     return out;
   }

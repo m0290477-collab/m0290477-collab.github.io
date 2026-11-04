@@ -2,12 +2,14 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=look1";
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=look1";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=look1";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=look1";
-import { on as onEv } from "./events.js?v=look1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=perf3";
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=perf3";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=perf3";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=perf3";
+import { on as onEv } from "./events.js?v=perf3";
 const NO2 = 220;
+// perf2: governor levels (see gov.js): pixel-ratio cap, particle cap
+const GOV_PR = [3, 2, 1.5, 1.25], GOV_PC = [300, 180, 100, 50];
 
 const TAU = Math.PI * 2;
 const CSS = new Array(32768); // 15-bit quantised rgb -> "rgb(...)" (no string building per segment)
@@ -53,6 +55,8 @@ export class Renderer2D {
     setTimeout(() => idle(step), 1500);
   }
   setQuality(q) { this.qName = q; }
+  // perf2: live knobs: lower pixel ratio, fewer particles; L2+ drops the two decorative tube strokes and rain sparkles, L3 the grid and snake drop shadows
+  setGov(L) { L = Math.max(0, Math.min(3, L | 0)); if (L === (this.govL | 0)) return; this.govL = L; this.resize(); }
   setOptions(o) { const lo = this.userLow; Object.assign(this, o); if (this.userLow !== lo) this.resize(); }
   setArena(R) { this.R = R; }
   setWorld(i) {
@@ -67,7 +71,7 @@ export class Renderer2D {
   // x DPR (integer), and the transform uses the real backing/CSS ratio so nothing is resampled by the compositor.
   // The buffer is only reallocated when the size really changes.
   resize() {
-    const rc = this.canvas.getBoundingClientRect(), w = rc.width || innerWidth, h = rc.height || innerHeight, d = Math.min(this.userLow ? 2 : 3, devicePixelRatio || 1);
+    const rc = this.canvas.getBoundingClientRect(), w = rc.width || innerWidth, h = rc.height || innerHeight, d = Math.max(Math.min(1, devicePixelRatio || 1), Math.min(this.userLow ? 2 : 3, GOV_PR[this.govL | 0], devicePixelRatio || 1));
     const bw = Math.max(1, Math.round(w * d)), bh = Math.max(1, Math.round(h * d)); this.w = w; this.h = h; this.dpr = d; this.kx = bw / w; this.ky = bh / h;
     if (this.canvas.width !== bw || this.canvas.height !== bh) { this.canvas.width = bw; this.canvas.height = bh; }
     this.g.imageSmoothingEnabled = true; this.g.imageSmoothingQuality = "high"; this.bdK = ""; this.vig = null;
@@ -76,7 +80,7 @@ export class Renderer2D {
   emit() {}
   shatter(s, fn) { if (this.calm) return; const pts = this.tmp, n = bodyPoints(s, 0, 0, Math.max(0.5, s.r * 0.8), s.len, pts, 790), col = this.col; for (let j = 0; j < n; j += Math.max(1, (n / 40) | 0)) { fn(j, n, 0, col); const a = Math.random() * TAU, v = 2 + Math.random() * 5; this._part(pts[j * 2], pts[j * 2 + 1], Math.cos(a) * v, Math.sin(a) * v, 1, css(col[0], col[1], col[2])); } }
   // pooled particles (sharp1): no object churn, capped at 300
-  _part(x, y, vx, vy, l, c) { if (this.parts.length >= 300) return; const p = this.pPool.pop() || {}; p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.l = p.m = l; p.c = c; this.parts.push(p); }
+  _part(x, y, vx, vy, l, c) { if (this.parts.length >= GOV_PC[this.govL | 0]) return; const p = this.pPool.pop() || {}; p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.l = p.m = l; p.c = c; this.parts.push(p); }
   ring(x, y, rgb, R = 8) { this.rings.push({ x, y, t: 0, R, c: lin2css(rgb) }); }
   shake(a) { if (this.juice && !this.reduceMotion && !this.calm) this.shakeA = Math.min(1.2, this.shakeA + a); }
   project(x, y) { return [(x - this.camX) * this.scale + this.w / 2, (y - this.camY) * this.scale + this.h / 2, true]; }
@@ -163,7 +167,8 @@ export class Renderer2D {
     // barely visible fine grid (alpha 0.04): gives a sense of speed without any texture; one path, clipped to the arena
     // barely visible fine grid, drawn in device pixels: each line is snapped to the pixel grid and exactly 1 CSS px wide
     // (sharp1: world-space 0.08-unit lines landed between pixels and smeared into soft 2-4 px bands at DPR 3)
-    { const G = 5, kx = this.kx, ky = this.ky, ox = (this.w / 2 + sx - cx * S) * kx, oy = (this.h / 2 + sy - cy * S) * ky, BW = this.canvas.width, BH = this.canvas.height;
+    const GL = this.govL | 0;
+    if (GL < 3) { const G = 5, kx = this.kx, ky = this.ky, ox = (this.w / 2 + sx - cx * S) * kx, oy = (this.h / 2 + sy - cy * S) * ky, BW = this.canvas.width, BH = this.canvas.height;
       const lw = Math.max(1, Math.round(kx)), half = (lw & 1) ? 0.5 : 0, sxp = S * kx, syp = S * ky;
       const x0 = Math.ceil((-ox / sxp) / G) * G, x1 = (BW - ox) / sxp, y0 = Math.ceil((-oy / syp) / G) * G, y1 = (BH - oy) / syp;
       g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.beginPath(); g.arc(ox, oy, R * sxp, 0, TAU); g.clip(); g.strokeStyle = "#ffffff"; g.globalAlpha = 0.05; g.lineWidth = lw; g.beginPath();
@@ -192,7 +197,7 @@ export class Renderer2D {
       g.globalAlpha = 0.7; g.strokeStyle = "#e0705a"; g.lineWidth = 0.35; g.beginPath(); g.arc(M.x, M.y, M.r, 0, TAU); g.stroke();
       const f = Math.pow(1 - u, 1.4), rx = M.x + 10 * f, ry = M.y - 14 * f; g.globalAlpha = 1; g.fillStyle = "#ff8a2a"; g.beginPath(); g.arc(rx, ry, 1 + u * 0.6, 0, TAU); g.fill(); g.fillStyle = "#3a2418"; g.beginPath(); g.arc(rx - 0.2, ry - 0.2, 0.7 + u * 0.4, 0, TAU); g.fill(); }
     g.globalAlpha = 1;
-    if ((v.rain || v.goldRain) && !this.calm) { const h = v.rain || v.goldRain; if (Math.random() < 0.3) this.burst(h.x + (Math.random() - 0.5) * 30, h.y + (Math.random() - 0.5) * 20, v.rain ? [0.8, 1, 0.3] : [1, 0.85, 0.2], 2, 1.5, 0.6); }
+    if ((v.rain || v.goldRain) && !this.calm && GL < 2) { const h = v.rain || v.goldRain; if (Math.random() < 0.3) this.burst(h.x + (Math.random() - 0.5) * 30, h.y + (Math.random() - 0.5) * 20, v.rain ? [0.8, 1, 0.3] : [1, 0.85, 0.2], 2, 1.5, 0.6); }
     // snakes
     const pts = this.tmp, col = this.col; this._palCss = v.foodPalCss === FOOD_COLORS_CB ? v.foodPalCss : CANDY_CSS; let crown = null; this._look2d(v);
     for (const d of v.snakes) {
@@ -203,7 +208,10 @@ export class Renderer2D {
       const P = s.pu || null, frozen = s.slow > 0, inv = false; // fix1: ghost / invisibility retired
       d.alpha = d.alpha * (inv ? (d.me ? 0.42 : 0.12) : 1); g.globalAlpha = d.alpha;
       if (d.me && !v.showcase) { g.globalAlpha = 0.5 * d.alpha; g.strokeStyle = this.meC; g.lineWidth = r * 0.35; g.beginPath(); g.arc(pts[0], pts[1], r * 2.1, 0, TAU); g.stroke(); g.globalAlpha = d.alpha; } // look1: steady ring marks your own snake (no pulse, calm-safe)
-      g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); for (let j = n - 1; j >= 0; j -= 2) { g.moveTo(pts[j * 2] + r * 1.45, pts[j * 2 + 1] + r * 0.45); g.arc(pts[j * 2] + r * 0.45, pts[j * 2 + 1] + r * 0.45, r * 1.02, 0, TAU); } g.fill(); // soft drop shadow
+      // soft drop shadow. perf3: one round-capped stroke along the offset spine (the same union of r*1.02 discs, same flat 0.28
+      // alpha) instead of n/2 separate arc sub-paths, which was the single most expensive path to rasterise per snake
+      if (GL < 3) { const ox = r * 0.45; if (n > 1) { g.strokeStyle = "rgba(0,0,0,0.28)"; g.lineWidth = r * 2.04; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0] + ox, pts[1] + ox); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] + ox, pts[j * 2 + 1] + ox); g.stroke(); }
+        else if (n === 1) { g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); g.arc(pts[0] + ox, pts[1] + ox, r * 1.02, 0, TAU); g.fill(); } }
       if (n > 1) { g.strokeStyle = "rgba(0,0,0,0.38)"; g.lineWidth = r * 2.16; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.stroke(); } // dark rim so the body reads on any ground
       if (d.team) { g.strokeStyle = lin2css(d.team); g.lineWidth = r * 0.5; g.lineJoin = g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2], pts[j * 2 + 1]); g.globalAlpha *= 0.55; g.lineWidth = r * 2.5; g.stroke(); g.globalAlpha = d.alpha; }
       // body: consecutive segments of the same colour share one path
@@ -216,8 +224,8 @@ export class Renderer2D {
       }
       if (open) g.fill();
       // tube shading: a soft specular stripe on top + subtle scale bands
-      if (n > 2) { g.strokeStyle = "rgba(0,0,0,0.13)"; g.lineWidth = r * 0.7; g.lineCap = g.lineJoin = "round"; g.beginPath(); g.moveTo(pts[0] + r * 0.4, pts[1] + r * 0.45); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] + r * 0.4, pts[j * 2 + 1] + r * 0.45); g.stroke(); }
-      if (n > 2) { g.strokeStyle = "rgba(255,255,255,0.2)"; g.lineWidth = r * 0.55; g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0] - r * 0.32, pts[1] - r * 0.38); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] - r * 0.32, pts[j * 2 + 1] - r * 0.38); g.stroke();
+      if (n > 2 && GL < 2) { g.strokeStyle = "rgba(0,0,0,0.13)"; g.lineWidth = r * 0.7; g.lineCap = g.lineJoin = "round"; g.beginPath(); g.moveTo(pts[0] + r * 0.4, pts[1] + r * 0.45); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] + r * 0.4, pts[j * 2 + 1] + r * 0.45); g.stroke(); }
+      if (n > 2 && GL < 2) { g.strokeStyle = "rgba(255,255,255,0.2)"; g.lineWidth = r * 0.55; g.lineCap = "round"; g.beginPath(); g.moveTo(pts[0] - r * 0.32, pts[1] - r * 0.38); for (let j = 1; j < n; j++) g.lineTo(pts[j * 2] - r * 0.32, pts[j * 2 + 1] - r * 0.38); g.stroke();
         }
       if (n > 1) {
         const a = Math.atan2(pts[1] - pts[3], pts[0] - pts[2]), E = EYES[d.eye] || EYES[0], er = r * 0.42 * E.s, la = d.me && this.meLook !== undefined ? this.meLook : d.look ?? a, ca = Math.cos(a), sa = Math.sin(a);

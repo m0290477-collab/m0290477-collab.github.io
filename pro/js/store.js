@@ -1,6 +1,6 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=look1";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE } from "./skins.js?v=perf3";
 export const SEASON = { id: "s1", tiers: 30, per: 400 };
 // free season track: coins every tier, chests on 5/15/25, legendary skins on 10/20/30 (never paid)
 export const seasonReward = (k) => (k === 10 ? { skin: "magma" } : k === 20 ? { skin: "storm" } : k === 30 ? { skin: "dragon" } : k % 5 === 0 ? { coins: 300 * (k / 5) + 200, chest: 1 } : { coins: 60 + k * 10 });
@@ -10,7 +10,7 @@ export const CHAINS = {
   survivor: { reward: "aurora_l", steps: [["life", 120], ["wave", 5], ["brWin", 1], ["life", 300]] },
 };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=look1";
+import { WORLDS } from "./worlds.js?v=perf3";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -25,6 +25,17 @@ export const KV = (() => {
 // prototype-pollution-safe JSON
 export const jparse = (s) => { try { return JSON.parse(s, (k, v) => (k === "__proto__" || k === "constructor" || k === "prototype" ? undefined : v)); } catch (_) { return null; } };
 
+// ---------- guardian (perf2): error log, economy checksum, last-known-good backups ----------
+// local error ring buffer (no external service): [{t, k, m}], newest last, max 30
+export function logErr(k, m) { try { const L = jparse(KV.get("ssp-errlog") || "[]"); const a = Array.isArray(L) ? L : []; a.push({ t: Date.now(), k: String(k).slice(0, 24), m: String(m && m.message ? m.message : m).slice(0, 200) }); while (a.length > 30) a.shift(); KV.set("ssp-errlog", JSON.stringify(a)); } catch (_) {} }
+// tamper check for the economy fields. A local game cannot be made cheat-proof (the code is on the device); this only
+// catches hand-edited saves, which are then restored from the last-known-good backup instead of being trusted.
+export function readErrLog() { const L = jparse(KV.get("ssp-errlog") || "[]"); return Array.isArray(L) ? L : []; }
+const ECON_K = "ssp-econ-v1";
+export function econSum(p) { const srt = (a) => (Array.isArray(a) ? a.slice().sort().join(",") : ""); const str = ECON_K + "|" + (+p.coins || 0) + "|" + (+p.xp || 0) + "|" + srt(p.owned) + "|" + srt(p.flags) + "|" + srt(p.cos) + "|" + ((p.season && +p.season.xp) || 0);
+  let h = 0x811c9dc5, g = 0x01000193; for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h = Math.imul(h ^ c, 16777619) >>> 0; g = (Math.imul(g, 31) + c + (h >>> 7)) >>> 0; } return h.toString(36) + g.toString(36); }
+const ECON = ["coins", "xp", "owned", "flags", "cos", "season"];
+const sane = (p) => p && typeof p === "object" && Number.isFinite(+p.coins) && +p.coins >= 0 && Number.isFinite(+p.xp) && +p.xp >= 0;
 export const LV_MAX = 100, xpNeed = (n) => Math.round(100 * n ** 1.6);
 export function lvInfo(xp) { let n = 1, x = xp, need = xpNeed(1); while (n < LV_MAX && x >= need) { x -= need; n++; need = xpNeed(n); } return { n, x: Math.floor(x), need }; }
 export const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
@@ -85,9 +96,18 @@ export const emailOk = (e) => typeof e === "string" && e.length <= 254 && /^[^\s
 export class Store {
   constructor() {
     this.warn = null; // set by the app: (key) => toast
-    const o = jparse(KV.get("ssp-acc") || "null");
-    this.acc = Object.create(null); if (o && o.v === 1 && o.a && typeof o.a === "object") for (const k of Object.keys(o.a)) { const a = o.a[k]; if (a && a.h && a.s && a.p) { a.p = fixProfile(a.p); this.acc[k] = a; } }
-    this.guest = fixProfile(jparse(KV.get("ssp-guest") || "null"));
+    // guardian: a save that does not parse (truncated write, corruption) is restored from the newest backup that does,
+    // instead of starting a new profile. Backups: ssp-bak (recent) and ssp-bak1 (older), each {t, a, g}.
+    this.repairs = []; const baks = [jparse(KV.get("ssp-bak") || "null"), jparse(KV.get("ssp-bak1") || "null")].filter((b) => b && typeof b === "object" && b.v === 1);
+    const rawA = KV.get("ssp-acc"), rawG = KV.get("ssp-guest"); let o = jparse(rawA || "null"), g0 = jparse(rawG || "null");
+    // repair, never wipe: the unreadable text itself is kept aside (ssp-corrupt, newest one) so nothing is lost for good
+    const keep = (k, raw) => { try { KV.set("ssp-corrupt", JSON.stringify({ t: Date.now(), k, raw: String(raw).slice(0, 60000) })); } catch (_) {} };
+    if (rawA && !(o && o.v === 1 && o.a && typeof o.a === "object")) keep("ssp-acc", rawA);
+    if (rawG && !(g0 && typeof g0 === "object")) keep("ssp-guest", rawG);
+    if (rawA && !(o && o.v === 1 && o.a && typeof o.a === "object")) { const b = baks.find((x) => x.a && typeof x.a === "object"); o = b ? { v: 1, a: b.a } : null; this.repairs.push(b ? "acc:restored" : "acc:lost"); logErr("save", b ? "accounts unreadable, restored from backup" : "accounts unreadable, no backup"); }
+    if (rawG && !(g0 && typeof g0 === "object")) { const b = baks.find((x) => x.g && typeof x.g === "object"); g0 = b ? b.g : null; this.repairs.push(b ? "guest:restored" : "guest:lost"); logErr("save", b ? "guest unreadable, restored from backup" : "guest unreadable, no backup"); }
+    this.acc = Object.create(null); if (o && o.v === 1 && o.a && typeof o.a === "object") for (const k of Object.keys(o.a)) { const a = o.a[k]; if (a && a.h && a.s && a.p) { a.p = this._verify(fixProfile(a.p), baks.map((b) => b.a && b.a[k] && b.a[k].p), "acc:" + k); this.acc[k] = a; } }
+    this.guest = this._verify(fixProfile(g0), baks.map((b) => b.g), "guest");
     this.cur = null; const c = KV.get("ssp-cur"); if (c && this.acc[c]) this.cur = c;
     this.settings = { ...DEF_SETTINGS }; const st = jparse(KV.get("ssp-set") || "null");
     if (st && typeof st === "object") { for (const k in DEF_SETTINGS) if (typeof st[k] === typeof DEF_SETTINGS[k]) this.settings[k] = st[k]; if (st.sv !== 2) { this.settings.showFps = false; this.settings.sv = 2; } } // v2: the FPS counter is a debug option, off for everyone
@@ -104,12 +124,56 @@ export class Store {
   }
   get p() { return this.cur ? this.acc[this.cur].p : this.guest; }
   get isGuest() { return !this.cur; }
-  save() { clearTimeout(this._t); this._t = setTimeout(() => this.flush(), 250); }
+  // a profile whose economy checksum does not match was edited outside the game: its coins / XP / owned items come back
+  // from the newest backup copy whose own checksum verifies (never granting anything). No checksum yet = older build: trusted.
+  _verify(p, cands, label) {
+    if (!p._ck || p._ck === econSum(p)) { if (!sane(p)) { p.coins = Math.max(0, +p.coins || 0); p.xp = Math.max(0, +p.xp || 0); } return p; }
+    const good = cands.find((c) => c && typeof c === "object" && c._ck && c._ck === econSum(c) && sane(c));
+    if (good) { const f = fixProfile(JSON.parse(JSON.stringify(good))); for (const k of ECON) p[k] = f[k]; this.repairs.push(label + ":tamper-restored"); logErr("tamper", label + " economy restored from backup"); }
+    else { this.repairs.push(label + ":tamper-unverified"); logErr("tamper", label + " checksum mismatch, no valid backup"); }
+    p._ck = econSum(p); return p;
+  }
+  // guardian autosave: save() coalesces bursts (250 ms); a 1 s watcher compares a cheap signature of everything that
+  // matters (no JSON of the big objects) and flushes only when it changed; flush writes only keys whose text changed;
+  // the page going away (hidden / pagehide / beforeunload) flushes at once. Failed writes retry with back-off.
+  save() { this._dirty = true; clearTimeout(this._t); this._t = setTimeout(() => this.flush(), 250); }
+  _sig() { const p = this.p, st = p.stats, d = p.daily, w = p.weekly; let m = 0; if (d && d.m) for (const x of d.m) m += (+x.p || 0) + (x.c ? 1e6 : 0); if (w && w.m) for (const x of w.m) m += (+x.p || 0) + (x.c ? 1e6 : 0);
+    const S = this.settings; let sv = ""; for (const k in S) sv += S[k] + ","; // settings: ~30 scalars
+    return (this.cur || "") + "|" + p.coins + "|" + p.xp + "|" + p.owned.length + "|" + p.flags.length + "|" + p.cos.length + "|" + JSON.stringify(p.skin) + p.eye + p.trail + p.nc + p.av + p.frame + p.title + p.banner + "|" + p.season.xp + "|" + p.season.claimed.length + "|" + st.games + "|" + st.kills + "|" + st.food + "|" + p.hist.length + "|" + p.rp + "|" + m + "|" + Object.keys(p.ach).length + "|" + p.name + p.bio + "|" + p.last.mode + p.last.world + p.last.diff + p.last.room + "|" + sv; }
+  startAutosave() {
+    if (this._as) return; this._as = setInterval(() => { const g = this._sig(); if (g !== this._lastSig || this._dirty) this.flush(); }, 1000);
+    const now = () => this.flush(); addEventListener("pagehide", now); addEventListener("beforeunload", now); document.addEventListener("visibilitychange", () => { if (document.hidden) now(); });
+  }
   flush() {
-    clearTimeout(this._t);
-    const ok1 = KV.set("ssp-acc", JSON.stringify({ v: 1, a: this.acc })), ok2 = KV.set("ssp-guest", JSON.stringify(this.guest)), ok3 = KV.set("ssp-set", JSON.stringify(this.settings));
-    if (this.cur) KV.set("ssp-cur", this.cur); else KV.del("ssp-cur");
-    if (KV.ok && !(ok1 && ok2 && ok3) && this.warn) this.warn("storageFull");
+    clearTimeout(this._t); this._dirty = false; this._lastSig = this._sig();
+    for (const a of Object.values(this.acc)) if (a && a.p) a.p._ck = econSum(a.p); this.guest._ck = econSum(this.guest);
+    const W = this._w || (this._w = Object.create(null)); let ok = true;
+    const put = (k, v) => { if (W[k] === v) return; if (KV.set(k, v)) W[k] = v; else ok = false; };
+    const sa = JSON.stringify({ v: 1, a: this.acc }), sg = JSON.stringify(this.guest);
+    put("ssp-acc", sa); put("ssp-guest", sg); put("ssp-set", JSON.stringify(this.settings));
+    if (this.cur) put("ssp-cur", this.cur); else if (W["ssp-cur"] !== "") { KV.del("ssp-cur"); W["ssp-cur"] = ""; }
+    if (KV.ok && !ok) { this._failN = (this._failN || 0) + 1; logErr("save", "write failed (" + this._failN + ")"); if (this._failN === 1 && this.warn) this.warn("storageFull"); clearTimeout(this._rt); this._rt = setTimeout(() => this.flush(), Math.min(60000, 2000 * 2 ** Math.min(5, this._failN - 1))); }
+    else if (ok) { this._failN = 0; this._backup(sa, sg); }
+    return ok || !KV.ok;
+  }
+  // last-known-good: the state just written (checksums verified) becomes ssp-bak at most every 20 s; ssp-bak moves to
+  // ssp-bak1 when it is older than 10 min, so one older copy survives a bad session
+  _backup(sa, sg, force) { const now = Date.now(); if (!force && now - (this._bakT || 0) < 20000) return; this._bakT = now;
+    try { const prev = jparse(KV.get("ssp-bak") || "null"); if (prev && prev.v === 1 && now - (prev.t || 0) > 600000) KV.set("ssp-bak1", KV.get("ssp-bak")); KV.set("ssp-bak", '{"v":1,"t":' + now + ',"a":' + sa.slice(11, -1) + ',"g":' + sg + "}"); /* sa = {"v":1,"a":{...}} */ } catch (e) { logErr("backup", e); } }
+  // ---------- protected purchase (coins only; no real money anywhere) ----------
+  // atomic: validate price + balance, deduct, grant, write; if the write fails while storage exists, everything is put
+  // back exactly as it was. Re-entrant / double taps on the same item within 800 ms are refused.
+  purchase(key, price, grantFn, ownedFn) {
+    const p = this.p, now = Date.now(); price = Number(price);
+    if (this._buying) return "busy"; if (this._lastBuy && this._lastBuy.k === key && now - this._lastBuy.t < 800) return "busy";
+    if (!Number.isFinite(price) || price <= 0 || Math.floor(price) !== price) return "badPrice";
+    if (!Number.isFinite(+p.coins) || p.coins < 0) { p.coins = Math.max(0, +p.coins || 0); return "badBalance"; }
+    if (ownedFn()) return "own"; if (p.coins < price) return "noCoins";
+    this._buying = true; const snap = { coins: p.coins, flags: p.flags.slice(), owned: p.owned.slice(), cos: p.cos.slice() };
+    try { p.coins -= price; grantFn(); const ok = this.flush(); if (!ok) { p.coins = snap.coins; p.flags = snap.flags; p.owned = snap.owned; p.cos = snap.cos; this.flush(); logErr("buy", "save failed, rolled back " + key); return "saveFail"; }
+      this._lastBuy = { k: key, t: now }; this._backup(JSON.stringify({ v: 1, a: this.acc }), JSON.stringify(this.guest), true); return "ok"; }
+    catch (e) { p.coins = snap.coins; p.flags = snap.flags; p.owned = snap.owned; p.cos = snap.cos; logErr("buy", e); return "saveFail"; }
+    finally { this._buying = false; }
   }
   lockLeft(k) { const f = this.fails[k]; return f && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 1000) : 0; }
   _fail(k) { const f = this.fails[k] || (this.fails[k] = { n: 0, until: 0, x: 0 }); if (++f.n >= 5) { f.n = 0; f.until = Date.now() + Math.min(900000, 30000 * 2 ** f.x++); } }
@@ -166,7 +230,15 @@ export class Store {
     if (kind === "skin") { const S = SKINS[i]; if (!S) return false; if (S.src) { if (this.p.owned.includes(S.id)) return true; const [k, n] = S.src.split(":"); return k === "level" && lv >= +n; } return lv >= S.lv; } if (kind === "flag") return this.p.flags.includes(i); if (kind === "eye") return lv >= EYES[i].lv;
     if (kind === "trail") return lv >= TRAILS[i].lv; if (kind === "world") return lv >= WORLDS[i].lv; if (kind === "diff") return i < 3 || lv >= 10; return true;
   }
-  buyFlag(i) { if (this.p.flags.includes(i)) return "own"; if (this.p.coins < FLAG_PRICE) return "noCoins"; this.p.coins -= FLAG_PRICE; this.p.flags.push(i); this.save(); return "ok"; }
+  // offers: several cosmetics for one coin price, through the same atomic purchase (all granted or none). An item owned
+  // since the offer was built is refused (the shop rebuilds the bundle without it).
+  buyBundle(key, items, price) { if (!Array.isArray(items) || !items.length) return "na"; const own = (it) => (it.k === "skin" ? this.unlocked("skin", it.i) : this.p.flags.includes(it.i));
+    for (const it of items) if (!(it.k === "skin" ? SKINS[it.i] && this.legendPrice(it.i) : FLAGS[it.i])) return "na";
+    const sum = items.reduce((a, it) => a + (it.k === "skin" ? this.legendPrice(it.i) : FLAG_PRICE), 0); if (Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, sum)) return "badPrice";
+    return this.purchase("bundle:" + key, price, () => { for (const it of items) { if (it.k === "skin") { const id = SKINS[it.i].id; if (!this.p.owned.includes(id)) this.p.owned.push(id); } else if (!this.p.flags.includes(it.i)) this.p.flags.push(it.i); } }, () => items.some(own)); }
+  // a caller-supplied (offer) price must stay inside [60 % .. 100 %] of the catalogue price: the deepest offer is 40 % off
+  _priceOk(price, base) { price = Number(price); return Number.isFinite(price) && price > 0 && Math.floor(price) === price && price <= base && price >= Math.ceil(base * 0.6); }
+  buyFlag(i, price = FLAG_PRICE) { if (!FLAGS[i]) return "na"; if (Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, FLAG_PRICE)) return "badPrice"; return this.purchase("flag:" + i, price, () => this.p.flags.push(i), () => this.p.flags.includes(i)); }
   // 7-day login calendar: one claim per calendar day; a missed day restarts at day 1. Returns null when already claimed today.
   loginState() { const d = today(), L = this.p.login; if (L.d === d) return { day: L.n, claimed: true }; const y = new Date(); y.setDate(y.getDate() - 1); const yd = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, "0")}-${String(y.getDate()).padStart(2, "0")}`;
     const next = L.d === yd ? (L.n + 1) % 7 : 0; return { day: next, claimed: false, fresh: L.d !== yd }; }
@@ -204,7 +276,7 @@ export class Store {
   // ---------- legendary ownership, season pass, weekly challenges, mission chains ----------
   grant(id) { if (!this.p.owned.includes(id)) { this.p.owned.push(id); this.save(); return true; } return false; }
   legendPrice(i) { const S = SKINS[i]; if (!S || !S.src) return 0; const [k, n] = S.src.split(":"); return k === "coins" ? +n : 0; }
-  buyLegend(i) { const S = SKINS[i], price = this.legendPrice(i); if (!price) return "na"; if (this.unlocked("skin", i)) return "own"; if (this.p.coins < price) return "noCoins"; this.p.coins -= price; this.grant(S.id); return "ok"; }
+  buyLegend(i, price) { const S = SKINS[i], base = this.legendPrice(i); if (!base) return "na"; if (price != null && Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, base)) return "badPrice"; return this.purchase("skin:" + i, price ?? base, () => { if (!this.p.owned.includes(S.id)) this.p.owned.push(S.id); }, () => this.unlocked("skin", i)); }
   seasonTier() { return Math.min(SEASON.tiers, Math.floor(this.p.season.xp / SEASON.per)); }
   addSeasonXp(n) { const b = this.seasonTier(); this.p.season.xp += Math.max(0, Math.round(n)); const a = this.seasonTier(); this.save(); return a > b ? a - b : 0; }
   claimTier(k) {

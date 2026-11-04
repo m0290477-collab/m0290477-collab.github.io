@@ -1,19 +1,21 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=look1";
-import { Store, KV } from "./store.js?v=look1";
-import { setLang, applyI18n, t } from "./i18n.js?v=look1";
-import { Audio, haptic } from "./audio.js?v=look1";
-import { Input } from "./input.js?v=look1";
-import { Game } from "./game.js?v=look1";
-import { UI, Hud } from "./ui.js?v=look1";
-import { Renderer2D } from "./render2d.js?v=look1";
+import { guard } from "./guard.js?v=perf3";
+import { Store, KV } from "./store.js?v=perf3";
+import { setLang, applyI18n, t } from "./i18n.js?v=perf3";
+import { Audio, haptic } from "./audio.js?v=perf3";
+import { Input } from "./input.js?v=perf3";
+import { Game } from "./game.js?v=perf3";
+import { UI, Hud } from "./ui.js?v=perf3";
+import { Renderer2D } from "./render2d.js?v=perf3";
+import { startWatchdog, watchCanvas } from "./watchdog.js?v=perf3"; // perf2 guardian
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
 try { const q = new URLSearchParams(location.search).get("room"); if (q && /^[a-z0-9-]{1,24}$/i.test(q)) window.__ssRoom = q.toLowerCase(); if (q) history.replaceState(null, "", location.pathname); } catch (_) {}
 const $ = (id) => document.getElementById(id);
 const app = (window.SSP = {}); app.roomParam = window.__ssRoom || "";
+startWatchdog(app);
 window.__bt = []; const bar = (p, msg) => { window.__bt.push([Math.round(performance.now()), p]); $("bootbar").style.width = p + "%"; $("bootpct").textContent = Math.round(p) + "%"; if (msg) $("bootmsg").textContent = msg; };
 let lastErr = 0;
 function oops(e) { console.error(e); const n = performance.now(); if (n - lastErr > 4000 && app.ui) { lastErr = n; app.ui.toast(t("oops"), "warn"); } }
@@ -43,9 +45,11 @@ const autoStart = () => DET.q;
 
 async function makeRenderer(kind, quality) {
   const old = $("gl"), cv = document.createElement("canvas"); cv.id = "gl"; cv.setAttribute("aria-hidden", "true"); old.replaceWith(cv);
+  let safe = false; try { safe = sessionStorage.getItem("ssp-safe") === "2d"; } catch (_) {} if (safe) kind = "2d"; // guardian: a stuck boot reloads once in 2D
+  if (kind === "3d") watchCanvas(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=look1");
+      const m = await import("./render3d.js?v=perf3");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); /* fit1: iOS drops the GL context whenever the tab is backgrounded; only a loss that lasts 6 s while the page is VISIBLE means 3D is broken. A background loss used to end in a silent switch to 2D for the session. */ const arm = () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (document.hidden) return; if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 6000); }; if (document.hidden) document.addEventListener("visibilitychange", function v() { if (document.hidden) return; document.removeEventListener("visibilitychange", v); if (app.renderer && app.renderer.lost) arm(); }); else arm(); }, onRestored: () => { clearTimeout(app._lostT); /* fit1: rebuild 3D from scratch after a restore (meshes/textures/targets all fresh) instead of trusting a half-restored GL state */ setTimeout(() => { if (app.renderer && !app.renderer.is2D) app.switchRenderer("3d"); }, 50); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
@@ -90,7 +94,7 @@ app.applyAll = () => { for (const k of ["showFps", "minimap", "postFx", "ctrl", 
 
 async function boot() {
   bar(6);
-  const store = (app.store = new Store()); store.warn = (k) => app.ui && app.ui.toast(t(k), "warn");
+  const store = (app.store = new Store()); store.warn = (k) => app.ui && app.ui.toast(t(k), "warn"); store.startAutosave();
   setLang(store.settings.lang); applyI18n(); bar(14, t("loading"));
   const art = new Image(); art.onload = () => document.getElementById("ld-art").classList.add("hi"); art.src = "assets/keyart.webp";
   app.audio = new Audio(); app.input = new Input($("touch"), $("boost"), $("joy")); app.hud = new Hud(app);
@@ -114,6 +118,7 @@ async function boot() {
   document.addEventListener("visibilitychange", () => { if (document.hidden) app.audio.duck(true); else { app.audio.duck(false); if (app.audio.ctx && app.audio.ctx.state !== "running") try { app.audio.ctx.resume(); } catch (_) {} } });
   addEventListener("pageshow", () => { if (app.audio.ctx && app.audio.ctx.state !== "running") try { app.audio.ctx.resume(); } catch (_) {} });
   if (!KV.ok) setTimeout(() => app.ui.toast(t("noStorage"), "warn", 6000), 1200);
+  if (store.repairs.some((r) => /restored/.test(r))) setTimeout(() => app.ui.toast(t("wdRestored"), "good", 4500), 1600); // guardian: a damaged save was restored from its backup
   if (app.noWebgl) setTimeout(() => app.ui.toast(t("noWebgl"), "warn", 5000), 1500);
   app.ready = true;
   await new Promise((r) => setTimeout(r, 250));
