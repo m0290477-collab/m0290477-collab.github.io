@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><!-- STAGED post-cutover version. Do not publish before the VPS cutover and the Google Drive encrypted backups are live. At swap: set both "Last updated" dates to the swap date. --><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Super Snake – Privacy Policy</title>
 <style>body{font-family:-apple-system,system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.6;color:#222}h1{font-size:1.6em}h2{font-size:1.15em;margin-top:1.6em}.ar{direction:rtl;text-align:right;border-top:1px solid #ddd;margin-top:40px;padding-top:20px}</style>
 </head><body>
@@ -36,10 +36,11 @@
 
 <h2>6. Where your data is stored</h2>
 <ul>
-<li><b>Game server:</b> a virtual private server (VPS) located in Oregon, USA, at srv.irqus.com.</li>
-<li><b>Cloudflare:</b> hosts and serves the game site at billke.com/pro/ and runs its online game service (Cloudflare Workers), which processes gameplay data and technical logs. This data is processed in the United States and on Cloudflare's global network.</li>
+<li><b>Game server:</b> our own virtual private server (VPS) in Oregon, USA, at srv.irqus.com. It serves the game and runs accounts and sign-in, online play and all online play data, server logs, and the daily backups kept on the server.</li>
+<li><b>Google Drive:</b> stores encrypted off-site copies of our daily backups. Backups are encrypted on our server before they are uploaded, so their contents cannot be read in Google Drive.</li>
 <li><b>Resend:</b> delivers our transactional emails (see section 3).</li>
-<li><b>GitHub Pages:</b> hosts the website itself (billke.com).</li>
+<li><b>GitHub Pages:</b> hosts the billke.com website, including this policy.</li>
+<li><b>Cloudflare:</b> provides DNS only (it translates our domain names into server addresses). It does not host the game or run the online service, and gameplay data does not pass through it.</li>
 </ul>
 <p>These providers process data on our behalf to run the Game. If you play from outside the United States, your data will be transferred to and processed in the United States.</p>
 
@@ -49,7 +50,7 @@
 <li><b>Chat messages:</b> only the last 100 messages of each conversation; older ones are deleted automatically.</li>
 <li><b>Sign-in codes:</b> 10 minutes. <b>Game invites:</b> a few minutes.</li>
 <li><b>Server logs:</b> about 30 days, then deleted.</li>
-<li><b>Backups:</b> our data is backed up once a day. Backups of the game server are kept for 7 days, and backups of the Cloudflare-hosted game service are kept for 14 days. After you delete your data, copies in backups are removed within 14 days as old backups are deleted.</li>
+<li><b>Backups:</b> our data is backed up once a day. Backups kept on the game server are kept for 7 days, and the encrypted off-site copies on Google Drive are kept for 14 days. After you delete your data, copies in backups are removed within 14 days as old backups are deleted.</li>
 <li><b>Ban records:</b> a record that holds only a player ID and the reason may be kept after deletion to prevent abuse.</li>
 </ul>
 
@@ -86,8 +87,8 @@
 <p><b>الإيميلات:</b> نرسل بس إيميلات ضرورية مثل رموز وروابط الدخول، عن طريق خدمة Resend اللي تستلم إيميلك ومحتوى الرسالة حتى توصلها. ما نرسل إيميلات تسويقية.</p>
 <p><b>بيانات اللعب الأونلاين:</b> اسم اللاعب ومعرّفه وملفه، جلسات اللعب والمباريات ونتائجها، النقاط والكؤوس وقوائم المتصدرين (اسمك ومعرّفك ونقاطك تبين للاعبين الآخرين)، العملات والعناصر والمكافآت، ووين ما متوفرة: الأصدقاء والدعوات والمحادثات الخاصة (آخر 100 رسالة بكل محادثة بس)، والبلاغات وسجلات الإشراف.</p>
 <p><b>البيانات التقنية وسجلات السيرفر:</b> عنوان IP، نوع الجهاز والمتصفح، أوقات الطلبات، وتقارير الأخطاء. نستخدمها بس لتشغيل اللعبة وحمايتها ومنع الغش وإصلاح المشاكل.</p>
-<p><b>وين تنحفظ البيانات:</b> سيرفر اللعبة (VPS) بولاية أوريغون، الولايات المتحدة، على srv.irqus.com، وCloudflare اللي تستضيف موقع اللعبة على billke.com/pro/ وتشغّل خدمة اللعب الأونلاين (Cloudflare Workers) وتعالج بيانات اللعب والسجلات التقنية، بالولايات المتحدة وعلى شبكة Cloudflare، وخدمة Resend للإيميلات، وGitHub Pages لاستضافة الموقع. إذا تلعب من خارج أمريكا، بياناتك تنتقل وتنعالج بالولايات المتحدة.</p>
-<p><b>مدة الاحتفاظ:</b> بيانات الحساب واللعب لحد ما تحذف حسابك أو تطلب حذفه. المحادثات آخر 100 رسالة. رموز الدخول 10 دقائق. سجلات السيرفر حوالي 30 يوم. نسخة احتياطية يومية: نسخ سيرفر اللعبة تنحفظ 7 أيام، ونسخ خدمة اللعبة على Cloudflare تنحفظ 14 يوم، فبعد الحذف تختفي بياناتك من النسخ الاحتياطية خلال 14 يوم. سجل الحظر (معرّف اللاعب والسبب بس) ممكن يبقى لمنع الإساءة.</p>
+<p><b>وين تنحفظ البيانات:</b> سيرفرنا الخاص (VPS) بولاية أوريغون، الولايات المتحدة، على srv.irqus.com، وهو اللي يقدّم اللعبة ويشغّل الحسابات وتسجيل الدخول واللعب الأونلاين وكل بيانات اللعب الأونلاين وسجلات السيرفر والنسخ الاحتياطية اليومية المحفوظة عليه. Google Drive يحفظ نسخ احتياطية مشفّرة خارج السيرفر، تنشفّر على سيرفرنا قبل الرفع فمحتواها ما ينقرأ بـ Google Drive. خدمة Resend للإيميلات، وGitHub Pages يستضيف موقع billke.com ومنها هذي الصفحة. Cloudflare بس للـ DNS (يحوّل أسماء النطاقات لعناوين السيرفرات)، وما يستضيف اللعبة ولا يشغّل خدمة الأونلاين، وبيانات اللعب ما تمر من خلاله. إذا تلعب من خارج أمريكا، بياناتك تنتقل وتنعالج بالولايات المتحدة.</p>
+<p><b>مدة الاحتفاظ:</b> بيانات الحساب واللعب لحد ما تحذف حسابك أو تطلب حذفه. المحادثات آخر 100 رسالة. رموز الدخول 10 دقائق. سجلات السيرفر حوالي 30 يوم. نسخة احتياطية يومية: النسخ المحفوظة على سيرفر اللعبة تنحفظ 7 أيام، والنسخ المشفّرة خارج السيرفر على Google Drive تنحفظ 14 يوم، فبعد الحذف تختفي بياناتك من كل النسخ الاحتياطية خلال 14 يوم. سجل الحظر (معرّف اللاعب والسبب بس) ممكن يبقى لمنع الإساءة.</p>
 <p><b>حذف الحساب والبيانات:</b> راسلنا على <a href="mailto:m0290477@gmail.com">m0290477@gmail.com</a> من إيميل حسابك أو اذكر معرّف اللاعب، ونحذف حسابك وكل بياناتك خلال 30 يوم ونأكدلك بالإيميل. ووين ما متوفر، تقدر تحذف بنفسك من الإعدادات.</p>
 <p><b>المشتريات:</b> اللعبة حالياً ما تبيع أي شي بفلوس حقيقية. إذا صارت مشتريات بالمستقبل، الدفع يكون عن طريق متجر التطبيقات أو مزوّد الدفع، وما نستلم تفاصيل بطاقتك، ونحدّث هذي السياسة قبلها.</p>
 <p><b>شنو ما نسوي:</b> ما نبيع بياناتك، ما بيها إعلانات، ولا كوكيز تتبّع أو إعلانات، ولا خدمات تحليلات. نشارك البيانات بس ويا مزوّدي الخدمة المذكورين لتشغيل اللعبة، أو إذا القانون يطلب.</p>
