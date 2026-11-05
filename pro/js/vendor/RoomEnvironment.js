@@ -10,7 +10,7 @@ import {
  	MeshStandardMaterial,
  	PointLight,
  	Scene,
-} from './three.module.min.js?v=top1';
+} from './three.module.min.js?v=fastload';
 
 class RoomEnvironment extends Scene {
 

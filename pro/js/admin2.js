@@ -1,9 +1,9 @@
 // admin2: owner admin (ID 1 only; every action is checked again on the server and written to the audit log) + the player side of
 // the owner config: announcement banner, maintenance / switched-off modes, price overrides, promo codes, owner wallet edits.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=top1";
-import { SKINS, FLAGS, GTRAILS, setFlagPrice, setFusionFee } from "./skins.js?v=top1"; import { MUTS, mutNow } from "./sim.js?v=top1"; // play2
-import { AVATARS, FRAMES, TITLES, BANNERS } from "./profile.js?v=top1";
-import { pidHtml } from "./pid.js?v=top1";
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=fastload";
+import { SKINS, FLAGS, GTRAILS, setFlagPrice, setFusionFee } from "./skins.js?v=fastload"; import { MUTS, mutNow } from "./sim.js?v=fastload"; // play2
+import { AVATARS, FRAMES, TITLES, BANNERS } from "./profile.js?v=fastload";
+import { pidHtml } from "./pid.js?v=fastload";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

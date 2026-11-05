@@ -1,27 +1,27 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=top1";
-import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=top1"; // srv1
-import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=top1"; // srv2
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=top1"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=top1";
-import { legalButtons, contactNote, openFeedback } from "./legal.js?v=top1"; import { call as socialCall } from "./social.js?v=top1"; // coin1
-import { GTRAILS } from "./skins.js?v=top1"; import { gtCellUrl } from "./gfx/gtrail.js?v=top1"; // trail1
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=top1";
-import { WORLDS, worldAsset } from "./worlds.js?v=top1";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=top1";
-import { haptic } from "./audio.js?v=top1";
-import { skinFn, MODES, EMOTES } from "./game.js?v=top1";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=top1";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=top1";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=top1";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=top1"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=top1";
-import { CF, modeOff, onlineBlock, annBar } from "./admin2.js?v=top1"; import { call as a2call } from "./social.js?v=top1"; // admin2
-import { terLobby, terCfg, renderFusion, fuInfo } from "./land1.js?v=top1"; import { fusionDef } from "./skins.js?v=top1"; // land1: territory lobby + skin fusion
-import { seasonTab, seasonSkinHidden } from "./top1.js?v=top1"; // top1
-import { makeAchQueue } from "./achq.js?v=top1"; // popq: achievement pop-ups wait until the results card is dismissed
-import { growBind, growStart, growResults } from "./grow.js?v=top1"; import { mutBar, iconCard, bindIcon } from "./play2.js?v=top1"; // grow1: challenge links, clips, room QR
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=fastload";
+import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=fastload"; // srv1
+import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=fastload"; // srv2
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=fastload"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=fastload";
+import { legalButtons, contactNote, openFeedback } from "./legal.js?v=fastload"; import { call as socialCall } from "./social.js?v=fastload"; // coin1
+import { GTRAILS } from "./skins.js?v=fastload"; import { gtCellUrl } from "./gfx/gtrail.js?v=fastload"; // trail1
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=fastload";
+import { WORLDS, worldAsset } from "./worlds.js?v=fastload";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=fastload";
+import { haptic } from "./audio.js?v=fastload";
+import { skinFn, MODES, EMOTES } from "./game.js?v=fastload";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=fastload";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=fastload";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=fastload";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=fastload"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=fastload";
+import { CF, modeOff, onlineBlock, annBar } from "./admin2.js?v=fastload"; import { call as a2call } from "./social.js?v=fastload"; // admin2
+import { terLobby, terCfg, renderFusion, fuInfo } from "./land1.js?v=fastload"; import { fusionDef } from "./skins.js?v=fastload"; // land1: territory lobby + skin fusion
+import { seasonTab, seasonSkinHidden } from "./top1.js?v=fastload"; // top1
+import { makeAchQueue } from "./achq.js?v=fastload"; // popq: achievement pop-ups wait until the results card is dismissed
+import { growBind, growStart, growResults } from "./grow.js?v=fastload"; import { mutBar, iconCard, bindIcon } from "./play2.js?v=fastload"; // grow1: challenge links, clips, room QR
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -429,15 +429,16 @@ export class UI {
   // ---------- studio intro → title flyover ----------
   intro() {
     return new Promise((res) => {
-      const el = $("intro"); if (this.S.settings.reduceMotion || sessionStorage.getItem("ssp-intro")) { res(); return; }
-      try { sessionStorage.setItem("ssp-intro", "1"); } catch (_) {}
+      const el = $("intro"); let dev = false; try { dev = !!localStorage.getItem("ssp-intro1"); } catch (_) {} /* fastload: the studio intro plays once per device (was: every new tab), so reopening the game is instant */
+      if (this.S.settings.reduceMotion || dev || sessionStorage.getItem("ssp-intro")) { res(); return; }
+      try { sessionStorage.setItem("ssp-intro", "1"); localStorage.setItem("ssp-intro1", "1"); } catch (_) {}
       el.classList.remove("x-hide"); let done = false; const fin = () => { if (done) return; done = true; el.classList.add("out"); setTimeout(() => { el.classList.add("x-hide"); res(); }, 550); };
       el.addEventListener("pointerdown", fin, { once: true }); setTimeout(fin, 1400); // fit1: 2.7 s -> 1.4 s, entry must feel instant
     });
   }
   title() {
     return new Promise((res) => {
-      const el = $("title"); const w = this.p.last.world || 0; this.app.game.startAttract(w, true); this.app.audio.music(true, w, true); el.classList.remove("x-hide");
+      const el = $("title"); const w = this.p.last.world || 0; if (this.app.renderer && this.app.ready) this.app.game.startAttract(w, true); /* fastload: the title can show before the engine; main.js starts the attract when it is ready */ this.app.audio.music(true, w, true); el.classList.remove("x-hide");
       let done = false; const fin = () => { if (done) return; done = true; this.app.audio.unlock(); this.app.audio.play("go"); el.classList.add("out"); setTimeout(() => { el.classList.add("x-hide"); el.classList.remove("out"); res(); }, 450); };
       const tipEl = $("t-tip"); let ti = (Math.random() * 10) | 0; const tipShow = () => { if (done) return; tipEl.classList.add("fade"); setTimeout(() => { tipEl.innerHTML = `<b>${esc(t("tip"))}</b>${esc(t("tip" + ((ti++ % 10) + 1)))}`; tipEl.classList.remove("fade"); }, 300); };
       if (tipEl) { tipEl.innerHTML = `<b>${esc(t("tip"))}</b>${esc(t("tip" + ((ti++ % 10) + 1)))}`; this._tipIv = setInterval(() => (done ? clearInterval(this._tipIv) : tipShow()), 5200); }

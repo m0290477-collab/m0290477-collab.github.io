@@ -1,16 +1,16 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=top1";
-import { Store, KV } from "./store.js?v=top1";
-import { setLang, applyI18n, t } from "./i18n.js?v=top1";
-import { Audio, haptic } from "./audio.js?v=top1";
-import { Input } from "./input.js?v=top1";
-import { Game } from "./game.js?v=top1";
-import { UI, Hud } from "./ui.js?v=top1";
-import { Renderer2D } from "./render2d.js?v=top1";
-import { startWatchdog, watchCanvas } from "./watchdog.js?v=top1"; // perf2 guardian
-import { top1Init, reportErr } from "./top1.js?v=top1"; // top1: error reports, map events, season, ping
-import { applyIcon } from "./play2.js?v=top1"; try { applyIcon(); } catch (_) {} // play2: chosen home-screen icon (apple-touch-icon + manifest)
+import { guard } from "./guard.js?v=fastload";
+import { Store, KV } from "./store.js?v=fastload";
+import { setLang, applyI18n, t } from "./i18n.js?v=fastload";
+import { Audio, haptic } from "./audio.js?v=fastload";
+import { Input } from "./input.js?v=fastload";
+import { Game } from "./game.js?v=fastload";
+import { UI, Hud } from "./ui.js?v=fastload";
+import { Renderer2D } from "./render2d.js?v=fastload";
+import { startWatchdog, watchCanvas } from "./watchdog.js?v=fastload"; // perf2 guardian
+import { top1Init, reportErr } from "./top1.js?v=fastload"; // top1: error reports, map events, season, ping
+import { applyIcon } from "./play2.js?v=fastload"; try { applyIcon(); } catch (_) {} // play2: chosen home-screen icon (apple-touch-icon + manifest)
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -59,7 +59,7 @@ async function makeRenderer(kind, quality) {
   if (kind === "3d") watchCanvas(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=top1");
+      const m = await import("./render3d.js?v=fastload");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); /* fit1: iOS drops the GL context whenever the tab is backgrounded; only a loss that lasts 6 s while the page is VISIBLE means 3D is broken. A background loss used to end in a silent switch to 2D for the session. */ const arm = () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (document.hidden) return; if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 6000); }; if (document.hidden) document.addEventListener("visibilitychange", function v() { if (document.hidden) return; document.removeEventListener("visibilitychange", v); if (app.renderer && app.renderer.lost) arm(); }); else arm(); }, onRestored: () => { clearTimeout(app._lostT); /* fit1: rebuild 3D from scratch after a restore (meshes/textures/targets all fresh) instead of trusting a half-restored GL state */ setTimeout(() => { if (app.renderer && !app.renderer.is2D) app.switchRenderer("3d"); }, 50); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
@@ -109,6 +109,12 @@ async function boot() {
   const art = new Image(); art.onload = () => document.getElementById("ld-art").classList.add("hi"); art.src = "assets/keyart.webp";
   app.audio = new Audio(); app.input = new Input($("touch"), $("boost"), $("joy")); app.hud = new Hud(app);
   app.game = new Game(app); app.ui = new UI(app); app.ui.tip(); top1Init(app); // top1
+  // fastload: the studio intro (first visit of a tab only) plays WHILE the engine loads instead of after it (was ~2 s added on top)
+  let seen = false; try { seen = !!sessionStorage.getItem("ssp-title"); } catch (_) {}
+  const introP = seen ? null : app.ui.intro();
+  // fastload: the title screen is opaque (its own art), so it does not wait for the 3D engine: it shows right after the intro while the
+  // engine and world keep loading underneath; "Tap to start" before the engine is ready brings the loading bar back until it is.
+  let titleDone = false; const titleP = seen ? Promise.resolve() : (async () => { await introP; if (!app.ready) $("boot").classList.add("out"); await app.ui.title(); titleDone = true; try { sessionStorage.setItem("ssp-title", "1"); } catch (_) {} if (!app.ready) $("boot").classList.remove("out"); })();
   app.input.onPause = () => app.game.pause(!app.game.paused);
   app.input.headScreen = () => { const b = app.game.backend, me = b && b.me; if (!me || !app.renderer) return [innerWidth / 2, innerHeight / 2]; const p = app.renderer.project(me.x, me.y, me.r); return [p[0], p[1]]; };
   bar(26, t("loadEngine"));
@@ -133,13 +139,12 @@ async function boot() {
   if (store.repairs.some((r) => /restored/.test(r))) setTimeout(() => app.ui.toast(t("wdRestored"), "good", 4500), 1600); // guardian: a damaged save was restored from its backup
   if (app.noWebgl) setTimeout(() => app.ui.toast(t("noWebgl"), "warn", 5000), 1500);
   app.ready = true;
-  await new Promise((r) => setTimeout(r, 250));
+  if (titleDone || seen) await new Promise((r) => setTimeout(r, 250));
   app.game.startAttract(store.p.last.world || 0, true);
   $("boot").classList.add("out");
   // fit1: once this tab got past the title, a reload (iOS restores an evicted tab by reloading it) goes straight to the lobby:
   // no studio intro, no second title screen flashing in over the restored page
-  let seen = false; try { seen = !!sessionStorage.getItem("ssp-title"); } catch (_) {}
-  if (!seen) { await app.ui.intro(); await app.ui.title(); try { sessionStorage.setItem("ssp-title", "1"); } catch (_) {} }
+  await titleP; $("boot").classList.add("out");
   if (store.cur) app.ui.afterLogin(); else app.ui.showAuth();
 }
-boot().catch((e) => { console.error(e); $("bootmsg").textContent = "Error: " + (e && e.message ? e.message : e); });
+boot().catch((e) => { console.error(e); $("bootmsg").textContent = "Error: " + (e && e.message ? e.message : e); $("boot").classList.remove("out"); });

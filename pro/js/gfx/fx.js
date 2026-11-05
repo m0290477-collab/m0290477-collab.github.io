@@ -1,7 +1,7 @@
 // Soft epic VFX (aaa2): one pooled, instanced billboard-orb system + pooled soft ground rings + crown + light shaft.
 // Everything is allocated once; per frame only the live instances are written (compacted) and uploaded.
 // "Calm" (Reduce effects) keeps these soft, short, low-count and flash-free; no shake, no strobing.
-import * as THREE from "../vendor/three.module.min.js?v=top1";
+import * as THREE from "../vendor/three.module.min.js?v=fastload";
 
 const NO = 480, NR = 12;
 const OVS = /* glsl */ `

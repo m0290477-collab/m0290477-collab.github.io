@@ -3,17 +3,17 @@
 // while its client id is not configured on the server (/cfg). Profile snapshots: debounced ~10 s after a save + at match end,
 // versioned (a newer save from another device wins), restored on sign-in. Owner grants arrive live over the social socket.
 // Owner panel (only reachable from the founder's own Profile, every call checked on the server). Finding-a-server overlay.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=top1";
-import { SERVER } from "./net.js?v=top1";
-import { devKey } from "./league.js?v=top1";
-import { SO, call, socialRestart, errText } from "./social.js?v=top1";
-import { avatarHtml } from "./profile.js?v=top1";
-import { KV, jparse, newProfile } from "./store.js?v=top1";
-import { pidHtml } from "./pid.js?v=top1";
-import { legalButtons } from "./legal.js?v=top1"; // coin1: Privacy / Terms
-import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=top1"; // coin1
-import { CF, dashExtra, liveHtml, ecoHtml, playerExtra, bind2, a2Reset, actName2 } from "./admin2.js?v=top1"; // admin2
-import { errorsHtml, fairHtml, liveCards, bindAdm, admReset } from "./top1.js?v=top1"; // top1: Errors, Fair play, map events, season
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=fastload";
+import { SERVER } from "./net.js?v=fastload";
+import { devKey } from "./league.js?v=fastload";
+import { SO, call, socialRestart, errText } from "./social.js?v=fastload";
+import { avatarHtml } from "./profile.js?v=fastload";
+import { KV, jparse, newProfile } from "./store.js?v=fastload";
+import { pidHtml } from "./pid.js?v=fastload";
+import { legalButtons } from "./legal.js?v=fastload"; // coin1: Privacy / Terms
+import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=fastload"; // coin1
+import { CF, dashExtra, liveHtml, ecoHtml, playerExtra, bind2, a2Reset, actName2 } from "./admin2.js?v=fastload"; // admin2
+import { errorsHtml, fairHtml, liveCards, bindAdm, admReset } from "./top1.js?v=fastload"; // top1: Errors, Fair play, map events, season
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

@@ -2,11 +2,11 @@
 // reset, weekly / monthly contests with milestones (work offline) and final-rank rewards (online, server-validated).
 // Rewards are coins + exclusive cosmetics only (frames, titles, badges); no real money anywhere.
 // Rules shared with the server live in sim.js (leagueOf, trophyDelta, seasonCarry, period ids).
-import { LEAGUES, TROPHY, leagueOf, trophyDelta, seasonCarry, seasonId, weekId, periodEnd, CONTESTS, botTrophies } from "./sim.js?v=top1";
-import { t, fmtNum, addStrings } from "./i18n.js?v=top1";
-import { KV, logErr } from "./store.js?v=top1";
-import { stableNow } from "./offers.js?v=top1";
-import { SERVER } from "./net.js?v=top1";
+import { LEAGUES, TROPHY, leagueOf, trophyDelta, seasonCarry, seasonId, weekId, periodEnd, CONTESTS, botTrophies } from "./sim.js?v=fastload";
+import { t, fmtNum, addStrings } from "./i18n.js?v=fastload";
+import { KV, logErr } from "./store.js?v=fastload";
+import { stableNow } from "./offers.js?v=fastload";
+import { SERVER } from "./net.js?v=fastload";
 
 export { LEAGUES, TROPHY, leagueOf, CONTESTS, botTrophies };
 export const ROMAN = ["", "I", "II", "III", "IV", "V"];
@@ -19,7 +19,7 @@ export const nowMs = () => stableNow(KV).getTime(); // clock-back guard shared w
 // new cosmetics (profile.js): frames 15 conq, 16 champ, 17 podium · titles 14 conq, 15 wchamp, 16 mchamp, 17 crowned
 // badges (bd:*) are collected on the Competitions screen: one per contest for its top milestone, plus champion rosettes
 // coin1: reward tables live in econ.js (the worker prices every reward claim from them)
-import { SEASON_COINS, leagueSeasonReward as seasonReward, CONQ_REWARD, rankReward, MILE_COINS, BADGE_OF, mileReward } from "./econ.js?v=top1";
+import { SEASON_COINS, leagueSeasonReward as seasonReward, CONQ_REWARD, rankReward, MILE_COINS, BADGE_OF, mileReward } from "./econ.js?v=fastload";
 export { SEASON_COINS, seasonReward, CONQ_REWARD, rankReward, MILE_COINS, BADGE_OF, mileReward };
 // personal milestones per contest (count offline + online, claimable once per period)
 export const MILE = { w: { tr: [30, 80, 150], kl: [10, 30, 60], sc: [800, 2000, 4000] }, m: { tr: [120, 300, 600], kl: [40, 120, 250], sc: [1500, 4000, 8000] } };
