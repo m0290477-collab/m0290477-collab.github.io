@@ -2,23 +2,23 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import { pidFill } from "./pid.js?v=layoutfix"; // srv2
-import { stageBox } from "./stage.js?v=layoutfix";
-import * as THREE from "./vendor/three.module.min.js?v=layoutfix";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC, TER } from "./sim.js?v=layoutfix";
+import { pidFill } from "./pid.js?v=3dperf"; // srv2
+import { stageBox } from "./stage.js?v=3dperf";
+import * as THREE from "./vendor/three.module.min.js?v=3dperf";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC, TER } from "./sim.js?v=3dperf";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=layoutfix";
-import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=layoutfix";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=layoutfix";
-import { World, prefetchWorld } from "./gfx/env.js?v=layoutfix";
-import { Post } from "./gfx/post.js?v=layoutfix";
-import { Studio } from "./gfx/showcase.js?v=layoutfix";
-import { SoftFx } from "./gfx/fx.js?v=layoutfix";
-import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=layoutfix"; // trail1: ground trails
-import { on as onEv } from "./events.js?v=layoutfix";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=layoutfix";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=3dperf";
+import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=3dperf";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=3dperf";
+import { World, prefetchWorld } from "./gfx/env.js?v=3dperf";
+import { Post } from "./gfx/post.js?v=3dperf";
+import { Studio } from "./gfx/showcase.js?v=3dperf";
+import { SoftFx } from "./gfx/fx.js?v=3dperf";
+import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=3dperf"; // trail1: ground trails
+import { on as onEv } from "./events.js?v=3dperf";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=3dperf";
 
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
 const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3], GOV_SH_PH = [2, 2, 3, 4]; // top1: phones refresh shadows every 2nd frame
@@ -294,7 +294,8 @@ export class Renderer3D {
   _applyQ(first) {
     const Q = this.Q; this.pMax = Math.round(Q.particles * GOV_PK[this.govL | 0]); this.pHead = 0;
     this.r.shadowMap.enabled = Q.shadows > 0; this.r.shadowMap.type = Q.shadows > 1 ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
-    this.sun.castShadow = Q.shadows > 0; const ms = Q.shadows > 1 ? 2048 : 512; // calm1: one small shadow map on low/medium (phones) if (this.sun.shadow.map && this.sun.shadow.mapSize.x !== ms) { this.sun.shadow.map.dispose(); this.sun.shadow.map = null; } this.sun.shadow.mapSize.set(ms, ms);
+    this.sun.castShadow = Q.shadows > 0; const ms = Q.shadows > 1 ? (this.phone ? 1024 : 2048) : 512; // 3dperf: phones cap the high-tier shadow map at 1024; calm1: one small shadow map on low/medium (phones). 3dperf: these two statements were stuck inside the comment (map size never applied)
+    if (this.sun.shadow.map && this.sun.shadow.mapSize.x !== ms) { this.sun.shadow.map.dispose(); this.sun.shadow.map = null; } this.sun.shadow.mapSize.set(ms, ms);
     this.fxLight.visible = true; // constant light count: toggling a light recompiles every lit material mid-match this.studio.key.castShadow = Q.shadows > 0; this.studio.setQuality(Q);
     if (!first) { this.snakes.build(Q); for (const m of this.snakes.worldMeshes) this.scene.add(m); for (const m of this.snakes.showMeshes) this.studio.scene.add(m); }
     if (!first && this._matTier !== Q.mat + Q.food) { for (const E of [this.eyes, this.eyesS]) for (const k in E) { E[k].parent.remove(E[k]); E[k].geometry.dispose(); E[k].material.dispose(); } for (const m of [...this.candy, this.halo, this.gem]) { this.scene.remove(m); m.geometry.dispose(); m.material.dispose(); } this._initFood(); this.eyes = this._eyes(this.scene); this.eyesS = this._eyes(this.studio.scene); }
@@ -321,7 +322,7 @@ export class Renderer3D {
     else if (changed && this.post.on) this.post.setSize();
     if (!want && this.post.on) this.post.dispose();
     document.documentElement.classList.toggle("nopost", !this.post.on);
-    if (this.Q.reflect && this.W3 && (this.W3.reflect || this.W3.water !== "none")) { const s = this.Q.reflect, w = Math.max(64, (this.w * dpr * s) | 0), h = Math.max(64, (this.h * dpr * s) | 0); if (!this.mirrorRT) this.mirrorRT = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType }); else if (this.mirrorRT.width !== w || this.mirrorRT.height !== h) this.mirrorRT.setSize(w, h); }
+    if (this.Q.reflect && !(this.phone && this.qName !== "ultra") && this.W3 && (this.W3.reflect || this.W3.water !== "none")) { /* 3dperf: no planar-reflection pass (a 2nd full scene render) on phones below Ultra */ const s = this.Q.reflect, w = Math.max(64, (this.w * dpr * s) | 0), h = Math.max(64, (this.h * dpr * s) | 0); if (!this.mirrorRT) this.mirrorRT = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType }); else if (this.mirrorRT.width !== w || this.mirrorRT.height !== h) this.mirrorRT.setSize(w, h); }
     this._ptScale();
   }
   resize() {
@@ -553,7 +554,9 @@ export class Renderer3D {
     // sun + shadow frustum follow the action
     this.world.update(t, dt, this);
     this.world.sky.position.copy(cam.position); const zk = Math.max(1, (v.cam.zoom || 1) * (far ? 1.6 : 1)); if (Math.abs((this._shZ || 0) - zk) > 0.05) { this._shZ = zk; const sc = this.sun.shadow.camera; sc.left = sc.bottom = -34 * zk; sc.right = sc.top = 34 * zk; sc.updateProjectionMatrix(); }
-    this.sun.position.set(this.camLook.x + this.sunDir.x * 70, this.sunDir.y * 70, this.camLook.z + this.sunDir.z * 70); this.sun.target.position.set(this.camLook.x, 0, this.camLook.z);
+    { // 3dperf: snap the shadow frustum centre to whole shadow-map texels (no shadow shimmer / crawling edges while the camera glides)
+      const ms = this.sun.shadow.mapSize.x || 512, tx = (68 * (this._shZ || 1)) / ms; const cx = Math.round(this.camLook.x / tx) * tx, cz = Math.round(this.camLook.z / tx) * tx;
+      this.sun.position.set(cx + this.sunDir.x * 70, this.sunDir.y * 70, cz + this.sunDir.z * 70); this.sun.target.position.set(cx, 0, cz); }
     // snakes
     const E = this.eyes, cnt = { e: 0, t: 0, h: 0 }; let ni = 0, ng = 0, nfx = 0, row = 0; const TR = this.teamRing.instanceMatrix.array, TRC = this.teamRing.instanceColor.array; let nt = 0; const MR = this.magRing.instanceMatrix.array; let nm = 0;
     for (const L of this.labels.values()) L.used = false; let ne = 0, nd = 0; let crown = null; this._pal = v.foodPalCss === FOOD_COLORS_CB ? v.foodPal : CANDY_LIN; // candy1: eat sparkles match the candy this._eyeLook(v);
@@ -591,7 +594,7 @@ export class Renderer3D {
     if (this.post.on) { const u = this.post.grade.uniforms; u.uCA.value = this.ca + this.speed * 0.25; u.uSpeed.value = this.speed * 0.6; u.uBox.value = this.box; u.uFlash.value.copy(this.flash); u.uT.value = t; u.uVig.value = 0.36 + this.box * 0.2; this.post.setScene(this.scene, cam); if (this.post.dofOn) this.post.setDof(false); }
     // planar reflection (high/ultra): mirrored camera renders the scene minus ground/water into a half-res target
     const gu = this.world.groundU; gu.uRefl.value = 0;
-    if (this.mirrorRT && Q.reflect && (this.W3.reflect || (this.world.water && this.W3.water !== "lava"))) { this._mirror(); gu.tRefl.value = this.mirrorRT.texture; gu.uRefl.value = (this.W3.reflect || 0.0001) * (this.calm ? 0.4 : 0.6); } // resp2 fix4: softer floor reflection
+    if (this.mirrorRT && Q.reflect && !(this.phone && this.qName !== "ultra") && (this.W3.reflect || (this.world.water && this.W3.water !== "lava"))) { this._mirror(); gu.tRefl.value = this.mirrorRT.texture; gu.uRefl.value = (this.W3.reflect || 0.0001) * (this.calm ? 0.4 : 0.6); } // resp2 fix4: softer floor reflection
     const shN = (this.phone ? GOV_SH_PH : GOV_SH)[this.govL | 0]; if (shN > 1 && this.r.shadowMap.enabled) { this.r.shadowMap.autoUpdate = false; if (this._fno % shN === 0) this.r.shadowMap.needsUpdate = true; }
     if (this.post.on) this.post.render(dt); else this.r.render(this.scene, cam);
   }
@@ -653,7 +656,7 @@ export class Renderer3D {
       P[i * 3] += V[i * 3] * dt; P[i * 3 + 1] = Math.max(0.1, P[i * 3 + 1] + V[i * 3 + 1] * dt); P[i * 3 + 2] += V[i * 3 + 2] * dt;
       PC[i * 4 + 3] = l; PS[i] = this.pS0[i] * (0.4 + l * 0.6);
     }
-    const pg = this.pts.geometry; pg.attributes.position.needsUpdate = true; pg.attributes.col.needsUpdate = true; pg.attributes.size.needsUpdate = true; pg.setDrawRange(0, this.pMax);
+    const pg = this.pts.geometry, A = pg.attributes, n = this.pMax; for (const [a, k] of [[A.position, 3], [A.col, 4], [A.size, 1]]) { a.clearUpdateRanges(); a.addUpdateRange(0, n * k); a.needsUpdate = true; } pg.setDrawRange(0, n); // 3dperf: live range only
   }
   _bitsUpdate(dt) {
     for (const [L, mesh] of [[this.bD, this.bits], [this.cD, this.conf]]) {
@@ -666,7 +669,8 @@ export class Renderer3D {
     }
   }
   _flushE(E, cnt) { this._flush(E.w, cnt.e); this._flush(E.p, cnt.e); this._flush(E.h, cnt.e); this._flush(E.t, cnt.t); this._flush(E.hn, cnt.h || 0); }
-  _flush(m, n) { m.count = n; m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
+  _flush(m, n) { m.count = n; const A = m.instanceMatrix, C = m.instanceColor; // 3dperf: upload only the live instances (was the whole MAX-sized buffer every frame: ~1 MB/frame through Safari's GPU-process IPC)
+    if (n > 0) { A.clearUpdateRanges(); A.addUpdateRange(0, n * 16); A.needsUpdate = true; if (C) { C.clearUpdateRanges(); C.addUpdateRange(0, n * 3); C.needsUpdate = true; } } }
 
   // ---------- studio showcase (lobby / locker / reveals) ----------
   // fit1: at k=1 the snake + pedestal span SPAN0 of the canvas height centred at C0. In the lobby, shrink/move it into the box

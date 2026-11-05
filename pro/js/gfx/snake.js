@@ -4,7 +4,7 @@
 // cross-section with a sculpted head, neck, tail taper, lateral undulation, head bob, eat squash and a
 // growth pulse running down the body. Fragment stage = PBR (clearcoat/iridescence/sheen) + procedural
 // scales + 12 legendary shader effects. All snakes = 1 instanced draw (+1 for ghost/transparent skins).
-import * as THREE from "../vendor/three.module.min.js?v=layoutfix";
+import * as THREE from "../vendor/three.module.min.js?v=3dperf";
 
 export const SW = 176; // spine samples per snake (2 texels each)
 export const MAXS = 56; // snake rows (last row reserved for the showcase)
@@ -298,14 +298,25 @@ export class SnakeSystem {
   setShow(fx) { const k = fx === 7 ? "sg" : fx ? "sf" : "s"; for (const n of ["s", "sf", "sg"]) { this.G[n].g.instanceCount = n === k ? 1 : 0; this.G[n].m.visible = n === k; } return k; }
   // write one snake: pts = [x0,z0,x1,z1...] head first, ys optional heights, colorAt(j, n) -> packed int
   writeRow(row, pts, n, r, ys, colors) {
-    const D = this.data, base = row * SW * 2 * 4;
+    const D = this.data, base = row * SW * 2 * 4; this.noteRow(row);
     for (let j = 0; j < n; j++) { const o = base + j * 8; D[o] = pts[j * 2]; D[o + 1] = pts[j * 2 + 1]; D[o + 2] = r; D[o + 3] = colors[j]; D[o + 4] = ys ? ys[j] : 0; }
   }
   set(grp, k, a, b, c) { const G = this.G[grp]; G.A.array.set(a, k * 4); G.B.array.set(b, k * 4); G.C.array.set(c, k * 4); }
   commit(ni, nf, ng) {
     this.G.i.g.instanceCount = ni; this.G.f.g.instanceCount = nf; this.G.g.g.instanceCount = ng;
-    for (const k in this.G) { const G = this.G[k]; G.A.needsUpdate = G.B.needsUpdate = G.C.needsUpdate = true; }
-    this.tex.needsUpdate = true;
+    for (const k in this.G) { const G = this.G[k], n = G.g.instanceCount; if (!n) continue; for (const a of [G.A, G.B, G.C]) { a.clearUpdateRanges(); a.addUpdateRange(0, n * 4); a.needsUpdate = true; } }
+    this._up();
+  }
+  // 3dperf: upload only the spine rows written this frame (+ the showcase row) instead of the whole 352x56 float texture
+  // (315 KB/frame); a full upload until three.js has created the GPU texture.
+  noteRow(row) { if (row === SHOW_ROW) this.showDirty = true; else if (row + 1 > (this.rows | 0)) this.rows = row + 1; }
+  _up() {
+    const R = this.r3.r, P = R.properties.get(this.tex), T = P.__webglTexture, gl = R.getContext();
+    if (!T || P.__version !== this.tex.version) { this.tex.needsUpdate = true; this.rows = 0; this.showDirty = false; return; }
+    const W = SW * 2, put = (y, h) => { if (h > 0) gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, y, W, h, gl.RGBA, gl.FLOAT, this.data, y * W * 4); };
+    R.state.bindTexture(gl.TEXTURE_2D, T);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false); gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4); gl.pixelStorei(gl.UNPACK_ROW_LENGTH, 0); gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0); gl.pixelStorei(gl.UNPACK_SKIP_PIXELS, 0);
+    put(0, Math.min(this.rows | 0, SHOW_ROW)); if (this.showDirty) put(SHOW_ROW, 1); this.rows = 0; this.showDirty = false;
   }
   dispose(keepTex) {
     if (this.G) { for (const k in this.G) { const G = this.G[k]; if (G.m.parent) G.m.parent.remove(G.m); G.g.dispose(); } this.geo.dispose(); if (this.shadowMeshes) { for (const m of this.shadowMeshes) if (m.parent) m.parent.remove(m); this.shMat.dispose(); } this.mat.dispose(); this.matF.dispose(); this.matG.dispose(); this.matS.dispose(); this.matSF.dispose(); this.matSG.dispose(); this.depth.dispose(); this.G = null; }

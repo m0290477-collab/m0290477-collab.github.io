@@ -1,4 +1,4 @@
-import { Pass } from './Pass.js?v=layoutfix';
+import { Pass } from './Pass.js?v=3dperf';
 
 class MaskPass extends Pass {
 

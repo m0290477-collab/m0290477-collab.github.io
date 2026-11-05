@@ -3,17 +3,17 @@
 // while its client id is not configured on the server (/cfg). Profile snapshots: debounced ~10 s after a save + at match end,
 // versioned (a newer save from another device wins), restored on sign-in. Owner grants arrive live over the social socket.
 // Owner panel (only reachable from the founder's own Profile, every call checked on the server). Finding-a-server overlay.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=layoutfix";
-import { SERVER } from "./net.js?v=layoutfix";
-import { devKey } from "./league.js?v=layoutfix";
-import { SO, call, socialRestart, errText } from "./social.js?v=layoutfix";
-import { avatarHtml } from "./profile.js?v=layoutfix";
-import { KV, jparse, newProfile } from "./store.js?v=layoutfix";
-import { pidHtml } from "./pid.js?v=layoutfix";
-import { legalButtons } from "./legal.js?v=layoutfix"; // coin1: Privacy / Terms
-import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=layoutfix"; // coin1
-import { CF, dashExtra, liveHtml, ecoHtml, playerExtra, bind2, a2Reset, actName2 } from "./admin2.js?v=layoutfix"; // admin2
-import { errorsHtml, fairHtml, liveCards, bindAdm, admReset } from "./top1.js?v=layoutfix"; // top1: Errors, Fair play, map events, season
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=3dperf";
+import { SERVER } from "./net.js?v=3dperf";
+import { devKey } from "./league.js?v=3dperf";
+import { SO, call, socialRestart, errText } from "./social.js?v=3dperf";
+import { avatarHtml } from "./profile.js?v=3dperf";
+import { KV, jparse, newProfile } from "./store.js?v=3dperf";
+import { pidHtml } from "./pid.js?v=3dperf";
+import { legalButtons } from "./legal.js?v=3dperf"; // coin1: Privacy / Terms
+import { WL, migrated, apply as walletApply, onPush as walletPush } from "./wallet.js?v=3dperf"; // coin1
+import { CF, dashExtra, liveHtml, ecoHtml, playerExtra, bind2, a2Reset, actName2 } from "./admin2.js?v=3dperf"; // admin2
+import { errorsHtml, fairHtml, liveCards, bindAdm, admReset } from "./top1.js?v=3dperf"; // top1: Errors, Fair play, map events, season
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

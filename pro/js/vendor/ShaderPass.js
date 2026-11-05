@@ -1,8 +1,8 @@
 import {
 	ShaderMaterial,
 	UniformsUtils
-} from './three.module.min.js?v=layoutfix';
-import { Pass, FullScreenQuad } from './Pass.js?v=layoutfix';
+} from './three.module.min.js?v=3dperf';
+import { Pass, FullScreenQuad } from './Pass.js?v=3dperf';
 
 class ShaderPass extends Pass {
 

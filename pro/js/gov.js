@@ -24,7 +24,7 @@ export class Governor {
     if (!this.wn) this.w0 = now; this.w[this.wn++] = ms; if (this.wn < this.w.length && !(this.wn >= 8 && now - this.w0 > 1000)) return; // a window = 30 frames or >= 1 s
     const N = this.wn; this.wn = 0; const s = this.s.subarray(0, N); s.set(this.w.subarray(0, N)); s.sort(); const q = (f) => s[Math.min(N - 1, Math.floor(N * f))], p50 = q(0.5), p80 = q(0.8), p90 = q(0.9);
     const tgt = this.cap ? 1000 / this.cap : ctx.target;
-    if (p80 > tgt * 1.3) { this.good = 0; this.slow++; }
+    if (p80 > tgt * 1.1) { this.good = 0; this.slow++; } // 3dperf: slow = 20 % of a window over ~18 ms (was ~22 ms)
     else if (p90 < tgt * 1.12) { this.slow = 0; this.good++; }
     else { this.slow = 0; this.good = 0; }
     if (this.slow >= 2 && this.level < GOV_LEVELS - 1 && now - this.tChange > 1200) {

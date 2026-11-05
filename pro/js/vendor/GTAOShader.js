@@ -4,7 +4,7 @@ import {
 	RepeatWrapping,
 	Vector2,
 	Vector3,
-} from './three.module.min.js?v=layoutfix';
+} from './three.module.min.js?v=3dperf';
 
 /**
  * References:
