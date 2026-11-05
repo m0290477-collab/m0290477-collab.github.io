@@ -1,6 +1,6 @@
 import {
 	Vector2
-} from './three.module.min.js?v=land1';
+} from './three.module.min.js?v=top1';
 
 /**
  * NVIDIA FXAA by Timothy Lottes

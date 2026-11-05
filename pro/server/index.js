@@ -1,10 +1,10 @@
 // super-snake-online — Cloudflare Worker + Durable Object (one DO per room). No database, no payments, nothing stored.
 // The room runs the SAME sim.js as the client at 30 Hz and is authoritative for movement, food, mass, collisions and kills.
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
-import { periodId, Sim, C, radiusOf, lengthOf, angDiff, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP, EVENTS, MUTS, mutNow, Terr, TER } from "./sim.js";
+import { periodId, Sim, C, radiusOf, lengthOf, angDiff, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP, EVENTS, MUTS, mutNow, Terr, TER, MEV } from "./sim.js";
 import { DAY, LOGIN, LOGIN_NOCOS, SPIN, SPIN_NOCOS, spinPick, RANDOM_COS, SEASON, seasonReward, UNLOCKS, ACH_COINS, levelCoins, bonusCoins, dailyMissions, weeklyCoins, WC_REWARD, DAILY_MODE_BONUS,
-  leagueSeasonReward, CONQ_REWARD, rankReward, mileReward, CONTESTS, matchCoins, matchXp, plausible, OFF, ONLINE, catItem, validKey, offerCandidates, gtPrice, SHOP_TRAILS, BOUNTY, btyVal } from "./econ.js"; // coin1: shared economy tables
-import { SKINS, EYES, TRAILS, FLAG_PRICE, FLAG_PRICE0, setFlagPrice, FUSION_FEE, FUSION_FEE0, setFusionFee, fusable, fuKey, fusionDef } from "./skins.js";
+  leagueSeasonReward, CONQ_REWARD, rankReward, mileReward, CONTESTS, matchCoins, matchXp, plausible, OFF, ONLINE, catItem, validKey, offerCandidates, gtPrice, SHOP_TRAILS, BOUNTY, btyVal, seasonOk } from "./econ.js"; // coin1: shared economy tables
+import { SKINS, EYES, TRAILS, FLAG_PRICE, FLAG_PRICE0, setFlagPrice, FUSION_FEE, FUSION_FEE0, setFusionFee, fusable, fuKey, fusionDef, seasonMonth } from "./skins.js";
 // ---------- fix1: equipped cosmetics checked against the server wallet (own list + server level). Requirements mirror
 // js/profile.js (AVATARS / FRAMES; test/fix1s.test.mjs keeps them equal): number = level, "g" = granted only (must be owned),
 // 0 = free, "x" = achievement / stat / season (the server does not hold those: accepted).
@@ -30,7 +30,8 @@ export function verifySkin(sk, V) {
 export const XP = { MATCH: 4 * OFF.PER_MATCH, LIFE: 4 * ONLINE.PER_LIFE, DAY: 60000, SLACK: 3000, MIG_LV: 20 };
 export const cumXp = (L) => { let x = 0; for (let n = 1; n < Math.min(L, LV_MAX); n++) x += xpNeed(n); return x; };
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 14; // v14 (land1): territory rooms (tp-<bracket>-<n> public via the matchmaker, t-<code> private; server-owned cells, delta sync, 3-min rounds, placement trophies), skin fusion (w_fuse, fee px.fusion), territory switch; v13 (warm2): public rooms start as a world ~2-3 min old (seeded grown bots, curved bodies, corpse trails, steady-state food) + 45-tick settle instead of a 240-tick fast-forward; bounty restarts at base after any warm-up; v12 (play2): crown bounty on #1 in public rooms, weekend mutators (owner override a_mut), offline claims refused for switched-off modes, flag price editable; v11 (admin2): owner admin (coins/items/level/ids, announcement, gift-all, promo codes, maintenance, modes/events, prices, rooms + kick, chat delete, trophies, stats, backup now); warm rooms fast-forward; v10 (grow1): ids first seen after coin1 import 0 coins / level 1; challenge links (/c);  v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
+const MEV_FIRST = [60000, 150000], MEV_GAP = 7 * 60000; // top1: map event schedule
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 15; // v15 (top1): region rooms (locationHint, region-aware matchmaking), map events (sandstorm / gold rain / portals, owner on/off), error reports + admin Errors, anti-cheat holds on top-50 rewards (admin Fair play), monthly season (owner override); // v14 (land1): territory rooms (tp-<bracket>-<n> public via the matchmaker, t-<code> private; server-owned cells, delta sync, 3-min rounds, placement trophies), skin fusion (w_fuse, fee px.fusion), territory switch; v13 (warm2): public rooms start as a world ~2-3 min old (seeded grown bots, curved bodies, corpse trails, steady-state food) + 45-tick settle instead of a 240-tick fast-forward; bounty restarts at base after any warm-up; v12 (play2): crown bounty on #1 in public rooms, weekend mutators (owner override a_mut), offline claims refused for switched-off modes, flag price editable; v11 (admin2): owner admin (coins/items/level/ids, announcement, gift-all, promo codes, maintenance, modes/events, prices, rooms + kick, chat delete, trophies, stats, backup now); warm rooms fast-forward; v10 (grow1): ids first seen after coin1 import 0 coins / level 1; challenge links (/c);  v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 // look1: bots never share a look with any live snake (players included)
 const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
@@ -48,6 +49,14 @@ const J = (o, st = 200) => new Response(JSON.stringify(o), { status: st, headers
 // ---------- srv2: accounts, sign-in, matchmaking ----------
 const MM = "mm-v1";
 const ACCT_OPS = new Set(["acst", "snap", "pull", "out", "adel", "em1", "em2", "idt", "nonce", "gack"]); // the matchmaker: one in-memory object (same Room class) that rooms report to and players pick a room from
+// top1: room regions = Cloudflare Durable Object location hints. The worker reads where a player connects from (request.cf) and the
+// matchmaker prefers a room of that region; a new region room is created with that locationHint (it then stays there).
+export const REGIONS = ["wnam", "enam", "sam", "weur", "eeur", "apac", "oc", "afr", "me"];
+const ME_CC = new Set(["AE", "SA", "IQ", "IR", "KW", "QA", "BH", "OM", "JO", "LB", "SY", "IL", "PS", "YE", "EG", "TR", "CY"]);
+export function regionOf(cf) { cf = cf || {}; const cc = String(cf.country || "").toUpperCase(), ct = String(cf.continent || "").toUpperCase(), lon = +cf.longitude;
+  if (ME_CC.has(cc)) return "me"; if (ct === "NA") return Number.isFinite(lon) && lon < -100 ? "wnam" : "enam"; if (ct === "SA") return "sam";
+  if (ct === "EU") return Number.isFinite(lon) && lon > 19 ? "eeur" : "weur"; if (ct === "AS") return "apac"; if (ct === "OC") return "oc"; if (ct === "AF") return "afr"; return ""; }
+export const roomRg = (name) => { const m = /^pub-(?:bs|gp|dc|cq)-(wnam|enam|sam|weur|eeur|apac|oc|afr|me)-\d{1,2}$/.exec(String(name || "")); return m ? m[1] : ""; };
 export const BRACKETS = ["bs", "gp", "dc", "cq"]; // Bronze–Silver, Gold–Platinum, Diamond–Crown, Conqueror (comp1 leagues)
 export const bracketOf = (tr, cq) => (cq ? "cq" : tr >= 2800 ? "dc" : tr >= 1000 ? "gp" : "bs");
 export const MM_CFG = { WAIT: 5000, LOW: 3, HB_MS: 30000, LIVE_MS: 75000, WARM_MS: 8 * 60000, LINGER_MS: 30000, MAX: MAX_HUMANS };
@@ -96,6 +105,8 @@ export function applyPx(px) { px = px || {};
   if (!PX0.has("flags")) PX0.set("flags", FLAG_PRICE0); setFlagPrice(px.flags | 0); // play2: one price for every flag
   if (!PX0.has("fusion")) PX0.set("fusion", FUSION_FEE0); setFusionFee(px.fusion | 0); } // land1: skin fusion fee
 export const pxBase = (k) => PX0.get(k);
+export const ERR = { MAX: 1500, PER_H: 12, DAY: 3000, GROUPS: 300 }; // top1: error reports (client also caps: 5 per page load, same message once)
+export const errNorm = (m) => String(m).replace(/https?:\/\/\S+/g, "<url>").replace(/\b[0-9a-f]{8,}\b/gi, "<id>").replace(/\d+(\.\d+)?/g, "#").replace(/\s+/g, " ").trim().slice(0, 200);
 const SNAP_MAX = 64000, WARM_TICKS = 6, WARM_MASS = [24, 60, 140, 32, 220, 90, 420, 48, 170, 700, 36, 260, 110, 30, 520, 75, 1100, 40, 190, 330, 28, 130, 900, 55, 240, 26, 380, 66, 150, 1500]; // one profile snapshot (JSON text)
 export const LV_MAX = 100, xpNeed = (n) => Math.round(100 * n ** 1.6); // same curve as js/store.js
 export function lvOf(xp) { let n = 1, x = +xp || 0, need = xpNeed(1); while (n < LV_MAX && x >= need) { x -= need; n++; need = xpNeed(n); } return n; }
@@ -146,18 +157,22 @@ export async function verifyIdToken(tok, { jwks: url, iss, aud, now = Date.now()
 // bracket is quiet (fewer than LOW players looked for a match in 2 min) or the player has already waited WAIT ms; 3) while the
 // own bracket is busy but has no open populated room, hold (the client asks again in 2.5 s); 4) the bracket's warm room (still
 // in memory, bots playing) or its first room with space. A friend invite never comes here (it names the room).
-export function mmPick(R, P, { pid, br, w = 0, x = "", now = Date.now(), md = "" }) { // land1: md "t" = territory rooms (tp-<br>-<n>), "" = classic (pub-)
-  P.set(pid, { br, t: now, md }); if (P.size > 5000) for (const [k, v] of P) if (now - v.t > 120000) P.delete(k);
+export function mmPick(R, P, { pid, br, w = 0, x = "", now = Date.now(), md = "", rg = "" }) { // land1: md "t" = territory rooms (tp-<br>-<n>), "" = classic (pub-)
+  if (rg && (md || !REGIONS.includes(rg))) rg = ""; P.set(pid, { br, t: now, md, rg }); // top1: regions for classic rooms if (P.size > 5000) for (const [k, v] of P) if (now - v.t > 120000) P.delete(k);
   const pre = md === "t" ? "tp-" : "pub-", rooms = [...R.values()].filter((r) => (r.md || "") === md), live = (r) => now - r.t < MM_CFG.LIVE_MS, cap = (r) => r.h + (r.pend || 0) < MM_CFG.MAX && r.room !== x;
   const withP = (b) => rooms.filter((r) => r.br === b && live(r) && r.h > 0 && cap(r)).sort((a, c) => c.h - a.h || a.i - c.i);
-  const out = (r, fb, why) => { r.pend = (r.pend || 0) + 1; return { room: r.room, br: r.br, i: r.i, h: r.h, b: r.b, fb: fb || "", why, my: br }; };
-  const own = withP(br); if (own.length) return out(own[0], "", "match");
+  const out = (r, fb, why) => { r.pend = (r.pend || 0) + 1; return { room: r.room, br: r.br, rg: r.rg || "", i: r.i, h: r.h, b: r.b, fb: fb || "", why, my: br, myRg: rg }; };
+  const own = withP(br); // top1: own region first; another region's populated room once waited WAIT/2 or when this region is quiet
+  if (rg) { const mine = own.filter((r) => (r.rg || "") === rg); if (mine.length) return out(mine[0], "", "match");
+    const popR = [...P.entries()].filter(([k, v]) => k !== pid && v.br === br && v.rg === rg && now - v.t < 120000).length;
+    if (own.length && (w >= MM_CFG.WAIT / 2 || popR < MM_CFG.LOW)) return { ...out(own[0], "", "far"), far: 1 }; }
+  else if (own.length) return out(own[0], "", "match");
   const pop = [...P.entries()].filter(([k, v]) => k !== pid && v.br === br && (v.md || "") === md && now - v.t < 120000).length, bi = BRACKETS.indexOf(br);
   const nb = [bi - 1, bi + 1].filter((i) => i >= 0 && i < BRACKETS.length).map((i) => BRACKETS[i]);
   if (w >= MM_CFG.WAIT || pop < MM_CFG.LOW) { const c = nb.flatMap(withP).sort((a, b2) => b2.h - a.h); if (c.length) return out(c[0], c[0].br, w >= MM_CFG.WAIT ? "wait" : "low"); }
   else return { hold: 1, br, wait: 2500, my: br };
-  const warm = rooms.filter((r) => r.br === br && now - r.t < MM_CFG.WARM_MS && cap(r)).sort((a, c) => c.t - a.t)[0]; if (warm) return out(warm, "", "warm");
-  for (let i = 1; i <= 60; i++) { const n = pre + br + "-" + i; let r = R.get(n); if (r && !cap(r)) continue; if (!r) { r = { room: n, br, i, h: 0, b: md === "t" ? TER.SNAKES : TARGET_SNAKES, t: now, pend: 0, up: now, md }; R.set(n, r); } return out(r, "", "new"); }
+  const warm = rooms.filter((r) => r.br === br && (r.rg || "") === rg && now - r.t < MM_CFG.WARM_MS && cap(r)).sort((a, c) => c.t - a.t)[0]; if (warm) return out(warm, "", "warm");
+  for (let i = 1; i <= 60; i++) { const n = pre + br + "-" + (rg ? rg + "-" : "") + i; let r = R.get(n); if (r && !cap(r)) continue; if (!r) { r = { room: n, br, i, h: 0, b: md === "t" ? TER.SNAKES : TARGET_SNAKES, t: now, pend: 0, up: now, md, rg }; R.set(n, r); } return out(r, "", "new"); }
   return { room: pre + br + "-1", br, i: 1, h: 0, b: 0, fb: "", why: "overflow", my: br };
 }
 const EMAIL_RE = /^[^\s@<>"'`()[\]\\,;:]{1,64}@(?:[^\s@<>"'`()[\]\\,;:.]+\.)+[^\s@<>"'`()[\]\\,;:.\d]{2,24}$/u, PERM = 9e15;
@@ -195,6 +210,17 @@ async function adminHttp(req, env, url) {
   if (url.pathname === "/admin/trim" && req.method === "POST") return so.fetch("https://ops/x/trim?days=" + Math.max(30, Math.min(3650, +url.searchParams.get("days") || 60)), { method: "POST" });
   return new Response('{"err":"op"}', { status: 404, headers: jh });
 }
+// top1: fair-play rules (one finished online life = one row). A rule fires once per player per period; any rule = hold.
+export const AC = { KILLS: 30, MASS_K: 40, MASS0: 800, OVERLAP: 2, PER_H: 80, SHORT_S: 6, SHORT_N: 40 };
+export function acCheck(L) { const why = []; let ov = 0, short = 0, burst = 0;
+  for (let i = 0; i < L.length; i++) { const r = L[i]; if (r.kl > AC.KILLS && !why.includes("kills")) why.push("kills");
+    if (r.lf > 0 && r.bm > AC.MASS0 + AC.MASS_K * r.lf && !why.includes("growth")) why.push("growth"); // lf 0 = an older room that did not report the life length: not judged
+    if (r.lf > 0 && r.lf < AC.SHORT_S && r.d > 0) short++;
+    if (i > 0 && r.lf > 0) { const p = L[i - 1]; if (r.rm !== p.rm && r.t - r.lf * 1000 < p.t - 5000) ov++; } // two lives at the same time in different rooms
+    let j = i; while (j > 0 && r.t - L[j - 1].t < 3600000) j--; burst = Math.max(burst, i - j + 1); }
+  if (ov >= AC.OVERLAP) why.push("overlap"); if (burst > AC.PER_H) why.push("rate"); if (short >= AC.SHORT_N) why.push("short"); return why; }
+const perRange = (per) => { const k = per[0], v = per.slice(2); if (k === "w") { const [y, w] = v.split("-W").map(Number), j4 = Date.UTC(y, 0, 4), d = new Date(j4).getUTCDay() || 7, mon = j4 - (d - 1) * DAY + (w - 1) * 7 * DAY; return [mon, mon + 7 * DAY]; }
+  const [y, m] = v.split("-").map(Number); return [Date.UTC(y, m - 1, 1), Date.UTC(y, m, 1)]; };
 export const OPS_SKIP = ["nonce", "ecode"]; // short-lived sign-in secrets: not worth keeping in a backup
 export function opsSnap(q) { const out = {};
   for (const { name } of q.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name").toArray()) if (!OPS_SKIP.includes(name)) out[name] = q.exec(`SELECT * FROM "${name}"`).toArray();
@@ -224,8 +250,8 @@ export default {
       if (origin && !ORIGINS.some((r) => r.test(origin))) return new Response("origin not allowed", { status: 403 });
       let room = (url.searchParams.get("room") || "pub-1").toLowerCase();
       if (!/^[a-z0-9-]{1,24}$/.test(room)) room = "pub-1";
-      const id = env.ROOMS.idFromName(room);
-      return env.ROOMS.get(id).fetch(new Request("https://room/ws?" + url.searchParams.toString() + "&name_room=" + room, req));
+      const id = env.ROOMS.idFromName(room), rg = roomRg(room); // top1: a region room is created near its players
+      return (rg ? env.ROOMS.get(id, { locationHint: rg }) : env.ROOMS.get(id)).fetch(new Request("https://room/ws?" + url.searchParams.toString() + "&name_room=" + room, req));
     }
     // comp1: public leaderboard / contest / season API -> the one board object (SQLite storage). /b/rec is internal only (room -> board).
     if (url.pathname === "/lb/top" || url.pathname === "/lb/me" || url.pathname === "/lb/claim") {
@@ -245,6 +271,11 @@ export default {
       return so.fetch(new Request("https://social/s/op", { method: "POST", body: (await req.text()).slice(0, S_MAX) }));
     }
     // srv2: sign-in config (client ids are public values; empty = that button stays hidden)
+    if (url.pathname === "/err") { // top1: client error report -> social object (rate-limited there; nothing personal is stored)
+      if (req.method === "OPTIONS") return opts("POST"); const bad = pre(req); if (bad) return bad; if (req.method !== "POST") return J({ err: "method" }, 405);
+      if (+(req.headers.get("content-length") || 0) > ERR.MAX) return new Response('{"err":"big"}', { status: 413, headers: cors });
+      let B = {}; try { B = JSON.parse((await req.text()).slice(0, ERR.MAX)) || {}; } catch (_) { return J({ err: "json" }, 400); }
+      const pid = await pidOf(String(B.pk || "")); delete B.pk; B.pid = pid; return env.ROOMS.get(env.ROOMS.idFromName(SOCIAL)).fetch(new Request("https://social/s/err", { method: "POST", body: JSON.stringify(B) })); }
     if (url.pathname === "/cfg") return new Response(JSON.stringify(cfgOf(env)), { headers: { ...cors, "cache-control": "public, max-age=300" } });
     // srv2: accounts + sign-in. Google / Apple ID tokens are verified HERE (JWKS); only verified claims reach the social object.
     if (url.pathname === "/a") {
@@ -263,7 +294,7 @@ export default {
     if (url.pathname === "/mm") {
       if (req.method === "OPTIONS") return opts("GET"); const bad = pre(req); if (bad) return bad;
       const pid = await pidOf(url.searchParams.get("pk") || ""); if (!pid) return J({ err: "pk" }, 400);
-      return env.ROOMS.get(env.ROOMS.idFromName(MM)).fetch(new Request("https://mm/m/pick?pid=" + pid + "&w=" + (Math.max(0, Math.min(60000, +url.searchParams.get("w") || 0)) | 0) + "&x=" + encodeURIComponent((url.searchParams.get("x") || "").slice(0, 24)) + (url.searchParams.get("md") === "t" ? "&md=t" : "")));
+      return env.ROOMS.get(env.ROOMS.idFromName(MM)).fetch(new Request("https://mm/m/pick?pid=" + pid + "&w=" + (Math.max(0, Math.min(60000, +url.searchParams.get("w") || 0)) | 0) + "&x=" + encodeURIComponent((url.searchParams.get("x") || "").slice(0, 24)) + (url.searchParams.get("md") === "t" ? "&md=t" : "") + "&rg=" + regionOf(req.cf)));
     }
     if (url.pathname.startsWith("/admin/")) return adminHttp(req, env, url); // ops1: owner-only backups (ADMIN_KEY secret, never from a browser)
     return new Response("Super Snake online server", { headers: { "content-type": "text/plain" } });
@@ -274,7 +305,7 @@ export class Room {
   constructor(state, env) { this.state = state; this.env = env; this.clients = new Set(); this.sim = null; this.timer = null; this.botSeq = 0; }
   init(params) {
     this.noBots = params.get("bots") === "0" && !/^(pub|tp)-/.test(params.get("name_room") || "");
-    this.room = params.get("name_room") || "pub-1"; const mb = /^pub-(bs|gp|dc|cq)-(\d{1,2})$/.exec(this.room); this.br = mb ? mb[1] : ""; this.bi = mb ? +mb[2] : 0; // srv2: bracket room
+    this.room = params.get("name_room") || "pub-1"; const mb = /^pub-(bs|gp|dc|cq)-(?:(?:wnam|enam|sam|weur|eeur|apac|oc|afr|me)-)?(\d{1,2})$/.exec(this.room); this.br = mb ? mb[1] : ""; this.bi = mb ? +mb[2] : 0; this.rg = roomRg(this.room); // srv2: bracket room; top1: region
     // land1: territory rooms: tp-<bracket>-<n> = public (matchmaker, trophies), t-<code> = private (friends + bots, no trophies)
     const mt = /^tp-(bs|gp|dc|cq)-(\d{1,2})$/.exec(this.room); if (mt) { this.br = mt[1]; this.bi = +mt[2]; } this.terOn = !!mt || /^t-[a-z0-9-]{1,22}$/.test(this.room); this.pub = this.room.startsWith("pub-") || !!mt;
     this.sim = new Sim({ dt: TICK, R: this.terOn ? TER.R_ON : undefined, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true, powerups: true, events: true, evtFirst: 35 });
@@ -308,6 +339,15 @@ export class Room {
     const want = Math.round(S.foodTarget * WARM2.FOOD_K); let over = S.fCount - want;
     if (over > 0) { const amb = []; for (let i = 0; i < S.FM; i++) if (S.fa[i] && S.fcl[i]) amb.push(i); for (let i = amb.length - 1; i > 0 && over > 0; i--) { const j = (rnd() * (i + 1)) | 0; S.removeFood(amb[j], 0); amb[j] = amb[i]; over--; } }
     S.drain(); this.fill(); S.drain(); }
+  // top1: map events. Public rooms with players get at most one at a time, the first 60-150 s after players arrive, then no
+  // sooner than MEV_GAP after the last one ended (so one life almost never sees two). The owner can switch them off (all / per kind).
+  mevMsg() { const E = this.sim && this.sim.mev; return E ? { k: E.k, t: Math.round(E.t * 10) / 10, d: E.d, p: E.p, r: E.r } : null; }
+  mevTick(now) { if (!this.ranked() || !this.sim || this.ter) return; /* top1: never in territory rooms (land1) */ const C0 = this.mevCfg || { off: 0, k: [] }, kinds = MEV.filter((k) => !(C0.k || []).includes(k));
+    if (C0.off || !kinds.length) { if (this.sim.mev) this.sim.endMapEvent(); return; }
+    if (this.sim.mev) { this.mevEnd = now; return; } const humans = [...this.clients].some((c) => c.joined && c.snake && c.snake.alive); if (!humans) return;
+    if (!this.mevAt) this.mevAt = Math.max(now + MEV_FIRST[0] + Math.random() * (MEV_FIRST[1] - MEV_FIRST[0]), (this.mevEnd || 0) + MEV_GAP);
+    if (now < this.mevAt) return; const pool = kinds.filter((k) => k !== this.mevLast), k = (pool.length ? pool : kinds)[(Math.random() * (pool.length || kinds.length)) | 0];
+    if (this.sim.startMapEvent(k)) { this.mevLast = k; this.mevAt = 0; this.mevEnd = now + MEV_GAP; } }
   btyReset() { this.bty = null; if (!this.sim) return; const top = this.sim.snakes.filter((s) => s.alive).sort((a, b2) => b2.m - a.m)[0]; this.btyTrack(top, Date.now()); }
   // admin2: headless fast-forward (no humans, nothing sent): bots move, eat, die and respawn; returns the CPU ms it took
   warmUp(n) { const S = this.sim, t0 = performance.now(); for (let k = 0; k < n; k++) { S.step(() => true); S.drain(); if (k % 30 === 29) { for (const d of S.snakes.filter((x) => !x.alive)) S.removeSnake(d); this.fill(); } }
@@ -322,7 +362,7 @@ export class Room {
     const body = JSON.stringify({ pid: c.pid, ck: ("on:bty:" + this.room + ":" + (this.t0 || 0) + ":" + B.id + ":" + by + ":" + this.sim.tick).slice(0, 93), bty: v });
     try { this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/earn", { method: "POST", body }).then((r) => r.json()).then((r) => { if (r && r.ok && this.clients.has(c)) this.send(c, JSON.stringify({ t: "bty", c: r.c, v, bal: r.bal })); }).catch(() => {}); } catch (_) {} }
   // play2: weekend rule (schedule + owner override), checked once a second; the owner override is re-read from social every 60 s while players are in
-  mutTick(now) { if (this.clients.size && now - (this.mutT || 0) > 60000) { this.mutT = now; try { this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/mu").then((r) => r.json()).then((r) => { if (r && typeof r.mu === "string") this.mutOv = r.mu; }).catch(() => {}); } catch (_) {} }
+  mutTick(now) { if (this.clients.size && now - (this.mutT || 0) > 60000) { this.mutT = now; try { this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/mu").then((r) => r.json()).then((r) => { if (r && typeof r.mu === "string") this.mutOv = r.mu; if (r && r.mev) this.mevCfg = r.mev; }).catch(() => {}); } catch (_) {} }
     const k = mutNow(this.mutOv, now); if (k !== (this.sim.mut || "")) { this.sim.mut = k; this.bcast(JSON.stringify({ t: "mut", k })); } }
   // srv2: the room tells the matchmaker who is here (on join / leave and every 30 s while players are in). No alarms: an empty room costs nothing.
   hb(force) { const now = Date.now(); if (!this.pub || (!force && now - (this.hbT || 0) < MM_CFG.HB_MS)) return; this.hbT = now;
@@ -401,7 +441,7 @@ export class Room {
       if (!c.pidP && typeof m.pk === "string") c.pidP = pidOf(m.pk).then(async (dp) => { if (!dp) return; c.dp = dp; const u = await this.uidOf(c, 1); this.verC(c, u); c.verDone = 1; c.pid = (u && u.cp) || dp; if (!this.clients.has(c) || c.banned) return; if (!this.ranked()) return; try { const r = await (await this.boardStub().fetch("https://board/b/get?pid=" + c.pid)).json(); if (r && Number.isFinite(r.tr)) { c.tr = r.tr; if (c.snake) c.snake.tr = r.tr; this.send(c, JSON.stringify({ t: "tro0", tr: r.tr, ss: r.ss })); } } catch (_) {} }).catch(() => {}).finally(() => { if (!c.verDone) { c.verDone = 1; this.verC(c, null); } });
       else if (!c.pidP) { c.verDone = 1; this.verC(c, null); } // no device key: nothing owned on the server
       const hs = [...this.clients].filter((o) => o.joined).length;
-      this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, br: this.br, bi: this.bi, h: hs, b: this.sim.snakes.filter((s) => s.alive && s.bot).length, tick: this.sim.tick, dt: TICK, R: this.sim.R, mu: this.sim.mut || "", ...(this.ter ? { ter: { cell: this.ter.cell, n: this.trd.n, left: this.terLeft(), pub: this.pub ? 1 : 0 } } : {}), snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
+      this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, br: this.br, bi: this.bi, rg: this.rg || "", mev: this.mevMsg(), ssn: this.ssnOv | 0, h: hs, b: this.sim.snakes.filter((s) => s.alive && s.bot).length, tick: this.sim.tick, dt: TICK, R: this.sim.R, mu: this.sim.mut || "", ...(this.ter ? { ter: { cell: this.ter.cell, n: this.trd.n, left: this.terLeft(), pub: this.pub ? 1 : 0 } } : {}), snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
       if (this.ter) this.send(c, this.ter.full()); // land1: the whole map once (runs), then deltas
       this.hb(true);
       this.send(c, this.foodFull()); this.send(c, this.lbMsg()); // admin2: leaderboard at once
@@ -438,7 +478,7 @@ export class Room {
   uidOf(c, w) { return this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + c.dp + (w ? "&w=1" : "") + (this.ter ? "&md=t" : "")).then((r) => r.json()).then((r) => { if (!r || !/^\d{1,7}$/.test(r.id || "")) return r;
     if (r.ban) { c.banned = 1; this.send(c, JSON.stringify({ t: "ban", u: r.ban })); if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4); try { c.ws.close(4003, "banned"); } catch (_) {} return r; }
     if (r.mt) { this.send(c, JSON.stringify({ t: "kick", k: r.mt.k, m: r.mt.m || "" })); if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4); try { c.ws.close(4011, r.mt.k); } catch (_) {} return r; } // admin2: maintenance / online switched off (owner exempt)
-    if (Array.isArray(r.evo)) this.sim.events = EVENTS.filter((k) => !r.evo.includes(k)); if (typeof r.mu === "string" && r.mu !== this.mutOv) { this.mutOv = r.mu; this.mutTick(Date.now()); } // play2 // admin2: events the owner switched off
+    if (r.mev) this.mevCfg = r.mev; if (Number.isFinite(r.ssn)) this.ssnOv = r.ssn | 0; if (Array.isArray(r.evo)) this.sim.events = EVENTS.filter((k) => !r.evo.includes(k)); // top1 if (typeof r.mu === "string" && r.mu !== this.mutOv) { this.mutOv = r.mu; this.mutTick(Date.now()); } // play2 // admin2: events the owner switched off
     c.mute = r.mute || 0; c.uid = r.id; if (r.nm) { c.name = cleanName(r.nm); if (c.snake) c.snake.name = c.name; }
     const s = c.snake; if (s && s.alive && s.uid !== r.id) { s.uid = r.id; this.bcast(JSON.stringify({ t: "uid", id: s.id, u: r.id })); } this.send(c, JSON.stringify({ t: "myid", u: r.id })); return r; }).catch(() => null); }
   // ---------- comp1: trophies (server-decided), board object (leaderboards, weekly/monthly contests, monthly seasons) ----------
@@ -452,7 +492,7 @@ export class Room {
     const atDeath = 1 + this.sim.snakes.filter((o) => o.alive && o !== s && o.m > s.m).length, place = Math.min(L.best, atDeath);
     const kills = s.kills | 0, life = (Date.now() - L.t0) / 1000, sc = Math.round(Math.max(L.bm, s.m));
     const d = trophyDelta({ place, field, kills, life, t: c.tr | 0, online: 1 });
-    const body = JSON.stringify({ pid: c.pid, name: c.name, d, kl: kills, sc: life >= TROPHY.LIFE_MIN ? sc : 0, u: c.uid || "" });
+    const body = JSON.stringify({ pid: c.pid, name: c.name, d, kl: kills, sc: life >= TROPHY.LIFE_MIN ? sc : 0, u: c.uid || "", lf: Math.round(life), rm: this.room, bm: Math.round(Math.max(L.bm, s.m)) }); // top1: life facts for the fair-play check
     this.boardStub().fetch("https://board/b/rec", { method: "POST", body }).then((r) => r.json()).then((r) => {
       if (!r || !r.ok) return; c.tr = r.tr; if (c.snake === s) s.tr = r.tr;
       if (this.clients.has(c)) this.send(c, JSON.stringify({ t: "tro", d: r.d, tr: r.tr, ss: r.ss, pl: place, f: field, k: kills, sc, life: Math.round(life) }));
@@ -474,10 +514,21 @@ export class Room {
     const q = this.db(), get = (k) => { const r = q.exec("SELECT v FROM meta WHERE k = ?", k).toArray()[0]; return r ? r.v : ""; }, set = (k, v) => q.exec("INSERT OR REPLACE INTO meta (k, v) VALUES (?, ?)", k, v);
     const W = weekId(now), M = seasonId(now), w0 = get("w"), m0 = get("m");
     const snap = (per, met, col, where, id, lim) => q.exec(`INSERT OR IGNORE INTO fin (per, met, pid, rk, v) SELECT ?, ?, pid, ROW_NUMBER() OVER (ORDER BY ${col} DESC, upd ASC), ${col} FROM pl WHERE ${where} ORDER BY ${col} DESC, upd ASC LIMIT ${lim}`, per, met, ...id);
-    if (w0 !== W) { if (w0) for (const [met, col] of [["tr", "wtr"], ["kl", "wkl"], ["sc", "wsc"]]) snap("w:" + w0, met, col, `wk = ? AND ${col} > 0`, [w0], 50); set("w", W); this.lbc.clear(); }
-    if (m0 !== M) { if (m0) { for (const [met, col] of [["tr", "mtr"], ["kl", "mkl"], ["sc", "msc"]]) snap("m:" + m0, met, col, `mo = ? AND ${col} > 0`, [m0], 100); snap("s:" + m0, "cq", "tr", "ss = ? AND tr >= ?", [m0, TROPHY.CONQ_MIN], TROPHY.CONQ_N); } set("m", M); this.lbc.clear(); }
+    if (w0 !== W) { if (w0) { for (const [met, col] of [["tr", "wtr"], ["kl", "wkl"], ["sc", "wsc"]]) snap("w:" + w0, met, col, `wk = ? AND ${col} > 0`, [w0], 50); this.acClose("w:" + w0); } set("w", W); this.lbc.clear(); }
+    if (m0 !== M) { if (m0) { for (const [met, col] of [["tr", "mtr"], ["kl", "mkl"], ["sc", "msc"]]) snap("m:" + m0, met, col, `mo = ? AND ${col} > 0`, [m0], 100); snap("s:" + m0, "cq", "tr", "ss = ? AND tr >= ?", [m0, TROPHY.CONQ_MIN], TROPHY.CONQ_N); this.acClose("m:" + m0); this.acClose("s:" + m0); } set("m", M); this.lbc.clear(); }
     return { W, M };
   }
+  // top1: fair-play check of the top 50 before a weekly / monthly / season reward is paid. Judged only on what rooms reported
+  // (lf: one row per online life). A flagged player's reward for that period is held until the owner releases it (Admin > Fair play).
+  acDb() { const q = this.db(); if (!this._acT) { this._acT = 1; q.exec("CREATE TABLE IF NOT EXISTS lf (pid TEXT, t INTEGER, lf INTEGER, kl INTEGER, d INTEGER, bm INTEGER, rm TEXT)"); q.exec("CREATE INDEX IF NOT EXISTS i_lf ON lf(pid, t)");
+      q.exec("CREATE TABLE IF NOT EXISTS ac (per TEXT, pid TEXT, st INTEGER, why TEXT, t INTEGER, note TEXT, t2 INTEGER, PRIMARY KEY (per, pid))"); } return q; }
+  acClose(per) { const q = this.db(); let pids = []; try { pids = q.exec("SELECT DISTINCT pid FROM fin WHERE per = ? AND rk <= 50", per).toArray().map((r) => r.pid); } catch (_) {} this.acScan(per, pids, false);
+    try { q.exec("DELETE FROM lf WHERE t < ?", Date.now() - 45 * DAY); } catch (_) {} }
+  acScan(per, pids, preview) { const q = this.acDb(), [a, b] = perRange(per), out = []; let held = 0;
+    for (const pid of pids.slice(0, 120)) { const L = q.exec("SELECT t, lf, kl, d, bm, rm FROM lf WHERE pid = ? AND t >= ? AND t < ? ORDER BY t", pid, a, b).toArray(), why = acCheck(L);
+      if (!preview) { if (q.exec("SELECT st FROM ac WHERE per = ? AND pid = ?", per, pid).toArray().length) continue; q.exec("INSERT INTO ac (per, pid, st, why, t) VALUES (?, ?, ?, ?, ?)", per, pid, why.length ? 1 : 0, JSON.stringify(why), Date.now()); }
+      if (why.length) held++; out.push({ pid, n: L.length, why }); }
+    return { n: pids.length, held, out: preview ? out.filter((x) => x.why.length).slice(0, 50) : [] }; }
   async board(req, url) {
     try {
       const now = Date.now(), { W, M } = this.roll(now), q = this.db(), op = url.pathname.slice(3);
@@ -495,7 +546,8 @@ export class Room {
         const pids = (Array.isArray(B.pids) ? B.pids : []).map(String).filter((x) => /^[0-9a-f]{20}$/.test(x)).slice(0, 3), fin = {};
         for (const k of (Array.isArray(B.keys) ? B.keys : []).map(String).slice(0, 10)) { const j = k.lastIndexOf(":"), per = k.slice(0, j), met = k.slice(j + 1); if (!/^[wms]:\d{4}-(W\d{2}|\d{2})$/.test(per)) continue;
           for (const p of pids) { const r = q.exec("SELECT rk FROM fin WHERE per = ? AND met = ? AND pid = ?", per, met, p).toArray()[0]; if (r) { fin["sv:" + k] = r.rk; break; } } }
-        return J({ fin }); }
+        this.acDb(); const held = []; for (const p of pids) for (const r of q.exec("SELECT per FROM ac WHERE pid = ? AND st = 1", p).toArray()) held.push(r.per); // top1: rewards on hold
+        return J({ fin, held }); }
       if (op === "rec") { // internal: a room reports one finished life
         const pid = String(B.pid || ""); if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400);
         const d = Math.max(TROPHY.ON_MIN, Math.min(TROPHY.ON_MAX, B.d | 0)), kl = Math.max(0, Math.min(60, B.kl | 0)), sc = Math.max(0, Math.min(1e6, B.sc | 0));
@@ -503,8 +555,14 @@ export class Room {
         q.exec("INSERT OR REPLACE INTO pl (pid, name, tr, ss, pk, wk, wtr, wkl, wsc, mo, mtr, mkl, msc, n, upd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
           pid, cleanName(B.name), tr, M, Math.max(v.pk | 0, tr), W, (v.wtr | 0) + ap, (v.wkl | 0) + kl, Math.max(v.wsc | 0, sc), M, (v.mtr | 0) + ap, (v.mkl | 0) + kl, Math.max(v.msc | 0, sc), ((v.n | 0) + 1), now);
         if (/^\d{1,7}$/.test(String(B.u || ""))) q.exec("UPDATE pl SET u = ? WHERE pid = ?", String(B.u), pid);
+        this.acDb(); q.exec("INSERT INTO lf (pid, t, lf, kl, d, bm, rm) VALUES (?, ?, ?, ?, ?, ?, ?)", pid, now, Math.max(0, Math.min(86400, B.lf | 0)), kl, ap, Math.max(0, Math.min(1e6, B.bm | 0 || sc)), String(B.rm || "").slice(0, 24)); // top1
         return J({ ok: 1, d: ap, tr, ss: M });
       }
+      if (op === "ac") { this.acDb(); const L = q.exec("SELECT * FROM ac ORDER BY st = 1 DESC, t DESC LIMIT 120").toArray(); // top1: owner view (via social)
+        return J({ list: L.map((r) => ({ ...r, why: JSON.parse(r.why || "[]"), name: (row(r.pid) || {}).name || "", u: (row(r.pid) || {}).u || "" })), rules: AC }); }
+      if (op === "acset") { this.acDb(); const pid = String(B.pid || ""), per = String(B.per || ""); const r = q.exec("SELECT * FROM ac WHERE pid = ? AND per = ?", pid, per).toArray()[0]; if (!r) return J({ err: "none" });
+        q.exec("UPDATE ac SET st = ?, note = ?, t2 = ? WHERE pid = ? AND per = ?", B.st === 1 ? 1 : 2, String(B.why || "").slice(0, 200), now, pid, per); return J({ ok: 1, st: B.st === 1 ? 1 : 2 }); }
+      if (op === "acscan") { const res = this.acScan("m:" + M, q.exec("SELECT pid FROM pl WHERE mo = ? ORDER BY mtr DESC LIMIT 50", M).toArray().map((r) => r.pid), true); return J({ ok: 1, n: res.n, held: res.held, preview: res.out }); } // current month, preview only (nothing held)
       if (op === "top") { // ?k=tr|wtr|wkl|wsc|mtr|mkl|msc  -> top 50 (cached 20 s; ids shown shortened)
         const k = url.searchParams.get("k") || "tr"; if (!["tr", "wtr", "wkl", "wsc", "mtr", "mkl", "msc"].includes(k)) return J({ err: "k" }, 400);
         const c = this.lbc.get(k); if (c && now - c.t < 20000) return J(c.o);
@@ -516,13 +574,14 @@ export class Room {
         const pid = await pidOf(String(B.pk || "")); if (!pid) return J({ err: "pk" }, 400);
         if (op === "claim") { const per = String(B.per || ""), met = String(B.met || ""); if (!/^[wms]:\d{4}-(W\d{2}|\d{2})$/.test(per) || !["tr", "kl", "sc", "cq"].includes(met)) return J({ err: "bad" }, 400);
           const r = q.exec("SELECT rk, v FROM fin WHERE per = ? AND met = ? AND pid = ? AND cl = 0", per, met, pid).toArray()[0]; if (!r) return J({ err: "none" });
+          this.acDb(); if (q.exec("SELECT st FROM ac WHERE pid = ? AND per = ? AND st = 1", pid, per).toArray().length) return J({ err: "held" }); // top1
           q.exec("UPDATE fin SET cl = 1 WHERE per = ? AND met = ? AND pid = ?", per, met, pid); return J({ ok: 1, per, met, rk: r.rk, v: r.v }); }
         const v = view(row(pid)), rank = (col, val, where, per) => (val > 0 ? q.exec(`SELECT COUNT(*) AS n FROM pl WHERE ${where} AND ${col} > ?`, per, val).one().n + 1 : 0);
         const rk = rank("tr", v.tr, "ss = ?", M);
         const out = { pid: pid.slice(0, 6), tr: v.tr, ss: M, pk: v.pk | 0, rank: rk, conq: rk > 0 && rk <= TROPHY.CONQ_N && v.tr >= TROPHY.CONQ_MIN ? 1 : 0, w: W, m: M,
           c: { w_rush: [v.wtr | 0, rank("wtr", v.wtr | 0, "wk = ?", W)], w_hunt: [v.wkl | 0, rank("wkl", v.wkl | 0, "wk = ?", W)], w_score: [v.wsc | 0, rank("wsc", v.wsc | 0, "wk = ?", W)],
             m_rush: [v.mtr | 0, rank("mtr", v.mtr | 0, "mo = ?", M)], m_hunt: [v.mkl | 0, rank("mkl", v.mkl | 0, "mo = ?", M)], m_score: [v.msc | 0, rank("msc", v.msc | 0, "mo = ?", M)] },
-          claims: q.exec("SELECT per, met, rk, v FROM fin WHERE pid = ? AND cl = 0 LIMIT 20", pid).toArray(), t: now };
+          claims: q.exec("SELECT per, met, rk, v FROM fin WHERE pid = ? AND cl = 0 LIMIT 20", pid).toArray(), held: (this.acDb(), q.exec("SELECT per FROM ac WHERE pid = ? AND st = 1", pid).toArray().map((r) => r.per)), t: now };
         return J(out);
       }
       return J({ err: "op" }, 404);
@@ -585,7 +644,23 @@ export class Room {
   cfgGet(k) { return this.cfgAll()[k]; }
   cfgSet(k, v) { const q = this.sdb(); if (v == null) q.exec("DELETE FROM cfg WHERE k = ?", k); else q.exec("INSERT OR REPLACE INTO cfg (k, v) VALUES (?, ?)", k, JSON.stringify(v)); this._cfg = null; if (k === "px") this.cfgApply(); }
   cfgApply() { applyPx(this.cfgGet("px") || {}); } // price overrides edit the shared catalogue, so catItem / offers price from them
-  cfgPub() { const c = this.cfgAll(), now = Date.now(), a = c.ann && c.ann.tx && c.ann.exp > now ? c.ann : null; return { ann: a, mnt: c.mnt && c.mnt.on ? { on: 1, msg: c.mnt.msg || "" } : null, moff: c.moff || [], eoff: c.eoff || [], px: c.px || {}, mut: MUTS.includes(c.mut) || c.mut === "off" ? c.mut : "auto" }; }
+  // top1: crash / error reports. Grouped by a normalised message (numbers, ids, urls stripped); per group: count, distinct
+  // reporters (approximate), first / last seen, device + app-version histograms, one sample source line. No personal data:
+  // the reporter is the anonymous player id (hashed again here), the device is a coarse label the client builds.
+  errDb() { const q = this.sdb(); if (!this._errT) { this._errT = 1; q.exec("CREATE TABLE IF NOT EXISTS errs (h TEXT PRIMARY KEY, m TEXT, src TEXT, n INTEGER, u INTEGER, t0 INTEGER, t1 INTEGER, dev TEXT, ver TEXT, mode TEXT, us TEXT)"); } return q; }
+  async errAdd(E) { const q = this.errDb(), now = Date.now(), day = utcDay(now); if (!this.errDay || this.errDay.d !== day) this.errDay = { d: day, n: 0, drop: 0 };
+    if (this.errDay.n >= ERR.DAY) { this.errDay.drop++; return { ok: 0, err: "cap" }; } const who = String(E.pid || "").slice(0, 20) || "anon";
+    if (this.sLimit(who, "err", ERR.PER_H, 3600000)) { this.errDay.drop++; return { ok: 0, err: "rate" }; } this.errDay.n++;
+    const raw = String(E.m || "").replace(/[\u0000-\u001f]/g, " ").slice(0, 300).trim(); if (raw.length < 2) return { ok: 0, err: "empty" };
+    const norm = errNorm(raw), h = (await sha("e|" + norm)).slice(0, 16), dev = String(E.d || "?").replace(/[^A-Za-z0-9 ._/-]/g, "").slice(0, 40) || "?", ver = String(E.v || "?").replace(/[^a-z0-9._-]/gi, "").slice(0, 16) || "?";
+    const src = String(E.s || "").replace(/https?:\/\/[^/\s]+/g, "").replace(/[\u0000-\u001f]/g, " ").slice(0, 160), mode = String(E.mo || "").replace(/[^a-z0-9_-]/gi, "").slice(0, 16), uh = (await sha("u|" + who)).slice(0, 6);
+    const r = q.exec("SELECT * FROM errs WHERE h = ?", h).toArray()[0];
+    if (!r) { if (q.exec("SELECT COUNT(*) AS n FROM errs").one().n >= ERR.GROUPS) q.exec("DELETE FROM errs WHERE h IN (SELECT h FROM errs ORDER BY t1 ASC LIMIT 20)");
+      q.exec("INSERT INTO errs (h, m, src, n, u, t0, t1, dev, ver, mode, us) VALUES (?, ?, ?, 1, 1, ?, ?, ?, ?, ?, ?)", h, norm.slice(0, 200), src, now, now, JSON.stringify({ [dev]: 1 }), JSON.stringify({ [ver]: 1 }), mode, uh); return { ok: 1, h }; }
+    const D = JSON.parse(r.dev || "{}"), V = JSON.parse(r.ver || "{}"); const bump = (o, k) => { o[k] = (o[k] | 0) + 1; const ks = Object.keys(o); if (ks.length > 8) { ks.sort((a, b) => o[a] - o[b]); delete o[ks[0]]; } };
+    bump(D, dev); bump(V, ver); const us = String(r.us || "").split(","), nu = us.includes(uh) ? r.u : r.u + 1; if (!us.includes(uh)) us.push(uh);
+    q.exec("UPDATE errs SET n = n + 1, u = ?, t1 = ?, dev = ?, ver = ?, src = ?, mode = ?, us = ? WHERE h = ?", nu, now, JSON.stringify(D), JSON.stringify(V), src || r.src, mode || r.mode, us.slice(-40).join(","), h); return { ok: 1, h }; }
+  cfgPub() { const c = this.cfgAll(), now = Date.now(), a = c.ann && c.ann.tx && c.ann.exp > now ? c.ann : null; return { ann: a, mnt: c.mnt && c.mnt.on ? { on: 1, msg: c.mnt.msg || "" } : null, moff: c.moff || [], eoff: c.eoff || [], px: c.px || {}, mut: MUTS.includes(c.mut) || c.mut === "off" ? c.mut : "auto", mev: { off: c.mev && c.mev.off ? 1 : 0, k: (c.mev && Array.isArray(c.mev.k) ? c.mev.k : []).filter((x) => MEV.includes(x)) }, ssn: c.ssn >= 1 && c.ssn <= 12 ? c.ssn | 0 : 0 }; } // top1: map events + season month override
   sPushAll(o) { let ws = []; try { ws = this.state.getWebSockets(); } catch (_) {} const s = JSON.stringify({ t: "ev", ...o }); let n = 0; for (const w of ws) try { w.send(s); n++; } catch (_) {} return n; }
   giftClaim(cp) { const q = this.sdb(), now = Date.now(), a = this.srow(cp); if (!a) return 0; let n = 0;
     for (const g of q.exec("SELECT * FROM gift WHERE exp > ? AND t > ? ORDER BY id", now, a.t || 0).toArray()) { if (q.exec("SELECT gid FROM gcl WHERE gid = ? AND pid = ?", g.id, cp).toArray().length) continue;
@@ -739,6 +814,7 @@ export class Room {
     else { const one = catItem(String(m.k || ""), m.ix); if (!one) return { err: "na" }; list = [one]; base = one.base; } // ix, not i: "i" is the socket request id
     if (!(price > 0) || price > base) return { err: "badPrice", price: base };
     if (list.some((x) => this.wHas(cp, x.key))) return { err: "own" };
+    if (list.some((x) => !seasonOk(x.key, Date.now(), this.cfgPub().ssn))) return { err: "season" }; // top1: season skins only in their month
     if (price < base || offer) { const C = offerCandidates(new Set(this.wOwn(cp)));
       const hit = offer ? C.bundles.some((b) => b.key === offer && b.price === price && b.items.length === list.length && b.items.every((x, i) => catItem(x.k, x.i).key === list[i].key))
         : m.k !== "gt" && C.single.some((x) => x.k === m.k && x.i === (m.ix | 0) && x.price === price);
@@ -766,10 +842,10 @@ export class Room {
       const n = W.ld && W.ld === prevDay(d) ? ((W.ln | 0) + 1) % 7 : 0; c = LOGIN[n]; extra.n = n;
       if (n === 6) { const cos = String(a.cos || ""); if (RANDOM_COS.test(cos) && !this.wHas(cp, cos)) { give.push(cos); extra.cos = cos; } else c += LOGIN_NOCOS; } set = ["ld = ?, ln = ?", d, n]; }
     else if (k === "rw") { const key = String(a.key || ""); if (!want("rw:" + key)) return bad; let rw = null, mm;
-      if ((mm = /^ss:(\d{4}-\d{2})$/.exec(key))) { if (mm[1] >= seasonId(now)) return bad; rw = leagueSeasonReward(Math.max(0, Math.min(5, a.li | 0))); }
+      if ((mm = /^ss:(\d{4}-\d{2})$/.exec(key))) { if (mm[1] >= seasonId(now)) return bad; if (ctx && ((ctx.held || []).includes("s:" + mm[1]) || (ctx.held || []).includes("m:" + mm[1]))) return { ck, err: "held", keep: 1 }; /* top1 */ rw = leagueSeasonReward(Math.max(0, Math.min(5, a.li | 0))); }
       else if ((mm = /^ms:([a-z_]{4,8}):(\d{4}-(?:W\d{2}|\d{2})):([0-2])$/.exec(key))) { const C = CONTESTS.find((x) => x.id === mm[1]); if (!C) return bad;
         const per = C.per, okP = [periodId(per, now), prevPeriodId(per, now)]; if (!okP.includes(mm[2])) return bad; rw = mileReward(C, +mm[3]); }
-      else if ((mm = /^sv:([wms]:\d{4}-(?:W\d{2}|\d{2})):(tr|kl|sc|cq)$/.exec(key))) { const rk = ctx && ctx.fin ? ctx.fin[key] : 0; if (!rk) return { ck, err: "none", keep: ctx && ctx.finErr ? 1 : 0 };
+      else if ((mm = /^sv:([wms]:\d{4}-(?:W\d{2}|\d{2})):(tr|kl|sc|cq)$/.exec(key))) { if (ctx && (ctx.held || []).includes(mm[1])) return { ck, err: "held", keep: 1 }; /* top1: fair-play hold */ const rk = ctx && ctx.fin ? ctx.fin[key] : 0; if (!rk) return { ck, err: "none", keep: ctx && ctx.finErr ? 1 : 0 };
         rw = mm[1][0] === "s" && mm[2] === "cq" ? CONQ_REWARD : rankReward(mm[1][0], rk); if (!rw) { this.wMark(cp, ck); return { ck, err: "none" }; } extra.rk = rk; }
       else return bad; c = rw.coins | 0; give.push(...(rw.cos || [])); }
     else if (k === "match") { // offline / bot match: possible for the time played, no overlap with the previous one, capped per match and per day
@@ -824,8 +900,8 @@ export class Room {
       return { ok: 1, i, c, x: sg.x | 0, cos, w: this.wState(cp) }; }
     if (op === "w_claims") { const L = (Array.isArray(m.l) ? m.l : []).slice(0, 25).filter((x) => x && typeof x === "object");
       L.sort((x, y) => (+(x.a && x.a.at) || 0) - (+(y.a && y.a.at) || 0)); // offline matches in the order they were played
-      const cn = +m.cn || 0, ctx = { fin: {}, finErr: 0, skew: cn > 0 ? Math.max(-7 * DAY, Math.min(7 * DAY, now - cn)) : 0 }; const sv = L.filter((x) => x.k === "rw" && /^rw:sv:/.test(String(x.ck || "")) && !this.wClaimed(cp, String(x.ck)));
-      if (sv.length) { try { const r = await (await this.boardStub().fetch("https://board/b/fin", { method: "POST", body: JSON.stringify({ pids: [...new Set([cp, dp])], keys: sv.slice(0, 10).map((x) => String(x.ck).slice(6)) }) })).json(); if (r && r.fin) ctx.fin = r.fin; else ctx.finErr = 1; } catch (_) { ctx.finErr = 1; } }
+      const cn = +m.cn || 0, ctx = { fin: {}, finErr: 0, skew: cn > 0 ? Math.max(-7 * DAY, Math.min(7 * DAY, now - cn)) : 0 }; const sv = L.filter((x) => x.k === "rw" && /^rw:sv:/.test(String(x.ck || "")) && !this.wClaimed(cp, String(x.ck))), ssq = L.some((x) => x.k === "rw" && /^rw:ss:/.test(String(x.ck || ""))); // top1: season claims check holds too
+      if (sv.length || ssq) { try { const r = await (await this.boardStub().fetch("https://board/b/fin", { method: "POST", body: JSON.stringify({ pids: [...new Set([cp, dp])], keys: sv.slice(0, 10).map((x) => String(x.ck).slice(6)) }) })).json(); if (r && r.fin) { ctx.fin = r.fin; ctx.held = r.held || []; } else ctx.finErr = 1; } catch (_) { ctx.finErr = 1; } }
       const res = L.map((x) => { try { return this.wClaim(cp, x, ctx); } catch (e) { this.serr = (this.serr | 0) + 1; return { ck: String(x.ck || ""), err: "server", keep: 1 }; } });
       return { res, w: this.wState(cp) }; }
     return { err: "op" };
@@ -999,6 +1075,8 @@ export class Room {
     if (op === "a_rooms") { let mm = null; try { mm = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(MM)).fetch("https://mm/m/list")).json(); } catch (_) {}
       const rooms = ((mm && mm.rooms) || []).slice(0, 24), out = await Promise.all(rooms.map(async (r) => { let d = null; try { d = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(r.room)).fetch("https://room/r/info")).json(); } catch (_) {} return { ...r, mode: "online", info: d }; }));
       return { rooms: out, mm: mm ? 1 : 0 }; }
+    if (op === "a_errs") { this.errDb(); return { list: q.exec("SELECT h, m, src, n, u, t0, t1, dev, ver, mode FROM errs ORDER BY t1 DESC LIMIT 80").toArray().map((r) => ({ ...r, dev: JSON.parse(r.dev || "{}"), ver: JSON.parse(r.ver || "{}") })), day: this.errDay || null, cap: ERR.DAY }; } // top1
+    if (op === "a_ac") { try { return await (await this.boardStub().fetch("https://board/b/ac", { method: "POST", body: JSON.stringify({ q: m.q || "" }) })).json(); } catch (_) { return { err: "offline" }; } } // top1: fair-play holds (top 50)
     if (op === "a_msgs") { const t = this.sPid(m.id); if (!t) return { err: "notfound" }; return { list: q.exec("SELECT id, cv, tx, t FROM msg WHERE f = ? ORDER BY id DESC LIMIT 40", t).toArray() }; }
     if (why.length < 3) return { err: "reason" }; // every action below needs a reason and goes into the audit log
     const sure = m.sure === 1, items = (Array.isArray(m.items) ? m.items : []).map(String).filter((x) => validKey(x)).slice(0, 10);
@@ -1008,6 +1086,12 @@ export class Room {
       log("maint", "", { on, kicked }); return { ok: 1, on, kicked }; }
     if (op === "a_modes") { const mo = (Array.isArray(m.moff) ? m.moff : []).map(String).filter((x) => ADM_MODES.includes(x)), eo = (Array.isArray(m.eoff) ? m.eoff : []).map(String).filter((x) => EVENTS.includes(x));
       this.cfgSet("moff", mo); this.cfgSet("eoff", eo); this.sPushAll({ k: "cfg", cfg: this.cfgPub() }); log("modes", "", { moff: mo, eoff: eo }); return { ok: 1, moff: mo, eoff: eo }; }
+    if (op === "a_errclr") { this.errDb(); const h = String(m.h || ""); if (h === "*") q.exec("DELETE FROM errs"); else q.exec("DELETE FROM errs WHERE h = ?", h); log("errclr", "", { h }); return { ok: 1 }; } // top1
+    if (op === "a_acrel") { const pid = String(m.pid || ""), per = String(m.per || ""); if (!/^[0-9a-f]{20}$/.test(pid) || !/^[wms]:\d{4}-(W\d{2}|\d{2})$/.test(per)) return { err: "bad" }; // top1: release (or hold again) a top-50 reward
+      let r = null; try { r = await (await this.boardStub().fetch("https://board/b/acset", { method: "POST", body: JSON.stringify({ pid, per, st: m.st === 1 ? 1 : 2, why }) })).json(); } catch (_) { return { err: "offline" }; } log(m.st === 1 ? "ac_hold" : "ac_release", pid, { per }); return r; }
+    if (op === "a_acscan") { let r = null; try { r = await (await this.boardStub().fetch("https://board/b/acscan", { method: "POST", body: "{}" })).json(); } catch (_) { return { err: "offline" }; } log("ac_scan", "", { n: r && r.n }); return r; }
+    if (op === "a_mev") { const off = m.off ? 1 : 0, k = (Array.isArray(m.k) ? m.k : []).map(String).filter((x) => MEV.includes(x)); this.cfgSet("mev", { off, k }); this.sPushAll({ k: "cfg", cfg: this.cfgPub() }); log("mev", "", { off, k }); return { ok: 1, mev: this.cfgPub().mev }; } // top1
+    if (op === "a_ssn") { const v = m.m | 0; if (v < 0 || v > 12) return { err: "bad" }; this.cfgSet("ssn", v); this.sPushAll({ k: "cfg", cfg: this.cfgPub() }); log("ssn", "", { m: v }); return { ok: 1, ssn: v }; } // top1: 0 = follow the UTC month
     if (op === "a_mut") { const k = String(m.k || "auto"); if (k !== "auto" && k !== "off" && !MUTS.includes(k)) return { err: "bad" }; this.cfgSet("mut", k); this.sPushAll({ k: "cfg", cfg: this.cfgPub() }); log("mut", "", { k }); return { ok: 1, mut: k }; } // play2: weekend rule override
     if (op === "a_price") { const k = String(m.key || ""), p = Math.floor(+m.price || 0); if (pxBase(k) == null) return { err: "na" }; if (p < 0 || p > 1000000) return { err: "bad" }; const px = { ...(this.cfgGet("px") || {}) };
       if (p && p !== pxBase(k)) px[k] = p; else delete px[k]; this.cfgSet("px", px); this.sPushAll({ k: "cfg", cfg: this.cfgPub() }); log("price", "", { k, p: p || pxBase(k), was: pxBase(k) }); return { ok: 1, px }; }
@@ -1061,9 +1145,10 @@ export class Room {
   async socialHttp(req, url) {
     if (url.pathname === "/s/uid") { const dp = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(dp)) return J({ err: "pid" }, 400); // internal: room / matchmaker -> social
       try { const cp = this.canon(dp), a = this.sAcct(cp); const o = { id: a.vis, cp, ban: this.banOf(cp, dp), mute: this.muteOf(cp), nm: a.nr ? a.name : "" }; const mt = this.cfgGet("mnt"), mo = this.cfgGet("moff") || [];
-        if (!a.own && mt && mt.on) o.mt = { k: "maint", m: mt.msg || "" }; else if (!a.own && (mo.includes("online") || (url.searchParams.get("md") === "t" && mo.includes("territory")))) o.mt = { k: "off", m: "" }; /* land1: territory rooms follow the territory switch too */ o.evo = this.cfgGet("eoff") || []; o.mu = this.cfgPub().mut; // play2
+        if (!a.own && mt && mt.on) o.mt = { k: "maint", m: mt.msg || "" }; else if (!a.own && (mo.includes("online") || (url.searchParams.get("md") === "t" && mo.includes("territory")))) o.mt = { k: "off", m: "" }; /* land1: territory rooms follow the territory switch too */ o.evo = this.cfgGet("eoff") || []; o.mu = this.cfgPub().mut; o.mev = this.cfgPub().mev; o.ssn = this.cfgPub().ssn; /* top1 */ // play2
         if (url.searchParams.get("w")) { const W = this.sdb().exec("SELECT * FROM wal WHERE pid = ?", cp).toArray()[0]; o.w = { own: this.wOwn(cp), lv: W ? lvOf(this.wSx(cp, W)) : 1, o: a.own ? 1 : 0 }; } return J(o); } catch (e) { return J({ err: "server" }, 500); } }
-    if (url.pathname === "/s/mu") return J({ mu: this.cfgPub().mut, evo: this.cfgGet("eoff") || [] }); // play2: internal room -> social (weekend rule override)
+    if (url.pathname === "/s/err") { let E = {}; try { E = JSON.parse((await req.text()).slice(0, ERR.MAX)) || {}; } catch (_) {} try { return J(await this.errAdd(E)); } catch (e) { return J({ err: "server" }, 500); } } // top1: error report (from the worker)
+    if (url.pathname === "/s/mu") return J({ mu: this.cfgPub().mut, evo: this.cfgGet("eoff") || [], mev: this.cfgPub().mev }); // play2: internal room -> social (weekend rule override)
     if (url.pathname === "/s/earn") { let E = {}; try { E = JSON.parse(await req.text()) || {}; } catch (_) {} try { return J(this.wEarn(E)); } catch (e) { this.serr = (this.serr | 0) + 1; return J({ err: "server" }, 500); } } // internal: room -> social (online coins)
     let B = {}; try { B = JSON.parse((await req.text()).slice(0, S_MAX)) || {}; } catch (_) {}
     const pid = await pidOf(String(B.pk || "")); if (!pid) return J({ err: "pk" }, 400); delete B._v; if (B.op === "snap") return J({ err: "use_a" }); return J(await this.sOp(pid, B));
@@ -1095,16 +1180,16 @@ export class Room {
   async mmHttp(req, url) {
     const R = this.mmR || (this.mmR = new Map()), P = this.mmP || (this.mmP = new Map()), now = Date.now(), op = url.pathname.slice(3);
     if (op === "hb") { let b = {}; try { b = JSON.parse((await req.text()).slice(0, 400)) || {}; } catch (_) {} const n = String(b.room || ""); if (!/^(pub|tp)-[a-z0-9-]{1,20}$/.test(n)) return J({ err: "room" });
-      R.set(n, { room: n, br: BRACKETS.includes(b.br) ? b.br : "", i: b.i | 0, h: Math.max(0, b.h | 0), b: Math.max(0, b.b | 0), e: b.e | 0, up: +b.up || now, t: now, pend: 0, md: n.startsWith("tp-") ? "t" : "" });
+      R.set(n, { room: n, br: BRACKETS.includes(b.br) ? b.br : "", rg: roomRg(n), i: b.i | 0, h: Math.max(0, b.h | 0), b: Math.max(0, b.b | 0), e: b.e | 0, up: +b.up || now, t: now, pend: 0, md: n.startsWith("tp-") ? "t" : "" });
       if (R.size > 300) for (const [k, v] of R) if (now - v.t > MM_CFG.WARM_MS) R.delete(k); return J({ ok: 1 }); }
     if (op === "list") return J({ rooms: [...R.values()].filter((r) => now - r.t < MM_CFG.WARM_MS && (r.h > 0 || r.e || now - r.t < MM_CFG.WARM_MS)).sort((a, b) => b.h - a.h || a.room.localeCompare(b.room)).map((r) => ({ room: r.room, br: r.br, md: r.md || "", i: r.i, h: r.h, b: r.b, e: r.e, age: Math.round((now - r.t) / 1000), up: Math.round((now - r.up) / 1000), live: now - r.t < MM_CFG.LIVE_MS && r.h > 0 ? 1 : 0 })),
       pickers: [...P.values()].filter((v) => now - v.t < 300000).length, t: now });
     if (op === "pick") {
-      const pid = url.searchParams.get("pid") || "", w = +url.searchParams.get("w") || 0, x = url.searchParams.get("x") || "", md = url.searchParams.get("md") === "t" ? "t" : ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400);
+      const pid = url.searchParams.get("pid") || "", w = +url.searchParams.get("w") || 0, x = url.searchParams.get("x") || "", md = url.searchParams.get("md") === "t" ? "t" : "", rg = url.searchParams.get("rg") || ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400);
       let cp = pid, tr = 0, cq = 0; // the bracket is decided here from the board (the client's own league is never trusted)
       try { const u = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + pid + (md ? "&md=t" : ""))).json(); if (u && u.ban) return J({ err: "banned", u: u.ban }); if (u && u.mt) return J({ err: u.mt.k, m: u.mt.m }); if (u && u.cp) cp = u.cp; } catch (_) {}
       try { const b = await (await this.boardStub().fetch("https://board/b/get?pid=" + cp)).json(); tr = b.tr | 0; cq = b.cq | 0; } catch (_) {}
-      return J({ ...mmPick(R, P, { pid: cp, br: bracketOf(tr, cq), w, x, now, md }), tr });
+      return J({ ...mmPick(R, P, { pid: cp, br: bracketOf(tr, cq), w, x, now, md, rg }), tr });
     }
     return J({ err: "op" }, 404);
   }
@@ -1177,6 +1262,8 @@ export class Room {
     if (S.evPu.length) { const l = []; for (let i = 0; i < S.evPu.length; i += 3) l.push([S.evPu[i].id, S.evPu[i + 1], S.evPu[i].k, S.evPu[i + 2] || []]); this.bcast(JSON.stringify({ t: "pu-", l })); }
     for (let i = 0; i < S.evShield.length; i += 2) this.bcast(JSON.stringify({ t: "sh", id: S.evShield[i], by: S.evShield[i + 1] }));
     for (const e of S.evEvt) this.bcast(JSON.stringify({ t: "evt", ...e }));
+    for (const e of S.evMev) this.bcast(JSON.stringify({ t: "mev", ...e })); // top1: map event start / end
+    if (S.evTp.length) { const l = []; for (let i = 0; i < S.evTp.length; i += 3) l.push([S.evTp[i], S.evTp[i + 1], S.evTp[i + 2]]); this.bcast(JSON.stringify({ t: "tp", l })); } // top1: portal moves (before this tick's frame)
     if (S.evMet.length) this.bcast(JSON.stringify({ t: "met", l: S.evMet.map((M) => [M.id, Math.round(M.x * 100) / 100, Math.round(M.y * 100) / 100, M.r, M.t, M.T]) }));
     // one binary frame shared by everybody: [0]=1 [1..4]=tick [5..6]=ack [7]=extra (255 = no snake) [8..23]=own x,y,a,av [24]=count, then snakes, eats, spawns
     const alive = S.snakes.filter((s) => s.alive), ne = S.evEat.length / 2, ns = S.evSpawn.length;
@@ -1202,7 +1289,7 @@ export class Room {
       this.fill();
       const srt = alive.slice().sort((a, b2) => b2.m - a.m), lb = srt.slice(0, 10).map((s) => [s.id, Math.round(s.m), s.kills]);
       for (const c of this.clients) { const L = c.life, s = c.snake; if (!L || L.done || !s || !s.alive) continue; const r = srt.indexOf(s) + 1; if (r > 0 && r < L.best) L.best = r; if (srt.length > L.field) L.field = srt.length; if (s.m > L.bm) L.bm = s.m; if (this.ter) L.pk = Math.max(L.pk || 0, this.ter.pctOf(s.id)); }
-      this.btyTrack(srt[0], Date.now()); this.mutTick(Date.now()); // play2
+      this.btyTrack(srt[0], Date.now()); this.mutTick(Date.now()); this.mevTick(Date.now()); // play2; top1: map events
       this.bcast(JSON.stringify({ t: "lb", lb, humans: [...this.clients].filter((c) => c.joined).length, bt: this.btyMsg(), ...(this.ter ? { rl: this.terLeft(), rn: this.trd.n } : {}) }));
     }
   }

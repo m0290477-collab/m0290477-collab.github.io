@@ -240,3 +240,27 @@ export function fusionDef(i) { i = i | 0; if (FU_CACHE.has(i)) return FU_CACHE.g
     const [P, Q] = (h >>> 3) & 1 ? [B.id, A.id] : [A.id, B.id], front = P.slice(0, Math.max(3, Math.ceil(P.length * 0.5))), back = Q.slice(Math.min(Q.length - 2, Math.floor(Q.length * 0.5)));
     const name = (front + back).replace(/_/g, "").replace(/(.)\1\1+/g, "$1$1"); F = { i, a, b, key, p, c, name: name.charAt(0).toUpperCase() + name.slice(1), rar: h % 100 < 40 ? "epic" : "rare" }; }
   FU_CACHE.set(i, F); return F; }
+// ---------- top1: monthly season (UTC month 1..12) ----------
+// accent colours for the arena (border wall + rim light + calm edge + ambient motes) and three season skins per month.
+// Season skins are ordinary coin skins (server-priced through the catalogue); they are on sale only in their month.
+export const SEASON_THEMES = [
+  { m: 1, id: "frostfall", wall: "#9fe8ff", rim: "#bff2ff", edge: "#8fc9e0", amb: "#e8fbff", sk: [[3, ["#ffffff", "#7fd3ff", "#1d5fa8"]], [10, ["#d8f3ff", "#3b8fd6", "#ffffff"]], [9, ["#0d2b52", "#7fd3ff", "#ffffff"]]] },
+  { m: 2, id: "rosebloom", wall: "#ff8fb8", rim: "#ffc1d6", edge: "#d58aa6", amb: "#ffd6e6", sk: [[2, ["#ff5c8a", "#ffd1e0", "#8a1238"]], [14, ["#ff8fb8", "#b0124a", "#ffe3ec"]], [11, ["#6e0b2b", "#ff5c8a", "#ffd1e0"]]] },
+  { m: 3, id: "springjade", wall: "#7dffb5", rim: "#b8ffd8", edge: "#7cc79e", amb: "#e3ffd0", sk: [[3, ["#9dffb0", "#1e9b5a", "#f4ffe0"]], [12, ["#2fd27a", "#0c5a32", "#d9ffd0"]], [6, ["#c3ff8a", "#2b7d3a", "#0e3a1c"]]] },
+  { m: 4, id: "raingarden", wall: "#8fb8ff", rim: "#c4d8ff", edge: "#8aa2cf", amb: "#d6e6ff", sk: [[14, ["#6fa8ff", "#2a4fa0", "#d6e6ff"]], [13, ["#3a6ee0", "#a8f0ff", "#16306a"]], [10, ["#9fd0ff", "#4c6fd0", "#ffffff"]]] },
+  { m: 5, id: "sunflower", wall: "#ffd34d", rim: "#ffe9a0", edge: "#d9b85a", amb: "#fff3b0", sk: [[1, ["#ffd000", "#5a3a00", "#ffd000"]], [5, ["#ffc21a", "#6b4300", "#fff0b0"]], [12, ["#ffe066", "#a86b00", "#3a2400"]]] },
+  { m: 6, id: "coralreef", wall: "#ff9d7a", rim: "#ffc9b3", edge: "#d99a86", amb: "#ffe0d0", sk: [[2, ["#ff7a59", "#2fd2c7", "#ffd6a0"]], [4, ["#ff9d7a", "#0f6e78", "#ff9d7a"]], [11, ["#1fb5c7", "#ff7a59", "#fff0e0"]]] },
+  { m: 7, id: "desertsun", wall: "#ffb35a", rim: "#ffd29a", edge: "#cfa16a", amb: "#ffe2b8", sk: [[3, ["#ffb35a", "#a85a14", "#ffe2b8"]], [7, ["#ff8c2a", "#ffd166", "#7a3a0a"]], [8, ["#ffcf6a", "#c0571a", "#3a1a05"]]] },
+  { m: 8, id: "tropicstorm", wall: "#5affd9", rim: "#a8ffee", edge: "#6fc7b5", amb: "#d0fff4", sk: [[14, ["#14e0b8", "#0a4f6e", "#d0fff4"]], [8, ["#36ffd2", "#1259a0", "#ffffff"]], [13, ["#0b3b52", "#5affd9", "#a8ffee"]]] },
+  { m: 9, id: "harvestgold", wall: "#e8c25a", rim: "#f5dd9a", edge: "#c7a868", amb: "#fff0c8", sk: [[5, ["#e8b04a", "#6b4a14", "#fff0c8"]], [6, ["#d99a2b", "#4a2f0a", "#f5dd9a"]], [12, ["#f2cf6a", "#8a5a14", "#2e1d06"]]] },
+  { m: 10, id: "embernight", wall: "#ff7a3a", rim: "#ffb08a", edge: "#c98a6a", amb: "#ffc49a", sk: [[1, ["#ff6a1a", "#1a0f14", "#ff6a1a"]], [8, ["#ff4b1f", "#ffb800", "#2a0800"]], [9, ["#1a0f24", "#ff7a3a", "#ffd0a0"]]] },
+  { m: 11, id: "autumncopper", wall: "#e0874a", rim: "#f2b48a", edge: "#bf8a66", amb: "#ffd2a8", sk: [[3, ["#d9773a", "#5a2a10", "#ffd2a8"]], [4, ["#c4622a", "#3a1a08", "#c4622a"]], [12, ["#e8a050", "#7a3414", "#2a1206"]]] },
+  { m: 12, id: "starlitsnow", wall: "#b8c8ff", rim: "#e0e8ff", edge: "#9aa8d6", amb: "#ffffff", sk: [[9, ["#0b1640", "#7f9cff", "#ffffff"]], [10, ["#e8eeff", "#5a6fd6", "#ffffff"]], [3, ["#ffffff", "#c8d4ff", "#3a4fa8"]]] },
+];
+export const SEASON_PRICE = [1500, 2500, 4000], SEASON_RAR = ["rare", "epic", "legendary"];
+export const SEASON_SKIN0 = SKINS.length; // season skins are appended after every other skin (indexes of older skins never move)
+for (const T of SEASON_THEMES) T.sk.forEach(([p, c], j) => SKINS.push({ id: "ss" + String(T.m).padStart(2, "0") + "abc"[j], p, c, lv: 1, rar: SEASON_RAR[j], src: "coins:" + SEASON_PRICE[j], ssn: T.m }));
+// the month on sale now: the owner's override (1..12) or the current UTC month
+export const seasonMonth = (now = Date.now(), ov = 0) => (ov >= 1 && ov <= 12 ? ov | 0 : new Date(now).getUTCMonth() + 1);
+export const seasonTheme = (m) => SEASON_THEMES[((m | 0) + 11) % 12];
+export const seasonSkins = (m) => SKINS.map((S, i) => [S, i]).filter(([S]) => S.ssn === m).map(([, i]) => i);

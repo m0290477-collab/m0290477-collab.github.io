@@ -7,10 +7,10 @@
 // Rarity-aware: legendary skins get smaller discounts (15-25 %) than flags (15-40 %), never below a floor.
 // The clock only changes WHICH items are discounted; nothing is granted by time. If the device clock jumps backwards,
 // the last seen rotation is kept (stableNow).
-import { SKINS, FLAGS, FLAG_PRICE } from "./skins.js?v=land1";
+import { SKINS, FLAGS, FLAG_PRICE } from "./skins.js?v=top1";
 const DAY = 86400000;
 // purchasable with coins: legendary skins whose source is "coins:N", and every flag
-export const coinSkins = () => SKINS.map((s, i) => [s, i]).filter(([s]) => s.src && s.src.startsWith("coins:")).map(([s, i]) => ({ k: "skin", i, id: s.id, base: +s.src.split(":")[1], rar: s.rar }));
+export const coinSkins = () => SKINS.map((s, i) => [s, i]).filter(([s]) => s.src && s.src.startsWith("coins:") && !s.ssn) /* top1: season skins are sold only in their month (never in offers) */.map(([s, i]) => ({ k: "skin", i, id: s.id, base: +s.src.split(":")[1], rar: s.rar }));
 export const coinFlags = () => FLAGS.map((f, i) => (f ? { k: "flag", i, id: f.c, base: FLAG_PRICE, rar: "rare" } : null)).filter(Boolean);
 function hash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619) >>> 0; return h; }
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s = (s + 0x6d2b79f5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }

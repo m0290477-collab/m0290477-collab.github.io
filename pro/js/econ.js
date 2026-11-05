@@ -1,9 +1,9 @@
 // coin1: the coin economy's single source of truth, shared by the game (display, optimistic amounts) and the worker (the
 // wallet decides). Pure data + rules: no DOM, no storage. The server never takes an amount from the client: it recomputes
 // every reward from these tables and every price from the catalogue (and this week's offers) before it moves a coin.
-import { SKINS, FLAGS, FLAG_PRICE, GTRAILS, fuParse } from "./skins.js?v=land1";
-import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=land1";
-import { CONTESTS } from "./sim.js?v=land1";
+import { SKINS, FLAGS, FLAG_PRICE, GTRAILS, fuParse, seasonMonth } from "./skins.js?v=top1";
+import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=top1";
+import { CONTESTS } from "./sim.js?v=top1";
 
 export const DAY = 86400000;
 // ---------- daily login calendar + lucky wheel (were in profile.js) ----------
@@ -101,3 +101,6 @@ export function offerCandidates(owned, now = Date.now()) {
     for (const b of [monthlyBundle(S, d), occasionBundle(S, d)]) if (b && b.items && b.items.length && !seen.has("b:" + b.key + ":" + b.price)) { seen.add("b:" + b.key + ":" + b.price); bundles.push({ key: b.key, price: b.price, items: b.items.map((x) => ({ k: x.k, i: x.i })) }); } }
   return { single, bundles };
 }
+
+// top1: a season skin can be bought only while its month is on sale (UTC month, or the owner's override 1..12)
+export const seasonOk = (key, now = Date.now(), ov = 0) => { const S = SKINS.find((x) => x.id === key); return !S || !S.ssn || S.ssn === seasonMonth(now, ov); };

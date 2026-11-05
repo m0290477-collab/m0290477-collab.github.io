@@ -9,9 +9,9 @@ import {
 	ACESFilmicToneMapping,
 	NeutralToneMapping,
 	SRGBTransfer
-} from './three.module.min.js?v=land1';
-import { Pass, FullScreenQuad } from './Pass.js?v=land1';
-import { OutputShader } from './OutputShader.js?v=land1';
+} from './three.module.min.js?v=top1';
+import { Pass, FullScreenQuad } from './Pass.js?v=top1';
+import { OutputShader } from './OutputShader.js?v=top1';
 
 class OutputPass extends Pass {
 

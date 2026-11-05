@@ -2,7 +2,7 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive, Terr } from "./sim.js?v=land1";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive, Terr } from "./sim.js?v=top1";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
 let MUT = ""; // play2: weekend rule of the room (free boost = no boost cost in prediction either)
 function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && MUT !== "fb" && !(s.pu && (s.pu[2] > 0 || s.pu[7] > 0))) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
@@ -86,8 +86,10 @@ export class NetBackend {
     if (m.t === "welcome") { this.server = { room: m.room, br: m.br || "", bi: m.bi | 0, h: m.h | 0, b: m.b | 0, fb: this.mm && this.mm.fb ? this.mm.fb : "", my: this.mm ? this.mm.my : "" }; this.cb.onFind && this.cb.onFind({ st: "in", ...this.server }); this.mut = MUT = m.mu || ""; this.cb.onMut && this.cb.onMut(this.mut); this.R = m.R; this.tick = m.tick; this.setClock(m.tick);
       // land1: a territory room: a mirror of the server's cells (full map follows as a binary frame, then deltas)
       if (m.ter) { if (!this.ter || this.ter.R !== m.R) this.ter = new Terr(m.R, { cell: m.ter.cell }); this.terInfo = { n: m.ter.n | 0, end: performance.now() + (m.ter.left | 0) * 1000, pub: !!m.ter.pub }; } else { this.ter = null; this.terInfo = null; }
-      for (const s of m.snakes) this.addMirror(s); if (this.ter) this.cb.onTerr && this.cb.onTerr({ ph: "on" }); this.cb.onState && this.cb.onState("welcome"); if (this.wantSpawn !== false) this.spawn(); }
+      for (const s of m.snakes) this.addMirror(s); if (this.ter) this.cb.onTerr && this.cb.onTerr({ ph: "on" }); this.cb.onState && this.cb.onState("welcome"); if (this.wantSpawn !== false) this.spawn(); if (m.mev) this.cb.onMev && this.cb.onMev({ ph: "now", ...m.mev }); if (m.rg) this.server.rg = m.rg; if (Number.isFinite(m.ssn)) this.cb.onSsn && this.cb.onSsn(m.ssn); /* top1: map event in progress, room region */ }
     else if (m.t === "sn") { if (m.id !== this.myId) this.addMirror(m); }
+    else if (m.t === "mev") { this.cb.onMev && this.cb.onMev(m); } // top1: map event start / end
+    else if (m.t === "tp") { for (const [id, dx, dy] of m.l || []) { const s = id === this.myId ? this.me : this.mirrors.get(id)?.s; if (s) this.cb.onTp && this.cb.onTp(s, dx, dy, id === this.myId); } } // top1: portal (whole body moves)
     else if (m.t === "you") {
       const s = new Snake(m.id); s.reset(m.x, m.y, m.a, m.m); s.name = this.o.name; s.skin = this.o.skin; s.avt = this.o.skin && this.o.skin.av; s.fr = this.o.skin ? this.o.skin.fr | 0 : 0; this.me = s; this.myId = m.id; this.seq = m.seq; this.seq0 = m.seq; this.batch.length = 0; this.mirrors.delete(m.id);
       this.ta = m.a; this.dead = false; this.terMe = null; /* land1: the last round result belongs to the previous life */ this.cb.onSpawnMe && this.cb.onSpawnMe(s);
@@ -204,7 +206,7 @@ export class NetBackend {
       if (this.batch.length >= (this.quality === "poor" ? 9 : 6)) this.flush(); // perf3: weak link -> 3 inputs per packet (10 packets/s instead of 15); the server still applies one per tick
       // instant death: head vs bodies exactly as drawn this frame, and the wall
       this.prepareOthers();
-      let hit = s.inv > 0 ? 0 : s.pu[7] > 0 ? 0 : Sim.hitTest(s.x, s.y, s.r, this._others, this.tmp, s, this.tmp2 || (this.tmp2 = new Float32Array(1200))); // noself1: own body never kills (me is skipped); head-on = only the deeper head dies
+      let hit = s.inv > 0 || s.ph > 0 ? 0 : s.pu[7] > 0 ? 0 : Sim.hitTest(s.x, s.y, s.r, this._others, this.tmp, s, this.tmp2 || (this.tmp2 = new Float32Array(1200))); // noself1: own body never kills (me is skipped); head-on = only the deeper head dies
       if (hit && Sim.mutual) hit = 0; // noself1: a mutual head-on is left to the server (authoritative), which kills exactly one of the two; a local report could race it into a double death
       if (hit && s.pu[1] > 0) { s.pu[1] = 0; s.inv = 1.2; hit = 0; this.cb.onShield && this.cb.onShield(s); } // shield: the server sees the same touch and spends it too
       const wall = s.x * s.x + s.y * s.y > (this.R - s.r * 0.6) ** 2;

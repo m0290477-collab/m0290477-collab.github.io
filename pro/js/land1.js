@@ -3,10 +3,10 @@
 // helpers the game uses for online territory rooms (the server owns the cells; net.js keeps a mirror): slot colours from
 // each snake's skin, the live % list (top 5 + you), the round bar and the round result. Calm: no sound, nothing flashes.
 // Fusion: pick two owned skins, see the result, pay the fee on the server (wallet), equip it. All text in 6 languages.
-import { t, fmtNum, addStrings } from "./i18n.js?v=land1";
-import { XMODES, XMODE_CFG, XMODE_EVENTS } from "./modes.js?v=land1";
-import { Terr, TER } from "./sim.js?v=land1";
-import { SKINS, primaryColor, swatchCss, FUSABLE, fuIdx, fuKey, fuParse, fusionDef, FUSION_FEE, RAR_COL } from "./skins.js?v=land1";
+import { t, fmtNum, addStrings } from "./i18n.js?v=top1";
+import { XMODES, XMODE_CFG, XMODE_EVENTS } from "./modes.js?v=top1";
+import { Terr, TER } from "./sim.js?v=top1";
+import { SKINS, primaryColor, swatchCss, FUSABLE, fuIdx, fuKey, fuParse, fusionDef, FUSION_FEE, RAR_COL } from "./skins.js?v=top1";
 
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pc = (v) => (Math.round(v * 10) / 10).toFixed(1);

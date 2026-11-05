@@ -3,10 +3,10 @@
 // allocated once per match; recording a sample allocates nothing. On a match-ending death the clip is played back
 // through the existing 2D/3D renderers: Replay.view() fills a view object shaped exactly like Game.build()'s output,
 // with proxy snakes whose sx()/sy() read the interpolated recorded points, so no drawing code is duplicated.
-import { bodyPoints } from "./sim.js?v=land1";
+import { bodyPoints } from "./sim.js?v=top1";
 
 const HZ = 20, STEP = 1000 / HZ, NS = 210, MAXS = 24, MAXP = 96, MAXF = 360, MAXPU = 16, MAXM = 8;
-export const RP_FULL = 10000, RP_CLIP = 3600, RP_SLOW = 800, RP_SLOWK = 0.4, RP_HOLD = 450; // ms of game time shown, slow tail, speed, end hold
+export const RP_FULL = 10000, RP_CLIP = 3000, /* top1: 3 s kill-cam */ RP_SLOW = 800, RP_SLOWK = 0.4, RP_HOLD = 450; // ms of game time shown, slow tail, speed, end hold
 
 class Proxy { // a recorded snake, shaped like sim Snake for bodyPoints() and the renderers
   constructor() { this.px = new Float32Array(MAXP); this.py = new Float32Array(MAXP); this.n = 0; this.id = 0; this.r = 0.6; this.len = 1; this.a = 0; this.ta = 0; this.x = 0; this.y = 0; this.m = 10; this.alive = true; this.boosting = false; this.pu = new Uint8Array(12); this.slow = 0; this.name = ""; this.team = undefined; }

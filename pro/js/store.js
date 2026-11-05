@@ -1,13 +1,13 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex, FUSION_FEE, setFusionFee, fusable, fuKey } from "./skins.js?v=land1";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex, FUSION_FEE, setFusionFee, fusable, fuKey } from "./skins.js?v=top1";
 // coin1: season pass + chains + mission / achievement tables live in econ.js (shared with the worker, which prices every reward)
-import { SEASON, seasonReward, CHAINS, dailyMissions, ACH_COINS, levelCoins, UNLOCKS, bonusCoins, weeklyCoins } from "./econ.js?v=land1";
-import { walletInit, claim, buy as wBuy, buySid, spin as wSpin, migrated, fuse as wFuse } from "./wallet.js?v=land1";
+import { SEASON, seasonReward, CHAINS, dailyMissions, ACH_COINS, levelCoins, UNLOCKS, bonusCoins, weeklyCoins } from "./econ.js?v=top1";
+import { walletInit, claim, buy as wBuy, buySid, spin as wSpin, migrated, fuse as wFuse } from "./wallet.js?v=top1";
 export { SEASON, seasonReward, CHAINS };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=land1";
-import { FRAMES, TITLES } from "./profile.js?v=land1";
+import { WORLDS } from "./worlds.js?v=top1";
+import { FRAMES, TITLES } from "./profile.js?v=top1";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;

@@ -1,6 +1,6 @@
 // coin1: Privacy / Terms pages. Shows the player's game language (?lang=, then the game's saved setting, then the browser),
 // English without JS. The contact line becomes an email link only when CONTACT_EMAIL is set.
-import { CONTACT_EMAIL } from "./legal-config.js?v=land1";
+import { CONTACT_EMAIL } from "./legal-config.js?v=top1";
 const L = ["en", "ar", "tr", "fr", "es", "hi"];
 function pick() { const q = new URLSearchParams(location.search).get("lang"); if (L.includes(q)) return q;
   try { const s = JSON.parse(localStorage.getItem("ssp-set") || "null"); if (s && L.includes(s.lang)) return s.lang; } catch (_) {}

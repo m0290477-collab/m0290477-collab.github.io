@@ -1,24 +1,24 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=land1"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=land1";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=land1";
-import { GTrail } from "./gfx/gtrail.js?v=land1"; // trail1: cosmetic ground trail decals (never in the sim)
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=land1";
-import { NetBackend } from "./net.js?v=land1";
-import { pidTier, PID_GLYPH } from "./pid.js?v=land1"; // srv2
-import { onFind, findHide, accountMatchEnd } from "./account.js?v=land1"; // srv2
-import { t, fmtNum } from "./i18n.js?v=land1"; import { onlineBlock } from "./admin2.js?v=land1"; // admin2
-import { haptic } from "./audio.js?v=land1";
-import { rankOf, rpDelta } from "./profile.js?v=land1";
-import { Replay } from "./replay.js?v=land1";
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=land1"; // comp1
-import { onServerTrophy } from "./compui.js?v=land1";
-import { Governor } from "./gov.js?v=land1"; // perf2: adaptive render governor
-import { claim, claimId } from "./wallet.js?v=land1"; // coin1: offline match coins are claimed from the server wallet
-import { terView, terLb, terTick, terLeft, onTerr, terOnlineRes, terOnDeath } from "./land1.js?v=land1"; // land1: territory (registers its offline mode before MODES below)
-import { emit } from "./events.js?v=land1"; import "./play2.js"; // play2 strings // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=top1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=top1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=top1";
+import { GTrail } from "./gfx/gtrail.js?v=top1"; // trail1: cosmetic ground trail decals (never in the sim)
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=top1";
+import { NetBackend } from "./net.js?v=top1";
+import { pidTier, PID_GLYPH } from "./pid.js?v=top1"; // srv2
+import { onFind, findHide, accountMatchEnd } from "./account.js?v=top1"; // srv2
+import { t, fmtNum } from "./i18n.js?v=top1"; import { onlineBlock } from "./admin2.js?v=top1"; // admin2
+import { haptic } from "./audio.js?v=top1";
+import { rankOf, rpDelta } from "./profile.js?v=top1";
+import { Replay } from "./replay.js?v=top1"; import { onMev, mevClear, mevFrame, applyTp, pingTick, setSeasonOv } from "./top1.js?v=top1"; // top1
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=top1"; // comp1
+import { onServerTrophy } from "./compui.js?v=top1";
+import { Governor } from "./gov.js?v=top1"; // perf2: adaptive render governor
+import { claim, claimId } from "./wallet.js?v=top1"; // coin1: offline match coins are claimed from the server wallet
+import { terView, terLb, terTick, terLeft, onTerr, terOnlineRes, terOnDeath } from "./land1.js?v=top1"; // land1: territory (registers its offline mode before MODES below)
+import { emit } from "./events.js?v=top1"; import "./play2.js"; // play2 strings // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -146,6 +146,8 @@ export class Game {
       onTrophy: (m) => this.onTrophy(m), onFind: (f) => onFind(f), // srv2: finding-a-server overlay
       onTerr: (e) => onTerr(this, e), // land1: territory room events
       onBounty: (m) => { this.hud.banner("👑 " + t("p2_btyGot", { n: fmtNum(m.c | 0) }), 2600, "sub"); }, // play2: crown bounty paid by the room (no sound)
+      onMev: (m) => onMev(this, m), onSsn: (v) => setSeasonOv(v, this.app), // top1: map events, season month
+      onTp: (s, dx, dy, me) => { applyTp(s, dx, dy); if (me) { this.camX += dx; this.camY += dy; this.view.cam.snap = true; } }, // top1: portal
       onMut: (k) => { if (k && k !== this._mutShown) { this._mutShown = k; this.hud.banner("✨ " + t("p2_mutOn", { k: t("p2_mut_" + k) }), 2600, "sub"); } }, // play2: weekend rule
     };
     this.troMsg = null;
@@ -178,7 +180,7 @@ export class Game {
   }
   moveHill(first) { const R = this.backend.R, a = Math.random() * 6.283, d = first ? R * 0.15 : R * (0.2 + Math.random() * 0.4); this.hill.x = Math.cos(a) * d; this.hill.y = Math.sin(a) * d; this.hill.t = 0; if (this.backend.sim.attractPt) { this.backend.sim.attractPt.x = this.hill.x; this.backend.sim.attractPt.y = this.hill.y; } if (!first) { this.hud.banner(t("hillMoved"), 1400); this.app.audio.play("warn"); } }
   mySkin() { const p = this.app.store.p; const sk = p.skin.k === "custom" ? { k: "custom", p: p.custom.p, c: p.custom.c } : { k: p.skin.k, i: p.skin.i }; return { ...sk, e: p.eye, t: p.trail, n: p.nc, av: p.av, fr: p.frame, ...(p.gt ? { gt: p.gt } : {}) }; } // srv1: gt = equipped ground trail (sent online)
-  stopMatch() { findHide(); if (this.backend && this.backend.close) this.backend.close(); this.backend = null; this.app.input && (this.app.input.enabled = false); this.app.audio.boost(false); this.killcam = null; this.victory = null; if (this.replay) { this.replay = null; this.app.ui.replayHide(); } }
+  stopMatch() { mevClear(); findHide(); if (this.backend && this.backend.close) this.backend.close(); this.backend = null; this.app.input && (this.app.input.enabled = false); this.app.audio.boost(false); this.killcam = null; this.victory = null; if (this.replay) { this.replay = null; this.app.ui.replayHide(); } }
   pause(on) {
     if (!this.mode || this.mode === "attract" || this.mode === "show" || this.ended) return;
     this.paused = on; this.app.audio.boost(false); this.app.input.reset();
@@ -433,7 +435,7 @@ export class Game {
     if (this.mode === "attract") { const S = b.sim; if (S.snakes.filter((s) => s.alive).length < 14) b.addBot(2); }
     if (this.mode !== "attract" && !this.ended && !this.paused && !(this.countdown > 0)) this.rules(dt * this.timeScale, dt);
     if (this.watching && (!this.spectate || !this.spectate.alive)) this.stopWatch();
-    this.build(dt); this.view.fpsTarget = (this.gov ? this.gov.fpsCap(set.fpsCap) : set.fpsCap) || 60; this.r.frame(this.view);
+    this.build(dt); this.view.fpsTarget = (this.gov ? this.gov.fpsCap(set.fpsCap) : set.fpsCap) || 60; this.r.frame(this.view); mevFrame(this); // top1: portal rings follow the camera
     // replay1: ring buffer of the last 5 s near the player (20 Hz, typed arrays, no allocation per sample)
     if (this.rec && me && me.alive && !this.ended && !this.victory && this.mode !== "attract" && this.mode !== "zen" && !(this.countdown > 0) && set.replay !== false) {
       if (this.rec.meRef !== me) { this.rec.reset(); this.rec.meRef = me; } const r0 = performance.now(), c0 = this.rec.count, h0 = this.rec.head; this.rec.record(now, this.view, me, false); if (this.rec.head !== h0 || this.rec.count !== c0) { this.recMs += performance.now() - r0; this.recN++; } }
@@ -557,7 +559,7 @@ export class Game {
     }
     this.camX = tx; this.camY = ty; cam.x = tx; cam.y = ty; cam.zoom = zoom; if (cam.snap) setTimeout(() => (cam.snap = false), 50);
   }
-  hudTick() {
+  hudTick() { pingTick(this); // top1: ping + region corner chip
     const b = this.backend, me = b.me, st = this.stats; if (!b) return;
     let all = b.sim ? b.sim.snakes.filter((s) => s.alive) : [...b.mirrors.values()].map((m) => m.s).filter((s) => s.alive);
     if (me && me.alive && !b.sim) all.push(me);
@@ -607,7 +609,7 @@ export class Game {
   }
   // ---------- replay1: death replay ----------
   playReplay(fromResults, cap) { // grow1: cap = clip capture (full 10 s, each rendered frame copied to the recorder)
-    const R = this.rec; if (!R || !R.clip || !this.backend || !this.r) return false; R.start(!!cap); const A = this.app;
+    const R = this.rec; if (!R || !R.clip || !this.backend || !this.r) return false; R.start(!!cap); const A = this.app; if (!cap && A.store.settings.reduceMotion) { R.c = R.clip.t1; R.hold = -1800; R.still = true; } else R.still = false; // top1: reduced motion -> static frame
     const k = R.clip.killer ? this.findSnake(R.clip.killer) || (this.killer && this.killer.id === R.clip.killer ? this.killer : null) : null;
     this.replay = { cap: cap || null, from: !!fromResults, killer: R.clip.killer, kname: k ? k.name : (R.meta.get(R.clip.killer) || {}).name || "" };
     A.input.enabled = false; A.audio.boost(false); this.hud.hide(); this.hud.bannerClear && this.hud.bannerClear(); this.r.clearFx && this.r.clearFx();
@@ -619,7 +621,7 @@ export class Game {
   replayTick(dt, now) {
     const R = this.rec, Rp = this.replay; R.advance(dt);
     const v = R.view(this.view, dt, this.t, Rp.killer); v.fpsTarget = (this.gov ? this.gov.fpsCap(this.app.store.settings.fpsCap) : this.app.store.settings.fpsCap) || 60; this.r.frame(v); if (Rp.cap) Rp.cap.frame(); R.cam.snap = false;
-    if (!R.impactFired && R.c >= R.clip.t1) { R.impactFired = true; this.r.ring(R.clip.ix, R.clip.iy, [0.55, 0.32, 0.28], 2.2); } // fix1: small, soft, centred on the contact
+    if (!R.impactFired && R.c >= R.clip.t1) { R.impactFired = true; if (!R.still) this.r.ring(R.clip.ix, R.clip.iy, [0.55, 0.32, 0.28], 2.2); } // fix1: small, soft, centred on the contact
     this.app.ui.replayProg(R.progress());
     if (R.done) this.endReplay();
   }

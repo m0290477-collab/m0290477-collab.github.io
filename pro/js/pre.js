@@ -1,0 +1,10 @@
+// top1: starts the whole module graph downloading in parallel the moment the page head is parsed (no import waterfall),
+// with the same ?v= stamp the publish step puts on main.js / app.css, so nothing is fetched twice; then registers the
+// service worker (offline modes work without a network; repeat visits load from the cache). Classic script, no globals kept.
+(function () {
+  var MODS = ["js/main.js","js/render3d.js","js/gfx/fx.js","js/gfx/showcase.js","js/vendor/RoomEnvironment.js","js/gfx/post.js","js/vendor/SimplexNoise.js","js/vendor/OutputPass.js","js/vendor/OutputShader.js","js/vendor/UnrealBloomPass.js","js/vendor/LuminosityHighPassShader.js","js/vendor/RenderPass.js","js/vendor/EffectComposer.js","js/vendor/MaskPass.js","js/vendor/ShaderPass.js","js/vendor/Pass.js","js/vendor/CopyShader.js","js/gfx/env.js","js/gfx/snake.js","js/vendor/three.module.min.js","js/watchdog.js","js/render2d.js","js/gfx/candy.js","js/stage.js","js/ui.js","js/grow.js","js/qr.js","js/achq.js","js/game.js","js/play2.js","js/land1.js","js/gov.js","js/compui.js","js/replay.js","js/account.js","js/top1.js","js/legal.js","js/legal-config.js","js/social.js","js/admin2.js","js/league.js","js/pid.js","js/net.js","js/gfx/gtrail.js","js/modes.js","js/input.js","js/audio.js","js/events.js","js/i18n.js","js/store.js","js/profile.js","js/worlds.js","js/wallet.js","js/econ.js","js/sim.js","js/offers.js","js/skins.js","js/guard.js"];
+  var v = ""; try { var l = document.querySelector('link[href*="css/app.css"]'); var m = l && /[?&]v=([0-9a-z]+)/.exec(l.getAttribute("href")); v = m ? m[1] : ""; } catch (e) {}
+  var q = v ? "?v=" + v : "";
+  for (var i = 0; i < MODS.length; i++) { var k = document.createElement("link"); k.rel = "modulepreload"; k.href = MODS[i] + q; document.head.appendChild(k); }
+  try { if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) addEventListener("load", function () { navigator.serviceWorker.register("sw.js" + q, { scope: "./" }).catch(function () {}); }); } catch (e) {}
+})();

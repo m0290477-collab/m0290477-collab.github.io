@@ -1,15 +1,16 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=land1";
-import { Store, KV } from "./store.js?v=land1";
-import { setLang, applyI18n, t } from "./i18n.js?v=land1";
-import { Audio, haptic } from "./audio.js?v=land1";
-import { Input } from "./input.js?v=land1";
-import { Game } from "./game.js?v=land1";
-import { UI, Hud } from "./ui.js?v=land1";
-import { Renderer2D } from "./render2d.js?v=land1";
-import { startWatchdog, watchCanvas } from "./watchdog.js?v=land1"; // perf2 guardian
-import { applyIcon } from "./play2.js?v=land1"; try { applyIcon(); } catch (_) {} // play2: chosen home-screen icon (apple-touch-icon + manifest)
+import { guard } from "./guard.js?v=top1";
+import { Store, KV } from "./store.js?v=top1";
+import { setLang, applyI18n, t } from "./i18n.js?v=top1";
+import { Audio, haptic } from "./audio.js?v=top1";
+import { Input } from "./input.js?v=top1";
+import { Game } from "./game.js?v=top1";
+import { UI, Hud } from "./ui.js?v=top1";
+import { Renderer2D } from "./render2d.js?v=top1";
+import { startWatchdog, watchCanvas } from "./watchdog.js?v=top1"; // perf2 guardian
+import { top1Init, reportErr } from "./top1.js?v=top1"; // top1: error reports, map events, season, ping
+import { applyIcon } from "./play2.js?v=top1"; try { applyIcon(); } catch (_) {} // play2: chosen home-screen icon (apple-touch-icon + manifest)
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -21,7 +22,7 @@ const app = (window.SSP = {}); app.roomParam = window.__ssRoom || ""; app.roomGo
 startWatchdog(app);
 window.__bt = []; const bar = (p, msg) => { window.__bt.push([Math.round(performance.now()), p]); $("bootbar").style.width = p + "%"; $("bootpct").textContent = Math.round(p) + "%"; if (msg) $("bootmsg").textContent = msg; };
 let lastErr = 0;
-function oops(e) { console.error(e); const n = performance.now(); if (n - lastErr > 4000 && app.ui) { lastErr = n; app.ui.toast(t("oops"), "warn"); } }
+function oops(e) { console.error(e); reportErr(e); /* top1 */ const n = performance.now(); if (n - lastErr > 4000 && app.ui) { lastErr = n; app.ui.toast(t("oops"), "warn"); } }
 addEventListener("error", (e) => oops(e.error || e.message));
 addEventListener("unhandledrejection", (e) => oops(e.reason));
 
@@ -58,7 +59,7 @@ async function makeRenderer(kind, quality) {
   if (kind === "3d") watchCanvas(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=land1");
+      const m = await import("./render3d.js?v=top1");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); /* fit1: iOS drops the GL context whenever the tab is backgrounded; only a loss that lasts 6 s while the page is VISIBLE means 3D is broken. A background loss used to end in a silent switch to 2D for the session. */ const arm = () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (document.hidden) return; if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 6000); }; if (document.hidden) document.addEventListener("visibilitychange", function v() { if (document.hidden) return; document.removeEventListener("visibilitychange", v); if (app.renderer && app.renderer.lost) arm(); }); else arm(); }, onRestored: () => { clearTimeout(app._lostT); /* fit1: rebuild 3D from scratch after a restore (meshes/textures/targets all fresh) instead of trusting a half-restored GL state */ setTimeout(() => { if (app.renderer && !app.renderer.is2D) app.switchRenderer("3d"); }, 50); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }
@@ -68,7 +69,7 @@ async function makeRenderer(kind, quality) {
 
 app.applyQuality = (q) => {
   const r = app.renderer; if (!r) return; r.setQuality(q); document.documentElement.classList.toggle("lowfx", q === "low"); document.documentElement.classList.remove("blur"); // calm1: no backdrop-filter anywhere (very expensive on iOS)
-  const S0 = app.store.settings; r.setOptions({ postFx: S0.postFx && !(isMobile && q !== "high" && q !== "ultra"), juice: S0.juice && !S0.reduceMotion && !S0.calmFx, reduceMotion: S0.reduceMotion, calm: S0.calmFx, resMode: S0.res || "high", userLow: S0.quality === "low" }); document.documentElement.classList.toggle("calm", !!S0.calmFx);
+  const S0 = app.store.settings; r.setOptions({ postFx: S0.postFx && !(isMobile && q !== "ultra"), phone: isMobile, /* top1: phones: post only at Ultra (fill-rate) */ juice: S0.juice && !S0.reduceMotion && !S0.calmFx, reduceMotion: S0.reduceMotion, calm: S0.calmFx, resMode: S0.res || "high", userLow: S0.quality === "low" }); document.documentElement.classList.toggle("calm", !!S0.calmFx);
 };
 app.switchRenderer = async (kind, auto) => {
   const w = app.game.world ?? app.store.p.last.world ?? 0;
@@ -107,7 +108,7 @@ async function boot() {
   setLang(store.settings.lang); applyI18n(); bar(14, t("loading"));
   const art = new Image(); art.onload = () => document.getElementById("ld-art").classList.add("hi"); art.src = "assets/keyart.webp";
   app.audio = new Audio(); app.input = new Input($("touch"), $("boost"), $("joy")); app.hud = new Hud(app);
-  app.game = new Game(app); app.ui = new UI(app); app.ui.tip();
+  app.game = new Game(app); app.ui = new UI(app); app.ui.tip(); top1Init(app); // top1
   app.input.onPause = () => app.game.pause(!app.game.paused);
   app.input.headScreen = () => { const b = app.game.backend, me = b && b.me; if (!me || !app.renderer) return [innerWidth / 2, innerHeight / 2]; const p = app.renderer.project(me.x, me.y, me.r); return [p[0], p[1]]; };
   bar(26, t("loadEngine"));
@@ -116,9 +117,9 @@ async function boot() {
   app.game.setRenderer(app.renderer); app.applyQuality(q); app.applyAll();
   // wait for the first world's sky + ground to stream in (bounded), and the display font
   const t0 = performance.now();
-  while (app.renderer.worldReady && !app.renderer.worldReady() && performance.now() - t0 < 30000) { bar(62 + Math.min(28, (performance.now() - t0) / 120)); await new Promise((r) => setTimeout(r, 80)); }
-  if (app.renderer.warm) { bar(92, t("loadShaders")); await Promise.race([app.renderer.warm, new Promise((r) => setTimeout(r, 20000))]); }
-  try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]); } catch (_) {}
+  while (app.renderer.worldReady && !app.renderer.worldReady() && performance.now() - t0 < 2500) /* top1: <= 2.5 s, the world keeps streaming in behind the title */ { bar(62 + Math.min(28, (performance.now() - t0) / 120)); await new Promise((r) => setTimeout(r, 80)); }
+  if (app.renderer.warm) { bar(92, t("loadShaders")); await Promise.race([app.renderer.warm, new Promise((r) => setTimeout(r, 1500))]); /* top1: shaders keep compiling in the background (they are needed in a match, not on the title) */ }
+  try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 600))]); } catch (_) {}
   bar(100, t("ready"));
   // resp1: resize / rotation / mobile toolbar changes re-fit the canvas and the menu preview live (no reload); one rAF per burst
   let rzQ = 0; const rz = () => { if (rzQ) return; rzQ = requestAnimationFrame(() => { rzQ = 0; if (app.renderer) app.renderer.resize(); if (app.game) app.game.redraw(); if (app.ui && app.ui.cur && app.game && app.game.mode === "show") app.ui.updateShow(); }); };

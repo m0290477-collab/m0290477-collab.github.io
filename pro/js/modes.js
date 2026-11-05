@@ -4,11 +4,11 @@
 //   infection · two sides; anyone the infected kill comes back infected (you too); humans survive 2:30 to win
 //   duel      · best of three rounds against one champion-level bot in a small arena
 //   daily     · the same seed, world and difficulty for everyone on a given day, 3:00, local leaderboard
-import { t, fmtNum } from "./i18n.js?v=land1";
-import { GOLD_FC, C } from "./sim.js?v=land1";
-import { SKINS } from "./skins.js?v=land1";
-import { haptic } from "./audio.js?v=land1";
-import { WC_REWARD, DAILY_MODE_BONUS } from "./econ.js?v=land1"; import { claim } from "./wallet.js?v=land1"; // coin1
+import { t, fmtNum } from "./i18n.js?v=top1";
+import { GOLD_FC, C } from "./sim.js?v=top1";
+import { SKINS } from "./skins.js?v=top1";
+import { haptic } from "./audio.js?v=top1";
+import { WC_REWARD, DAILY_MODE_BONUS } from "./econ.js?v=top1"; import { claim } from "./wallet.js?v=top1"; // coin1
 export { WC_REWARD };
 
 export const XMODE_CFG = {

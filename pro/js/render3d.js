@@ -2,26 +2,26 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import { pidFill } from "./pid.js?v=land1"; // srv2
-import { stageBox } from "./stage.js?v=land1";
-import * as THREE from "./vendor/three.module.min.js?v=land1";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC, TER } from "./sim.js?v=land1";
+import { pidFill } from "./pid.js?v=top1"; // srv2
+import { stageBox } from "./stage.js?v=top1";
+import * as THREE from "./vendor/three.module.min.js?v=top1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC, TER } from "./sim.js?v=top1";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=land1";
-import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=land1";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=land1";
-import { World, prefetchWorld } from "./gfx/env.js?v=land1";
-import { Post } from "./gfx/post.js?v=land1";
-import { Studio } from "./gfx/showcase.js?v=land1";
-import { SoftFx } from "./gfx/fx.js?v=land1";
-import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=land1"; // trail1: ground trails
-import { on as onEv } from "./events.js?v=land1";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=land1";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=top1";
+import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=top1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=top1";
+import { World, prefetchWorld } from "./gfx/env.js?v=top1";
+import { Post } from "./gfx/post.js?v=top1";
+import { Studio } from "./gfx/showcase.js?v=top1";
+import { SoftFx } from "./gfx/fx.js?v=top1";
+import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=top1"; // trail1: ground trails
+import { on as onEv } from "./events.js?v=top1";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=top1";
 
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
-const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3];
+const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3], GOV_SH_PH = [2, 2, 3, 4]; // top1: phones refresh shadows every 2nd frame
 export const QUALITY = {
   low: { mat: "lambert", food: 1, halo: false, dpr: 1, post: false, msaa: 0, shadows: 0, physical: false, irid: false, rings: 44, radial: 8, particles: 160, decor: 0.45, foliage: 0, creatures: false, ambient: 0.45, reflect: 0, texLo: true, normalMaps: false, names: 1, gtao: false, dof: false, bits: 120 },
   medium: { mat: "standard", food: 1, halo: false, dpr: 1.5, post: true, msaa: 0, shadows: 1, physical: true, irid: false, rings: 72, radial: 12, particles: 320, decor: 0.75, foliage: 0.5, creatures: true, ambient: 0.7, reflect: 0, texLo: false, normalMaps: true, names: 2, gtao: false, dof: false, bits: 220 },
@@ -305,7 +305,7 @@ export class Renderer3D {
   setOptions(o) { Object.assign(this, o); this._applyDpr(); this._dim(); }
   // perf2: cheap live knobs only (no material/mesh rebuild): see gov.js
   setGov(L) { L = Math.max(0, Math.min(3, L | 0)); if (L === (this.govL | 0) && this._govSet) return; this._govSet = true; this.govL = L; this.pMax = Math.round(this.Q.particles * GOV_PK[L]); this.pHead = 0;
-    if (this.halo) this.halo.visible = L < 2; this.r.shadowMap.autoUpdate = GOV_SH[L] === 1; this.r.shadowMap.needsUpdate = true; this._applyDpr(); }
+    if (this.halo) this.halo.visible = L < 2; this.r.shadowMap.autoUpdate = (this.phone ? GOV_SH_PH : GOV_SH)[L] === 1; this.r.shadowMap.needsUpdate = true; this._applyDpr(); }
   // sharp1: pixel ratio comes from the Resolution setting, not the effects tier. High = min(dpr, 2), Max = min(dpr, 3),
   // Auto = High that may step down (>=0.25 at a time, never below 1.25) only after sustained slow frames. The drawing
   // buffer is only reallocated when the size or ratio really changes (setSize on every call reallocated it).
@@ -592,7 +592,7 @@ export class Renderer3D {
     // planar reflection (high/ultra): mirrored camera renders the scene minus ground/water into a half-res target
     const gu = this.world.groundU; gu.uRefl.value = 0;
     if (this.mirrorRT && Q.reflect && (this.W3.reflect || (this.world.water && this.W3.water !== "lava"))) { this._mirror(); gu.tRefl.value = this.mirrorRT.texture; gu.uRefl.value = (this.W3.reflect || 0.0001) * (this.calm ? 0.4 : 0.6); } // resp2 fix4: softer floor reflection
-    const shN = GOV_SH[this.govL | 0]; if (shN > 1 && this.r.shadowMap.enabled) { this.r.shadowMap.autoUpdate = false; if (this._fno % shN === 0) this.r.shadowMap.needsUpdate = true; }
+    const shN = (this.phone ? GOV_SH_PH : GOV_SH)[this.govL | 0]; if (shN > 1 && this.r.shadowMap.enabled) { this.r.shadowMap.autoUpdate = false; if (this._fno % shN === 0) this.r.shadowMap.needsUpdate = true; }
     if (this.post.on) this.post.render(dt); else this.r.render(this.scene, cam);
   }
   _mirror() {

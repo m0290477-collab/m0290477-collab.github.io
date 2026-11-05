@@ -1,9 +1,9 @@
 // admin2: owner admin (ID 1 only; every action is checked again on the server and written to the audit log) + the player side of
 // the owner config: announcement banner, maintenance / switched-off modes, price overrides, promo codes, owner wallet edits.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=land1";
-import { SKINS, FLAGS, GTRAILS, setFlagPrice, setFusionFee } from "./skins.js?v=land1"; import { MUTS, mutNow } from "./sim.js?v=land1"; // play2
-import { AVATARS, FRAMES, TITLES, BANNERS } from "./profile.js?v=land1";
-import { pidHtml } from "./pid.js?v=land1";
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=top1";
+import { SKINS, FLAGS, GTRAILS, setFlagPrice, setFusionFee } from "./skins.js?v=top1"; import { MUTS, mutNow } from "./sim.js?v=top1"; // play2
+import { AVATARS, FRAMES, TITLES, BANNERS } from "./profile.js?v=top1";
+import { pidHtml } from "./pid.js?v=top1";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -16,7 +16,7 @@ function applyPx(px) { px = px || {};
   for (const G of GTRAILS) { if (!G.price) continue; const k = "gt:" + G.id; if (!PX0.has(k)) PX0.set(k, G.price | 0); const v = px[k] | 0; G.price = v > 0 ? v : PX0.get(k); }
   setFlagPrice(px.flags | 0); setFusionFee(px.fusion | 0); } // land1: fusion fee // play2: one owner price for every flag
 
-export function setCfg(c, own) { if (!c) return; CF.cfg = { ann: c.ann || null, mnt: c.mnt || null, moff: c.moff || [], eoff: c.eoff || [], px: c.px || {}, mut: c.mut || "auto" }; if (own !== undefined) CF.own = !!own; applyPx(CF.cfg.px);
+export function setCfg(c, own) { if (!c) return; CF.cfg = { ann: c.ann || null, mnt: c.mnt || null, moff: c.moff || [], eoff: c.eoff || [], px: c.px || {}, mut: c.mut || "auto", mev: c.mev || { off: 0, k: [] }, ssn: c.ssn | 0 }; try { CF.onCfg && CF.onCfg(CF.cfg); } catch (_) {} // top1: map events + season month if (own !== undefined) CF.own = !!own; applyPx(CF.cfg.px);
   const ui = CF.ui; if (ui && ui.cur === "lobby") { try { ui.renderLobby(); } catch (_) {} } annBar(); try { CF.mutBar && CF.mutBar(); } catch (_) {} }
 export const modeOff = (m) => !CF.own && (CF.cfg.moff || []).includes(m);
 export function onlineBlock() { if (CF.own) return ""; const c = CF.cfg; if (c.mnt && c.mnt.on) return t("a2_maintOn") + (c.mnt.msg ? " — " + c.mnt.msg : ""); if ((c.moff || []).includes("online")) return t("a2_modeOff"); return ""; }
@@ -67,7 +67,7 @@ export function playerExtra(v) { if (!v || !v.card || v.err) return "";
 const CATS = [["skins", () => SKINS.filter((s) => s.src).map((s) => [s.id, s.id])], ["flags", () => FLAGS.map((f) => ["fl:" + f.i, f.en || f.c])], ["trails", () => GTRAILS.filter((g) => g.price).map((g) => ["gt:" + g.id, g.id])],
   ["avatars", () => AVATARS.map((_, i) => ["av:p" + i, "#" + i])], ["frames", () => FRAMES.map((f, i) => ["fr:" + i, f.id || "#" + i])], ["titles", () => TITLES.map((x, i) => ["ti:" + i, x.id || "#" + i])], ["banners", () => BANNERS.map((b, i) => ["bn:" + i, (b.w && b.w.id) || "#" + i])]];
 // generic owner dialog: fields + required reason; destructive actions need a second tap ("Confirm again") and send sure: 1
-function dlg(ui, o) {
+export function dlg(ui, o) { // top1: exported (Errors / Fair play / map events / season use it)
   const m = $("m-adact"), c = $("m-adact-c"); if (!m) return;
   const F = (f) => f.k === "sel" ? `<label class="pv-lab" for="d2-${f.n}">${t(f.l)}</label><select id="d2-${f.n}" class="a2-sel">${f.opts.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join("")}</select>`
     : f.k === "cat" ? `<div class="pv-lab">${t("a2_cat")}</div><div class="seg small a2-cats" id="d2-cat">${CATS.map(([k], i) => `<button type="button" data-c="${k}" class="${i ? "" : "on"}">${t("a2_c_" + k)}</button>`).join("")}</div><select id="d2-it" class="a2-sel"></select>`
