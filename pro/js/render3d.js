@@ -2,23 +2,23 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import { pidFill } from "./pid.js?v=3dperf"; // srv2
-import { stageBox } from "./stage.js?v=3dperf";
-import * as THREE from "./vendor/three.module.min.js?v=3dperf";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC, TER } from "./sim.js?v=3dperf";
+import { pidFill } from "./pid.js?v=3dlook"; // srv2
+import { stageBox } from "./stage.js?v=3dlook";
+import * as THREE from "./vendor/three.module.min.js?v=3dlook";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC, TER } from "./sim.js?v=3dlook";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=3dperf";
-import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=3dperf";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=3dperf";
-import { World, prefetchWorld } from "./gfx/env.js?v=3dperf";
-import { Post } from "./gfx/post.js?v=3dperf";
-import { Studio } from "./gfx/showcase.js?v=3dperf";
-import { SoftFx } from "./gfx/fx.js?v=3dperf";
-import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=3dperf"; // trail1: ground trails
-import { on as onEv } from "./events.js?v=3dperf";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=3dperf";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=3dlook";
+import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=3dlook";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=3dlook";
+import { World, prefetchWorld } from "./gfx/env.js?v=3dlook";
+import { Post } from "./gfx/post.js?v=3dlook";
+import { Studio } from "./gfx/showcase.js?v=3dlook";
+import { SoftFx } from "./gfx/fx.js?v=3dlook";
+import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=3dlook"; // trail1: ground trails
+import { on as onEv } from "./events.js?v=3dlook";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=3dlook";
 
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
 const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3], GOV_SH_PH = [2, 2, 3, 4]; // top1: phones refresh shadows every 2nd frame
@@ -32,7 +32,7 @@ const MAX_FOOD = 1400, MAX_GEM = 300, MAX_HEAD = MAXS;
 const toLin = (v) => (v <= 0 ? 0 : v * v * (0.7 + 0.3 * v));
 const hex3 = (h) => { const n = parseInt(h.slice(1), 16); return [toLin((n >> 16 & 255) / 255), toLin((n >> 8 & 255) / 255), toLin((n & 255) / 255)]; };
 const EYEC = EYES.map((e) => ({ w: hex3(e.ec), p: hex3(e.pc) })); const TRAILC = TRAILS.map((t) => (t.c ? t.c.map(hex3) : null));
-const HORN_GOLD = [1.0, 0.62, 0.12], HORN_FIRE = [2.2, 0.7, 0.08];
+const EYE_AMBER = [0.92, 0.56, 0.08], HORN_GOLD = [1.0, 0.62, 0.12], HORN_FIRE = [2.2, 0.7, 0.08];
 const LEGC = {}; for (const k in LEGEND) LEGC[k] = { tr: LEGEND[k].tr.map(hex3), glow: hex3(LEGEND[k].glow) };
 const _m2 = new THREE.Matrix4(), _c = new THREE.Color();
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _e = new THREE.Euler();
@@ -92,7 +92,7 @@ export class Renderer3D {
     this.hemi = new THREE.HemisphereLight(0xffffff, 0x223322, 0.9); this.scene.add(this.hemi);
     this.sun = new THREE.DirectionalLight(0xffffff, 1.8); this.scene.add(this.sun); this.scene.add(this.sun.target);
     const sh = this.sun.shadow; sh.camera.left = -34; sh.camera.right = 34; sh.camera.top = 34; sh.camera.bottom = -34; sh.camera.near = 1; sh.camera.far = 160; sh.bias = -0.0006; sh.normalBias = 0.035;
-    this.fill = new THREE.DirectionalLight(0x88aaff, 0.35); this.fill.position.set(30, 20, -30); this.scene.add(this.fill);
+    this.fill = new THREE.DirectionalLight(0x8fb4ff, 0.75); this.fill.position.set(-14, 16, -40); /* look1: cool rim light from behind the play view */ this.scene.add(this.fill);
     this.fxLight = new THREE.PointLight(0xffffff, 0, 30, 2); this.fxLight.position.set(0, 4, 0); this.scene.add(this.fxLight);
   }
   _inst(scene, geo, mat, n, color) {
@@ -117,8 +117,15 @@ export class Renderer3D {
   }
   _initFood() { // candy1: six procedural candy types (one InstancedMesh each) + soft contact shadows + Gold Rush coins
     const tier = this.Q.mat, q = this.qName === "low" ? 0 : this.Q.food > 1 ? 2 : 1, geos = candyGeometries(THREE, q), mat = candyMaterial(THREE, tier, false), gm = candyMaterial(THREE, tier, true);
-    this.candy = geos.map((g, k) => this._inst(this.scene, g, k === T_GUMMY ? gm : mat, MAX_FOOD, true)); this.food = this.candy[0];
-    this.halo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(0,0,0,0.42)"], [0.45, "rgba(0,0,0,0.26)"], [1, "rgba(0,0,0,0)"]]), transparent: true, depthWrite: false, toneMapped: false, fog: false, color: 0xffffff }), MAX_FOOD, false); // contact shadows
+    // look1: food = glowing energy orbs (bioluminescent essence): bright core, fresnel rim, unlit (no lighting cost), one shared
+    // sphere for every food kind (the six per-kind meshes stay so sizes / counts / colour-blind palette work as before)
+    for (const g of geos) g.dispose(); mat.dispose(); gm.dispose(); const orbG = new THREE.IcosahedronGeometry(0.52, q === 0 ? 1 : 2).translate(0, 0.7, 0);
+    const orbM = new THREE.ShaderMaterial({ uniforms: { uT: this.snakes.uniforms.uT }, fog: false,
+      vertexShader: "varying vec3 vC; varying vec3 vN; varying vec3 vV; varying float vY; void main(){ vec4 p=vec4(position,1.0); vec3 n=normal; vC=vec3(1.0);\n#ifdef USE_INSTANCING\n p=instanceMatrix*p; n=mat3(instanceMatrix)*n;\n#endif\n#ifdef USE_INSTANCING_COLOR\n vC=instanceColor;\n#endif\n vY=position.y; vec4 mv=modelViewMatrix*p; vN=normalize(normalMatrix*n); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }",
+      fragmentShader: "uniform float uT; varying vec3 vC; varying vec3 vN; varying vec3 vV; varying float vY; void main(){ float f=clamp(dot(normalize(vN),vV),0.0,1.0); float rim=pow(1.0-f,2.2); vec3 c=max(vC,vec3(0.02)); vec3 hot=mix(c,vec3(1.0),0.55);\n vec3 col=c*0.28+hot*pow(f,5.0)*1.25+c*rim*1.6+vec3(0.9,0.95,1.0)*pow(f,40.0)*0.5; gl_FragColor=vec4(col,1.0);\n#include <colorspace_fragment>\n}" });
+    orbM.customProgramCacheKey = () => "orb1";
+    this.candy = geos.map(() => this._inst(this.scene, orbG, orbM, MAX_FOOD, true)); this.food = this.candy[0];
+    this.halo = this._inst(this.scene, new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: this._radialTex([[0, "rgba(255,255,255,0.55)"], [0.3, "rgba(255,255,255,0.2)"], [1, "rgba(255,255,255,0)"]]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false, color: 0xffffff }), MAX_FOOD, true); // look1: soft coloured glow pool on the ground under each orb
     this.halo.renderOrder = 1;
     this.gem = this._inst(this.scene, coinGeometry(THREE, q), coinMaterial(THREE, tier), MAX_GEM, false); // Gold Rush gold: metallic coins, never candy
   }
@@ -384,7 +391,7 @@ export class Renderer3D {
   }
   // resp2 fix4: a calmer floor like 2D so candies and snakes stand out: exposure x0.97, hemi / sun x0.9 (adj1), bloom x0.65
   // (calm: x0.92 / x0.84 / x0.4); the World dims its ground (boost, desaturation, emissive), reflection and snow / stars.
-  _dim() { const W = this.W; if (!W) return; const c = !!this.calm; this.lk = c ? 0.84 : 0.9; this.r.toneMappingExposure = (W.exposure || 1.0) * (c ? 0.92 : 0.97); // resp2 adj1: lifted (post shots read -11..-28%, calm -30..-43%: too murky)
+  _dim() { const W = this.W; if (!W) return; const c = !!this.calm; this.lk = c ? 0.92 : 0.96; this.r.toneMappingExposure = (W.exposure || 1.0) * (c ? 0.98 : 1.0); /* look1: brighter, higher-contrast grade */ // resp2 adj1: lifted (post shots read -11..-28%, calm -30..-43%: too murky)
     this.hemi.intensity = W.hemiI * this.lk; this.sun.intensity = W.sunI * this.lk; this._grade(); if (this.world && this.world.dim) this.world.dim(c); }
   _grade() { if (!this.W3) return; if (this.post.bloom) this.post.bloom.strength = this.W3.bloom * 0.5 * (this.calm ? 0.4 : 0.65); const gu = this.post.grade && this.post.grade.uniforms, G = this.W3.grade; if (gu) { gu.uLift.value.set(...G[0]); gu.uGain.value.set(...G[1]); gu.uSat.value = G[2]; gu.uCon.value = G[3]; } }
   setArena(R) { this.arenaR = R; if (this.world) this.world.fit(R); }
@@ -413,6 +420,20 @@ export class Renderer3D {
       this.emit(pts[j * 2], s.r, pts[j * 2 + 1], Math.cos(a) * v, 2 + Math.random() * 4, Math.sin(a) * v, rgb, 0.8 + Math.random() * 0.6, s.r * 1.6, 1.6);
       if (j % (step * 2) === 0) this.shard(pts[j * 2], s.r, pts[j * 2 + 1], Math.cos(a) * v * 1.4, 4 + Math.random() * 6, Math.sin(a) * v * 1.4, rgb, s.r * (0.25 + Math.random() * 0.3), 1.6 + Math.random()); }
     if (fx) this.legendDeath(fx, s, pts, n);
+  }
+  // look1: cinematic death beat, also with "Reduce effects" (smaller budget): glowing essence rising from the body, white-hot
+  // sparks, lit debris, a shock ring, a short light flash on the ground and a brief camera shake (none with reduced motion).
+  deathFx(s, fn, own, dist) {
+    const calm = !!this.calm, pts = this.tmp, sp = Math.max(0.4, s.r * 0.7), n = bodyPoints(s, 0, 0, sp, s.len, pts, SW), cap = calm ? 22 : 54, step = Math.max(1, Math.ceil(n / cap)), col = this.col, r = s.r;
+    fn(2, 20, this.time, col); const lin = [toLin(col[0]), toLin(col[1]), toLin(col[2])];
+    for (let j = 0; j < n; j += step) { fn(j, n, this.time, col); const c = [toLin(col[0]) * 1.7 + 0.12, toLin(col[1]) * 1.7 + 0.12, toLin(col[2]) * 1.7 + 0.12], a = Math.random() * 6.283, v = 0.8 + Math.random() * 2.2;
+      this.emit(pts[j * 2], r * 0.9, pts[j * 2 + 1], Math.cos(a) * v, 1.2 + Math.random() * 2.4, Math.sin(a) * v, c, 1.0 + Math.random() * 0.7, r * (0.9 + Math.random() * 0.7), 1.8, -0.7);
+      if ((j / step) % (calm ? 3 : 2) === 0) this.shard(pts[j * 2], r, pts[j * 2 + 1], Math.cos(a) * v * 2.2, 4 + Math.random() * 5, Math.sin(a) * v * 2.2, lin, r * (0.18 + Math.random() * 0.22), 1.2 + Math.random() * 0.8); }
+    const x = s.x, y = s.y; for (let k = 0; k < (calm ? 10 : 22); k++) { const a = Math.random() * 6.283, v = 6 + Math.random() * 9; this.emit(x, r, y, Math.cos(a) * v, 2 + Math.random() * 4, Math.sin(a) * v, [2.2, 1.9, 1.5], 0.25 + Math.random() * 0.25, 0.22, 3, 9); }
+    this.ring(x, y, [lin[0] * 1.6 + 0.3, lin[1] * 1.6 + 0.3, lin[2] * 1.6 + 0.3], 6 + r * 4);
+    this.fxLight.position.set(x, 3, y); this.fxLight.color.setRGB(lin[0] * 2 + 0.6, lin[1] * 2 + 0.6, lin[2] * 2 + 0.6); this.fxLight.intensity = Math.max(this.fxLight.intensity, own ? 7 : 5);
+    if (!this.reduceMotion) { const k = own ? 0.9 : dist < 22 ? 0.4 * (1 - dist / 22) : 0; if (k > 0) this.shakeA = Math.min(1.2, this.shakeA + k); }
+    const fx = s.skin && s.skin.k === "skin" && SKINS[s.skin.i] ? SKINS[s.skin.i].fx : 0; if (fx && !calm) this.legendDeath(fx, s, pts, n);
   }
   legendDeath(fx, s, pts, n) {
     const L = LEGEND[fx], C = LEGC[fx], x = s.x, y = s.y, r = s.r; if (!L) return; const c0 = C.tr[0], c1 = C.tr[1];
@@ -475,14 +496,14 @@ export class Renderer3D {
     const fwx = fxw / fl, fwz = fzw / fl, fwy = (ys[0] - ys[1]) / fl, sdx = -fwz, sdz = fwx; const alpha = d.alpha ?? 1;
     const bob = Math.sin(t * 3.1 + st.seed * 6) * 0.07 * r; const hr = r * 1.12 * alpha;
     st.blink -= this.dt || 0.016; let bk = 1; if (st.blink < 0.14) { bk = Math.max(0.08, Math.abs(st.blink - 0.07) / 0.07); if (st.blink < 0) st.blink = 2.5 + Math.random() * 4; }
-    const Ed = EYES[d.eye] || EYES[0], EC = EYEC[d.eye] || EYEC[0], er = r * 0.36 * Ed.s * alpha, la0 = d.me && !show && this._meLook !== undefined ? this._meLook : d.look ?? Math.atan2(fwz, fwx); if (st.la !== st.la) st.la = la0; { let da = la0 - st.la; da -= Math.round(da / 6.2831853) * 6.2831853; st.la += da * (1 - Math.exp(-(this.dt || 0.016) * 14)); } const la = st.la, lc = Math.cos(la), ls = Math.sin(la);
+    const Ed = EYES[d.eye] || EYES[0], EC = EYEC[d.eye] || EYEC[0], er = r * 0.25 * Ed.s * alpha, la0 = d.me && !show && this._meLook !== undefined ? this._meLook : d.look ?? Math.atan2(fwz, fwx); if (st.la !== st.la) st.la = la0; { let da = la0 - st.la; da -= Math.round(da / 6.2831853) * 6.2831853; st.la += da * (1 - Math.exp(-(this.dt || 0.016) * 14)); } const la = st.la, lc = Math.cos(la), ls = Math.sin(la);
     const W = E.w.instanceMatrix.array, WC = E.w.instanceColor.array, P = E.p.instanceMatrix.array, PC = E.p.instanceColor.array, H = E.h.instanceMatrix.array; const glowE = Ed.glow ? 3 : 1;
     for (let q = 0; q < Ed.n; q++) {
-      const side = Ed.n === 1 ? 0 : (q ? 1 : -1) * hr * 0.5;
-      const ex = hx + fwx * hr * 0.55 + sdx * side, ez = hz + fwz * hr * 0.55 + sdz * side, ey = hy + r * 0.8 * alpha + bob + hr * 0.5 + fwy * hr * 0.4;
-      const e = cnt.e++; _m.makeScale(er, er * bk, er).setPosition(ex, ey, ez); _m.toArray(W, e * 16); WC[e * 3] = EC.w[0]; WC[e * 3 + 1] = EC.w[1]; WC[e * 3 + 2] = EC.w[2];
-      const pr = er * Ed.p * 1.05, pd = er * 0.5, slit = Ed.id === "fierce" || Ed.id === "demon" ? 0.45 : 1;
-      _q.setFromAxisAngle(_v.set(0, 1, 0), -la); _s.set(pr * slit, pr * bk, pr); _m.compose(_v2.set(ex + lc * pd, ey + er * 0.62 * bk, ez + ls * pd), _q, _s); _m.toArray(P, e * 16);
+      const side = Ed.n === 1 ? 0 : (q ? 1 : -1) * r * 0.74 * alpha; // look1: eyes sit on the sides of the wide, flat head (realistic, not on top)
+      const ex = hx + fwx * r * 0.32 + sdx * side, ez = hz + fwz * r * 0.32 + sdz * side, ey = hy + r * 0.8 * alpha + bob + r * 0.36 * alpha + fwy * hr * 0.4;
+      const e = cnt.e++; _m.makeScale(er, er * bk * 0.8, er).setPosition(ex, ey, ez); _m.toArray(W, e * 16); const iw = d.eye ? EC.w : EYE_AMBER; WC[e * 3] = iw[0]; WC[e * 3 + 1] = iw[1]; WC[e * 3 + 2] = iw[2]; // look1: the classic eye is an amber iris
+      const pr = er * Math.max(Ed.p, 0.62) * 1.05, pd = er * 0.42, slit = Ed.id === "cute" || Ed.id === "cyclops" || Ed.id === "starry" ? 1 : 0.3; // look1: vertical slit pupils
+      _q.setFromAxisAngle(_v.set(0, 1, 0), -la); _s.set(pr * slit, pr * bk * 0.85, pr); { const os = Ed.n === 1 ? 0 : (q ? 1 : -1) * er * 0.45; _m.compose(_v2.set(ex + lc * pd * 0.5 + sdx * os, ey + er * 0.5 * bk, ez + ls * pd * 0.5 + sdz * os), _q, _s); } _m.toArray(P, e * 16);
       PC[e * 3] = EC.p[0] * glowE; PC[e * 3 + 1] = EC.p[1] * glowE; PC[e * 3 + 2] = EC.p[2] * glowE;
       _m.makeScale(er * 0.18 * bk, er * 0.18 * bk, er * 0.18 * bk).setPosition(ex + lc * pd * 0.9 - 0.15 * er, ey + er * 0.7 * bk, ez + ls * pd * 0.9 + 0.1 * er); _m.toArray(H, e * 16);
     }
@@ -490,7 +511,7 @@ export class Renderer3D {
       for (let q = -1; q <= 1; q += 2) { const hi = (cnt.h = (cnt.h || 0) + 1) - 1; _q.setFromEuler(_e.set(q * 0.35, -ya, 0, "YXZ")); _s.set(hr * 0.75, hr * 0.8 * (fx === 13 ? 1.3 : 1), hr * 0.75); _m.compose(_v2.set(hx - fwx * hr * 0.15 + sdx * q * hr * 0.42, hy + r * 0.8 * alpha + bob + hr * 0.62, hz - fwz * hr * 0.15 + sdz * q * hr * 0.42), _q, _s); _m.toArray(HN, hi * 16); HC[hi * 3] = hc[0]; HC[hi * 3 + 1] = hc[1]; HC[hi * 3 + 2] = hc[2]; } }
     const tph = (t * 0.45 + s.id * 0.37) % 1;
     if (tph < 0.1 && alpha > 0.9) { const ext = Math.sin((tph / 0.1) * Math.PI) * hr * 1.4, flick = Math.sin(t * 60) * 0.25, a = Math.atan2(fwz, fwx) + flick; const T2 = E.t.instanceMatrix.array, ti = cnt.t++;
-      _q.setFromAxisAngle(_v.set(0, 1, 0), -a); _s.set(ext, hr * 0.9, hr * 0.9); _m.compose(_v2.set(hx + fwx * hr * 1.2, hy + r * 0.8 * alpha + bob + hr * 0.05, hz + fwz * hr * 1.2), _q, _s); _m.toArray(T2, ti * 16); }
+      _q.setFromAxisAngle(_v.set(0, 1, 0), -a); _s.set(ext, hr * 0.9, hr * 0.9); _m.compose(_v2.set(hx + fwx * r * 1.45 * alpha, hy + r * 0.62 * alpha + bob, hz + fwz * r * 1.45 * alpha), _q, _s); _m.toArray(T2, ti * 16); }
     d._hx = hx; d._hz = hz; d._hr = hr; d._n = n; d._fx = fwx; d._fz = fwz;
     if (d.me && !show) { const H = this._meHead || (this._meHead = [0, 0, 0]); H[0] = hx; H[1] = hz; H[2] = hr; { const R = this._meRing; R.visible = alpha > 0.3; R.position.set(hx, Math.max(0.05, hy - hr * 0.9), hz); R.scale.setScalar(hr * 2.2); R.material.color.setRGB(st.col[0], st.col[1], st.col[2]); this._meRingF = this._fno; } this._meCol = st.col; this._meFw = fwx; this._meFwz = fwz; if (d.boost && alpha > 0.5) { const tj = Math.max(1, n - 2); this.sfx.wake(pts[tj * 2], pts[tj * 2 + 1], st.col, r); } }
     // trails: legendary signature or equipped trail
@@ -504,7 +525,7 @@ export class Renderer3D {
         else if (k === "wisps" || k === "smoke") this.emit(tx, r, tz, (Math.random() - 0.5) * 0.8, 0.8, (Math.random() - 0.5) * 0.8, cc, 1.5, 0.9, 0.5, -0.3);
         else this.emit(tx + (Math.random() - 0.5) * r, r, tz + (Math.random() - 0.5) * r, (Math.random() - 0.5), 0.8, (Math.random() - 0.5), cc, 0.8, 0.5, 0.6);
       } else { const T = TRAILS[d.trail]; if (T && T.c && (d.boost || Math.random() < 0.25)) { const cc = TRAILC[d.trail][(Math.random() * 2) | 0]; this.emit(tx + (Math.random() - 0.5) * r, r, tz + (Math.random() - 0.5) * r, (Math.random() - 0.5), d.trail === 5 ? 1.5 : 0.8, (Math.random() - 0.5), cc, 0.7, d.trail === 6 ? 0.35 : 0.5, 0.6); }
-        else if (d.boost && Math.random() < 0.8) { fn(tj, n, t, col); this.emit(tx, r * 0.8, tz, (Math.random() - 0.5) * 2, 0.6, (Math.random() - 0.5) * 2, [toLin(col[0]) * 1.5, toLin(col[1]) * 1.5, toLin(col[2]) * 1.5], 0.55, 0.6, 1.5); } }
+        else if (d.boost && Math.random() < 0.7) { fn(tj, n, t, col); const hk = Math.random() < 0.35; this.emit(tx + (Math.random() - 0.5) * r, r * 0.7, tz + (Math.random() - 0.5) * r, (Math.random() - 0.5) * 3.5, 0.8 + Math.random() * 1.6, (Math.random() - 0.5) * 3.5, hk ? [2.0, 1.8, 1.5] : [toLin(col[0]) * 1.8 + 0.25, toLin(col[1]) * 1.8 + 0.25, toLin(col[2]) * 1.8 + 0.25], 0.3 + Math.random() * 0.2, hk ? 0.16 : 0.26, 2.5, 5); } } // look1: sleek energy sparks, not blobs
     }
     return n;
   }
@@ -620,14 +641,14 @@ export class Renderer3D {
       M[o] = ca; M[o + 1] = 0; M[o + 2] = -sa; M[o + 3] = 0; M[o + 4] = 0; M[o + 5] = S; M[o + 6] = 0; M[o + 7] = 0; M[o + 8] = sa; M[o + 9] = 0; M[o + 10] = ca; M[o + 11] = 0; M[o + 12] = x; M[o + 13] = h; M[o + 14] = y; M[o + 15] = 1;
       const C = m.instanceColor.array, q = pal[c % NP]; C[k * 3] = q[0]; C[k * 3 + 1] = q[1]; C[k * 3 + 2] = q[2]; };
     const coin = (x, y, h, S, a) => { const o = ng * 16, ca = Math.cos(a) * S, sa = Math.sin(a) * S; GM[o] = ca; GM[o + 1] = 0; GM[o + 2] = -sa; GM[o + 3] = 0; GM[o + 4] = 0; GM[o + 5] = S; GM[o + 6] = 0; GM[o + 7] = 0; GM[o + 8] = sa; GM[o + 9] = 0; GM[o + 10] = ca; GM[o + 11] = 0; GM[o + 12] = x; GM[o + 13] = h; GM[o + 14] = y; GM[o + 15] = 1; ng++; };
-    const shad = (x, y, k) => { const o = ns * 16; SM[o] = k; SM[o + 1] = SM[o + 2] = SM[o + 3] = SM[o + 4] = 0; SM[o + 5] = 1; SM[o + 6] = SM[o + 7] = SM[o + 8] = SM[o + 9] = 0; SM[o + 10] = k; SM[o + 11] = 0; SM[o + 12] = x; SM[o + 13] = 0.03; SM[o + 14] = y; SM[o + 15] = 1; ns++; };
+    const HC = this.halo.instanceColor.array; const shad = (x, y, k, c) => { const q2 = c < 0 ? GOLDC : pal[c % NP]; HC[ns * 3] = q2[0] * 0.5; HC[ns * 3 + 1] = q2[1] * 0.5; HC[ns * 3 + 2] = q2[2] * 0.5; const o = ns * 16; SM[o] = k; SM[o + 1] = SM[o + 2] = SM[o + 3] = SM[o + 4] = 0; SM[o + 5] = 1; SM[o + 6] = SM[o + 7] = SM[o + 8] = SM[o + 9] = 0; SM[o + 10] = k; SM[o + 11] = 0; SM[o + 12] = x; SM[o + 13] = 0.03; SM[o + 14] = y; SM[o + 15] = 1; ns++; };
     for (let i = 0; i < F.FM && nf < MAX_FOOD; i++) {
       if (!F.fa[i]) continue; const x = F.fx[i], y = F.fy[i], dx = x - vx, dz = y - vz; if (dx * dx + dz * dz > vr2) continue;
       const age = F.age ? F.age(i) : 1, grow = age < 1 ? age * age * (3 - 2 * age) : 1, val = F.fv[i], c = F.fc[i], ph = x * 1.7 + y * 2.3; // phase from position: stable in replays too
       const bob = still ? 0.04 : 0.05 + 0.045 * Math.sin(t * 1.3 + ph);
-      if (gold && c === GOLD_FC) { if (ng < MAX_GEM) { coin(x, y, bob, 0.78 * grow, still ? ph : ph + t * 1.1); shad(x, y, 1.15 * grow); nf++; } continue; }
+      if (gold && c === GOLD_FC) { if (ng < MAX_GEM) { coin(x, y, bob, 0.78 * grow, still ? ph : ph + t * 1.1); shad(x, y, 1.15 * grow, -1); nf++; } continue; }
       const big = candyBig(val), ty = candyType(val, c, big), S = candySize(val, big) * grow;
-      put(ty, x, y, bob, S, still ? ph : ph + t * ((i & 1) ? 0.32 : -0.32), c); shad(x, y, S * 2.15); nf++;
+      put(ty, x, y, bob * 2.2, S, ph, c); shad(x, y, S * (2.4 + 0.25 * Math.sin(t * 2.2 + ph)), c); nf++; // look1: orbs float and breathe
     }
     // swallowed candy shrinks and slides into the mouth (ghosts carry the eaten food's value + colour)
     if (v.ghosts) for (const gh of v.ghosts) {

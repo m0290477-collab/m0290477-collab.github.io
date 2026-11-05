@@ -7,7 +7,7 @@
 // Rarity-aware: legendary skins get smaller discounts (15-25 %) than flags (15-40 %), never below a floor.
 // The clock only changes WHICH items are discounted; nothing is granted by time. If the device clock jumps backwards,
 // the last seen rotation is kept (stableNow).
-import { SKINS, FLAGS, FLAG_PRICE } from "./skins.js?v=3dperf";
+import { SKINS, FLAGS, FLAG_PRICE } from "./skins.js?v=3dlook";
 const DAY = 86400000;
 // purchasable with coins: legendary skins whose source is "coins:N", and every flag
 export const coinSkins = () => SKINS.map((s, i) => [s, i]).filter(([s]) => s.src && s.src.startsWith("coins:") && !s.ssn) /* top1: season skins are sold only in their month (never in offers) */.map(([s, i]) => ({ k: "skin", i, id: s.id, base: +s.src.split(":")[1], rar: s.rar }));

@@ -1,12 +1,12 @@
 // top1: map events (sandstorm veil, portal rings, banners), ping + region corner chip, crash / error reports, monthly season
 // (Locker tab + arena accents), and the owner admin parts for them (Errors, Fair play, map event switches, season month).
 // All text in the 6 languages; calm / reduced motion: no animation, no flashing; touch targets >= 44 px.
-import { t, addStrings, fmtNum, LANG } from "./i18n.js?v=3dperf";
-import { SKINS, swatchCss, SEASON_THEMES, seasonMonth, seasonTheme, seasonSkins } from "./skins.js?v=3dperf";
-import { WORLDS } from "./worlds.js?v=3dperf";
-import { SERVER } from "./net.js?v=3dperf";
-import { MEV, TP_PHASE } from "./sim.js?v=3dperf";
-import { dlg, CF } from "./admin2.js?v=3dperf";
+import { t, addStrings, fmtNum, LANG } from "./i18n.js?v=3dlook";
+import { SKINS, swatchCss, SEASON_THEMES, seasonMonth, seasonTheme, seasonSkins } from "./skins.js?v=3dlook";
+import { WORLDS } from "./worlds.js?v=3dlook";
+import { SERVER } from "./net.js?v=3dlook";
+import { MEV, TP_PHASE } from "./sim.js?v=3dlook";
+import { dlg, CF } from "./admin2.js?v=3dlook";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

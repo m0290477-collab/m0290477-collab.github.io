@@ -1,10 +1,10 @@
 // Living world environments: panoramic sky with procedural clouds/aurora/nebula, PBR ground with anti-tiling,
 // animated water/lava, swaying instanced foliage, decor, weather (rain/snow/sandstorm/ash/stars), ambient
 // creatures, time-of-day lighting. Textures stream per world (lazy WebP) and swap in when ready.
-import * as THREE from "../vendor/three.module.min.js?v=3dperf";
-import { W3D, worldAsset } from "../worlds.js?v=3dperf";
+import * as THREE from "../vendor/three.module.min.js?v=3dlook";
+import { W3D, worldAsset } from "../worlds.js?v=3dlook";
 
-const loader = new THREE.TextureLoader();
+const loader = new THREE.TextureLoader(); const WARM = new THREE.Color(0xffd9a8); // look1: warm key tint
 const texCache = new Map();
 export function loadTex(url, srgb = true) {
   if (texCache.has(url)) return texCache.get(url);
@@ -77,7 +77,7 @@ export class World {
     const X = this.X, W = this.W, R = this.R0;
     const mat = this.Q.mat === "lambert" ? new THREE.MeshLambertMaterial({ color: 0xffffff }) : new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: X.rough, metalness: X.id === "neon" ? 0.4 : 0.0, envMapIntensity: X.reflect ? 1.4 : 0.8 });
     mat.color.set(W.ground); // placeholder until the texture streams in
-    const self = this; this.groundU = { uT: this.uT, tRefl: { value: null }, uRefl: { value: 0 }, uMat: { value: new THREE.Matrix4() }, uEm: { value: X.emissiveK || 0 }, uKind: { value: this.idx }, uDesat: { value: X.desat || 0 }, uFlat: { value: new THREE.Color(W.calm ? W.calm.ground : W.ground).multiplyScalar(2.6) }, uFlatK: { value: 0.92 } };
+    const self = this; this.groundU = { uT: this.uT, tRefl: { value: null }, uRefl: { value: 0 }, uMat: { value: new THREE.Matrix4() }, uEm: { value: X.emissiveK || 0 }, uKind: { value: this.idx }, uDesat: { value: X.desat || 0 }, uFlat: { value: new THREE.Color(W.calm ? W.calm.ground : W.ground).multiplyScalar(2.6) }, uFlatK: { value: 0.6 } /* look1: the floor texture reads again (was 92 % flat colour) */ };
     mat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, self.groundU); GROUND_VS_PATCH(sh);
       sh.fragmentShader = "varying vec3 vWp; uniform float uT, uRefl, uEm, uKind, uDesat, uFlatK; uniform vec3 uFlat; uniform sampler2D tRefl; uniform mat4 uMat;\nfloat gh(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }\nfloat gn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(gh(i),gh(i+vec2(1,0)),f.x),mix(gh(i+vec2(0,1)),gh(i+vec2(1,1)),f.x),f.y); }\n" + sh.fragmentShader
@@ -194,15 +194,15 @@ export class World {
     // blade atlas drawn once on a canvas (no texture download)
     const cv = document.createElement("canvas"); cv.width = 128; cv.height = 128; const g = cv.getContext("2d");
     const cols = { fern: ["#3f8f3a", "#5fb04a", "#2c6e2c"], reed: ["#c9b06a", "#9a8a4a", "#e0c77a"], frost: ["#e8f8ff", "#bfe6ff", "#ffffff"] }[X.foliage];
-    for (let i = 0; i < 14; i++) { const x = 20 + Math.random() * 88, h = 60 + Math.random() * 64, bend = (Math.random() - 0.5) * 30; g.strokeStyle = cols[i % 3]; g.lineWidth = X.foliage === "frost" ? 3 : 4 + Math.random() * 3; g.lineCap = "round";
+    for (let i = 0; i < 22; i++) { const x = 14 + Math.random() * 100, h = 60 + Math.random() * 64, bend = (Math.random() - 0.5) * 30; g.strokeStyle = cols[i % 3]; g.lineWidth = X.foliage === "frost" ? 3 : 4 + Math.random() * 3; g.lineCap = "round";
       g.beginPath(); g.moveTo(x, 128); g.quadraticCurveTo(x + bend * 0.3, 128 - h * 0.6, x + bend, 128 - h); g.stroke(); }
     const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
     const quad = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0); const q2 = quad.clone().rotateY(Math.PI / 2); const pos = [...quad.attributes.position.array, ...q2.attributes.position.array]; const uv = [...quad.attributes.uv.array, ...q2.attributes.uv.array];
     const idx = [...quad.index.array, ...Array.from(q2.index.array, (i) => i + 4)];
     const geo = new THREE.InstancedBufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
-    const N = Math.round(1800 * this.Q.foliage); const off = new Float32Array(N * 4); const R = this.R0;
+    const N = Math.round(2600 * this.Q.foliage); /* look1: denser grass tufts */ const off = new Float32Array(N * 4); const R = this.R0;
     let s = 7 + this.idx; const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
-    for (let i = 0; i < N; i++) { const inner = i < N * 0.55; const a = rnd() * 6.283; const d = inner ? Math.sqrt(rnd()) * (R - 4) : R + 3 + rnd() * 40; off[i * 4] = Math.cos(a) * d; off[i * 4 + 1] = Math.sin(a) * d; off[i * 4 + 2] = inner ? 0.35 + rnd() * 0.5 : 1.2 + rnd() * 2.2; off[i * 4 + 3] = rnd() * 6.28; }
+    for (let i = 0; i < N; i++) { const inner = i < N * 0.62; const a = rnd() * 6.283; const d = inner ? Math.sqrt(rnd()) * (R - 4) : R + 3 + rnd() * 40; off[i * 4] = Math.cos(a) * d; off[i * 4 + 1] = Math.sin(a) * d; off[i * 4 + 2] = inner ? 0.5 + rnd() * 0.75 : 1.6 + rnd() * 2.6; off[i * 4 + 3] = rnd() * 6.28; }
     geo.setAttribute("off", new THREE.InstancedBufferAttribute(off, 4)); geo.instanceCount = N;
     const mat = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8 });
     const U = { uT: this.uT };
@@ -214,7 +214,7 @@ export class World {
   }
   // resp2 fix4: calmer floor (lower colour boost, a little desaturation, softer emissive) and fainter snow / stars
   dim(c) { const W = this.W, X = this.X, g = this.groundU;
-    if (g) { g.uFlat.value.set(W.calm ? W.calm.ground : W.ground).multiplyScalar(c ? 1.7 : 1.95); g.uDesat.value = Math.min(0.85, (X.desat || 0) + (c ? 0.22 : 0.12)); g.uEm.value = (X.emissiveK || 0) * (c ? 0.65 : 0.8); }
+    if (g) { g.uFlat.value.set(W.calm ? W.calm.ground : W.ground).multiplyScalar(c ? 1.7 : 1.95); g.uDesat.value = Math.min(0.85, (X.desat || 0) + (c ? 0.1 : 0.05)); g.uEm.value = (X.emissiveK || 0) * (c ? 0.65 : 0.8); }
     if (this.wx) for (const p of this.wx) if (p.userData.own && (p.userData.k === 2 || p.userData.k === 3)) p.material.uniforms.uInt.value = c ? 0.4 : 0.6; }
   _weather() {
     const X = this.X, W = this.W; const kindMap = { firefly: 0, sandstorm: 1, dust: 1, snow: 2, stars: 3, star: 3, ash: 4, ember: 4, rain: 5 };
@@ -274,11 +274,11 @@ export class World {
     // time of day: sun travels; dusk tint + night blue, never too dark to play
     let night = 0, tint = r3._tint || (r3._tint = new THREE.Color());
     if (X.tod) { const ph = (t / X.tod) % 1; const el = Math.sin(ph * Math.PI * 2) * 0.5 + 0.5; // 0 night .. 1 noon
-      night = Math.max(0, 0.55 - el) / 0.55; const dusk = Math.max(0, 1 - Math.abs(el - 0.35) / 0.25);
+      night = 0.55 * Math.max(0, 0.55 - el) / 0.55; /* look1: night stays readable */ const dusk = Math.max(0, 1 - Math.abs(el - 0.35) / 0.25);
       tint.set(1, 1, 1).lerp(new THREE.Color(X.dusk), dusk * 0.45).lerp(new THREE.Color(X.night), night * 0.6);
-      r3.sun.intensity = W.sunI * (r3.lk || 1) * (0.35 + 0.65 * el); r3.sun.color.set(W.sun).lerp(new THREE.Color(X.dusk), dusk * 0.6).lerp(new THREE.Color(0x9fb8ff), night);
-      r3.hemi.intensity = W.hemiI * (r3.lk || 1) * (0.55 + 0.45 * el); const sa = ph * Math.PI * 2; r3.sunDir.set(-Math.cos(sa) * 0.6, 0.35 + el * 0.6, 0.45).normalize();
-    } else { tint.set(1, 1, 1); r3.sun.intensity = W.sunI * (r3.lk || 1); r3.sun.color.set(W.sun); r3.hemi.intensity = W.hemiI * (r3.lk || 1); r3.sunDir.set(-0.45, 0.75, 0.35).normalize(); }
+      r3.sun.intensity = W.sunI * (r3.lk || 1) * 1.25 * (0.5 + 0.5 * el); /* look1: stronger warm key, never too dark */ r3.sun.color.set(W.sun).lerp(WARM, 0.22).lerp(new THREE.Color(X.dusk), dusk * 0.6).lerp(new THREE.Color(0x9fb8ff), night);
+      r3.hemi.intensity = W.hemiI * (r3.lk || 1) * 0.72 * (0.7 + 0.3 * el); /* look1: lower ambient = deeper shadows / more contrast */ const sa = ph * Math.PI * 2; r3.sunDir.set(-Math.cos(sa) * 0.6, 0.35 + el * 0.6, 0.45).normalize();
+    } else { tint.set(1, 1, 1); r3.sun.intensity = W.sunI * (r3.lk || 1) * 1.2; r3.sun.color.set(W.sun); r3.hemi.intensity = W.hemiI * (r3.lk || 1) * 0.75; r3.sunDir.set(-0.45, 0.75, 0.35).normalize(); }
     this.skyU.uTint.value.copy(tint); this.skyU.uNight.value = night; this.skyU.uSunDir.value.copy(r3.sunDir); this.skyU.uRot.value = t * 0.004;
     if (this.nightI) this.nightI.value = 0.15 + night * 1.1;
     // weather comes and goes (clear ↔ rain / sandstorm) on a slow cycle

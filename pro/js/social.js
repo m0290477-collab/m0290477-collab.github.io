@@ -3,15 +3,15 @@
 // invites into the same online room, live notifications over one WebSocket to the "social-v1" object (reconnect with
 // back-off; a 30 s HTTP poll only while the socket is down), presence (online / in lobby / in a match), in-match player card.
 // No sound, no voice. Everything degrades to a friendly "offline" message when the server cannot be reached.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=3dperf";
-import { SERVER } from "./net.js?v=3dperf";
-import { devKey } from "./league.js?v=3dperf";
-import { avatarHtml } from "./profile.js?v=3dperf";
-import { idKind, idPrice, MSG_MAX } from "./sim.js?v=3dperf";
-import { EMOTES } from "./game.js?v=3dperf";
-import { pidHtml, pidBig } from "./pid.js?v=3dperf";
-import { WL, online as walletOnline, onPush as walletPush, admSet } from "./wallet.js?v=3dperf"; // coin1
-import { setCfg } from "./admin2.js?v=3dperf"; // admin2
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=3dlook";
+import { SERVER } from "./net.js?v=3dlook";
+import { devKey } from "./league.js?v=3dlook";
+import { avatarHtml } from "./profile.js?v=3dlook";
+import { idKind, idPrice, MSG_MAX } from "./sim.js?v=3dlook";
+import { EMOTES } from "./game.js?v=3dlook";
+import { pidHtml, pidBig } from "./pid.js?v=3dlook";
+import { WL, online as walletOnline, onPush as walletPush, admSet } from "./wallet.js?v=3dlook"; // coin1
+import { setCfg } from "./admin2.js?v=3dlook"; // admin2
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

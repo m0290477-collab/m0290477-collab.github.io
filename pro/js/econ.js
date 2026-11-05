@@ -1,9 +1,9 @@
 // coin1: the coin economy's single source of truth, shared by the game (display, optimistic amounts) and the worker (the
 // wallet decides). Pure data + rules: no DOM, no storage. The server never takes an amount from the client: it recomputes
 // every reward from these tables and every price from the catalogue (and this week's offers) before it moves a coin.
-import { SKINS, FLAGS, FLAG_PRICE, GTRAILS, fuParse, seasonMonth } from "./skins.js?v=3dperf";
-import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=3dperf";
-import { CONTESTS } from "./sim.js?v=3dperf";
+import { SKINS, FLAGS, FLAG_PRICE, GTRAILS, fuParse, seasonMonth } from "./skins.js?v=3dlook";
+import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=3dlook";
+import { CONTESTS } from "./sim.js?v=3dlook";
 
 export const DAY = 86400000;
 // ---------- daily login calendar + lucky wheel (were in profile.js) ----------

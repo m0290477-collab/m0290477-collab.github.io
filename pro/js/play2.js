@@ -1,7 +1,7 @@
 // play2: weekend rule banner (lobby), home-screen icon variants (Profile), one-thumb + bounty strings. No sound, nothing flashes.
-import { t, addStrings } from "./i18n.js?v=3dperf";
-import { mutNow, weekendMut } from "./sim.js?v=3dperf";
-import { CF } from "./admin2.js?v=3dperf";
+import { t, addStrings } from "./i18n.js?v=3dlook";
+import { mutNow, weekendMut } from "./sim.js?v=3dlook";
+import { CF } from "./admin2.js?v=3dlook";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

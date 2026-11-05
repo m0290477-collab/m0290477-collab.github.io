@@ -1,6 +1,6 @@
 // Studio showcase: the player's snake coiled on a lit pedestal (lobby, locker, rarity reveals).
-import * as THREE from "../vendor/three.module.min.js?v=3dperf";
-import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=3dperf";
+import * as THREE from "../vendor/three.module.min.js?v=3dlook";
+import { RoomEnvironment } from "../vendor/RoomEnvironment.js?v=3dlook";
 
 const AURA_VS = /* glsl */ `
 uniform float uT, uK, uScale; uniform vec3 uC1, uC2; attribute vec4 seed; varying vec3 vC; varying float vA;

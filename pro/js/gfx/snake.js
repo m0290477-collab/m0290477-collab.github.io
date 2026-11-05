@@ -4,7 +4,7 @@
 // cross-section with a sculpted head, neck, tail taper, lateral undulation, head bob, eat squash and a
 // growth pulse running down the body. Fragment stage = PBR (clearcoat/iridescence/sheen) + procedural
 // scales + 12 legendary shader effects. All snakes = 1 instanced draw (+1 for ghost/transparent skins).
-import * as THREE from "../vendor/three.module.min.js?v=3dperf";
+import * as THREE from "../vendor/three.module.min.js?v=3dlook";
 
 export const SW = 176; // spine samples per snake (2 texels each)
 export const MAXS = 56; // snake rows (last row reserved for the showcase)
@@ -35,15 +35,16 @@ void snakeVertex(out vec3 pos, out vec3 nrm){
   float u=s;
   // profile: sculpted head + neck + long tail taper
   // MUST match sim.js: head disc = r*HEAD_K (1.12), body half-width = r*taperAt(u) -> collision == what you see
-  float hw=1.0+0.12*exp(-pow(dist/(0.9*r),2.0))-0.06*exp(-pow((dist-2.4*r)/(0.8*r),2.0));
+  float hd=dist/r; // look1: wide, flattened viper head + pinched neck (visual only; hit disc stays r*HEAD_K)
+  float hw=1.0+0.28*exp(-pow((hd-0.7)/0.85,2.0))-0.12*exp(-pow((hd-2.35)/0.7,2.0)); float hf=mix(0.62,1.0,smoothstep(0.9,2.6,hd));
   float taper=1.0-0.74*smoothstep(0.58,1.0,u);
   // growth pulse travelling head -> tail
   float pt=(uT-iB.x)*(16.0+len*0.5); float pulse=0.24*exp(-pow((dist-pt)/(1.7*r),2.0))*step(0.0,pt)*(1.0-smoothstep(len*0.85,len*1.05,pt));
   float sq=iB.y*exp(-dist/(2.6*r));
-  float w=r*hw*taper*(1.0+pulse)*(1.0+0.3*sq)*alpha; float h=r*hw*taper*0.8*(1.0+pulse)*(1.0-0.24*sq)*alpha;
+  float w=r*hw*taper*(1.0+pulse)*(1.0+0.3*sq)*alpha; float h=r*hw*taper*0.8*hf*(1.0+pulse)*(1.0-0.24*sq)*alpha;
   // lateral undulation (visual only, 0.04 r so collisions read true) + head bob
   float boost=iB.z; float wave=mix(5.5,10.0,boost);
-  float wv=sin(dist/(max(r,0.5)*1.25)-uT*wave)*r*0.04*smoothstep(0.0,3.2*r,dist);
+  float wv=sin(dist/(max(r,0.5)*1.25)-uT*wave)*r*0.065*smoothstep(0.0,3.2*r,dist); // look1: a touch more slither
   C+=side*wv;
   C.y+=sin(uT*3.1+iC.w*6.0)*0.07*r*exp(-dist/(2.2*r));
   float th=tb.y, cs=cos(th), sn=sin(th);
@@ -54,7 +55,7 @@ void snakeVertex(out vec3 pos, out vec3 nrm){
   float k=tb.z;
   if(k<0.0){ // head cap: rounded, slightly flattened snout
     float kk=-k; float ang=kk*1.5707963; vec3 fw=-T;
-    base+=fw*(r*hw*sin(ang)*alpha); off*=cos(ang); off.y*=mix(1.0,0.78,kk); en=normalize(mix(en,fw,sin(ang)));
+    base+=fw*(r*hw*1.22*sin(ang)*alpha); off*=cos(ang); off.y*=mix(1.0,0.7,kk); base.y-=r*0.12*sin(ang)*alpha; /* look1: longer, flatter snout */ en=normalize(mix(en,fw,sin(ang)));
   } else if(k>0.0){ // pointed tail tip
     float ang=k*1.5707963; base+=T*(r*taper*1.0*sin(ang)*alpha); off*=cos(ang); en=normalize(mix(en,T,sin(ang)));
   }
@@ -77,14 +78,18 @@ vec3 hue(float h){ return clamp(abs(mod(h*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0,0.
 const FRAG_COLOR = /* glsl */ `
   int fx=int(vFx.x+0.5); float boost=vFx.y;
   vec2 q=vec2(vSk.x, vSk.y*vR); // body-space (along, around) in world units
-  vec3 base=vCol; float sRough=0.26, sMetal=0.04, sIrid=0.12, sCC=1.0, sAlpha=1.0, bumpK=0.75;
+  vec3 base=vCol; float sRough=0.38, sMetal=0.04, sIrid=0.06, sCC=0.7, sAlpha=1.0, bumpK=0.6;
   // procedural scales (offset rows of domed plates), dorsal darkening, lighter belly
-  vec2 sc=vec2(vSk.x/(vR*0.5), vSk.y*1.4323);
+  float headM=vSk.z<0.0?1.0:1.0-smoothstep(1.6*vR,2.6*vR,vSk.x); // look1: head region (plates, jaw)
+  vec2 sc=vec2(vSk.x/(vR*mix(0.42,0.85,headM)), vSk.y*mix(2.2,1.3,headM));
   sc.y+=mod(floor(sc.x),2.0)*0.5; vec2 cl=fract(sc)-0.5; float sd=length(cl*vec2(1.0,1.25));
-  float sh=smoothstep(0.62,0.12,sd);
+  float sh=smoothstep(0.62,0.12,sd); float aaS=1.0-smoothstep(0.12,0.45,length(fwidth(sc)));
   float up=sin(vSk.y);
-  base*=mix(1.0,0.84,smoothstep(0.55,1.0,up)); base=mix(base, base*1.25+0.06, smoothstep(-0.2,-0.9,up));
-  base*=0.84+0.2*sh;
+  base*=mix(1.0,0.8,smoothstep(0.45,1.0,up)); // darker dorsal ridge
+  base*=mix(1.0,0.7+0.36*sh,aaS); // look1: dark seams between scales (faded when sub-pixel)
+  float belly=smoothstep(-0.05,-0.5,up)*(1.0-headM*0.4);
+  float jaw=headM*smoothstep(0.09,0.0,abs(up+0.08))*(1.0-smoothstep(0.85,1.0,abs(cos(vSk.y))));
+  base=mix(base,vec3(0.02,0.02,0.015),jaw*0.65);
 #ifdef SNAKE_FX
   if(fx==1){ // magma: basalt plates + flowing molten cracks
     vec2 p=q*0.75+vec2(-uT*0.9,0.0); float e=vor(p); float n=fbm(q*0.5);
@@ -133,6 +138,7 @@ const FRAG_COLOR = /* glsl */ `
   } else if(fx==31){ float cr=fbm(q*0.9); float seam=smoothstep(0.05,0.0,abs(cr-0.5)); base=mix(vec3(0.035,0.025,0.04),vec3(0.6,0.15,0.02),seam); sRough=0.6; sCC=0.3; bumpK=1.6; // titan: obsidian with lava seams
   }
 #endif
+  if(fx==0 || fx>=14){ float lum=dot(vCol,vec3(0.3,0.59,0.11)); base=mix(base, vec3(0.78,0.70,0.48)*(0.75+0.35*lum)*(0.85+0.15*sh), belly*0.82); } // look1: cream belly scales
   diffuseColor.rgb=base;
 `;
 const FRAG_BUMP = /* glsl */ `
@@ -281,7 +287,7 @@ export class SnakeSystem {
     this.G.g.m.renderOrder = 2; this.G.sg.m.renderOrder = 2;
     // aaa2: soft contact shadow = the same tube flattened onto the ground along the sun, alpha falling off to the edges.
     // Replaces snake shadow-map casting in the world (one cheap transparent draw per group instead of a depth pass).
-    this.shU = { uSpine: this.uniforms.uSpine, uT: this.uniforms.uT, uSun: { value: new THREE.Vector3(-0.45, 0.75, 0.35).normalize() }, uK: { value: 0.65 } };
+    this.shU = { uSpine: this.uniforms.uSpine, uT: this.uniforms.uT, uSun: { value: new THREE.Vector3(-0.45, 0.75, 0.35).normalize() }, uK: { value: 0.8 } };
     this.shMat = new THREE.ShaderMaterial({ uniforms: this.shU, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, fog: false,
       vertexShader: GLSL_COMMON + `uniform vec3 uSun; varying float vS; varying float vE;
         void main(){ vec3 pos, nrm; snakeVertex(pos, nrm); float sn=sin(tb.y), cs=cos(tb.y); vS=sn; vE=1.0-cs*cs;

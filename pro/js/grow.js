@@ -5,10 +5,10 @@
 //    play) into a small canvas that MediaRecorder encodes (mp4 on Safari, webm elsewhere); shared through the share sheet.
 //    Hidden where MediaRecorder / canvas capture is missing.
 //  - Room QR: the private room's join link (?room=CODE&go=1) as a QR code drawn locally (js/qr.js); scanning joins directly.
-import { t, fmtNum, addStrings } from "./i18n.js?v=3dperf";
-import { call, errText } from "./social.js?v=3dperf";
-import { qrDraw } from "./qr.js?v=3dperf";
-import { WORLDS } from "./worlds.js?v=3dperf";
+import { t, fmtNum, addStrings } from "./i18n.js?v=3dlook";
+import { call, errText } from "./social.js?v=3dlook";
+import { qrDraw } from "./qr.js?v=3dlook";
+import { WORLDS } from "./worlds.js?v=3dlook";
 
 const $ = (id) => document.getElementById(id);
 export const CH_MODES = new Set(["classic", "time", "survival", "br", "koth", "boss", "team", "goldrush", "infection", "duel", "territory"]); // same list as the server (land1: + territory vs bots)

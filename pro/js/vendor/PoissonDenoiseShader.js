@@ -2,7 +2,7 @@ import {
 	Matrix4,
 	Vector2,
 	Vector3,
-} from './three.module.min.js?v=3dperf';
+} from './three.module.min.js?v=3dlook';
 
 /**
  * References:

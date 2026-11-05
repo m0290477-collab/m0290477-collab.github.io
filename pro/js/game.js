@@ -1,24 +1,24 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=3dperf"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=3dperf";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=3dperf";
-import { GTrail } from "./gfx/gtrail.js?v=3dperf"; // trail1: cosmetic ground trail decals (never in the sim)
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=3dperf";
-import { NetBackend } from "./net.js?v=3dperf";
-import { pidTier, PID_GLYPH } from "./pid.js?v=3dperf"; // srv2
-import { onFind, findHide, accountMatchEnd } from "./account.js?v=3dperf"; // srv2
-import { t, fmtNum } from "./i18n.js?v=3dperf"; import { onlineBlock } from "./admin2.js?v=3dperf"; // admin2
-import { haptic } from "./audio.js?v=3dperf";
-import { rankOf, rpDelta } from "./profile.js?v=3dperf";
-import { Replay } from "./replay.js?v=3dperf"; import { onMev, mevClear, mevFrame, applyTp, pingTick, setSeasonOv } from "./top1.js?v=3dperf"; // top1
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=3dperf"; // comp1
-import { onServerTrophy } from "./compui.js?v=3dperf";
-import { Governor } from "./gov.js?v=3dperf"; // perf2: adaptive render governor
-import { claim, claimId } from "./wallet.js?v=3dperf"; // coin1: offline match coins are claimed from the server wallet
-import { terView, terLb, terTick, terLeft, onTerr, terOnlineRes, terOnDeath } from "./land1.js?v=3dperf"; // land1: territory (registers its offline mode before MODES below)
-import { emit } from "./events.js?v=3dperf"; import "./play2.js"; // play2 strings // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=3dlook"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=3dlook";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=3dlook";
+import { GTrail } from "./gfx/gtrail.js?v=3dlook"; // trail1: cosmetic ground trail decals (never in the sim)
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=3dlook";
+import { NetBackend } from "./net.js?v=3dlook";
+import { pidTier, PID_GLYPH } from "./pid.js?v=3dlook"; // srv2
+import { onFind, findHide, accountMatchEnd } from "./account.js?v=3dlook"; // srv2
+import { t, fmtNum } from "./i18n.js?v=3dlook"; import { onlineBlock } from "./admin2.js?v=3dlook"; // admin2
+import { haptic } from "./audio.js?v=3dlook";
+import { rankOf, rpDelta } from "./profile.js?v=3dlook";
+import { Replay } from "./replay.js?v=3dlook"; import { onMev, mevClear, mevFrame, applyTp, pingTick, setSeasonOv } from "./top1.js?v=3dlook"; // top1
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=3dlook"; // comp1
+import { onServerTrophy } from "./compui.js?v=3dlook";
+import { Governor } from "./gov.js?v=3dlook"; // perf2: adaptive render governor
+import { claim, claimId } from "./wallet.js?v=3dlook"; // coin1: offline match coins are claimed from the server wallet
+import { terView, terLb, terTick, terLeft, onTerr, terOnlineRes, terOnDeath } from "./land1.js?v=3dlook"; // land1: territory (registers its offline mode before MODES below)
+import { emit } from "./events.js?v=3dlook"; import "./play2.js"; // play2 strings // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -274,7 +274,7 @@ export class Game {
     const s = mr.s; const f = skinFn(s.skin || {}), lin = this.colOf(s);
     { const E = EV.kill, k0 = by && by !== s.id ? this.findSnake(by) : null; E.s = s; E.x = s.x; E.y = s.y; E.id = s.id; E.by = by || 0; E.hasK = !!(k0 && k0.alive); E.kx = k0 ? k0.x : 0; E.ky = k0 ? k0.y : 0; emit("fx.kill", E); }
     const me = this.backend && this.backend.me; const dist = me ? Math.hypot(s.x - me.x, s.y - me.y) : 999;
-    if (dist < 45) { this.r.shatter(s, f, this.app.store.settings.juice ? 60 : 25); this.r.burst(s.x, s.y, lin, 26, 9, 0.9, 0.65, 6); this.r.burst(s.x, s.y, [1, 1, 1], 10, 5, 0.4, 0.5, 3); if (this.app.store.settings.juice) { this.r.ring(s.x, s.y, lin, 7); this.r.light && this.r.light(s.x, s.y, [lin[0] * 2 + 0.6, lin[1] * 2 + 0.6, lin[2] * 2 + 0.6], 0.9); } }
+    if (dist < 45) { if (this.r.deathFx) this.r.deathFx(s, f, false, dist); else this.r.shatter(s, f, this.app.store.settings.juice ? 60 : 25); this.r.burst(s.x, s.y, lin, 26, 9, 0.9, 0.65, 6); this.r.burst(s.x, s.y, [1, 1, 1], 10, 5, 0.4, 0.5, 3); if (this.app.store.settings.juice) { this.r.ring(s.x, s.y, lin, 7); this.r.light && this.r.light(s.x, s.y, [lin[0] * 2 + 0.6, lin[1] * 2 + 0.6, lin[2] * 2 + 0.6], 0.9); } }
     if (dist < 80 && (!by || by !== (me && me.id))) this.app.audio.at("die", s.x, s.y);
     const k = by ? this.findSnake(by) : null, self = !!by && (by === s.id || k === s);
     if (self) { if (dist < 200) this.pushFeed("☠", s.name, false, "self"); } // ran into its own body: one name, not "X ⚔ X"
@@ -304,7 +304,7 @@ export class Game {
     this.stats.deaths++; const life = (performance.now() - this.stats.lifeT0) / 1000; this.stats.life = Math.max(this.stats.life, life);
     A.audio.play("die"); A.audio.boost(false); haptic.pattern([40, 30, 80]); this.r.shake(1.2); this.r.kick && this.r.kick(1.2, [0.6, 0, 0], 0.35);
     const f = skinFn(this.mySkin()), lin = this.colOf({ skin: this.mySkin() });
-    const calm = A.store.settings.calmFx; if (!calm) { this.r.shatter(me, f, 40); this.r.burst(me.x, me.y, lin, 16, 9, 0.8, 0.7, 6); this.hud.flash(); } this.r.ring(me.x, me.y, [1, 1, 1], 6); // calm1: short, cheap death beat, no slow-motion
+    const calm = A.store.settings.calmFx; if (this.r.deathFx) this.r.deathFx(me, f, true, 0); if (calm && this.mode !== "online" && !A.store.settings.reduceMotion) this.slowUntil = performance.now() + 280; /* look1: brief slow-mo hint */ if (!calm) { if (!this.r.deathFx) this.r.shatter(me, f, 40); this.r.burst(me.x, me.y, lin, 16, 9, 0.8, 0.7, 6); this.hud.flash(); } this.r.ring(me.x, me.y, [1, 1, 1], 6); // calm1: short, cheap death beat, no slow-motion
     me.alive = false; me.deadAt = performance.now(); this.deathT = performance.now(); if (this.qPend) setTimeout(() => this.flushQ(), 700); /* resp2 fix3 */ this.killer = by && by !== me.id ? this.findSnake(by) : null; if (this.killer === me) this.killer = null; const selfHit = (this.selfHit = false); /* noself1: own body never kills */ this.deathCause = cause;
     this.spectate = this.killer; A.input.enabled = false; A.input.reset(); this.streak = 0;
     const msg = cause === 7 ? t("ter_over") : by && this.killer ? t("killedBy", { n: this.killer.name }) : cause === 6 ? t("meteorDeath") : cause === 3 && this.mode === "br" ? t("stormDeath") : cause === 1 ? t("hitWall") : t("eliminated");
