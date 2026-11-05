@@ -37,7 +37,7 @@
 <h2>6. Where your data is stored</h2>
 <ul>
 <li><b>Game server:</b> a virtual private server (VPS) located in Oregon, USA, at srv.irqus.com.</li>
-<li><b>Supabase:</b> a managed database service we use to store account and game data.</li>
+<li><b>Cloudflare:</b> hosts and serves the game site at billke.com/pro/ and runs its online game service (Cloudflare Workers), which processes gameplay data and technical logs. This data is processed in the United States and on Cloudflare's global network.</li>
 <li><b>Resend:</b> delivers our transactional emails (see section 3).</li>
 <li><b>GitHub Pages:</b> hosts the website itself (billke.com).</li>
 </ul>
@@ -49,7 +49,7 @@
 <li><b>Chat messages:</b> only the last 100 messages of each conversation; older ones are deleted automatically.</li>
 <li><b>Sign-in codes:</b> 10 minutes. <b>Game invites:</b> a few minutes.</li>
 <li><b>Server logs:</b> about 30 days, then deleted.</li>
-<li><b>Backups:</b> the game server is backed up once a day and each backup is kept for 7 days. After you delete your data, copies in backups are removed within 7 days as old backups are deleted.</li>
+<li><b>Backups:</b> our data is backed up once a day. Backups of the game server are kept for 7 days, and backups of the Cloudflare-hosted game service are kept for 14 days. After you delete your data, copies in backups are removed within 14 days as old backups are deleted.</li>
 <li><b>Ban records:</b> a record that holds only a player ID and the reason may be kept after deletion to prevent abuse.</li>
 </ul>
 
@@ -86,8 +86,8 @@
 <p><b>الإيميلات:</b> نرسل بس إيميلات ضرورية مثل رموز وروابط الدخول، عن طريق خدمة Resend اللي تستلم إيميلك ومحتوى الرسالة حتى توصلها. ما نرسل إيميلات تسويقية.</p>
 <p><b>بيانات اللعب الأونلاين:</b> اسم اللاعب ومعرّفه وملفه، جلسات اللعب والمباريات ونتائجها، النقاط والكؤوس وقوائم المتصدرين (اسمك ومعرّفك ونقاطك تبين للاعبين الآخرين)، العملات والعناصر والمكافآت، ووين ما متوفرة: الأصدقاء والدعوات والمحادثات الخاصة (آخر 100 رسالة بكل محادثة بس)، والبلاغات وسجلات الإشراف.</p>
 <p><b>البيانات التقنية وسجلات السيرفر:</b> عنوان IP، نوع الجهاز والمتصفح، أوقات الطلبات، وتقارير الأخطاء. نستخدمها بس لتشغيل اللعبة وحمايتها ومنع الغش وإصلاح المشاكل.</p>
-<p><b>وين تنحفظ البيانات:</b> سيرفر اللعبة (VPS) بولاية أوريغون، الولايات المتحدة، على srv.irqus.com، وقاعدة بيانات Supabase، وخدمة Resend للإيميلات، وGitHub Pages لاستضافة الموقع. إذا تلعب من خارج أمريكا، بياناتك تنتقل وتنعالج بالولايات المتحدة.</p>
-<p><b>مدة الاحتفاظ:</b> بيانات الحساب واللعب لحد ما تحذف حسابك أو تطلب حذفه. المحادثات آخر 100 رسالة. رموز الدخول 10 دقائق. سجلات السيرفر حوالي 30 يوم. نسخة احتياطية يومية تنحفظ 7 أيام، فبعد الحذف تختفي بياناتك من النسخ الاحتياطية خلال 7 أيام. سجل الحظر (معرّف اللاعب والسبب بس) ممكن يبقى لمنع الإساءة.</p>
+<p><b>وين تنحفظ البيانات:</b> سيرفر اللعبة (VPS) بولاية أوريغون، الولايات المتحدة، على srv.irqus.com، وCloudflare اللي تستضيف موقع اللعبة على billke.com/pro/ وتشغّل خدمة اللعب الأونلاين (Cloudflare Workers) وتعالج بيانات اللعب والسجلات التقنية، بالولايات المتحدة وعلى شبكة Cloudflare، وخدمة Resend للإيميلات، وGitHub Pages لاستضافة الموقع. إذا تلعب من خارج أمريكا، بياناتك تنتقل وتنعالج بالولايات المتحدة.</p>
+<p><b>مدة الاحتفاظ:</b> بيانات الحساب واللعب لحد ما تحذف حسابك أو تطلب حذفه. المحادثات آخر 100 رسالة. رموز الدخول 10 دقائق. سجلات السيرفر حوالي 30 يوم. نسخة احتياطية يومية: نسخ سيرفر اللعبة تنحفظ 7 أيام، ونسخ خدمة اللعبة على Cloudflare تنحفظ 14 يوم، فبعد الحذف تختفي بياناتك من النسخ الاحتياطية خلال 14 يوم. سجل الحظر (معرّف اللاعب والسبب بس) ممكن يبقى لمنع الإساءة.</p>
 <p><b>حذف الحساب والبيانات:</b> راسلنا على <a href="mailto:m0290477@gmail.com">m0290477@gmail.com</a> من إيميل حسابك أو اذكر معرّف اللاعب، ونحذف حسابك وكل بياناتك خلال 30 يوم ونأكدلك بالإيميل. ووين ما متوفر، تقدر تحذف بنفسك من الإعدادات.</p>
 <p><b>المشتريات:</b> اللعبة حالياً ما تبيع أي شي بفلوس حقيقية. إذا صارت مشتريات بالمستقبل، الدفع يكون عن طريق متجر التطبيقات أو مزوّد الدفع، وما نستلم تفاصيل بطاقتك، ونحدّث هذي السياسة قبلها.</p>
 <p><b>شنو ما نسوي:</b> ما نبيع بياناتك، ما بيها إعلانات، ولا كوكيز تتبّع أو إعلانات، ولا خدمات تحليلات. نشارك البيانات بس ويا مزوّدي الخدمة المذكورين لتشغيل اللعبة، أو إذا القانون يطلب.</p>
