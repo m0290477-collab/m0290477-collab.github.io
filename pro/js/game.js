@@ -1,24 +1,24 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=fastload"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=fastload";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=fastload";
-import { GTrail } from "./gfx/gtrail.js?v=fastload"; // trail1: cosmetic ground trail decals (never in the sim)
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=fastload";
-import { NetBackend } from "./net.js?v=fastload";
-import { pidTier, PID_GLYPH } from "./pid.js?v=fastload"; // srv2
-import { onFind, findHide, accountMatchEnd } from "./account.js?v=fastload"; // srv2
-import { t, fmtNum } from "./i18n.js?v=fastload"; import { onlineBlock } from "./admin2.js?v=fastload"; // admin2
-import { haptic } from "./audio.js?v=fastload";
-import { rankOf, rpDelta } from "./profile.js?v=fastload";
-import { Replay } from "./replay.js?v=fastload"; import { onMev, mevClear, mevFrame, applyTp, pingTick, setSeasonOv } from "./top1.js?v=fastload"; // top1
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=fastload"; // comp1
-import { onServerTrophy } from "./compui.js?v=fastload";
-import { Governor } from "./gov.js?v=fastload"; // perf2: adaptive render governor
-import { claim, claimId } from "./wallet.js?v=fastload"; // coin1: offline match coins are claimed from the server wallet
-import { terView, terLb, terTick, terLeft, onTerr, terOnlineRes, terOnDeath } from "./land1.js?v=fastload"; // land1: territory (registers its offline mode before MODES below)
-import { emit } from "./events.js?v=fastload"; import "./play2.js"; // play2 strings // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=layoutfix"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=layoutfix";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=layoutfix";
+import { GTrail } from "./gfx/gtrail.js?v=layoutfix"; // trail1: cosmetic ground trail decals (never in the sim)
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=layoutfix";
+import { NetBackend } from "./net.js?v=layoutfix";
+import { pidTier, PID_GLYPH } from "./pid.js?v=layoutfix"; // srv2
+import { onFind, findHide, accountMatchEnd } from "./account.js?v=layoutfix"; // srv2
+import { t, fmtNum } from "./i18n.js?v=layoutfix"; import { onlineBlock } from "./admin2.js?v=layoutfix"; // admin2
+import { haptic } from "./audio.js?v=layoutfix";
+import { rankOf, rpDelta } from "./profile.js?v=layoutfix";
+import { Replay } from "./replay.js?v=layoutfix"; import { onMev, mevClear, mevFrame, applyTp, pingTick, setSeasonOv } from "./top1.js?v=layoutfix"; // top1
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=layoutfix"; // comp1
+import { onServerTrophy } from "./compui.js?v=layoutfix";
+import { Governor } from "./gov.js?v=layoutfix"; // perf2: adaptive render governor
+import { claim, claimId } from "./wallet.js?v=layoutfix"; // coin1: offline match coins are claimed from the server wallet
+import { terView, terLb, terTick, terLeft, onTerr, terOnlineRes, terOnDeath } from "./land1.js?v=layoutfix"; // land1: territory (registers its offline mode before MODES below)
+import { emit } from "./events.js?v=layoutfix"; import "./play2.js"; // play2 strings // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);

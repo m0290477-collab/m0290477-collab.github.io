@@ -9,8 +9,8 @@
 //    for an error thrown inside a frame).
 //  - WebGL context loss: logged (main.js already rebuilds 3D on restore and drops to 2D if it stays lost for 6 s).
 //  - stuck loading screen: boot not finished after 45 s -> reload once in 2D safe mode (sessionStorage ssp-safe).
-import { logErr } from "./store.js?v=fastload";
-import { t } from "./i18n.js?v=fastload";
+import { logErr } from "./store.js?v=layoutfix";
+import { t } from "./i18n.js?v=layoutfix";
 export function startWatchdog(app) {
   const W = (app.watchdog = { stalls: [], errs: [], restarts: 0, lastBeat: performance.now(), recovered: [] });
   const toast = (k) => { try { app.ui && app.ui.toast(t(k), "", 3200); } catch (_) {} };

@@ -8,9 +8,9 @@ import {
 	ShaderMaterial,
 	UniformsUtils,
 	WebGLRenderTarget
-} from './three.module.min.js?v=fastload';
-import { Pass, FullScreenQuad } from './Pass.js?v=fastload';
-import { BokehShader } from './BokehShader.js?v=fastload';
+} from './three.module.min.js?v=layoutfix';
+import { Pass, FullScreenQuad } from './Pass.js?v=layoutfix';
+import { BokehShader } from './BokehShader.js?v=layoutfix';
 
 /**
  * Depth-of-field post-process with bokeh shader
