@@ -1,10 +1,10 @@
 // super-snake-online — Cloudflare Worker + Durable Object (one DO per room). No database, no payments, nothing stored.
 // The room runs the SAME sim.js as the client at 30 Hz and is authoritative for movement, food, mass, collisions and kills.
 // Clients predict their own snake (input seq/ack reconciliation) and interpolate everyone else.
-import { periodId, Sim, C, radiusOf, lengthOf, angDiff, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP, EVENTS, MUTS, mutNow } from "./sim.js";
+import { periodId, Sim, C, radiusOf, lengthOf, angDiff, moveSnake, sanitizeSkin, cleanName, BOT_NAMES, pickBotName, TROPHY, trophyDelta, seasonCarry, seasonId, weekId, prevPeriodId, botTrophies, filterText, idKind, idPrice, ID_PRICES, SPECIAL_REP, SPECIAL_SEQ, MSG_MAX, CHAT_KEEP, EVENTS, MUTS, mutNow, Terr, TER } from "./sim.js";
 import { DAY, LOGIN, LOGIN_NOCOS, SPIN, SPIN_NOCOS, spinPick, RANDOM_COS, SEASON, seasonReward, UNLOCKS, ACH_COINS, levelCoins, bonusCoins, dailyMissions, weeklyCoins, WC_REWARD, DAILY_MODE_BONUS,
   leagueSeasonReward, CONQ_REWARD, rankReward, mileReward, CONTESTS, matchCoins, matchXp, plausible, OFF, ONLINE, catItem, validKey, offerCandidates, gtPrice, SHOP_TRAILS, BOUNTY, btyVal } from "./econ.js"; // coin1: shared economy tables
-import { SKINS, EYES, TRAILS, FLAG_PRICE, FLAG_PRICE0, setFlagPrice } from "./skins.js";
+import { SKINS, EYES, TRAILS, FLAG_PRICE, FLAG_PRICE0, setFlagPrice, FUSION_FEE, FUSION_FEE0, setFusionFee, fusable, fuKey, fusionDef } from "./skins.js";
 // ---------- fix1: equipped cosmetics checked against the server wallet (own list + server level). Requirements mirror
 // js/profile.js (AVATARS / FRAMES; test/fix1s.test.mjs keeps them equal): number = level, "g" = granted only (must be owned),
 // 0 = free, "x" = achievement / stat / season (the server does not hold those: accepted).
@@ -16,6 +16,7 @@ export function verifySkin(sk, V) {
   if (V && V.o) return [sk, []]; const own = V ? V.own : new Set(), lv = V ? Math.max(1, V.lv | 0) : 1, d = sanitizeSkin(null), o = { ...sk }, cut = [];
   if (o.k === "skin") { const S = SKINS[o.i]; let ok = !!S; if (S) { if (S.src) { const [k, n] = S.src.split(":"); ok = own.has(S.id) || (k === "level" && lv >= +n); } else ok = lv >= (S.lv | 0); } if (!ok) { o.k = d.k; o.i = d.i; cut.push("skin"); } }
   else if (o.k === "flag" && !own.has("fl:" + o.i)) { o.k = d.k; o.i = d.i; cut.push("flag"); }
+  else if (o.k === "fu") { const F = fusionDef(o.i); if (!F || !own.has(F.key)) { o.k = d.k; o.i = d.i; cut.push("fusion"); } } // land1: a fusion skin must be owned
   if (o.e && !(EYES[o.e] && lv >= EYES[o.e].lv)) { o.e = 0; cut.push("eye"); }
   if (o.t && !(TRAILS[o.t] && lv >= TRAILS[o.t].lv)) { o.t = 0; cut.push("trail"); }
   if (o.gt) { const pr = gtPrice(o.gt); if (pr < 0 || (pr && !own.has("gt:" + o.gt))) { delete o.gt; cut.push("gt"); } }
@@ -29,7 +30,7 @@ export function verifySkin(sk, V) {
 export const XP = { MATCH: 4 * OFF.PER_MATCH, LIFE: 4 * ONLINE.PER_LIFE, DAY: 60000, SLACK: 3000, MIG_LV: 20 };
 export const cumXp = (L) => { let x = 0; for (let n = 1; n < Math.min(L, LV_MAX); n++) x += xpNeed(n); return x; };
 
-const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 13; // v13 (warm2): public rooms start as a world ~2-3 min old (seeded grown bots, curved bodies, corpse trails, steady-state food) + 45-tick settle instead of a 240-tick fast-forward; bounty restarts at base after any warm-up; v12 (play2): crown bounty on #1 in public rooms, weekend mutators (owner override a_mut), offline claims refused for switched-off modes, flag price editable; v11 (admin2): owner admin (coins/items/level/ids, announcement, gift-all, promo codes, maintenance, modes/events, prices, rooms + kick, chat delete, trophies, stats, backup now); warm rooms fast-forward; v10 (grow1): ids first seen after coin1 import 0 coins / level 1; challenge links (/c);  v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
+const TICK = 1 / 30, MAX_HUMANS = 12, TARGET_SNAKES = 30, VERSION = 14; // v14 (land1): territory rooms (tp-<bracket>-<n> public via the matchmaker, t-<code> private; server-owned cells, delta sync, 3-min rounds, placement trophies), skin fusion (w_fuse, fee px.fusion), territory switch; v13 (warm2): public rooms start as a world ~2-3 min old (seeded grown bots, curved bodies, corpse trails, steady-state food) + 45-tick settle instead of a 240-tick fast-forward; bounty restarts at base after any warm-up; v12 (play2): crown bounty on #1 in public rooms, weekend mutators (owner override a_mut), offline claims refused for switched-off modes, flag price editable; v11 (admin2): owner admin (coins/items/level/ids, announcement, gift-all, promo codes, maintenance, modes/events, prices, rooms + kick, chat delete, trophies, stats, backup now); warm rooms fast-forward; v10 (grow1): ids first seen after coin1 import 0 coins / level 1; challenge links (/c);  v9 (fix1): rooms check equipped cosmetics against the server wallet (unowned -> default, logged); server-side XP (sxp) with per-match bounds + daily cap gates level-up claims and snapshots. v8 (ops1): owner-only /admin/snap (JSON snapshot of the social + board objects), /admin/restore (merge, idempotent), /admin/trim (ledger rows older than 60 days summarised per player). v7 v7 (coin1): server wallet (balance, owned items, purchases, idempotent claims, room-paid online coins). v6 v6 (srv2): accounts (device -> account link, Google / Apple / email sign-in, versioned profile snapshots), owner admin (id 1), bans / mutes, matchmaker "mm-v1" (skill brackets, warm rooms) · v5 (srv1): social object "social-v1" (public ids, special ids, friends, chat, invites, live /sws), snake "u" = public id, skins carry "gt" · v4 (comp1): server-decided trophies ("tro"), snake league "tr", board DO "board-v1" (leaderboards, contests, seasons) · v2: power-ups (pus / pu+ / pu- / sh) · v3: 11 power-ups, arena events (evt / met), emotes (emo), avatars in skins
 const ORIGINS = [/^https:\/\/(www\.)?billke\.com$/, /^https:\/\/m0290477-collab\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 // look1: bots never share a look with any live snake (players included)
 const uniqSkin = (snakes, i) => { const used = new Set(); for (const o of snakes) if (o.alive && o.skin) used.add(o.skin.k + ":" + o.skin.i); for (let k = 0; k < 60; k++) { const c = BOT_SKINS(i + k * 5); if (!used.has(c.k + ":" + c.i)) return c; } return BOT_SKINS(i); };
@@ -51,7 +52,7 @@ export const BRACKETS = ["bs", "gp", "dc", "cq"]; // Bronze–Silver, Gold–Pla
 export const bracketOf = (tr, cq) => (cq ? "cq" : tr >= 2800 ? "dc" : tr >= 1000 ? "gp" : "bs");
 export const MM_CFG = { WAIT: 5000, LOW: 3, HB_MS: 30000, LIVE_MS: 75000, WARM_MS: 8 * 60000, LINGER_MS: 30000, MAX: MAX_HUMANS };
 // admin2: modes the owner can switch off (ids = client MODE_LIST) and the warm-room fast-forward (headless ticks, no humans)
-export const ADM_MODES = ["classic", "daily", "goldrush", "infection", "duel", "br", "koth", "boss", "team", "time", "survival", "zen", "online"];
+export const ADM_MODES = ["classic", "daily", "goldrush", "infection", "duel", "br", "koth", "boss", "team", "time", "survival", "zen", "online", "territory"]; // land1: territory (offline + online rooms)
 // warm2: a new public room is SEEDED as if ~2-3 min old (no CPU spent simulating those minutes), then settles for SIM ticks.
 // MQ = bot mass quantiles 0,5,..,100 % measured from 8 cold 30-bot rooms after 60/120/180 s of play (work/warm2/calib.mjs);
 // kills ~ Poisson(0.3 + m/180) (same calibration); FRESH whole corpses + OLD half-eaten ones; food total = target x FOOD_K,
@@ -92,7 +93,8 @@ const PX0 = new Map(); // admin2: catalogue prices before any owner override
 export function applyPx(px) { px = px || {};
   for (const S of SKINS) { if (!S.src || !/^coins:/.test(S.src)) continue; if (!PX0.has(S.id)) PX0.set(S.id, +S.src.split(":")[1]); const v = px[S.id] | 0; S.src = "coins:" + (v > 0 ? v : PX0.get(S.id)); }
   for (const G of SHOP_TRAILS) { if (!G.price) continue; const k = "gt:" + G.id; if (!PX0.has(k)) PX0.set(k, G.price | 0); const v = px[k] | 0; G.price = v > 0 ? v : PX0.get(k); }
-  if (!PX0.has("flags")) PX0.set("flags", FLAG_PRICE0); setFlagPrice(px.flags | 0); } // play2: one price for every flag
+  if (!PX0.has("flags")) PX0.set("flags", FLAG_PRICE0); setFlagPrice(px.flags | 0); // play2: one price for every flag
+  if (!PX0.has("fusion")) PX0.set("fusion", FUSION_FEE0); setFusionFee(px.fusion | 0); } // land1: skin fusion fee
 export const pxBase = (k) => PX0.get(k);
 const SNAP_MAX = 64000, WARM_TICKS = 6, WARM_MASS = [24, 60, 140, 32, 220, 90, 420, 48, 170, 700, 36, 260, 110, 30, 520, 75, 1100, 40, 190, 330, 28, 130, 900, 55, 240, 26, 380, 66, 150, 1500]; // one profile snapshot (JSON text)
 export const LV_MAX = 100, xpNeed = (n) => Math.round(100 * n ** 1.6); // same curve as js/store.js
@@ -102,7 +104,7 @@ export const allowance = (mins) => ({ coins: Math.round(4000 + 250 * Math.min(mi
 // ---------- coin1: wallet rules ----------
 // migration: the device balance is imported ONCE, capped: the founder up to 10M; an account with a server snapshot up to that
 // snapshot's coins + the srv2 allowance for the time since it was saved; everyone else up to 200,000. Cuts are logged.
-export const CH_MODES = new Set(["classic", "time", "survival", "br", "koth", "boss", "team", "goldrush", "infection", "duel"]), CH_AB = "abcdefghjkmnpqrstuvwxyz23456789", CH_TTL = 30 * DAY; // grow1: challenge links (offline modes)
+export const CH_MODES = new Set(["classic", "time", "survival", "br", "koth", "boss", "team", "goldrush", "infection", "duel", "territory"]), CH_AB = "abcdefghjkmnpqrstuvwxyz23456789", CH_TTL = 30 * DAY; // grow1: challenge links (offline modes)
 export const MIG = { FIRST: 200000, OWNER: 10000000, ITEMS: 800, CKS: 600, CUT: Date.parse("2026-11-04T18:35:00Z") };
 // grow1: only ids the server knew before the coin1 release (acct row or a device seen before CUT) keep the one-time import;
 // a device id first seen after it imports 0 coins, no items, level 1 (fresh ids could otherwise mint 200k each).
@@ -144,19 +146,19 @@ export async function verifyIdToken(tok, { jwks: url, iss, aud, now = Date.now()
 // bracket is quiet (fewer than LOW players looked for a match in 2 min) or the player has already waited WAIT ms; 3) while the
 // own bracket is busy but has no open populated room, hold (the client asks again in 2.5 s); 4) the bracket's warm room (still
 // in memory, bots playing) or its first room with space. A friend invite never comes here (it names the room).
-export function mmPick(R, P, { pid, br, w = 0, x = "", now = Date.now() }) {
-  P.set(pid, { br, t: now }); if (P.size > 5000) for (const [k, v] of P) if (now - v.t > 120000) P.delete(k);
-  const rooms = [...R.values()], live = (r) => now - r.t < MM_CFG.LIVE_MS, cap = (r) => r.h + (r.pend || 0) < MM_CFG.MAX && r.room !== x;
+export function mmPick(R, P, { pid, br, w = 0, x = "", now = Date.now(), md = "" }) { // land1: md "t" = territory rooms (tp-<br>-<n>), "" = classic (pub-)
+  P.set(pid, { br, t: now, md }); if (P.size > 5000) for (const [k, v] of P) if (now - v.t > 120000) P.delete(k);
+  const pre = md === "t" ? "tp-" : "pub-", rooms = [...R.values()].filter((r) => (r.md || "") === md), live = (r) => now - r.t < MM_CFG.LIVE_MS, cap = (r) => r.h + (r.pend || 0) < MM_CFG.MAX && r.room !== x;
   const withP = (b) => rooms.filter((r) => r.br === b && live(r) && r.h > 0 && cap(r)).sort((a, c) => c.h - a.h || a.i - c.i);
   const out = (r, fb, why) => { r.pend = (r.pend || 0) + 1; return { room: r.room, br: r.br, i: r.i, h: r.h, b: r.b, fb: fb || "", why, my: br }; };
   const own = withP(br); if (own.length) return out(own[0], "", "match");
-  const pop = [...P.entries()].filter(([k, v]) => k !== pid && v.br === br && now - v.t < 120000).length, bi = BRACKETS.indexOf(br);
+  const pop = [...P.entries()].filter(([k, v]) => k !== pid && v.br === br && (v.md || "") === md && now - v.t < 120000).length, bi = BRACKETS.indexOf(br);
   const nb = [bi - 1, bi + 1].filter((i) => i >= 0 && i < BRACKETS.length).map((i) => BRACKETS[i]);
   if (w >= MM_CFG.WAIT || pop < MM_CFG.LOW) { const c = nb.flatMap(withP).sort((a, b2) => b2.h - a.h); if (c.length) return out(c[0], c[0].br, w >= MM_CFG.WAIT ? "wait" : "low"); }
   else return { hold: 1, br, wait: 2500, my: br };
   const warm = rooms.filter((r) => r.br === br && now - r.t < MM_CFG.WARM_MS && cap(r)).sort((a, c) => c.t - a.t)[0]; if (warm) return out(warm, "", "warm");
-  for (let i = 1; i <= 60; i++) { const n = "pub-" + br + "-" + i; let r = R.get(n); if (r && !cap(r)) continue; if (!r) { r = { room: n, br, i, h: 0, b: TARGET_SNAKES, t: now, pend: 0, up: now }; R.set(n, r); } return out(r, "", "new"); }
-  return { room: "pub-" + br + "-1", br, i: 1, h: 0, b: 0, fb: "", why: "overflow", my: br };
+  for (let i = 1; i <= 60; i++) { const n = pre + br + "-" + i; let r = R.get(n); if (r && !cap(r)) continue; if (!r) { r = { room: n, br, i, h: 0, b: md === "t" ? TER.SNAKES : TARGET_SNAKES, t: now, pend: 0, up: now, md }; R.set(n, r); } return out(r, "", "new"); }
+  return { room: pre + br + "-1", br, i: 1, h: 0, b: 0, fb: "", why: "overflow", my: br };
 }
 const EMAIL_RE = /^[^\s@<>"'`()[\]\\,;:]{1,64}@(?:[^\s@<>"'`()[\]\\,;:.]+\.)+[^\s@<>"'`()[\]\\,;:.\d]{2,24}$/u, PERM = 9e15;
 export const maskEm = (e) => { const [u, d] = String(e).split("@"); return (u || "").slice(0, 2) + "***@" + (d || ""); };
@@ -261,7 +263,7 @@ export default {
     if (url.pathname === "/mm") {
       if (req.method === "OPTIONS") return opts("GET"); const bad = pre(req); if (bad) return bad;
       const pid = await pidOf(url.searchParams.get("pk") || ""); if (!pid) return J({ err: "pk" }, 400);
-      return env.ROOMS.get(env.ROOMS.idFromName(MM)).fetch(new Request("https://mm/m/pick?pid=" + pid + "&w=" + (Math.max(0, Math.min(60000, +url.searchParams.get("w") || 0)) | 0) + "&x=" + encodeURIComponent((url.searchParams.get("x") || "").slice(0, 24))));
+      return env.ROOMS.get(env.ROOMS.idFromName(MM)).fetch(new Request("https://mm/m/pick?pid=" + pid + "&w=" + (Math.max(0, Math.min(60000, +url.searchParams.get("w") || 0)) | 0) + "&x=" + encodeURIComponent((url.searchParams.get("x") || "").slice(0, 24)) + (url.searchParams.get("md") === "t" ? "&md=t" : "")));
     }
     if (url.pathname.startsWith("/admin/")) return adminHttp(req, env, url); // ops1: owner-only backups (ADMIN_KEY secret, never from a browser)
     return new Response("Super Snake online server", { headers: { "content-type": "text/plain" } });
@@ -271,19 +273,23 @@ export default {
 export class Room {
   constructor(state, env) { this.state = state; this.env = env; this.clients = new Set(); this.sim = null; this.timer = null; this.botSeq = 0; }
   init(params) {
-    this.noBots = params.get("bots") === "0" && !(params.get("name_room") || "").startsWith("pub-");
+    this.noBots = params.get("bots") === "0" && !/^(pub|tp)-/.test(params.get("name_room") || "");
     this.room = params.get("name_room") || "pub-1"; const mb = /^pub-(bs|gp|dc|cq)-(\d{1,2})$/.exec(this.room); this.br = mb ? mb[1] : ""; this.bi = mb ? +mb[2] : 0; // srv2: bracket room
-    this.sim = new Sim({ dt: TICK, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true, powerups: true, events: true, evtFirst: 35 });
+    // land1: territory rooms: tp-<bracket>-<n> = public (matchmaker, trophies), t-<code> = private (friends + bots, no trophies)
+    const mt = /^tp-(bs|gp|dc|cq)-(\d{1,2})$/.exec(this.room); if (mt) { this.br = mt[1]; this.bi = +mt[2]; } this.terOn = !!mt || /^t-[a-z0-9-]{1,22}$/.test(this.room); this.pub = this.room.startsWith("pub-") || !!mt;
+    this.sim = new Sim({ dt: TICK, R: this.terOn ? TER.R_ON : undefined, seed: (Date.now() & 0xffffff) ^ 0x5eed, netMode: true, powerups: true, events: true, evtFirst: 35 });
+    this.ter = null; if (this.terOn) { this.ter = this.sim.ter = new Terr(TER.R_ON, { dt: TICK, track: true, rand: this.sim.rand }); this.trd = { n: 1, end: this.sim.tick + Math.round(TER.DUR / TICK) }; }
     this.sim.diff = 1; this.errs = this.errs || 0; this.t0 = Date.now(); this.mutOv = this.mutOv || "auto"; this.sim.mut = mutNow(this.mutOv, Date.now()); this.bty = null; // play2
     this.wOff = (Math.random() * WARM_MASS.length) | 0;
-    if (this.room.startsWith("pub-") && !this.noBots) { const t0 = performance.now(); this.seedWarm(); this.seedMs = Math.round((performance.now() - t0) * 10) / 10; this.ffMs = this.warmUp(FF.TICKS); } // warm2: seeded ~2-3 min old world + short settle
+    if (this.ter) { this.fill(false); this.ffMs = this.warmUp(WARM_TICKS); } // land1: a territory round starts fresh (start-size bots, small patches)
+    else if (this.room.startsWith("pub-") && !this.noBots) { const t0 = performance.now(); this.seedWarm(); this.seedMs = Math.round((performance.now() - t0) * 10) / 10; this.ffMs = this.warmUp(FF.TICKS); } // warm2: seeded ~2-3 min old world + short settle
     else { this.fill(true); this.ffMs = this.warmUp(WARM_TICKS); } // admin2: other rooms unchanged
     this.btyReset(); // warm2: the crown bounty starts at its base value; seeded / simulated time never counts
     this.last = Date.now(); this.acc = 0;
   }
   fill(warm) {
     if (this.noBots) return;
-    const alive = this.sim.snakes.filter((s) => s.alive).length; let want = TARGET_SNAKES - alive;
+    const alive = this.sim.snakes.filter((s) => s.alive).length; let want = (this.ter ? TER.SNAKES : TARGET_SNAKES) - alive; // land1: 16 snakes on the territory map
     // srv2: a fresh public room starts mid-game: bots spawn at mixed sizes (same rules as every other snake), later refills start small
     while (want-- > 0) { const i = this.botSeq++; const m = warm && !this.noBots ? Math.round(WARM_MASS[(i + (this.wOff | 0)) % WARM_MASS.length] * (0.8 + Math.random() * 0.4)) : undefined; const b = this.sim.addSnake(pickBotName(this.sim.snakes, i), uniqSkin(this.sim.snakes, i), { bot: true, diff: [1, 1, 2, 2, 3][i % 5], m }); if (b) { b.tr = botTrophies(i); if (m) b.kills = Math.floor(Math.sqrt(m) / 6 * Math.random()); } } // admin2: aged bots carry some kills (leaderboard looks mid-match)
   }
@@ -306,9 +312,10 @@ export class Room {
   // admin2: headless fast-forward (no humans, nothing sent): bots move, eat, die and respawn; returns the CPU ms it took
   warmUp(n) { const S = this.sim, t0 = performance.now(); for (let k = 0; k < n; k++) { S.step(() => true); S.drain(); if (k % 30 === 29) { for (const d of S.snakes.filter((x) => !x.alive)) S.removeSnake(d); this.fill(); } }
     S.drain(); for (const d of S.snakes.filter((x) => !x.alive)) S.removeSnake(d); this.fill(); S.drain(); return Math.round((performance.now() - t0) * 10) / 10; }
-  lbMsg() { const srt = this.sim.snakes.filter((s) => s.alive).sort((a, b2) => b2.m - a.m); return JSON.stringify({ t: "lb", lb: srt.slice(0, 10).map((s) => [s.id, Math.round(s.m), s.kills]), humans: [...this.clients].filter((c) => c.joined).length, bt: this.btyMsg() }); }
+  lbMsg() { const srt = this.sim.snakes.filter((s) => s.alive).sort((a, b2) => b2.m - a.m); return JSON.stringify({ t: "lb", lb: srt.slice(0, 10).map((s) => [s.id, Math.round(s.m), s.kills]), humans: [...this.clients].filter((c) => c.joined).length, bt: this.btyMsg(), ...(this.ter ? { rl: this.terLeft(), rn: this.trd.n } : {}) }); }
+  terLeft() { return this.ter ? Math.max(0, Math.round((this.trd.end - this.sim.tick) * TICK)) : 0; } // land1: seconds left in this round (tick clock: a sleeping room's round waits)
   // play2: crown bounty = the #1 snake of a public room; grows with its time at #1; the human who kills it is paid by this room
-  btyTrack(top, now) { if (!this.ranked() || !top) { this.bty = null; return; } if (!this.bty || this.bty.id !== top.id) this.bty = { id: top.id, t0: now }; }
+  btyTrack(top, now) { if (!this.ranked() || this.ter || !top) { this.bty = null; return; } /* land1: no crown bounty in territory */ if (!this.bty || this.bty.id !== top.id) this.bty = { id: top.id, t0: now }; }
   btyMsg() { const B = this.bty; return B ? [B.id, btyVal((Date.now() - B.t0) / 1000)] : null; }
   btyKill(dead) { const B = this.bty; if (!B) return; const d = dead.find((x) => x[0] === B.id); if (!d) return; this.bty = null; const by = d[1]; if (!by || d[2] === 5) return;
     const v = btyVal((Date.now() - B.t0) / 1000), c = [...this.clients].find((o) => o.snake && o.snake.id === by && o.pid); if (!c) return;
@@ -318,7 +325,7 @@ export class Room {
   mutTick(now) { if (this.clients.size && now - (this.mutT || 0) > 60000) { this.mutT = now; try { this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/mu").then((r) => r.json()).then((r) => { if (r && typeof r.mu === "string") this.mutOv = r.mu; }).catch(() => {}); } catch (_) {} }
     const k = mutNow(this.mutOv, now); if (k !== (this.sim.mut || "")) { this.sim.mut = k; this.bcast(JSON.stringify({ t: "mut", k })); } }
   // srv2: the room tells the matchmaker who is here (on join / leave and every 30 s while players are in). No alarms: an empty room costs nothing.
-  hb(force) { const now = Date.now(); if (!this.room.startsWith("pub-") || (!force && now - (this.hbT || 0) < MM_CFG.HB_MS)) return; this.hbT = now;
+  hb(force) { const now = Date.now(); if (!this.pub || (!force && now - (this.hbT || 0) < MM_CFG.HB_MS)) return; this.hbT = now;
     const h = [...this.clients].filter((c) => c.joined).length, b = this.sim ? this.sim.snakes.filter((s) => s.alive && s.bot).length : 0;
     const body = JSON.stringify({ room: this.room, br: this.br, i: this.bi, h, b, e: this.errs | 0, up: this.t0 || now });
     try { const r = this.env.ROOMS.get(this.env.ROOMS.idFromName(MM)).fetch("https://mm/m/hb", { method: "POST", body }); if (r && r.catch) r.catch(() => {}); } catch (_) {} }
@@ -338,7 +345,7 @@ export class Room {
       return J2({ err: "op" }); }
     if (url.pathname === "/r/info" || url.pathname === "/r/kick") { // admin2: owner room view / kick (only the social object builds these requests; never inits a room)
       const cl = [...this.clients].filter((c) => c.joined);
-      if (url.pathname === "/r/info") return J({ room: this.room || "", live: this.timer ? 1 : 0, br: this.br || "", h: cl.length, b: this.sim ? this.sim.snakes.filter((s) => s.alive && s.bot).length : 0, ff: this.ffMs || 0, sd: this.seedMs || 0, pl: cl.map((c) => ({ u: c.uid || "", n: c.name, m: c.snake && c.snake.alive ? Math.round(c.snake.m) : 0 })) });
+      if (url.pathname === "/r/info") return J({ room: this.room || "", live: this.timer ? 1 : 0, br: this.br || "", md: this.ter ? "t" : "", h: cl.length, b: this.sim ? this.sim.snakes.filter((s) => s.alive && s.bot).length : 0, ff: this.ffMs || 0, sd: this.seedMs || 0, pl: cl.map((c) => ({ u: c.uid || "", n: c.name, m: c.snake && c.snake.alive ? Math.round(c.snake.m) : 0 })) });
       const u = url.searchParams.get("u") || "", all = url.searchParams.get("all") === "1", why = (url.searchParams.get("k") || "kick").slice(0, 8); let n = 0;
       for (const c of [...this.clients]) if (all ? c.uid !== "1" : u && c.uid === u) { n++; this.send(c, JSON.stringify({ t: "kick", k: why, m: (url.searchParams.get("m") || "").slice(0, 200) })); if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4); try { c.ws.close(4012, why); } catch (_) {} this.drop(c); }
       return J({ ok: 1, n }); }
@@ -394,7 +401,8 @@ export class Room {
       if (!c.pidP && typeof m.pk === "string") c.pidP = pidOf(m.pk).then(async (dp) => { if (!dp) return; c.dp = dp; const u = await this.uidOf(c, 1); this.verC(c, u); c.verDone = 1; c.pid = (u && u.cp) || dp; if (!this.clients.has(c) || c.banned) return; if (!this.ranked()) return; try { const r = await (await this.boardStub().fetch("https://board/b/get?pid=" + c.pid)).json(); if (r && Number.isFinite(r.tr)) { c.tr = r.tr; if (c.snake) c.snake.tr = r.tr; this.send(c, JSON.stringify({ t: "tro0", tr: r.tr, ss: r.ss })); } } catch (_) {} }).catch(() => {}).finally(() => { if (!c.verDone) { c.verDone = 1; this.verC(c, null); } });
       else if (!c.pidP) { c.verDone = 1; this.verC(c, null); } // no device key: nothing owned on the server
       const hs = [...this.clients].filter((o) => o.joined).length;
-      this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, br: this.br, bi: this.bi, h: hs, b: this.sim.snakes.filter((s) => s.alive && s.bot).length, tick: this.sim.tick, dt: TICK, R: this.sim.R, mu: this.sim.mut || "", snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
+      this.send(c, JSON.stringify({ t: "welcome", v: VERSION, room: this.room, br: this.br, bi: this.bi, h: hs, b: this.sim.snakes.filter((s) => s.alive && s.bot).length, tick: this.sim.tick, dt: TICK, R: this.sim.R, mu: this.sim.mut || "", ...(this.ter ? { ter: { cell: this.ter.cell, n: this.trd.n, left: this.terLeft(), pub: this.pub ? 1 : 0 } } : {}), snakes: this.sim.snakes.filter((s) => s.alive).map((s) => this.snakeMsg(s)) }));
+      if (this.ter) this.send(c, this.ter.full()); // land1: the whole map once (runs), then deltas
       this.hb(true);
       this.send(c, this.foodFull()); this.send(c, this.lbMsg()); // admin2: leaderboard at once
       this.send(c, JSON.stringify({ t: "pus", l: this.sim.pus.map((p) => [p.id, p.k, Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]) }));
@@ -408,7 +416,8 @@ export class Room {
       // a human replaces one bot so rooms stay the same size
       const bot = this.sim.snakes.find((s) => s.bot && s.alive); if (bot && !this.noBots) { bot.alive = false; this.sim.evDie.push(bot.id, 0, 5); }
       const s = this.sim.addSnake(c.name, c.skin, {}); c.snake = s; if (c.uid) s.uid = c.uid; c.q.length = 0; c.ack = 0xffff; c.extra = 0;
-      s.tr = c.tr; c.life = { t0: Date.now(), best: 99, field: this.sim.snakes.filter((o) => o.alive).length, bm: s.m, done: false }; // comp1: what this life is judged on
+      s.tr = c.tr; c.life = { t0: Date.now(), best: 99, field: this.sim.snakes.filter((o) => o.alive).length, bm: s.m, done: false, pk: 0 }; // comp1: what this life is judged on
+      if (this.ter && (!c.rd || c.rd.n !== this.trd.n)) c.rd = { n: this.trd.n, t0: Date.now(), k: 0 }; // land1: first life of this player in this round
       this.send(c, JSON.stringify({ t: "you", id: s.id, x: s.x, y: s.y, a: s.a, m: s.m, tick: this.sim.tick, seq: (m.seq | 0) & 0xffff }));
       c.q.length = 0; c.seq0 = (m.seq | 0) & 0xffff; c.buf = true;
     } else if (m.t === "die") { // the client saw its own head touch a body: accept at once (it can only hurt itself), credit the hit snake
@@ -426,17 +435,19 @@ export class Room {
   // fix1: keep the wallet view (V) of this player and check the equipped cosmetics against it; a fallback is counted + logged
   verC(c, u) { if (u !== undefined) c.V = u && u.w ? { own: new Set(u.w.own || []), lv: u.w.lv | 0, o: u.w.o ? 1 : 0 } : null;
     const [sk, cut] = verifySkin(c.skin, c.V); c.skin = sk; if (cut.length) { this.cosCut = (this.cosCut | 0) + 1; console.log(JSON.stringify({ fix1: "cos_fallback", room: this.room, u: c.uid || "", cut })); } }
-  uidOf(c, w) { return this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + c.dp + (w ? "&w=1" : "")).then((r) => r.json()).then((r) => { if (!r || !/^\d{1,7}$/.test(r.id || "")) return r;
+  uidOf(c, w) { return this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + c.dp + (w ? "&w=1" : "") + (this.ter ? "&md=t" : "")).then((r) => r.json()).then((r) => { if (!r || !/^\d{1,7}$/.test(r.id || "")) return r;
     if (r.ban) { c.banned = 1; this.send(c, JSON.stringify({ t: "ban", u: r.ban })); if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4); try { c.ws.close(4003, "banned"); } catch (_) {} return r; }
     if (r.mt) { this.send(c, JSON.stringify({ t: "kick", k: r.mt.k, m: r.mt.m || "" })); if (c.snake && c.snake.alive) this.sim.kill(c.snake, 0, 4); try { c.ws.close(4011, r.mt.k); } catch (_) {} return r; } // admin2: maintenance / online switched off (owner exempt)
     if (Array.isArray(r.evo)) this.sim.events = EVENTS.filter((k) => !r.evo.includes(k)); if (typeof r.mu === "string" && r.mu !== this.mutOv) { this.mutOv = r.mu; this.mutTick(Date.now()); } // play2 // admin2: events the owner switched off
     c.mute = r.mute || 0; c.uid = r.id; if (r.nm) { c.name = cleanName(r.nm); if (c.snake) c.snake.name = c.name; }
     const s = c.snake; if (s && s.alive && s.uid !== r.id) { s.uid = r.id; this.bcast(JSON.stringify({ t: "uid", id: s.id, u: r.id })); } this.send(c, JSON.stringify({ t: "myid", u: r.id })); return r; }).catch(() => null); }
   // ---------- comp1: trophies (server-decided), board object (leaderboards, weekly/monthly contests, monthly seasons) ----------
-  ranked() { return this.room.startsWith("pub-") && !this.noBots; } // private rooms never move trophies (no farming with friends)
+  ranked() { return !!this.pub && !this.noBots; } // land1: public territory rooms (tp-) are ranked too (placement at round end) // private rooms never move trophies (no farming with friends)
   boardStub() { return this.env.ROOMS.get(this.env.ROOMS.idFromName(BOARD)); }
   score(c, s) { // one finished life of a human -> trophies, judged only on what this server saw
-    const L = c.life; if (!L || L.done) return; L.done = true; if (c.pid && !this.noBots) this.earn(c, s, L); if (!c.pid || !this.ranked()) return;
+    const L = c.life; if (!L || L.done) return; L.done = true; if (c.pid && !this.noBots) this.earn(c, s, L);
+    if (this.ter) { if (c.rd && c.rd.n === this.trd.n) { c.rd.k += s.kills | 0; this.terDied(c, s); } return; } // land1: territory trophies come from the round placement (roundEnd), lives pay coins only
+    if (!c.pid || !this.ranked()) return;
     const alive = this.sim.snakes.filter((o) => o.alive).length, field = Math.max(L.field, alive + 1, 2);
     const atDeath = 1 + this.sim.snakes.filter((o) => o.alive && o !== s && o.m > s.m).length, place = Math.min(L.best, atDeath);
     const kills = s.kills | 0, life = (Date.now() - L.t0) / 1000, sc = Math.round(Math.max(L.bm, s.m));
@@ -448,7 +459,7 @@ export class Room {
     }).catch(() => { if (this.clients.has(c)) this.send(c, JSON.stringify({ t: "tro", err: 1 })); });
   }
   // coin1: coins for one online life, judged on what this room saw (the device claims nothing for online play)
-  earn(c, s, L) { const body = JSON.stringify({ pid: c.pid, ck: ("on:" + this.room + ":" + (this.t0 || 0) + ":" + s.id + ":" + L.t0).slice(0, 93), best: Math.round(Math.max(L.bm, s.m)), kills: s.kills | 0, dur: Math.round((Date.now() - L.t0) / 1000) });
+  earn(c, s, L) { const body = JSON.stringify({ pid: c.pid, ck: ("on:" + this.room + ":" + (this.t0 || 0) + ":" + s.id + ":" + L.t0).slice(0, 93), best: Math.round(Math.max(L.bm, s.m, (L.pk || 0) * TER.PCT_BEST)), /* land1: land % counts like mass (x30), same formula + caps */ kills: s.kills | 0, dur: Math.round((Date.now() - L.t0) / 1000) });
     try { this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/earn", { method: "POST", body }).then((r) => r.json()).then((r) => { if (r && r.ok && this.clients.has(c)) this.send(c, JSON.stringify({ t: "coin", c: r.c, bal: r.bal })); }).catch(() => {}); } catch (_) {} }
   db() {
     if (this._db) return this._db; const q = this.state.storage.sql; this._db = q; this.lbc = new Map();
@@ -787,6 +798,16 @@ export class Room {
       const P = this.wPrice(cp, m); if (P.err) return { ...P, w: this.wState(cp) };
       if (!this.wPay(cp, P.price, "buy", P.keys.join(","))) return { err: "noCoins", w: this.wState(cp) };
       for (const k of P.keys) this.wGive(cp, k, "buy"); if (rid) this.wMark(cp, rid); return { ok: 1, price: P.price, it: P.keys, w: this.wState(cp) }; }
+    if (op === "w_fuse") { // land1: skin fusion. Both skins owned (bought / earned; not level-free, flags or owner-only), this pair never fused
+      // before, the fee paid and the new skin given in ONE step (no await in between); rid makes a retried request a no-op
+      const rid = /^[0-9a-f]{8,24}$/.test(String(m.rid || "")) ? "fuse:" + m.rid : ""; if (rid && this.wClaimed(cp, rid)) return { ok: 1, dup: 1, w: this.wState(cp) };
+      if (this.sLimit(cp, "wfuse", 12)) return { err: "rate" };
+      const a = m.a | 0, b = m.b | 0; if (a === b || String(a) !== String(m.a) || String(b) !== String(m.b) || !fusable(a) || !fusable(b)) return { err: "na" };
+      const key = fuKey(a, b); if (!this.wHas(cp, SKINS[a].id) || !this.wHas(cp, SKINS[b].id)) return { err: "notOwned", w: this.wState(cp) };
+      if (this.wHas(cp, key)) return { err: "own", key, w: this.wState(cp) };
+      if (m.fee != null && Number(m.fee) !== FUSION_FEE) return { err: "price", fee: FUSION_FEE, w: this.wState(cp) };
+      if (!this.wPay(cp, FUSION_FEE, "fuse", key)) return { err: "noCoins", w: this.wState(cp) };
+      this.wGive(cp, key, "fuse"); if (rid) this.wMark(cp, rid); return { ok: 1, key, fee: FUSION_FEE, w: this.wState(cp) }; }
     if (op === "w_sid") { // a special id: who gets it AND its coins, one transaction (no grant-then-refund)
       if (this.sLimit(cp, "buy", 6)) return { err: "rate" }; const n = String(m.n || ""), kd = idKind(n); if (!kd) return { err: "bad" };
       const price = idPrice(n); if (Number(m.price) !== price) return { err: "price", price };
@@ -973,7 +994,7 @@ export class Room {
       const days = []; for (let i = 6; i >= 0; i--) { const d = utcDay(now - i * 86400000), d0 = Date.parse(d + "T00:00:00Z"); let act = q.exec("SELECT COUNT(*) AS n FROM dau WHERE d = ?", d).one().n; if (i === 0) act = Math.max(act, q.exec("SELECT COUNT(*) AS n FROM acct WHERE seen >= ?", d0).one().n);
         days.push({ d, act, nw: q.exec("SELECT COUNT(*) AS n FROM acct WHERE t >= ? AND t < ?", d0, d0 + 86400000).one().n }); }
       return { online: on.size, today: days[6].act, nw: days[6].nw, days, players: q.exec("SELECT COUNT(*) AS n FROM acct").one().n, at: now }; }
-    if (op === "a_cfg") return { cfg: this.cfgPub(), raw: { ann: this.cfgGet("ann") || null, mnt: this.cfgGet("mnt") || null }, modes: ADM_MODES, events: EVENTS, prices: [...SKINS.filter((x) => x.src && /^coins:/.test(x.src)).map((x) => ({ k: x.id, p: +x.src.split(":")[1], b: pxBase(x.id) })), { k: "flags", p: FLAG_PRICE, b: pxBase("flags") }, ...SHOP_TRAILS.filter((g) => g.price).map((g) => ({ k: "gt:" + g.id, p: g.price, b: pxBase("gt:" + g.id) }))],
+    if (op === "a_cfg") return { cfg: this.cfgPub(), raw: { ann: this.cfgGet("ann") || null, mnt: this.cfgGet("mnt") || null }, modes: ADM_MODES, events: EVENTS, prices: [...SKINS.filter((x) => x.src && /^coins:/.test(x.src)).map((x) => ({ k: x.id, p: +x.src.split(":")[1], b: pxBase(x.id) })), { k: "flags", p: FLAG_PRICE, b: pxBase("flags") }, { k: "fusion", p: FUSION_FEE, b: pxBase("fusion") }, ...SHOP_TRAILS.filter((g) => g.price).map((g) => ({ k: "gt:" + g.id, p: g.price, b: pxBase("gt:" + g.id) }))],
       gifts: q.exec("SELECT id, coins, items, why, exp, t, n FROM gift ORDER BY id DESC LIMIT 10").toArray(), promos: q.exec("SELECT code, coins, items, max, used, exp, off, t FROM promo ORDER BY t DESC LIMIT 30").toArray() };
     if (op === "a_rooms") { let mm = null; try { mm = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(MM)).fetch("https://mm/m/list")).json(); } catch (_) {}
       const rooms = ((mm && mm.rooms) || []).slice(0, 24), out = await Promise.all(rooms.map(async (r) => { let d = null; try { d = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(r.room)).fetch("https://room/r/info")).json(); } catch (_) {} return { ...r, mode: "online", info: d }; }));
@@ -1040,7 +1061,7 @@ export class Room {
   async socialHttp(req, url) {
     if (url.pathname === "/s/uid") { const dp = url.searchParams.get("pid") || ""; if (!/^[0-9a-f]{20}$/.test(dp)) return J({ err: "pid" }, 400); // internal: room / matchmaker -> social
       try { const cp = this.canon(dp), a = this.sAcct(cp); const o = { id: a.vis, cp, ban: this.banOf(cp, dp), mute: this.muteOf(cp), nm: a.nr ? a.name : "" }; const mt = this.cfgGet("mnt"), mo = this.cfgGet("moff") || [];
-        if (!a.own && mt && mt.on) o.mt = { k: "maint", m: mt.msg || "" }; else if (!a.own && mo.includes("online")) o.mt = { k: "off", m: "" }; o.evo = this.cfgGet("eoff") || []; o.mu = this.cfgPub().mut; // play2
+        if (!a.own && mt && mt.on) o.mt = { k: "maint", m: mt.msg || "" }; else if (!a.own && (mo.includes("online") || (url.searchParams.get("md") === "t" && mo.includes("territory")))) o.mt = { k: "off", m: "" }; /* land1: territory rooms follow the territory switch too */ o.evo = this.cfgGet("eoff") || []; o.mu = this.cfgPub().mut; // play2
         if (url.searchParams.get("w")) { const W = this.sdb().exec("SELECT * FROM wal WHERE pid = ?", cp).toArray()[0]; o.w = { own: this.wOwn(cp), lv: W ? lvOf(this.wSx(cp, W)) : 1, o: a.own ? 1 : 0 }; } return J(o); } catch (e) { return J({ err: "server" }, 500); } }
     if (url.pathname === "/s/mu") return J({ mu: this.cfgPub().mut, evo: this.cfgGet("eoff") || [] }); // play2: internal room -> social (weekend rule override)
     if (url.pathname === "/s/earn") { let E = {}; try { E = JSON.parse(await req.text()) || {}; } catch (_) {} try { return J(this.wEarn(E)); } catch (e) { this.serr = (this.serr | 0) + 1; return J({ err: "server" }, 500); } } // internal: room -> social (online coins)
@@ -1073,20 +1094,52 @@ export class Room {
   // ---------- srv2: matchmaker "mm-v1" (memory only, no storage rows; rooms report again within 30 s if it was evicted) ----------
   async mmHttp(req, url) {
     const R = this.mmR || (this.mmR = new Map()), P = this.mmP || (this.mmP = new Map()), now = Date.now(), op = url.pathname.slice(3);
-    if (op === "hb") { let b = {}; try { b = JSON.parse((await req.text()).slice(0, 400)) || {}; } catch (_) {} const n = String(b.room || ""); if (!/^pub-[a-z0-9-]{1,20}$/.test(n)) return J({ err: "room" });
-      R.set(n, { room: n, br: BRACKETS.includes(b.br) ? b.br : "", i: b.i | 0, h: Math.max(0, b.h | 0), b: Math.max(0, b.b | 0), e: b.e | 0, up: +b.up || now, t: now, pend: 0 });
+    if (op === "hb") { let b = {}; try { b = JSON.parse((await req.text()).slice(0, 400)) || {}; } catch (_) {} const n = String(b.room || ""); if (!/^(pub|tp)-[a-z0-9-]{1,20}$/.test(n)) return J({ err: "room" });
+      R.set(n, { room: n, br: BRACKETS.includes(b.br) ? b.br : "", i: b.i | 0, h: Math.max(0, b.h | 0), b: Math.max(0, b.b | 0), e: b.e | 0, up: +b.up || now, t: now, pend: 0, md: n.startsWith("tp-") ? "t" : "" });
       if (R.size > 300) for (const [k, v] of R) if (now - v.t > MM_CFG.WARM_MS) R.delete(k); return J({ ok: 1 }); }
-    if (op === "list") return J({ rooms: [...R.values()].filter((r) => now - r.t < MM_CFG.WARM_MS && (r.h > 0 || r.e || now - r.t < MM_CFG.WARM_MS)).sort((a, b) => b.h - a.h || a.room.localeCompare(b.room)).map((r) => ({ room: r.room, br: r.br, i: r.i, h: r.h, b: r.b, e: r.e, age: Math.round((now - r.t) / 1000), up: Math.round((now - r.up) / 1000), live: now - r.t < MM_CFG.LIVE_MS && r.h > 0 ? 1 : 0 })),
+    if (op === "list") return J({ rooms: [...R.values()].filter((r) => now - r.t < MM_CFG.WARM_MS && (r.h > 0 || r.e || now - r.t < MM_CFG.WARM_MS)).sort((a, b) => b.h - a.h || a.room.localeCompare(b.room)).map((r) => ({ room: r.room, br: r.br, md: r.md || "", i: r.i, h: r.h, b: r.b, e: r.e, age: Math.round((now - r.t) / 1000), up: Math.round((now - r.up) / 1000), live: now - r.t < MM_CFG.LIVE_MS && r.h > 0 ? 1 : 0 })),
       pickers: [...P.values()].filter((v) => now - v.t < 300000).length, t: now });
     if (op === "pick") {
-      const pid = url.searchParams.get("pid") || "", w = +url.searchParams.get("w") || 0, x = url.searchParams.get("x") || ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400);
+      const pid = url.searchParams.get("pid") || "", w = +url.searchParams.get("w") || 0, x = url.searchParams.get("x") || "", md = url.searchParams.get("md") === "t" ? "t" : ""; if (!/^[0-9a-f]{20}$/.test(pid)) return J({ err: "pid" }, 400);
       let cp = pid, tr = 0, cq = 0; // the bracket is decided here from the board (the client's own league is never trusted)
-      try { const u = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + pid)).json(); if (u && u.ban) return J({ err: "banned", u: u.ban }); if (u && u.mt) return J({ err: u.mt.k, m: u.mt.m }); if (u && u.cp) cp = u.cp; } catch (_) {}
+      try { const u = await (await this.env.ROOMS.get(this.env.ROOMS.idFromName(SOCIAL)).fetch("https://social/s/uid?pid=" + pid + (md ? "&md=t" : ""))).json(); if (u && u.ban) return J({ err: "banned", u: u.ban }); if (u && u.mt) return J({ err: u.mt.k, m: u.mt.m }); if (u && u.cp) cp = u.cp; } catch (_) {}
       try { const b = await (await this.boardStub().fetch("https://board/b/get?pid=" + cp)).json(); tr = b.tr | 0; cq = b.cq | 0; } catch (_) {}
-      return J({ ...mmPick(R, P, { pid: cp, br: bracketOf(tr, cq), w, x, now }), tr });
+      return J({ ...mmPick(R, P, { pid: cp, br: bracketOf(tr, cq), w, x, now, md }), tr });
     }
     return J({ err: "op" }, 404);
   }
+  // land1: a territory round is over. Placement = land share among the snakes still on the map; humans alive now who played at
+  // least TROPHY.LIFE_MIN s of this round get their trophies from it (public rooms; same trophyDelta as every online life).
+  // land1b: humans who died during the round (played >= LIFE_MIN s) are placed after every survivor, by land % at death (terDied).
+  // Then everybody leaves the map at once (cause 7: no corpse food, no kill credit), the grid clears and the next round starts.
+  roundEnd() { const S = this.sim, T = this.ter, R = this.trd, now = Date.now(), live = (sl) => { const o = S.byId.get(T.idOf[sl]); return !!(o && o.alive); }, rk = T.top(0).filter(([sl]) => live(sl));
+    const nAlive = Math.max(rk.length, S.snakes.filter((o) => o.alive).length); // land1b: survivors = snakes on the map now (a survivor without land shares the last survivor place)
+    const D = R.dead || new Map(); for (const c of this.clients) if (c.pid && c.snake && c.snake.alive && c.joined) D.delete(c.pid); // land1b: alive at the end = survivor
+    const dl = [...D.values()].sort((a, b) => b.pct - a.pct || a.t - b.t), field = Math.max(2, nAlive + dl.length);
+    const rkOf = (sl) => { const i = rk.findIndex((x) => x[0] === sl); return i >= 0 ? i + 1 : nAlive; };
+    const top = rk.slice(0, 5).map(([sl, n]) => { const o = S.byId.get(T.idOf[sl]); return [T.idOf[sl], Math.round((n / T.total) * 1000), o ? o.name : ""]; });
+    this.bcast(JSON.stringify({ t: "tend", n: R.n, rk: top, f: field }));
+    for (const c of this.clients) { const sn = c.snake; if (!c.joined || !sn || !sn.alive) continue; const L = c.life, pct = T.pctOf(sn.id); if (L) L.pk = Math.max(L.pk || 0, pct);
+      const inR = c.rd && c.rd.n === R.n, place = Math.max(1, rkOf(sn.ts)), kills = (inR ? c.rd.k : 0) + (sn.kills | 0), life = inR ? (now - c.rd.t0) / 1000 : 0;
+      const tro = this.ranked() && c.pid && life >= TROPHY.LIFE_MIN ? 1 : 0; this.send(c, JSON.stringify({ t: "tme", n: R.n, pl: place, f: field, p: Math.round(pct * 10), tr: tro }));
+      if (tro) this.terTro(c, { place, field, kills, life, sc: Math.round(Math.max(L ? L.bm : 0, sn.m)) }); }
+    dl.forEach((o, k) => { const place = nAlive + 1 + k, c = o.c; // land1b: the dead, below every survivor, by land % at death
+      if (this.clients.has(c)) this.send(c, JSON.stringify({ t: "tme", n: R.n, pl: place, f: field, p: Math.round(o.pct * 10), tr: 1, dd: 1 }));
+      this.terTro(c, { place, field, kills: o.kills, life: o.life, sc: o.sc }); }); R.dead = null;
+    for (const sn of S.snakes) if (sn.alive) { sn.alive = false; sn.diedTick = S.tick; S.evDie.push(sn.id, 0, 7); }
+    T.reset(); this.bcast(T.full()); R.n++; R.end = S.tick + Math.round(TER.DUR / TICK); this.refill = 1; this.rounds = (this.rounds | 0) + 1;
+    this.bcast(JSON.stringify({ t: "trd", n: R.n, left: TER.DUR })); }
+  // land1b: a player who dies during a round does not escape a low placement. Who played >= TROPHY.LIFE_MIN s of the round
+  // (first spawn -> this death) is kept per pid with the land % at death (best death of the round); at round end the dead are
+  // ranked below every survivor by that %, and get placement trophies from the same table. Alive again at round end = survivor.
+  terDied(c, s) { if (!this.ranked() || !c.pid || !c.rd || c.rd.n !== this.trd.n) return; const T = this.ter, life = (Date.now() - c.rd.t0) / 1000; if (life < TROPHY.LIFE_MIN) return;
+    const pct = T.slotOf.get(s.id) ? T.pctOf(s.id) : +s._tp || 0, D = this.trd.dead || (this.trd.dead = new Map()), o = D.get(c.pid);
+    if (!o || pct >= o.pct) D.set(c.pid, { c, pct, life, kills: c.rd.k | 0, sc: Math.round(Math.max(c.life ? c.life.bm : 0, s.m)), t: Date.now() }); else { o.life = Math.max(o.life, life); o.kills = c.rd.k | 0; o.c = c; } }
+  terTro(c, o) { const d = trophyDelta({ place: o.place, field: o.field, kills: o.kills, life: o.life, t: c.tr | 0, online: 1 });
+    const body = JSON.stringify({ pid: c.pid, name: c.name, d, kl: o.kills, sc: o.sc, u: c.uid || "" });
+    this.boardStub().fetch("https://board/b/rec", { method: "POST", body }).then((r) => r.json()).then((r) => { if (!r || !r.ok) return; c.tr = r.tr; if (c.snake) c.snake.tr = r.tr;
+      if (this.clients.has(c)) this.send(c, JSON.stringify({ t: "tro", rd: 1, d: r.d, tr: r.tr, ss: r.ss, pl: o.place, f: o.field, k: o.kills, sc: o.sc, life: Math.round(o.life) })); })
+      .catch(() => { if (this.clients.has(c)) this.send(c, JSON.stringify({ t: "tro", rd: 1, err: 1 })); }); }
   foodFull() {
     const S = this.sim, idx = []; for (let i = 0; i < S.FM; i++) if (S.fa[i]) idx.push(i);
     const b = new ArrayBuffer(3 + idx.length * 12), v = new DataView(b); v.setUint8(0, 3); v.setUint16(1, idx.length, true);
@@ -1100,6 +1153,7 @@ export class Room {
   }
   tick() {
     const S = this.sim;
+    if (this.ter && S.tick >= this.trd.end) this.roundEnd(); // land1
     // apply one queued input per human (two when the queue is long, so a laggy burst catches up instead of piling up)
     for (const c of this.clients) {
       const s = c.snake; if (!s || !s.alive) continue;
@@ -1113,6 +1167,9 @@ export class Room {
     // events
     const dead = []; for (let i = 0; i < S.evDie.length; i += 3) dead.push([S.evDie[i], S.evDie[i + 1], S.evDie[i + 2]]);
     for (const id of S.evNew) { const s = S.byId.get(id); if (s && s.alive) this.bcast(JSON.stringify({ t: "sn", ...this.snakeMsg(s) })); }
+    if (this.ter) { const T = this.ter; // land1: slot <-> snake map changes at once, cell changes as one delta frame every 2nd tick (15 Hz)
+      if (T.evSlot.length) { const l = []; for (let i = 0; i < T.evSlot.length; i += 2) l.push([T.evSlot[i], T.evSlot[i + 1]]); T.evSlot.length = 0; this.bcast(JSON.stringify({ t: "tsl", l })); }
+      if (S.tick % 2 === 0) { const b = T.take(); if (b) { this.terB = (this.terB || 0) + b.byteLength; this.bcast(b); } } }
     for (const [id, by, cause] of dead) this.bcast(JSON.stringify({ t: "dead", id, by, cause }));
     if (dead.length) this.btyKill(dead); // play2
     if (dead.length) for (const c of this.clients) if (c.snake && !c.snake.alive && c.life && !c.life.done && dead.some((d) => d[0] === c.snake.id)) this.score(c, c.snake);
@@ -1140,12 +1197,13 @@ export class Room {
     S.drain();
     // corpses leave the sim, bots respawn to keep the room lively
     for (const [id] of dead) { const s = S.byId.get(id); if (s) S.removeSnake(s); }
+    if (this.refill) { this.refill = 0; this.fill(); } // land1: a new territory round fills the map at once
     if (S.tick % 30 === 0) {
       this.fill();
       const srt = alive.slice().sort((a, b2) => b2.m - a.m), lb = srt.slice(0, 10).map((s) => [s.id, Math.round(s.m), s.kills]);
-      for (const c of this.clients) { const L = c.life, s = c.snake; if (!L || L.done || !s || !s.alive) continue; const r = srt.indexOf(s) + 1; if (r > 0 && r < L.best) L.best = r; if (srt.length > L.field) L.field = srt.length; if (s.m > L.bm) L.bm = s.m; }
+      for (const c of this.clients) { const L = c.life, s = c.snake; if (!L || L.done || !s || !s.alive) continue; const r = srt.indexOf(s) + 1; if (r > 0 && r < L.best) L.best = r; if (srt.length > L.field) L.field = srt.length; if (s.m > L.bm) L.bm = s.m; if (this.ter) L.pk = Math.max(L.pk || 0, this.ter.pctOf(s.id)); }
       this.btyTrack(srt[0], Date.now()); this.mutTick(Date.now()); // play2
-      this.bcast(JSON.stringify({ t: "lb", lb, humans: [...this.clients].filter((c) => c.joined).length, bt: this.btyMsg() }));
+      this.bcast(JSON.stringify({ t: "lb", lb, humans: [...this.clients].filter((c) => c.joined).length, bt: this.btyMsg(), ...(this.ter ? { rl: this.terLeft(), rn: this.trd.n } : {}) }));
     }
   }
 }

@@ -1,15 +1,15 @@
 // Boot: cinematic loading (real progress) → storage → language → renderer (3D, auto-detected tier, 2D fallback) →
 // audio/input → studio intro → title flyover → sign-in or lobby. Every failure ends in a friendly message.
-import { guard } from "./guard.js?v=warm2";
-import { Store, KV } from "./store.js?v=warm2";
-import { setLang, applyI18n, t } from "./i18n.js?v=warm2";
-import { Audio, haptic } from "./audio.js?v=warm2";
-import { Input } from "./input.js?v=warm2";
-import { Game } from "./game.js?v=warm2";
-import { UI, Hud } from "./ui.js?v=warm2";
-import { Renderer2D } from "./render2d.js?v=warm2";
-import { startWatchdog, watchCanvas } from "./watchdog.js?v=warm2"; // perf2 guardian
-import { applyIcon } from "./play2.js?v=warm2"; try { applyIcon(); } catch (_) {} // play2: chosen home-screen icon (apple-touch-icon + manifest)
+import { guard } from "./guard.js?v=land1";
+import { Store, KV } from "./store.js?v=land1";
+import { setLang, applyI18n, t } from "./i18n.js?v=land1";
+import { Audio, haptic } from "./audio.js?v=land1";
+import { Input } from "./input.js?v=land1";
+import { Game } from "./game.js?v=land1";
+import { UI, Hud } from "./ui.js?v=land1";
+import { Renderer2D } from "./render2d.js?v=land1";
+import { startWatchdog, watchCanvas } from "./watchdog.js?v=land1"; // perf2 guardian
+import { applyIcon } from "./play2.js?v=land1"; try { applyIcon(); } catch (_) {} // play2: chosen home-screen icon (apple-touch-icon + manifest)
 
 guard();
 // ?room=code (shared room link): open the lobby on Online with that room filled in
@@ -58,7 +58,7 @@ async function makeRenderer(kind, quality) {
   if (kind === "3d") watchCanvas(cv);
   if (kind === "3d") {
     try {
-      const m = await import("./render3d.js?v=warm2");
+      const m = await import("./render3d.js?v=land1");
       const r = new m.Renderer3D(cv, { quality, world: app.store ? app.store.p.last.world || 0 : 0, onLost: () => { clearTimeout(app._lostT); /* fit1: iOS drops the GL context whenever the tab is backgrounded; only a loss that lasts 6 s while the page is VISIBLE means 3D is broken. A background loss used to end in a silent switch to 2D for the session. */ const arm = () => { clearTimeout(app._lostT); app._lostT = setTimeout(() => { if (document.hidden) return; if (app.renderer && app.renderer.lost && !app.renderer.is2D) app.switchRenderer("2d", "context-lost"); }, 6000); }; if (document.hidden) document.addEventListener("visibilitychange", function v() { if (document.hidden) return; document.removeEventListener("visibilitychange", v); if (app.renderer && app.renderer.lost) arm(); }); else arm(); }, onRestored: () => { clearTimeout(app._lostT); /* fit1: rebuild 3D from scratch after a restore (meshes/textures/targets all fresh) instead of trusting a half-restored GL state */ setTimeout(() => { if (app.renderer && !app.renderer.is2D) app.switchRenderer("3d"); }, 50); } });
       return r;
     } catch (e) { console.warn("3D unavailable", e); app.noWebgl = true; const c2 = document.createElement("canvas"); c2.id = "gl"; cv.replaceWith(c2); return new Renderer2D(c2); }

@@ -1,24 +1,25 @@
 // Menus, HUD, modals, transitions, studio intro, title, cinematic loading, locker with 3D showcase, season pass,
 // rarity reveals, notifications. Every control is wired to real state and fails with a friendly message.
-import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=warm2";
-import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=warm2"; // srv1
-import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=warm2"; // srv2
-import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=warm2"; // perf2: shop offers (coins only)
-import { KV } from "./store.js?v=warm2";
-import { legalButtons, contactNote, openFeedback } from "./legal.js?v=warm2"; import { call as socialCall } from "./social.js?v=warm2"; // coin1
-import { GTRAILS } from "./skins.js?v=warm2"; import { gtCellUrl } from "./gfx/gtrail.js?v=warm2"; // trail1
-import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=warm2";
-import { WORLDS, worldAsset } from "./worlds.js?v=warm2";
-import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=warm2";
-import { haptic } from "./audio.js?v=warm2";
-import { skinFn, MODES, EMOTES } from "./game.js?v=warm2";
-import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=warm2";
-import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=warm2";
-import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=warm2";
-import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=warm2"; // comp1
-import { trophies, leagueBadge, myLeague } from "./league.js?v=warm2";
-import { CF, modeOff, onlineBlock, annBar } from "./admin2.js?v=warm2"; import { call as a2call } from "./social.js?v=warm2"; // admin2
-import { growBind, growStart, growResults } from "./grow.js?v=warm2"; import { mutBar, iconCard, bindIcon } from "./play2.js?v=warm2"; // grow1: challenge links, clips, room QR
+import { t, LANGS, LANG, achDesc, fmtNum } from "./i18n.js?v=land1";
+import { socialStart, renderFriends, renderIds, profileIdCard, bindProfileId, pauseHook, status as socialStatus } from "./social.js?v=land1"; // srv1
+import { accountStart, signInCard, ownerEntry, bindSignIn, renderAdmin, accountLobby } from "./account.js?v=land1"; // srv2
+import { weeklyOffers, monthlyBundle, occasionBundle, stableNow, fmtLeft } from "./offers.js?v=land1"; // perf2: shop offers (coins only)
+import { KV } from "./store.js?v=land1";
+import { legalButtons, contactNote, openFeedback } from "./legal.js?v=land1"; import { call as socialCall } from "./social.js?v=land1"; // coin1
+import { GTRAILS } from "./skins.js?v=land1"; import { gtCellUrl } from "./gfx/gtrail.js?v=land1"; // trail1
+import { SKINS, FLAGS, EYES, TRAILS, NAME_COLORS, PATTERNS, PALETTES, FLAG_PRICE, flagName, flagEmoji, swatchCss, compileSkin, primaryColor, LEGEND, RAR_COL, skinFx } from "./skins.js?v=land1";
+import { WORLDS, worldAsset } from "./worlds.js?v=land1";
+import { Store, lvInfo, SEASON, seasonReward, CHAINS } from "./store.js?v=land1";
+import { haptic } from "./audio.js?v=land1";
+import { skinFn, MODES, EMOTES } from "./game.js?v=land1";
+import { dailyDef, dailyBoard, wchain, wcCurrent, WC_REWARD } from "./modes.js?v=land1";
+import { PU_COL, PU_ICON, PU_DUR, PU_SVG, PU_TIMED } from "./sim.js?v=land1";
+import { AVATARS, FRAMES, TITLES, BANNERS, RANKS, rankOf, LOGIN, SPIN, avOk, frameOk, titleOk, bannerOk, lockedCosmetics, avatarHtml, bannerCss, rankBadge, reqMet } from "./profile.js?v=land1";
+import { lobbyChip, profileLeagueCard, hudTag, resultsWho, leagueToasts, renderComp, startup as compStartup } from "./compui.js?v=land1"; // comp1
+import { trophies, leagueBadge, myLeague } from "./league.js?v=land1";
+import { CF, modeOff, onlineBlock, annBar } from "./admin2.js?v=land1"; import { call as a2call } from "./social.js?v=land1"; // admin2
+import { terLobby, terCfg, renderFusion, fuInfo } from "./land1.js?v=land1"; import { fusionDef } from "./skins.js?v=land1"; // land1: territory lobby + skin fusion
+import { growBind, growStart, growResults } from "./grow.js?v=land1"; import { mutBar, iconCard, bindIcon } from "./play2.js?v=land1"; // grow1: challenge links, clips, room QR
 
 const puSvg = (k) => `<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="${PU_SVG[k]}"/></svg>`;
 
@@ -32,6 +33,7 @@ const IC = {
   time: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 2M9.5 2.5h5M12 2.5v3"/></svg>',
   survival: '<svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3 8.3-7 10-4-1.7-7-5.4-7-10V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>',
   zen: '<svg viewBox="0 0 24 24"><path d="M12 4c2.5 2.6 2.5 6.4 0 9-2.5-2.6-2.5-6.4 0-9Z"/><path d="M4 12c3 0 5.5 1.3 8 4 2.5-2.7 5-4 8-4-1 4.5-4.5 7-8 7s-7-2.5-8-7Z"/></svg>',
+  territory: '<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M3.5 12h8.5V3.5" /><path d="M12 12h8.5M12 12v8.5"/><rect x="4.6" y="4.6" width="6.3" height="6.3" rx="1" fill="currentColor" stroke="none" opacity=".55"/><rect x="13.1" y="13.1" width="6.3" height="6.3" rx="1" fill="currentColor" stroke="none" opacity=".3"/></svg>',
   online: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5S14.6 18.1 12 20.5C9.4 18.1 8.2 15.3 8.2 12S9.4 5.9 12 3.5Z"/></svg>',
   br: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke-dasharray="3 2.5"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
   koth: '<svg viewBox="0 0 24 24"><path d="M3 20h18L14 8l-3 4-2-2-6 10Z"/><path d="M14 8V3l4 2-4 2"/></svg>',
@@ -44,8 +46,8 @@ const IC = {
   crown: '<svg viewBox="0 0 24 24" class="crown"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 10H5L3 8Z" fill="currentColor" stroke="none"/></svg>',
   lock: '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
 };
-const MODE_LIST = ["classic", "daily", "goldrush", "infection", "duel", "br", "koth", "boss", "team", "time", "survival", "zen", "online"];
-const NEW_MODES = new Set(["daily", "goldrush", "infection", "duel"]);
+const MODE_LIST = ["classic", "territory", "daily", "goldrush", "infection", "duel", "br", "koth", "boss", "team", "time", "survival", "zen", "online"]; // land1: territory
+const NEW_MODES = new Set(["territory", "daily", "goldrush", "infection", "duel"]);
 const fmtTime = (s) => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60), r = s % 60; return `${m}:${String(r).padStart(2, "0")}`; };
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const HOBBIES = [["football", "⚽"], ["gaming", "🎮"], ["cars", "🚗"], ["music", "🎧"], ["travel", "✈️"], ["gym", "🏋️"], ["reading", "📚"], ["movies", "🎬"], ["art", "🎨"], ["cooking", "🍳"], ["coding", "💻"], ["basketball", "🏀"], ["swimming", "🏊"], ["fishing", "🎣"]];
@@ -75,7 +77,7 @@ export class Hud {
       if (st.startsWith("<b>")) { const k = st.indexOf("</b>"); o.rk = st.slice(3, k); o.st = st.slice(k + 4); } else { o.rk = null; o.st = st; } };
     const ic0 = (s) => (s.avt ? avatarHtml(s.avt, s.fr | 0, "s") : `<i style="background:${this.dot(s)}"></i>`), myT = trophies(this.app.store.p), onl = d.ping !== null && d.ping !== undefined;
     const ic = (s) => ic0(s) + hudTag(s, d.me, myT, onl); // comp1: league tag next to every name
-    if (d.scoreList) { d.scoreList.forEach((x, i) => row(x.s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(x.s)}<span>${esc(x.s.name || "?")}</span>`, `${x.v}/${d.target}`)); }
+    if (d.scoreList) { d.scoreList.forEach((x, i) => row(x.s === d.me ? "me" : "", `<b>${x.rk ? x.rk : i === 0 ? IC.crown : i + 1}</b>${ic(x.s)}<span>${esc(x.s.name || "?")}</span>`, d.target ? `${x.v}/${d.target}` : x.v)); } // land1: territory rows carry "12.3%" and the real rank
     else { d.top.forEach((s, i) => row(s === d.me ? "me" : "", `<b>${i === 0 ? IC.crown : i + 1}</b>${ic(s)}<span>${s.bounty ? "💰 " : ""}${d.bt && d.bt[0] === s.id ? `<i class="bty">◆${d.bt[1]}</i> ` : ""}${esc(s.name || "?")}</span>`, fmtNum(s.m))); // play2: crown bounty value
       if (d.me && d.me.alive && d.rank > 5) row("me", `<b>${d.rank}</b>${ic(d.me)}<span>${esc(d.me.name)}</span>`, fmtNum(d.me.m)); }
     if (d.ping !== null) row("", `<span><s class="nq ${d.nq || "good"}" aria-label="${esc(t("net_" + (d.nq || "good")))}"></s>${t("online", { n: d.ping })}</span>`, d.humans ? "👤" + d.humans : ""); // perf2: steady connection-quality dot
@@ -252,7 +254,7 @@ export class UI {
     // backdrop is painted for a moment and then held (no frames rendered = no battery used) until the player is back on Lobby / Locker
     const still = !(this.cur === "lobby" || this.cur === "custom");
     G.show = { d: still ? null : { s: { id: -1, r: 0.5, m: 50, len: 46, x: 0, y: 0 }, fn: skinFn(d), eye: d.e | 0, trail: d.t | 0, fx, name: "" }, still, idle: L ? L.idle : "sway", glow: L ? L.glow : "#ffc845", x, zoom: this.cur === "lobby" ? 1.2 : 1, orbit: Math.sin(performance.now() / 9000) * 0.25 };
-    if (this.cur === "lobby") { const i = d.k === "skin" ? d.i : -1, rar = i >= 0 ? SKINS[i].rar : d.k === "flag" ? "rare" : "epic"; $("l-showtag").innerHTML = `<span class="rar ${rar}">${t("rar_" + rar)}</span><b>${esc(d.k === "flag" ? flagName(FLAGS[d.i], LANG) : d.k === "custom" ? t("custom") : skinName(d.i))}</b>`; }
+    if (this.cur === "lobby") { const i = d.k === "skin" ? d.i : -1, FU = d.k === "fu" ? fusionDef(d.i) : null, rar = i >= 0 ? SKINS[i].rar : FU ? FU.rar : d.k === "flag" ? "rare" : "epic"; $("l-showtag").innerHTML = `<span class="rar ${rar}">${t("rar_" + rar)}</span><b>${esc(d.k === "flag" ? flagName(FLAGS[d.i], LANG) : d.k === "custom" ? t("custom") : FU ? FU.name : skinName(d.i))}</b>`; } // land1: fusion skins
   }
   goLobby() { socialStatus("lobby"); try { accountLobby(); } catch (_) {} this.matchIntroHide(); ["m-pause", "m-results"].forEach((m) => $(m).classList.add("x-hide")); this.app.hud.hide(); this.app.game.startShow(this.p.last.world || 0); this.app.audio.music(true, this.p.last.world || 0, true); this.go("lobby", "fade"); setTimeout(() => this.nextReveal(), 900); }
   toast(msg, kind = "", ms = 2800) {
@@ -385,7 +387,7 @@ export class UI {
     this.click($("h-emo"), () => { const e = $("h-emos"); if (e.classList.toggle("x-hide")) return; e.innerHTML = EMOTES.map((x, i) => `<button data-e="${i}" class="${x.length > 2 ? "txt" : ""}">${x}</button>`).join(""); e.querySelectorAll("button").forEach((b) => this.click(b, () => { e.classList.add("x-hide"); A.game.emote(+b.dataset.e); }, "tab")); });
     this.click($("l-bell"), () => { const n = $("l-notif"); const open = n.classList.contains("x-hide"); n.classList.toggle("x-hide", !open); if (open) { n.innerHTML = this.notes.length ? this.notes.map((x) => `<div class="nt"><i>${x.ic}</i><div>${esc(x.msg)}<small>${new Date(x.t).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</small></div></div>`).join("") : `<div class="empty">${t("noNotif")}</div>`; this.notes.forEach((x) => (x.seen = true)); this.renderBell(); } });
     this.click($("l-play"), () => this.play(), "go");
-    $("l-code").addEventListener("input", (e) => { e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24); this.p.last.room = e.target.value; this.S.save(); });
+    $("l-code").addEventListener("input", (e) => { const ter = this.selMode === "territory"; e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, ter ? 22 : 24); if (ter) this.p.last.troom = e.target.value; else this.p.last.room = e.target.value; this.S.save(); }); // land1: territory keeps its own code
     document.querySelectorAll("[data-back]").forEach((b) => this.click(b, () => this.back(), "back"));
     const tabs = (id, key, fn) => $(id).querySelectorAll("button").forEach((b) => this.click(b, () => { this[key] = b.dataset.v; $(id).querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); fn.call(this); }, "tab"));
     tabs("c-tabs", "cTab", this.renderCustom); tabs("pr-tabs", "prTab", this.renderProfile); tabs("g-tabs", "gTab", this.renderSettings); tabs("s-tabs", "sTab", this.renderSeason); tabs("cp-tabs", "cpTab", function () { renderComp(this); });
@@ -470,7 +472,7 @@ export class UI {
     const dd = $("l-diff"); dd.classList.toggle("x-hide", this.selMode === "online" || this.selMode === "zen" || isDaily);
     dd.innerHTML = [0, 1, 2, 3].map((i) => `<button data-v="${i}" class="${p.last.diff === i ? "on" : ""} ${S.unlocked("diff", i) ? "" : "lock"}">${t("d" + i)}${S.unlocked("diff", i) ? "" : " " + IC.lock}</button>`).join("");
     dd.querySelectorAll("button").forEach((b) => this.click(b, () => { const i = +b.dataset.v; if (!S.unlocked("diff", i)) { this.toast("🔒 " + t("unlockAt", { n: 10 })); return; } p.last.diff = i; S.save(); this.renderLobby(); }, "tab"));
-    $("l-room").classList.toggle("x-hide", this.selMode !== "online"); $("l-code").value = p.last.room || "";
+    $("l-room").classList.toggle("x-hide", this.selMode !== "online"); $("l-code").value = p.last.room || ""; $("l-code").placeholder = ""; terLobby(this); // land1: online / vs bots + its own room code
     $("l-playsub").textContent = isDaily ? `${t("m_daily")} · ${t("w_" + WORLDS[DD.world].id)} · ${t("d" + DD.diff)}` : `${t("m_" + this.selMode)} · ${t("w_" + WORLDS[p.last.world || 0].id)}`;
     const db = $("l-dailyinfo"); if (db) { const B = dailyBoard(p); db.classList.toggle("x-hide", !isDaily); db.innerHTML = isDaily ? `<span>${IC.daily}</span><b>${t("dailyBest", { n: B.list.length ? fmtNum(B.list[0].s) : "—" })}</b><small>${t("dailyAttempts", { n: B.n })}</small>` : ""; }
     this.renderSkill();
@@ -500,11 +502,11 @@ export class UI {
   claim(i) { const bt = document.querySelector(`[data-i2="${i}"]`); const r = this.S.claimMission(i); if (!r) return; this.fly(bt, "+◆" + fmtNum(r.coins)); this.app.audio.play("chime"); document.querySelectorAll(".chip.coins").forEach((c) => this.glow(c)); this.toast(`◆ +${r.coins} · +${r.coins} XP`, "gold"); this.coins(this.p.coins); if (r.lv.up) { this.toast(t("levelUp", { n: r.lv.level }), "gold"); this.app.audio.play("level"); } this.checkAch(); if (this.cur === "lobby") this.renderLobby(); else if (this.cur === "season") this.renderSeason(); }
   checkAch() { for (const a of this.S.checkAch()) { this.toast(`${a.ic} ${t("achUnlocked", { n: t(a.id) })} · ◆${a.r}`, "gold", 3500); this.app.audio.play("ach"); } }
   play() {
-    if (modeOff(this.selMode)) { this.toast(t("a2_modeOff"), "warn"); return; } if (this.selMode === "online") { const b = onlineBlock(); if (b) { this.toast(b, "warn", 5000); return; } } // admin2
+    if (modeOff(this.selMode)) { this.toast(t("a2_modeOff"), "warn"); return; } if (this.selMode === "online" || (this.selMode === "territory" && this.p.last.terOn !== false)) { const b = onlineBlock(); if (b) { this.toast(b, "warn", 5000); return; } } // admin2 (land1: territory online too)
     const p = this.p, mode = this.selMode; p.last.mode = mode; this.S.save();
     if (!this.S.unlocked("world", p.last.world)) p.last.world = 0;
     const D = mode === "daily" ? dailyDef() : null;
-    const cfg = D ? { mode, world: D.world, diff: D.diff, seed: D.seed, room: "" } : { mode, world: p.last.world, diff: mode === "zen" ? 0 : p.last.diff, room: mode === "online" ? p.last.room || "" : "" };
+    const cfg = D ? { mode, world: D.world, diff: D.diff, seed: D.seed, room: "" } : mode === "territory" ? terCfg(this) : { mode, world: p.last.world, diff: mode === "zen" ? 0 : p.last.diff, room: mode === "online" ? p.last.room || "" : "" };
     if (!p.tut) { this.tutStart(cfg); return; }
     this.launch(cfg);
   }
@@ -516,7 +518,8 @@ export class UI {
     const w = WORLDS[cfg.world] || WORLDS[0]; R.setWorld(cfg.world);
     const wk = (R.is2D ? "2d" : "3d") + ":" + R.qName + ":" + cfg.world, warm = this._warm || (this._warm = new Set()), ready = () => (R.worldReady ? R.worldReady() : true);
     const slow = !ready() || (!R.is2D && R.prewarm && !warm.has(wk));
-    if (slow) { this.loading(true, `<span class="ld-mic">${IC[cfg.mode] || ""}</span>${t("m_" + cfg.mode)}<b>${esc(t("w_" + w.id))}</b><em class="ld-rule">${esc(t("m_" + cfg.mode + "_d"))}</em>`); this.progress(20, t("loading")); for (let k = 0; k < 60 && !ready(); k++) await new Promise((r) => setTimeout(r, 100)); this.progress(90); }
+    const lm = cfg.ter ? "territory" : cfg.mode; // land1: online territory reads as Territory
+    if (slow) { this.loading(true, `<span class="ld-mic">${IC[lm] || ""}</span>${t("m_" + lm)}<b>${esc(t("w_" + w.id))}</b><em class="ld-rule">${esc(t("m_" + lm + "_d"))}</em>`); this.progress(20, t("loading")); for (let k = 0; k < 60 && !ready(); k++) await new Promise((r) => setTimeout(r, 100)); this.progress(90); }
     A.game.start(cfg); socialStatus("match"); // srv1: presence for friends
     if (slow && R.prewarm && !R.is2D && !warm.has(wk)) { this.progress(96, t("loadShaders")); await new Promise((r) => requestAnimationFrame(() => r())); await Promise.race([R.prewarm(), new Promise((r) => setTimeout(r, 8000))]); }
     warm.add(wk); if (slow) { this.progress(100); this.loading(false); }
@@ -531,7 +534,7 @@ export class UI {
     if (M.bots !== undefined && mode !== "online") f.push(ic('<path d="M4 16c3-6 6 2 9-3s4-6 7-4"/><circle cx="20" cy="9" r="1"/>') + (M.bots + 1));
     return f; }
   matchIntro(cfg, ms) {
-    const el = $("m-intro"); if (!el) return; const w = WORLDS[cfg.world] || WORLDS[0];
+    const el = $("m-intro"); if (!el) return; const w = WORLDS[cfg.world] || WORLDS[0]; if (cfg.ter) cfg = { ...cfg, mode: "territory", diff: undefined }; // land1
     $("mi-art").style.backgroundImage = `url(${worldAsset(w, "sky", true)})`; $("mi-art").innerHTML = `<span class="mi-ic">${IC[cfg.mode] || ""}</span>`;
     $("mi-world").textContent = t("w_" + w.id) + (cfg.mode !== "zen" && cfg.mode !== "online" && cfg.diff !== undefined ? " · " + t("d" + cfg.diff) : "");
     $("mi-mode").textContent = t("m_" + cfg.mode); $("mi-desc").textContent = t("m_" + cfg.mode + "_d");
@@ -594,6 +597,7 @@ export class UI {
         const stt = on || ok ? st(on, true) : `<small class="st buy${sel ? " go" : ""}">${sel ? t("buy", { n: "" }).trim() + " · " : ""}<span class="coin"></span>${fmtNum(G.price)}</small>`;
         return `<button class="item lk2 r-${G.rar} gtc ${on ? "on" : ""} ${sel ? "sel" : ""}" data-k="gt" data-v="${i}">${prev(i)}<div class="meta"><b>${t("gt_" + G.id)}</b><i class="rd ${G.rar}" title="${t("rar_" + G.rar)}"></i></div>${G.price ? stt : on ? stt : `<small class="st">${t("gt_free")}</small>`}</button>`; }).join("") + `</div>`; }
     else if (tab === "offers") { this.renderOffers(el); return; }
+    else if (tab === "fusion") { renderFusion(this, el); this.renderPresets(); this.renderInfo(); this.updateShow(); return; } // land1: skin fusion
     else if (tab === "ids") { renderIds(this, el); return; } // srv1: Special IDs shop
     else if (tab === "name") h = head(t("nameColor"), NAME_COLORS.length, NAME_COLORS.length) + `<div class="ncprev"><b style="color:${NAME_COLORS[p.nc] || "#fff"}">${esc(p.name || "Player")}</b></div><div class="namecols">` + NAME_COLORS.map((c, i) => `<button data-k="nc" data-v="${i}" class="${p.nc === i ? "on" : ""}" style="background:${c}" aria-label="${c}"></button>`).join("") + `</div>`;
     el.innerHTML = h;
@@ -613,6 +617,7 @@ export class UI {
       h = `<span class="rar ${s.rar}">${t("rar_" + s.rar)}</span><b>${esc(skinName(d.i))}</b>${L ? `<div class="perks">${["lk_shader", "lk_trail", "lk_death", "lk_idle"].map((k) => `<span>${t(k)}</span>`).join("")}</div>` : `<p>${t("rar_" + s.rar)} · ${t("skins")}</p>`}`;
       h += on ? `<button class="btn ghost wide" disabled>✓ ${t("equipped")}</button>` : ok ? `<button class="btn gold wide" id="ci-eq">${t("equip")}</button>` : price ? `<button class="btn gold wide" id="ci-buy">${t("buy")} · ◆ ${fmtNum(price)}</button>` : `<p>${IC.lock} ${s.src ? this.srcText(d.i) : t("lockedLv", { n: s.lv })}</p>`; }
     else if (d.k === "flag") h = `<span class="rar rare">${t("rar_rare")}</span><b>${flagEmoji(FLAGS[d.i].c)} ${esc(flagName(FLAGS[d.i], LANG))}</b>`;
+    else if (d.k === "fu") h = fuInfo(this, d); // land1
     else h = `<span class="rar epic">${t("rar_epic")}</span><b>${t("custom")}</b>`;
     $("c-info").innerHTML = h;
     const eq = $("ci-eq"); if (eq) this.click(eq, () => { p.skin = { k: "skin", i: d.i }; S.save(); this.sel = null; this.renderCustom(); this.toast("✓ " + t("equipped"), "good"); });
@@ -785,8 +790,10 @@ export class UI {
       $("sp-go").textContent = t("spinDone"); if (this.cur === "lobby") this.renderLobby(); }, this.S.settings.reduceMotion ? 400 : 4300);
   }
   // the room to share: the running room (pause menu) or the lobby's private code (a fresh one when none / public)
-  roomCode(fromPause) { const p = this.p; let code = fromPause && this.app.game.backend && this.app.game.backend.room ? this.app.game.backend.room : (p.last.room || "");
-    if (!code || /^pub-/.test(code)) { if (fromPause) code = this.app.game.backend && this.app.game.backend.room || "pub-1"; else { code = "r-" + Math.random().toString(36).slice(2, 7); p.last.room = code; this.S.save(); $("l-code").value = code; } } return code; }
+  roomCode(fromPause) { const p = this.p;
+    if (!fromPause && this.selMode === "territory") { if (!p.last.troom) { p.last.troom = "r-" + Math.random().toString(36).slice(2, 7); this.S.save(); $("l-code").value = p.last.troom; } return "t-" + p.last.troom; } // land1: a territory room code
+    let code = fromPause && this.app.game.backend && this.app.game.backend.room ? this.app.game.backend.room : (p.last.room || "");
+    if (!code || /^(pub|tp)-/.test(code)) { if (fromPause) code = this.app.game.backend && this.app.game.backend.room || "pub-1"; else { code = "r-" + Math.random().toString(36).slice(2, 7); p.last.room = code; this.S.save(); $("l-code").value = code; } } return code; }
   // ---------- share an online room: native share sheet, else copy the link ----------
   async shareRoom(fromPause) {
     const code = this.roomCode(fromPause);

@@ -2,7 +2,7 @@
 // Own snake = client-side prediction with input seq/ack reconciliation. Others = interpolation ~2 ticks behind the server.
 // Own deaths are detected locally against what is on screen and reported at once (instant, never "late"); the server confirms
 // and is still authoritative for everything else (food, mass, kills, collisions it sees first).
-import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive } from "./sim.js?v=warm2";
+import { Snake, Sim, C, moveSnake, MASK, boostCost, PU, PU_DUR, puTick, puGive, Terr } from "./sim.js?v=land1";
 // one predicted step: identical to the server step for this snake, including the boost mass cost
 let MUT = ""; // play2: weekend rule of the room (free boost = no boost cost in prediction either)
 function predict(s, dt) { moveSnake(s, dt, s.m > C.MIN_BOOST_M); if (s.boosting && MUT !== "fb" && !(s.pu && (s.pu[2] > 0 || s.pu[7] > 0))) s.setMass(Math.max(C.MIN_BOOST_M - 0.5, s.m - boostCost(s.m, dt))); }
@@ -35,7 +35,7 @@ export class NetBackend {
   async pick(excl) {
     const t0 = performance.now(), base = SERVER.replace(/^ws/, "http").replace(/\/ws$/, "/mm");
     for (let k = 0; k < 5 && !this.closed; k++) {
-      let r = null; try { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 5000); r = await (await fetch(base + "?pk=" + encodeURIComponent(this.o.pk || "") + "&w=" + Math.round(performance.now() - t0) + (excl ? "&x=" + encodeURIComponent(excl) : ""), { signal: ac.signal })).json(); clearTimeout(tm); } catch (_) { r = null; }
+      let r = null; try { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 5000); r = await (await fetch(base + "?pk=" + encodeURIComponent(this.o.pk || "") + "&w=" + Math.round(performance.now() - t0) + (excl ? "&x=" + encodeURIComponent(excl) : "") + (this.o.md === "t" ? "&md=t" : ""), { signal: ac.signal })).json(); clearTimeout(tm); } catch (_) { r = null; }
       if (r && r.err === "banned") { this.banned = r.u || 1; return null; }
       if (r && (r.err === "maint" || r.err === "off")) { this.blocked = { k: r.err, m: r.m || "" }; return null; } // admin2: maintenance / online switched off
       if (!r || r.err || (!r.room && !r.hold)) return null;
@@ -83,17 +83,25 @@ export class NetBackend {
   spawn(name, skin) { if (name) this.o.name = name; if (skin) this.o.skin = skin; this.wantSpawn = false; this.send(JSON.stringify({ t: "spawn", seq: this.seq, name: this.o.name, skin: this.o.skin })); }
 
   onJson(m) {
-    if (m.t === "welcome") { this.server = { room: m.room, br: m.br || "", bi: m.bi | 0, h: m.h | 0, b: m.b | 0, fb: this.mm && this.mm.fb ? this.mm.fb : "", my: this.mm ? this.mm.my : "" }; this.cb.onFind && this.cb.onFind({ st: "in", ...this.server }); this.mut = MUT = m.mu || ""; this.cb.onMut && this.cb.onMut(this.mut); this.R = m.R; this.tick = m.tick; this.setClock(m.tick); for (const s of m.snakes) this.addMirror(s); this.cb.onState && this.cb.onState("welcome"); if (this.wantSpawn !== false) this.spawn(); }
+    if (m.t === "welcome") { this.server = { room: m.room, br: m.br || "", bi: m.bi | 0, h: m.h | 0, b: m.b | 0, fb: this.mm && this.mm.fb ? this.mm.fb : "", my: this.mm ? this.mm.my : "" }; this.cb.onFind && this.cb.onFind({ st: "in", ...this.server }); this.mut = MUT = m.mu || ""; this.cb.onMut && this.cb.onMut(this.mut); this.R = m.R; this.tick = m.tick; this.setClock(m.tick);
+      // land1: a territory room: a mirror of the server's cells (full map follows as a binary frame, then deltas)
+      if (m.ter) { if (!this.ter || this.ter.R !== m.R) this.ter = new Terr(m.R, { cell: m.ter.cell }); this.terInfo = { n: m.ter.n | 0, end: performance.now() + (m.ter.left | 0) * 1000, pub: !!m.ter.pub }; } else { this.ter = null; this.terInfo = null; }
+      for (const s of m.snakes) this.addMirror(s); if (this.ter) this.cb.onTerr && this.cb.onTerr({ ph: "on" }); this.cb.onState && this.cb.onState("welcome"); if (this.wantSpawn !== false) this.spawn(); }
     else if (m.t === "sn") { if (m.id !== this.myId) this.addMirror(m); }
     else if (m.t === "you") {
       const s = new Snake(m.id); s.reset(m.x, m.y, m.a, m.m); s.name = this.o.name; s.skin = this.o.skin; s.avt = this.o.skin && this.o.skin.av; s.fr = this.o.skin ? this.o.skin.fr | 0 : 0; this.me = s; this.myId = m.id; this.seq = m.seq; this.seq0 = m.seq; this.batch.length = 0; this.mirrors.delete(m.id);
-      this.ta = m.a; this.dead = false; this.cb.onSpawnMe && this.cb.onSpawnMe(s);
+      this.ta = m.a; this.dead = false; this.terMe = null; /* land1: the last round result belongs to the previous life */ this.cb.onSpawnMe && this.cb.onSpawnMe(s);
     } else if (m.t === "dead") {
       if (m.id === this.myId) { if (!this.dead) { this.dead = true; this.stats.serverDeaths++; this.cb.onMyDeath(m.by, m.cause); } }
-      else { const mr = this.mirrors.get(m.id); if (mr) { mr.s.alive = false; mr.deadAt = performance.now(); if (m.cause !== 5) this.cb.onDeath(mr, m.by, m.cause); } }
-      if (m.by && m.by === this.myId && m.id !== this.myId && m.cause !== 5) this.cb.onKill && this.cb.onKill(m.id);
+      else { const mr = this.mirrors.get(m.id); if (mr) { mr.s.alive = false; mr.deadAt = performance.now(); if (m.cause !== 5 && m.cause !== 7) this.cb.onDeath(mr, m.by, m.cause); } } // land1: 7 = territory round over (quiet exit)
+      if (m.by && m.by === this.myId && m.id !== this.myId && m.cause !== 5 && m.cause !== 7) this.cb.onKill && this.cb.onKill(m.id);
     } else if (m.t === "pong") { const rtt = performance.now() - m.c; this.pings.push(rtt); if (this.pings.length > 10) this.pings.shift(); this.ping = Math.round(this.pings.reduce((a, b) => a + b, 0) / this.pings.length); this.stats.rtt.push(rtt); }
-    else if (m.t === "lb") { this.lb = m.lb; this.humans = m.humans; this.bt = m.bt || null; } // play2: bt = [crown bounty snake id, value]
+    else if (m.t === "lb") { this.lb = m.lb; this.humans = m.humans; this.bt = m.bt || null; // play2: bt = [crown bounty snake id, value]
+      if (this.terInfo && Number.isFinite(m.rl)) { const e = performance.now() + m.rl * 1000; if (Math.abs(e - this.terInfo.end) > 1500) this.terInfo.end = e; } } // land1: round clock
+    else if (m.t === "tsl") { if (this.ter && Array.isArray(m.l)) for (const [sl, id] of m.l) this.ter.mapSlot(sl | 0, id | 0); } // land1: slot <-> snake
+    else if (m.t === "trd") { if (this.terInfo) { this.terInfo.n = m.n | 0; this.terInfo.end = performance.now() + (m.left | 0) * 1000; } this.cb.onTerr && this.cb.onTerr({ ph: "round", n: m.n | 0 }); }
+    else if (m.t === "tend") { this.terEnd = m; this.cb.onTerr && this.cb.onTerr({ ph: "end", ...m }); }
+    else if (m.t === "tme") { this.terMe = m; }
     else if (m.t === "mut") { this.mut = MUT = m.k || ""; this.cb.onMut && this.cb.onMut(this.mut); }
     else if (m.t === "bty") { this.cb.onBounty && this.cb.onBounty(m); }
     else if (m.t === "uid") { const mr = this.mirrors.get(m.id); if (mr && /^\d{1,7}$/.test(m.u || "")) mr.s.uid = m.u; } // srv1
@@ -133,6 +141,7 @@ export class NetBackend {
   allocFood(fid, x, y, v, c, fresh) { const i = this.free.pop(); if (i === undefined) return; this.fx[i] = x; this.fy[i] = y; this.fv[i] = v; this.fc[i] = c; this.fa[i] = 1; this.fb[i] = fresh ? performance.now() : 0; this.fmap.set(fid, i); }
   onBin(buf) {
     const v = new DataView(buf), type = v.getUint8(0);
+    if (type === 4 || type === 5) { if (this.ter) { if (type === 4) this.ter.applyFull(buf); else this.ter.applyDelta(buf); } return; } // land1: territory cells
     if (type === 3) { const n = v.getUint16(1, true); let o = 3; for (let k = 0; k < n; k++) { this.allocFood(v.getUint16(o, true), v.getFloat32(o + 2, true), v.getFloat32(o + 6, true), v.getUint8(o + 10) / 10, v.getUint8(o + 11), false); o += 12; } return; }
     if (type !== 1) return;
     this.stats.packets++;

@@ -1,12 +1,12 @@
 // comp1: Competitions screen (League · Weekly · Monthly · Badges), lobby chip, results trophy row, profile league card,
 // HUD league tags. Works offline (own progress + milestones); the online boards load from the server when reachable.
-import { pidHtml, pidTier } from "./pid.js?v=warm2"; // srv2
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=warm2";
-import { fmtLeft } from "./offers.js?v=warm2";
-import { FRAMES, TITLES, avatarHtml } from "./profile.js?v=warm2";
+import { pidHtml, pidTier } from "./pid.js?v=land1"; // srv2
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=land1";
+import { fmtLeft } from "./offers.js?v=land1";
+import { FRAMES, TITLES, avatarHtml } from "./profile.js?v=land1";
 import { LEAGUES, TROPHY, leagueOf, CONTESTS, botTrophies, leagueBadge, leagueName, trophyIcon, badgeImg, trophies, myLeague, ROMAN, SEASON_COINS, CONQ_REWARD, rankReward, MILE, MILE_COINS, BADGE_OF, BADGES,
-  localVal, mileKey, claimMilestone, contestTick, seasonTick, syncMe, top, lastMe, nowMs, contestEnds, applyServer } from "./league.js?v=warm2";
-import { periodEnd } from "./sim.js?v=warm2";
+  localVal, mileKey, claimMilestone, contestTick, seasonTick, syncMe, top, lastMe, nowMs, contestEnds, applyServer } from "./league.js?v=land1";
+import { periodEnd } from "./sim.js?v=land1";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -37,7 +37,7 @@ export function hudTag(s, me, myT, online) {
 // results: the league / trophy block (replaces the old ranked-points block)
 export function resultsWho(ui, cmp) {
   const p = ui.p, L = myLeague(p), T = trophies(p); let line;
-  if (!cmp) line = ""; else if (cmp.pending) line = `<em class="tro-pend">${t("tro_pending")}</em>`; else if (cmp.none) line = `<em class="fine">${t(cmp.none === "priv" ? "tro_priv" : cmp.none === "err" ? "tro_err" : "tro_mode")}</em>`;
+  if (!cmp) line = ""; else if (cmp.pending) line = `<em class="tro-pend">${t("tro_pending")}</em>`; else if (cmp.none) line = `<em class="fine">${t(cmp.none === "priv" ? "tro_priv" : cmp.none === "err" ? "tro_err" : cmp.none === "ter" ? "tro_ter" : "tro_mode")}</em>`;
   else line = `<span class="tro-d ${cmp.d > 0 ? "up" : cmp.d < 0 ? "dn" : ""}">${cmp.d > 0 ? "+" : ""}${cmp.d} ${trophyIcon(16)}</span>${cmp.capped ? `<em class="fine">${t(cmp.capped === "ceil" ? "tro_ceil" : "tro_day")}</em>` : ""}`;
   return `<div class="rp tro ${cmp && cmp.d < 0 ? "dn" : "up"}" id="r-tro">${leagueBadge(T, { size: "m", conq: L.conq })}<span>${esc(leagueName(L, L.conq))} · ${fmtNum(T)}<br>${line}</span></div>`;
 }

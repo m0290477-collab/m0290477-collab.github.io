@@ -2,23 +2,23 @@
 // planar reflections, HDR post stack, cinematic cameras (title flyover, match-intro sweep, kill-cam, victory
 // orbit), studio showcase, GPU particles + instanced debris/confetti. Tiered Ultra/High/Medium/Low with
 // dynamic resolution. Same public contract as before (frame(view), project, burst, ring, shatter, shake…).
-import { pidFill } from "./pid.js?v=warm2"; // srv2
-import { stageBox } from "./stage.js?v=warm2";
-import * as THREE from "./vendor/three.module.min.js?v=warm2";
-import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=warm2";
+import { pidFill } from "./pid.js?v=land1"; // srv2
+import { stageBox } from "./stage.js?v=land1";
+import * as THREE from "./vendor/three.module.min.js?v=land1";
+import { bodyPoints, PU_COL, PU_ICON, PU_SVG, magReach, GOLD_FC, TER } from "./sim.js?v=land1";
 const _MC = [0, 0, 0]; // fix1: food colour muted toward its own grey (no candy/neon), one shared scratch array
 function _mute(c) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; _MC[0] = (c[0] + (l - c[0]) * 0.35) * 0.78; _MC[1] = (c[1] + (l - c[1]) * 0.35) * 0.78; _MC[2] = (c[2] + (l - c[2]) * 0.35) * 0.78; return _MC; }
 const GOLDC = [1, 0.75, 0.12]; // golden-bounty ground ring
-import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=warm2";
-import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=warm2";
-import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=warm2";
-import { World, prefetchWorld } from "./gfx/env.js?v=warm2";
-import { Post } from "./gfx/post.js?v=warm2";
-import { Studio } from "./gfx/showcase.js?v=warm2";
-import { SoftFx } from "./gfx/fx.js?v=warm2";
-import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=warm2"; // trail1: ground trails
-import { on as onEv } from "./events.js?v=warm2";
-import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=warm2";
+import { WORLDS, W3D, FOOD_COLORS_CB } from "./worlds.js?v=land1";
+import { EYES, TRAILS, LEGEND, SKINS, GTRAILS } from "./skins.js?v=land1";
+import { SnakeSystem, SW, MAXS, SHOW_ROW, packCol } from "./gfx/snake.js?v=land1";
+import { World, prefetchWorld } from "./gfx/env.js?v=land1";
+import { Post } from "./gfx/post.js?v=land1";
+import { Studio } from "./gfx/showcase.js?v=land1";
+import { SoftFx } from "./gfx/fx.js?v=land1";
+import { gtAtlas, GT_CAP, GT_VARS } from "./gfx/gtrail.js?v=land1"; // trail1: ground trails
+import { on as onEv } from "./events.js?v=land1";
+import { CANDY_N, T_GUMMY, candyBig, candyType, candySize, candyRgb, candyGeometries, candyMaterial, coinGeometry, coinMaterial, CANDY_LIN } from "./gfx/candy.js?v=land1";
 
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle share, shadow-map refresh interval, contact shadows, post
 const GOV_PR = [Infinity, 1.75, 1.5, 1.25], GOV_PK = [1, 0.7, 0.5, 0.3], GOV_SH = [1, 1, 2, 3];
@@ -134,6 +134,30 @@ export class Renderer3D {
       sh.fragmentShader = "varying float vGA;\n" + sh.fragmentShader.replace("#include <map_fragment>", "#include <map_fragment>\n diffuseColor.a *= vGA;"); };
     mat.customProgramCacheKey = () => "gtrail1";
     this.gtMesh = this._inst(this.scene, geo, mat, N, false); this.gtMesh.renderOrder = 1; this._gto = { calm: false, low: false, gov: 0 };
+  }
+  // land1: territory. One flat quad over the arena carrying a dim x dim RGBA texture (one texel per cell), linear filtered and
+  // sharpened in the shader (the edge is soft over ~a third of a cell); unlit, no depth write, just under the ground trails.
+  // Alpha in the texture = coverage (own 255, others 210); the shader turns it into the shown strength (own a little stronger).
+  // A neutral cell keeps the colour of the land next to it (no dark fringe when filtering). Only cells that changed are rewritten
+  // (the Terr change log); the texture is uploaded at most ~15 times a second, and not at all while nothing changes.
+  _terr(v) {
+    const D = v.terr, T = D && D.T; let L = this._tl;
+    if (!T) { if (this.terMesh) this.terMesh.visible = false; return; }
+    if (!L || L.T !== T) { if (this.terMesh) { this.scene.remove(this.terMesh); this.terMesh.geometry.dispose(); this.terMesh.material.map.dispose(); this.terMesh.material.dispose(); }
+      const n = T.dim, data = new Uint8Array(n * n * 4), tex = new THREE.DataTexture(data, n, n, THREE.RGBAFormat); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false; tex.needsUpdate = true;
+      const geo = new THREE.PlaneGeometry(n * T.cell, n * T.cell).rotateX(-Math.PI / 2), uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i)); // texel row j = world y (3D z) row j
+      const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, fog: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+      mat.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>", "#include <map_fragment>\n float tA = diffuseColor.a; diffuseColor.a = smoothstep(0.3, 0.62, tA) * mix(0.41, 0.59, smoothstep(0.86, 0.97, tA));"); };
+      mat.customProgramCacheKey = () => "terr1";
+      const m = new THREE.Mesh(geo, mat); m.position.set(0, 0.03, 0); m.renderOrder = 1; m.frustumCulled = false; this.scene.add(m); this.terMesh = m;
+      L = this._tl = { T, data, tex, gen: -1, seq: 0, me: -1, cv: -1, up: 0, dirty: false }; }
+    this.terMesh.visible = true; const me = D.me | 0, own = T.own, rgb = T.rgb, ok = T.colOk, P = L.data, d = T.dim;
+    const tint = (k, c) => { const o = k * 4; if (P[o + 3] === 0) { P[o] = rgb[c]; P[o + 1] = rgb[c + 1]; P[o + 2] = rgb[c + 2]; } }; // neutral neighbour takes the colour (filter fringe)
+    const put = (i) => { const s = own[i], o = i * 4; if (!s || !ok[s]) { P[o + 3] = 0; return; } const c = s * 3; P[o] = rgb[c]; P[o + 1] = rgb[c + 1]; P[o + 2] = rgb[c + 2]; P[o + 3] = s === me ? 255 : 210;
+      const x = i % d; if (x > 0) tint(i - 1, c); if (x < d - 1) tint(i + 1, c); if (i >= d) tint(i - d, c); if (i < T.N - d) tint(i + d, c); };
+    if (L.gen !== T.gen || L.me !== me || L.cv !== T.colV || T.seq - L.seq > TER.LOG) { for (let i = 0; i < T.N; i++) P[i * 4 + 3] = 0; for (let i = 0; i < T.N; i++) if (own[i]) put(i); L.gen = T.gen; L.me = me; L.cv = T.colV; L.seq = T.seq; L.dirty = true; }
+    else if (T.seq !== L.seq) { for (let q = L.seq; q < T.seq; q++) put(T.log[q % TER.LOG]); L.seq = T.seq; L.dirty = true; }
+    const now = performance.now(); if (L.dirty && now - L.up > 66) { L.tex.needsUpdate = true; L.dirty = false; L.up = now; }
   }
   _gtrail(v, dt) {
     const M = this.gtMesh; if (!M) return; const G = v.gt; if (!G) { M.count = 0; return; }
@@ -554,6 +578,7 @@ export class Renderer3D {
     this.snakes.commit(ni, nfx, ng); this._flushE(E, cnt); this._flush(this.teamRing, nt); this._flush(this.magRing, nm);
     if (v.cam.title !== undefined) { for (const m of this.candy) m.count = 0; this.halo.count = this.gem.count = 0; } else this._food(v, t, vx, vz, far ? 1e9 : vr2);
     if (v.cam.title !== undefined) { if (this.gtMesh) this.gtMesh.count = 0; } else this._gtrail(v, dt); // trail1
+    this._terr(v); // land1: territory ground layer
     this._modeFx(v, t); this._pus(v, t); this._meteors(v, t);
     if (this.pMax && v.rain) { const h = v.rain; for (let k = 0; k < 6; k++) { const a = Math.random() * 6.283, d = 3 + Math.random() * 16; this.emit(h.x + Math.cos(a) * d, 10 + Math.random() * 4, h.y + Math.sin(a) * d, 0, -18, 0, [0.8, 1.6, 0.3], 0.6, 0.35, 1, 0); } }
     if (this.pMax && v.goldRain) { const h = v.goldRain; for (let k = 0; k < 4; k++) { const a = Math.random() * 6.283, d = 2 + Math.random() * 28; this.emit(h.x + Math.cos(a) * d, 11 + Math.random() * 5, h.y + Math.sin(a) * d, 0, -16, 0, [1.8, 1.3, 0.3], 0.7, 0.4, 1, 0); } }
@@ -576,10 +601,10 @@ export class Renderer3D {
     mc.position.set(cp.x, -cp.y, cp.z); const target = (this._mt || (this._mt = new THREE.Vector3())).set(look.x, -look.y, look.z); mc.up.set(0, 1, 0).applyMatrix4(_m); mc.up.y = -mc.up.y; mc.lookAt(target);
     mc.fov = cam.fov; mc.aspect = cam.aspect; mc.near = cam.near; mc.far = cam.far; mc.updateMatrixWorld(); mc.projectionMatrix.copy(cam.projectionMatrix);
     this.mirrorMat.set(0.5, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0, 0.5, 0.5, 0, 0, 0, 1).multiply(mc.projectionMatrix).multiply(mc.matrixWorldInverse); this.world.groundU.uMat.value.copy(this.mirrorMat);
-    const g = this.world.ground, w = this.world.water, vis = this._vis || (this._vis = []); vis.length = 0; g.visible = false; if (w) w.visible = false; for (const L of this.labels.values()) { vis.push(L.sp); L.sp.visible = false; } this.pts.visible = false; if (this.gtMesh) this.gtMesh.visible = false;
+    const g = this.world.ground, w = this.world.water, vis = this._vis || (this._vis = []); vis.length = 0; g.visible = false; if (w) w.visible = false; for (const L of this.labels.values()) { vis.push(L.sp); L.sp.visible = false; } this.pts.visible = false; if (this.gtMesh) this.gtMesh.visible = false; const tv = !!(this.terMesh && this.terMesh.visible); if (tv) this.terMesh.visible = false;
     const shadow = this.r.shadowMap.autoUpdate; this.r.shadowMap.autoUpdate = false;
     const prev = this.r.getRenderTarget(); this.r.setRenderTarget(this.mirrorRT); this.r.clear(); this.r.render(this.scene, mc); this.r.setRenderTarget(prev);
-    this.r.shadowMap.autoUpdate = shadow; g.visible = true; if (w) w.visible = true; for (const s of vis) s.visible = true; this.pts.visible = true; if (this.gtMesh) this.gtMesh.visible = true;
+    this.r.shadowMap.autoUpdate = shadow; g.visible = true; if (w) w.visible = true; for (const s of vis) s.visible = true; this.pts.visible = true; if (this.gtMesh) this.gtMesh.visible = true; if (tv) this.terMesh.visible = true;
   }
   // candy1: big candy. Each food -> its candy type mesh (rotY * uniform scale), a soft round contact shadow under it,
   // a slow spin + bob of at most 0.045 (none with reduced motion). Gold Rush gold stays a metallic coin.

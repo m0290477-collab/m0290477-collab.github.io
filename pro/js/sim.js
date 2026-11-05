@@ -310,11 +310,12 @@ export class Sim {
         const d = Math.hypot(F.x - s.x, F.y - s.y), reach = 45 + s.r * 8 + Math.min(60, F.m * 0.25) + D.hunt * 25; if (d > reach || d < 6) continue; if (F.cl && F.cl.length >= 3 + Math.min(3, F.m / 90) && !F.cl.includes(s.id)) continue; const sc = F.m / (d + 8); if (sc > bs) { bs = sc; bf = F; } }
       // challenge: a rival bot racing for the same body gets cut off instead (bots fight over the food)
       if (bf && near && near.bot && !near.boss && nd < 16 + s.r * 3 && this.rand() < (0.2 + D.hunt * 0.35) * A) { ai.mode = 3; ai.commit = 5 + ((this.rand() * 5) | 0); bf = null; }
+      if (bf && this.ter && Math.hypot(bf.x - s.x, bf.y - s.y) > 22) bf = null; // land1: in territory only a body close by is worth leaving the plan for
       if (bf) { (bf.cl || (bf.cl = [])).includes(s.id) || bf.cl.push(s.id); const d = Math.hypot(bf.x - s.x, bf.y - s.y); want = Math.atan2(bf.y - s.y, bf.x - s.x); ai.mode = 7; boost = d > 14 && s.m > 30 && this.rand() < D.boost * 1.2 ? 1 : 0; } }
     // aggression, slither-style: keep committing to an attack for a while once started
     const range = 22 + s.r * 6 + D.hunt * 14;
-    if (want === null && near && nd < range && (ai.mode === 3 && ai.commit > 0 || this.rand() < (0.04 + D.hunt * 0.4) * A * (near.bot ? 1 : 1.7) * (ai.per === 0 ? 1.35 : ai.per === 2 ? 0.7 : 1) * Math.min(1, 3 / (1 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11)))) {
-      const o = near; ai.commit = ai.mode === 3 ? (ai.commit || 0) - 1 : 6 + ((this.rand() * 8) | 0); ai.mode = 3; risky = true;
+    if (want === null && near && nd < range && (ai.mode === 3 && ai.commit > 0 || this.rand() < (0.04 + D.hunt * 0.4) * A * (near.bot ? 1 : 1.7) * (ai.per === 0 ? 1.35 : ai.per === 2 ? 0.7 : 1) * Math.min(1, 3 / (1 + this._nh)) * Math.min(1.4, 11 / (this.nAlive || 11)) * (this.ter ? 0.18 : 1))) { // land1: territory bots hunt far less often and commit shorter (painting is the goal)
+      const o = near; ai.commit = ai.mode === 3 ? (ai.commit || 0) - 1 : (this.ter ? 2 + ((this.rand() * 3) | 0) : 6 + ((this.rand() * 8) | 0)); ai.mode = 3; risky = true;
       const big = s.m > o.m * (ai.per === 2 ? 1.6 : 2.2) && s.len > nd * 2.5; // builder coils earlier
       const ca = Math.cos(o.a), sa = Math.sin(o.a);
       const rel = (s.x - o.x) * ca + (s.y - o.y) * sa; // >0: we are ahead of its head
@@ -330,6 +331,7 @@ export class Sim {
         boost = s.m > 32 && this.rand() < D.boost * (ai.per === 1 ? (rel > -2 ? 1.6 : 0.3) : 1.1) && nd < range * 0.8 ? 1 : 0; // trickster: sudden burst once level
       }
     } else if (ai.mode === 3 && want === null) ai.mode = 0;
+    if (want === null && this.ter) { const ta = this.terThink(s, D, near, nd); if (ta !== null) { want = ta; ai.mode = 8; } } // land1: territory plan (loop out, back home)
     // feed: best value/distance food in range, preferring what lies ahead (corpse orbs are big and pull bots into fights)
     if (want === null) {
       const fg = this.fgrid, rad = 3 + (D.hunt > 0.5 ? 1 : 0), c0 = fg.ci(s.x, s.y), dim = fg.dim; let bf = -1, bs = 0;
@@ -363,6 +365,32 @@ export class Sim {
     }
     s.ta = want; s.boost = boost;
   }
+  // land1: a territory bot's plan. At home it picks the direction with the most neutral / enemy ground just outside its land,
+  // goes out (L units past the border), turns a right angle for ~L, then heads back to the middle of its land, which closes the
+  // loop (the Terr fill claims what it enclosed). An enemy head near it while it is outside, or 10 s out, sends it home at once.
+  // Body safety (rayDanger) still runs afterwards, exactly as for every other move, so bots keep the normal rules.
+  terThink(s, D, near, nd) {
+    const T = this.ter, ai = s.ai, sl = s.ts; if (!T || !sl || T.idOf[sl] !== s.id) return null;
+    const inOwn = !(s._tout > 0), now = this.tick * this.dt, P = ai.tp || (ai.tp = { ph: 0, t: now, a: 0, L: 0, sd: 1, ox: NaN, oy: 0, x2: 0, y2: 0, out: 0 });
+    const n = T.cnt[sl], cx = n ? -T.off + (T.sx[sl] / n + 0.5) * T.cell : s.x, cy = n ? -T.off + (T.sy[sl] / n + 0.5) * T.cell : s.y;
+    if (!inOwn) P.out = 1; else if (P.out && P.ph) { P.ph = 0; P.out = 0; P.t = now; } // back on its own land: the loop closed
+    if (P.ph === 0) {
+      if (!inOwn && n) { P.ph = 3; } // outside without a plan (spawned, pushed off): go home first
+      else { if (now - P.t < 0.15 + this.rand() * 0.35) return null; // a short beat at home (feeds, looks around)
+        const base = Math.hypot(s.x - cx, s.y - cy) > 1 ? Math.atan2(s.y - cy, s.x - cx) : s.a; let bA = base, bS = -1e9;
+        for (let k = -3; k <= 3; k++) { const a = base + k * 0.55 + (this.rand() - 0.5) * 0.3, ca = Math.cos(a), sa = Math.sin(a); let sc = -Math.abs(k) * 0.4;
+          for (let r = 4; r <= 22; r += 3) { const x = s.x + ca * r, y = s.y + sa * r; if (x * x + y * y > (this.R - 6) ** 2) { sc -= 6; break; } const q = T.cellAt(x, y); if (q < 0) continue; const o = T.own[q]; sc += o === sl ? 0 : o ? 1.4 : 1; }
+          if (sc > bS) { bS = sc; bA = a; } }
+        const big = Math.min(1.6, 0.7 + Math.sqrt(Math.max(1, n)) / 22); P.a = bA; P.L = (7 + this.rand() * 11) * (0.8 + D.hunt * 0.5) * big; P.sd = this.rand() < 0.5 ? 1 : -1; P.ph = 1; P.t = now; P.ox = NaN; P.out = 0; }
+    }
+    if (P.ph && P.ph < 3 && ((!inOwn && near && nd < 10 + s.r * 5 + D.hunt * 8 && near.m > s.m * 0.6) || now - P.t > 10)) P.ph = 3; // danger or too long out: home
+    if (P.ph === 1) { if (!inOwn && P.ox !== P.ox) { P.ox = s.x; P.oy = s.y; } // NaN check: where it left its land
+      const wall = Math.hypot(s.x + Math.cos(P.a) * 6, s.y + Math.sin(P.a) * 6) > this.R - 8;
+      if (wall || (P.ox === P.ox && Math.hypot(s.x - P.ox, s.y - P.oy) > P.L)) { P.ph = 2; P.x2 = s.x; P.y2 = s.y; } else return P.a; }
+    if (P.ph === 2) { const a = P.a + P.sd * 1.5708, wall = Math.hypot(s.x + Math.cos(a) * 6, s.y + Math.sin(a) * 6) > this.R - 8;
+      if (wall || Math.hypot(s.x - P.x2, s.y - P.y2) > P.L * 0.9) P.ph = 3; else return a; }
+    return Math.atan2(cy - s.y, cx - s.x); // 3: home (the middle of its land)
+  }
   // cheap per-tick reflex between decisions: only the ray straight ahead, short range
   botReflex(s) {
     this._nh = 0;
@@ -388,6 +416,7 @@ export class Sim {
     this.eat();
     if (this.powerups) this.puStep();
     if (this.events.length || this.mets.length) this.eventStep(dt);
+    if (this.ter) this.ter.step(this); // land1: territory (paint under every head, closed loops claim, dead snakes' land fades)
     // keep the world fed
     this.feed(false); if (this.mut === "ff") this.feed(false); // play2: fast food spawn = two top-ups per tick
   }
@@ -572,12 +601,112 @@ export class Sim {
   leaderboard(n) { return this.snakes.filter((s) => s.alive).sort((a, b) => b.m - a.m).slice(0, n); }
 }
 
+// ---------- land1: territory mode (وضع الأراضي) ----------
+// The arena is a grid of TER.CELL-unit cells. Every cell a head passes takes that snake's colour (with the corner cell of a
+// diagonal step, so a trail is always 4-connected). A closed loop (back onto its own land, or across its own trail) claims
+// everything it encloses: a flood fill from the border of the land's bounding box; what the fill cannot reach is inside.
+// A dead snake's land fades back to neutral over TER.DECAY s. Snake rules are unchanged (a head on a body kills; land never kills).
+// One class for all three uses: the offline game (stepped by Sim.step), the room (authoritative, track = delta list for the
+// clients) and the client mirror (cells applied from the server, never stepped).
+export const TER = { CELL: 2, R_OFF: 130, R_ON: 150, DUR: 180, DECAY: 3, PATCH: 3, FILL_GAP: 0.2, SNAKES: 16, BOTS_OFF: 13, PCT_BEST: 30, LOG: 16384 };
+export class Terr {
+  constructor(R, opt = {}) {
+    const cell = (this.cell = opt.cell || TER.CELL); this.R = R; const d = (this.dim = Math.ceil((2 * R) / cell)); this.N = d * d; this.off = (d * cell) / 2;
+    this.own = new Uint8Array(this.N); this.inside = new Uint8Array(this.N); let tot = 0; const lim = (R - cell * 0.5) ** 2;
+    for (let j = 0; j < d; j++) for (let i = 0; i < d; i++) { const x = -this.off + (i + 0.5) * cell, y = -this.off + (j + 0.5) * cell; if (x * x + y * y < lim) { this.inside[j * d + i] = 1; tot++; } }
+    this.total = tot; this.cnt = new Int32Array(256); this.idOf = new Int32Array(256); this.slotOf = new Map(); this.sx = new Float64Array(256); this.sy = new Float64Array(256);
+    this.bx0 = new Int16Array(256); this.bx1 = new Int16Array(256); this.by0 = new Int16Array(256); this.by1 = new Int16Array(256);
+    this.vis = new Uint32Array(this.N); this.stamp = 0; this.q = new Int32Array(this.N); this.dec = []; this.tick = 0; this.dt = opt.dt || 1 / 60; this.rand = opt.rand || Math.random;
+    this.track = !!opt.track; this.chg = []; this.chgM = new Uint8Array(this.N); this.evSlot = []; this.log = new Int32Array(TER.LOG); this.seq = 0; this.gen = 0; this.fills = 0; this.fillCells = 0;
+    this.rgb = new Uint8Array(256 * 3); this.colOk = new Uint8Array(256); this.colV = 0; // client: colour per slot (filled in by the game from the snake's skin)
+    this.reset();
+  }
+  reset() { this.own.fill(0); this.cnt.fill(0); this.idOf.fill(0); this.sx.fill(0); this.sy.fill(0); this.slotOf.clear(); this.dec.length = 0; this.free = []; for (let s = 255; s >= 1; s--) { this.free.push(s); this.bb0(s); }
+    this.chg.length = 0; this.chgM.fill(0); this.evSlot.length = 0; this.colOk.fill(0); this.gen++; }
+  bb0(s) { this.bx0[s] = this.by0[s] = 32767; this.bx1[s] = this.by1[s] = -1; }
+  cellAt(x, y) { const i = Math.floor((x + this.off) / this.cell), j = Math.floor((y + this.off) / this.cell); return i < 0 || j < 0 || i >= this.dim || j >= this.dim ? -1 : j * this.dim + i; }
+  set(i, s) { const o = this.own[i]; if (o === s) return; const d = this.dim, ci = i % d, cj = (i - ci) / d;
+    if (o) { this.cnt[o]--; this.sx[o] -= ci; this.sy[o] -= cj; }
+    this.own[i] = s; if (s) { this.cnt[s]++; this.sx[s] += ci; this.sy[s] += cj; if (ci < this.bx0[s]) this.bx0[s] = ci; if (ci > this.bx1[s]) this.bx1[s] = ci; if (cj < this.by0[s]) this.by0[s] = cj; if (cj > this.by1[s]) this.by1[s] = cj; }
+    if (this.track && !this.chgM[i]) { this.chgM[i] = 1; this.chg.push(i); }
+    this.log[this.seq++ % TER.LOG] = i; }
+  pct(s) { return s > 0 && this.total ? (this.cnt[s] / this.total) * 100 : 0; }
+  pctOf(id) { return this.pct(this.slotOf.get(id) || 0); }
+  // a live snake gets a slot and a small starting patch around its head
+  assign(sn) { const old = this.slotOf.get(sn.id); if (old && this.idOf[old] === sn.id) { sn.ts = old; return old; }
+    const s = this.free.pop(); if (!s) { sn.ts = 0; return 0; } this.idOf[s] = sn.id; this.slotOf.set(sn.id, s); sn.ts = s; sn._tp = 0; sn._tc = -1; sn._tout = 0; sn._tq = 0; sn._tf = 0; this.bb0(s); this.evSlot.push(s, sn.id);
+    const c = this.cellAt(sn.x, sn.y); if (c >= 0) { const d = this.dim, ci = c % d, cj = (c - ci) / d, P = TER.PATCH;
+      for (let dj = -P; dj <= P; dj++) for (let di = -P; di <= P; di++) { if (di * di + dj * dj > P * P + 1) continue; const x = ci + di, y = cj + dj; if (x < 0 || y < 0 || x >= d || y >= d) continue; const k = y * d + x; if (this.inside[k]) this.set(k, s); } }
+    return s; }
+  step(S) { this.tick++; this.dt = S.dt; const gap = Math.max(1, Math.round(TER.FILL_GAP / S.dt));
+    for (const sn of S.snakes) {
+      if (!sn.alive) { if (sn.ts) this.release(sn); continue; }
+      if (!sn.ts || this.idOf[sn.ts] !== sn.id) { if (!this.assign(sn)) continue; }
+      const c = this.cellAt(sn.x, sn.y);
+      if (c >= 0 && c !== sn._tc) { const p = sn._tc; sn._tc = c;
+        if (p >= 0) { const d = this.dim, pi = p % d, pj = (p - pi) / d, ci = c % d, cj = (c - ci) / d;
+          if (pi !== ci && pj !== cj) this.paint(sn, pj * d + ci); // diagonal step: the corner cell too (4-connected trail)
+          if (Math.abs(pi - ci) > 1 || Math.abs(pj - cj) > 1) { const n = Math.max(Math.abs(pi - ci), Math.abs(pj - cj)); for (let k = 1; k < n; k++) this.paint(sn, Math.round(pj + ((cj - pj) * k) / n) * d + Math.round(pi + ((ci - pi) * k) / n)); } } // a fast step (dash) skips no cell
+        this.paint(sn, c); }
+      if (sn._tq && this.tick >= (sn._tf | 0)) { sn._tq = 0; sn._tf = this.tick + gap; this.enclose(sn.ts); }
+    }
+    if (this.dec.length) this.decay();
+    if (this.tick % 60 === 0) for (let s = 1; s < 256; s++) { const id = this.idOf[s]; if (id > 0) { const o = S.byId.get(id); if (!o || !o.alive) this.release(o || { id, ts: s }); } } // a snake removed without a death step
+  }
+  paint(sn, i) { if (!this.inside[i]) return; const s = sn.ts; if (this.own[i] === s) { if (sn._tout > 0) { sn._tout = 0; sn._tq = 1; } return; } this.set(i, s); sn._tout = (sn._tout | 0) + 1; }
+  // flood fill from the border of slot s's bounding box (+1): every cell the fill cannot reach without crossing s is enclosed
+  enclose(s) { const d = this.dim, x0 = Math.max(0, this.bx0[s] - 1), x1 = Math.min(d - 1, this.bx1[s] + 1), y0 = Math.max(0, this.by0[s] - 1), y1 = Math.min(d - 1, this.by1[s] + 1); if (x0 >= x1 || y0 >= y1) return 0;
+    const st = ++this.stamp, V = this.vis, Q = this.q, O = this.own; let h = 0, t = 0; this.fills++;
+    for (let x = x0; x <= x1; x++) { let i = y0 * d + x; if (O[i] !== s && V[i] !== st) { V[i] = st; Q[t++] = i; } i = y1 * d + x; if (O[i] !== s && V[i] !== st) { V[i] = st; Q[t++] = i; } }
+    for (let y = y0 + 1; y < y1; y++) { let i = y * d + x0; if (O[i] !== s && V[i] !== st) { V[i] = st; Q[t++] = i; } i = y * d + x1; if (O[i] !== s && V[i] !== st) { V[i] = st; Q[t++] = i; } }
+    while (h < t) { const i = Q[h++], x = i % d, y = (i - x) / d; let k;
+      if (x > x0 && O[(k = i - 1)] !== s && V[k] !== st) { V[k] = st; Q[t++] = k; } if (x < x1 && O[(k = i + 1)] !== s && V[k] !== st) { V[k] = st; Q[t++] = k; }
+      if (y > y0 && O[(k = i - d)] !== s && V[k] !== st) { V[k] = st; Q[t++] = k; } if (y < y1 && O[(k = i + d)] !== s && V[k] !== st) { V[k] = st; Q[t++] = k; } }
+    let n = 0; for (let y = y0 + 1; y < y1; y++) for (let x = x0 + 1; x < x1; x++) { const i = y * d + x; if (O[i] !== s && V[i] !== st && this.inside[i]) { this.set(i, s); n++; } }
+    this.fillCells += (x1 - x0 + 1) * (y1 - y0 + 1); return n; }
+  // the snake is gone: its land fades (random order) over TER.DECAY s, then the slot is free again
+  release(sn) { const s = sn.ts || this.slotOf.get(sn.id) || 0; if (sn.ts !== undefined) sn.ts = 0; if (!s || this.idOf[s] !== sn.id) return; sn._tp = this.pct(s); /* land1b: land % at death (the room ranks dead players by it) */ this.slotOf.delete(sn.id); this.idOf[s] = -1;
+    const d = this.dim, L = []; for (let y = Math.max(0, this.by0[s]); y <= Math.min(d - 1, this.by1[s]); y++) for (let x = Math.max(0, this.bx0[s]); x <= Math.min(d - 1, this.bx1[s]); x++) { const i = y * d + x; if (this.own[i] === s) L.push(i); }
+    for (let k = L.length - 1; k > 0; k--) { const j = (this.rand() * (k + 1)) | 0, v = L[k]; L[k] = L[j]; L[j] = v; }
+    if (!L.length) { this.freeSlot(s); return; } this.dec.push({ s, L, k: 0, per: Math.max(1, Math.ceil(L.length / Math.max(1, TER.DECAY / this.dt))) }); }
+  decay() { for (let q = this.dec.length - 1; q >= 0; q--) { const D = this.dec[q]; let n = D.per; while (n-- > 0 && D.k < D.L.length) { const i = D.L[D.k++]; if (this.own[i] === D.s) this.set(i, 0); }
+      if (D.k >= D.L.length) { this.dec.splice(q, 1); if (this.cnt[D.s] > 0) { const d = this.dim; for (let i = 0; i < this.N; i++) if (this.own[i] === D.s) this.set(i, 0); } this.freeSlot(D.s); } } }
+  freeSlot(s) { this.idOf[s] = 0; this.bb0(s); this.colOk[s] = 0; this.free.push(s); this.evSlot.push(s, 0); }
+  // live ranking: [slot, cells] of living snakes, most land first
+  top(n) { const out = []; for (let s = 1; s < 256; s++) if (this.idOf[s] > 0 && this.cnt[s] > 0) out.push([s, this.cnt[s]]); out.sort((a, b) => b[1] - a[1] || a[0] - b[0]); return n ? out.slice(0, n) : out; }
+  rankOf(s) { if (!s) return 0; const c = this.cnt[s]; let r = 1; for (let k = 1; k < 256; k++) if (k !== s && this.idOf[k] > 0 && this.cnt[k] > c) r++; return r; }
+  // ---- wire format (room -> client) ----
+  // full: [u8 4][u16 dim][u8 n][n x (u8 slot, u16 snake id; 0 = fading)] then runs [u8 slot][u16 len] covering all cells
+  full() { const sl = []; for (let s = 1; s < 256; s++) if (this.idOf[s]) sl.push(s); let runs = 0; for (let i = 0; i < this.N;) { const o = this.own[i]; let j = i + 1; while (j < this.N && this.own[j] === o && j - i < 65535) j++; runs++; i = j; }
+    const b = new ArrayBuffer(4 + sl.length * 3 + runs * 3), v = new DataView(b); v.setUint8(0, 4); v.setUint16(1, this.dim, true); v.setUint8(3, sl.length); let o = 4;
+    for (const s of sl) { v.setUint8(o, s); v.setUint16(o + 1, Math.max(0, this.idOf[s]), true); o += 3; }
+    for (let i = 0; i < this.N;) { const w = this.own[i]; let j = i + 1; while (j < this.N && this.own[j] === w && j - i < 65535) j++; v.setUint8(o, w); v.setUint16(o + 1, j - i, true); o += 3; i = j; }
+    return b; }
+  // delta since the last take: [u8 5][u16 n] n x (u16 start, u16 len, u8 slot); null when nothing changed
+  take() { if (!this.chg.length) return null; const C = this.chg.sort((a, b) => a - b), R = []; let a = C[0], p = C[0], w = this.own[C[0]];
+    for (let k = 1; k <= C.length; k++) { const i = C[k]; if (k < C.length && i === p + 1 && this.own[i] === w && p - a < 65534) { p = i; continue; } R.push(a, p - a + 1, w); if (k < C.length) { a = p = i; w = this.own[i]; } }
+    for (const i of C) this.chgM[i] = 0; C.length = 0;
+    const b = new ArrayBuffer(3 + (R.length / 3) * 5), v = new DataView(b); v.setUint8(0, 5); v.setUint16(1, R.length / 3, true); let o = 3;
+    for (let k = 0; k < R.length; k += 3) { v.setUint16(o, R[k], true); v.setUint16(o + 2, R[k + 1], true); v.setUint8(o + 4, R[k + 2]); o += 5; }
+    return b; }
+  // client side of the two frames above (slot ids: n > 0 = that snake, 0 = fading)
+  applyFull(buf) { const v = new DataView(buf); if (v.getUint8(0) !== 4 || v.getUint16(1, true) !== this.dim) return false; this.reset(); const n = v.getUint8(3); let o = 4;
+    for (let k = 0; k < n; k++) { const s = v.getUint8(o), id = v.getUint16(o + 1, true); o += 3; this.mapSlot(s, id || -1); }
+    let i = 0; while (o + 3 <= buf.byteLength && i < this.N) { const w = v.getUint8(o), L = v.getUint16(o + 1, true); o += 3; for (let k = 0; k < L && i < this.N; k++, i++) this.set(i, w); }
+    this.gen++; return true; }
+  applyDelta(buf) { const v = new DataView(buf); if (v.getUint8(0) !== 5) return; const n = v.getUint16(1, true); let o = 3;
+    for (let k = 0; k < n && o + 5 <= buf.byteLength; k++) { const a = v.getUint16(o, true), L = v.getUint16(o + 2, true), w = v.getUint8(o + 4); o += 5; for (let i = a; i < a + L && i < this.N; i++) this.set(i, w); } }
+  mapSlot(s, id) { if (s < 1 || s > 255) return; const was = this.idOf[s]; if (was > 0 && this.slotOf.get(was) === s) this.slotOf.delete(was);
+    if (id > 0) { this.idOf[s] = id; this.slotOf.set(id, s); this.free = this.free.filter((x) => x !== s); if (was !== id) this.colOk[s] = 0; }
+    else if (id < 0) this.idOf[s] = -1; else { this.idOf[s] = 0; this.colOk[s] = 0; this.bb0(s); } }
+}
+
 // server-side check of a skin descriptor sent by a client: only known shapes and safe values survive
 export function sanitizeSkin(d) {
   const o = { k: "skin", i: 0, p: 0, c: ["#18c964", "#0b7a3b", "#b8ffcf"], e: 0, t: 0, n: 0 };
   if (!d || typeof d !== "object") return o;
-  if (d.k === "flag" || d.k === "skin" || d.k === "custom") o.k = d.k;
-  o.i = Math.max(0, Math.min(400, d.i | 0)); o.p = Math.max(0, Math.min(15, d.p | 0));
+  if (d.k === "flag" || d.k === "skin" || d.k === "custom" || d.k === "fu") o.k = d.k; // land1: "fu" = a fusion skin, i = pair index (skins.js fuIdx)
+  o.i = Math.max(0, Math.min(o.k === "fu" ? 16383 : 400, d.i | 0)); o.p = Math.max(0, Math.min(15, d.p | 0));
   if (Array.isArray(d.c)) o.c = d.c.slice(0, 3).map((h) => (typeof h === "string" && /^#[0-9a-fA-F]{6}$/.test(h) ? h : "#18c964"));
   o.e = Math.max(0, Math.min(11, d.e | 0)); o.t = Math.max(0, Math.min(12, d.t | 0)); o.n = Math.max(0, Math.min(19, d.n | 0));
   if (typeof d.av === "string" && /^(p([0-9]|1[0-9]|2[0-3])|f\d{1,3})$/.test(d.av)) o.av = d.av; o.fr = Math.max(0, Math.min(17, d.fr | 0)); /* comp1: 15..17 competition frames */ // profile avatar + frame (HUD rows)

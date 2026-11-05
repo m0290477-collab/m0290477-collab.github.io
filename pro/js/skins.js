@@ -176,6 +176,7 @@ export function compileSkin(d) {
   if (d && d.k === "flag" && FLAGS[d.i]) { const f = FLAGS[d.i]; return makeFlag(f.cols.map(hexRgb)); }
   if (d && d.k === "skin" && SKINS[d.i]) { p = SKINS[d.i].p; cols = SKINS[d.i].c; }
   if (d && d.k === "custom" && Array.isArray(d.c)) { p = d.p | 0; cols = d.c; }
+  if (d && d.k === "fu") { const F = fusionDef(d.i); if (F) { p = F.p; cols = F.c; } } // land1: fusion skin
   const c = cols.map((h) => (/^#[0-9a-f]{6}$/i.test(h) ? hexRgb(h) : [0.1, 0.8, 0.4]));
   while (c.length < 3) c.push(c[0]);
   return makePattern(p, c);
@@ -213,3 +214,29 @@ export function swatchCss(d) {
   return `linear-gradient(90deg, ${st.join(",")})`;
 }
 export function primaryColor(d) { const f = compileSkin(d), o = [0, 0, 0]; f(1, 20, 0, o); return "#" + o.map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join(""); }
+
+// ---------- land1: skin fusion (مزج السكنات) ----------
+// Two owned skins + a coin fee -> one new skin, generated from the pair (same result for everyone, both orders). Inputs are
+// kept. Only skins a player bought or earned can be fused (coins / pass / chain / weekly / boss); level skins (free as you
+// level up), flags, custom colours and owner-only items cannot. Each pair once. Owned key "fu:<idA>+<idB>" (catalogue order);
+// in-game descriptor { k: "fu", i: a * 128 + b } (a < b, SKINS indices). The server checks ownership and charges the fee.
+export let FUSION_FEE = 2000; export const FUSION_FEE0 = 2000; export function setFusionFee(v) { FUSION_FEE = v > 0 ? v | 0 : FUSION_FEE0; }
+export const fusable = (i) => { const S = SKINS[i]; return !!(S && S.src && /^(coins|pass|chain|weekly|boss):/.test(S.src)); };
+export const FUSABLE = SKINS.map((s, i) => i).filter(fusable);
+export const fuIdx = (a, b) => (a < b ? a * 128 + b : b * 128 + a);
+export const fuKey = (a, b) => { const x = Math.min(a, b), y = Math.max(a, b); return "fu:" + SKINS[x].id + "+" + SKINS[y].id; };
+export function fuParse(key) { const m = /^fu:([a-z0-9_]{1,24})\+([a-z0-9_]{1,24})$/.exec(String(key || "")); if (!m) return null;
+  const a = FUSABLE.find((i) => SKINS[i].id === m[1]), b = FUSABLE.find((i) => SKINS[i].id === m[2]); return a !== undefined && b !== undefined && a < b ? [a, b] : null; }
+const fuH = (s) => { let h = 2166136261; for (const ch of s) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); h ^= h >>> 13; h = Math.imul(h, 2246822507); return (h ^ (h >>> 16)) >>> 0; };
+const toHex = (c) => "#" + c.map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
+// blend in light-linear space (no muddy middle), then nudge saturation up a little so the mix stays vivid but calm
+function fuMix(x, y, w) { const A = hexRgb(x), B = hexRgb(y), o = [0, 1, 2].map((k) => Math.sqrt(A[k] * A[k] * (1 - w) + B[k] * B[k] * w)); const m = (o[0] + o[1] + o[2]) / 3; return toHex(o.map((v) => m + (v - m) * 1.12)); }
+const FU_CALM = { 7: 3, 8: 9 }; // rainbow / pulse animate fast: a fusion uses the calm pattern next to them instead
+const FU_CACHE = new Map();
+export function fusionDef(i) { i = i | 0; if (FU_CACHE.has(i)) return FU_CACHE.get(i); const a = i >> 7, b = i & 127; let F = null;
+  if (a < b && fusable(a) && fusable(b)) { const A = SKINS[a], B = SKINS[b], key = "fu:" + A.id + "+" + B.id, h = fuH(key), w = 0.35 + ((h >>> 8) & 255) / 255 * 0.3;
+    let p = [A.p, B.p, (A.p + B.p + 3) % PATTERNS.length][h % 3]; if (FU_CALM[p] !== undefined) p = FU_CALM[p];
+    const c = [fuMix(A.c[0], B.c[0], w), fuMix(A.c[1], B.c[1], 1 - w), fuMix(A.c[2], B.c[(h >>> 16) % 3], 0.5)];
+    const [P, Q] = (h >>> 3) & 1 ? [B.id, A.id] : [A.id, B.id], front = P.slice(0, Math.max(3, Math.ceil(P.length * 0.5))), back = Q.slice(Math.min(Q.length - 2, Math.floor(Q.length * 0.5)));
+    const name = (front + back).replace(/_/g, "").replace(/(.)\1\1+/g, "$1$1"); F = { i, a, b, key, p, c, name: name.charAt(0).toUpperCase() + name.slice(1), rar: h % 100 < 40 ? "epic" : "rare" }; }
+  FU_CACHE.set(i, F); return F; }

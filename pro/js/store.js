@@ -1,13 +1,13 @@
 // Storage, local accounts, safe migration from the day-1 game, profile, progression, missions, achievements, stats.
 // Pro keys are prefixed "ssp-". The day-1 keys ("ss-acc", "ss-lang") are only ever READ, never written, so the root game is untouched.
-import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex } from "./skins.js?v=warm2";
+import { FLAGS, OLD_FLAG0, SKINS, EYES, TRAILS, FLAG_PRICE, GTRAILS, gtIndex, FUSION_FEE, setFusionFee, fusable, fuKey } from "./skins.js?v=land1";
 // coin1: season pass + chains + mission / achievement tables live in econ.js (shared with the worker, which prices every reward)
-import { SEASON, seasonReward, CHAINS, dailyMissions, ACH_COINS, levelCoins, UNLOCKS, bonusCoins, weeklyCoins } from "./econ.js?v=warm2";
-import { walletInit, claim, buy as wBuy, buySid, spin as wSpin, migrated } from "./wallet.js?v=warm2";
+import { SEASON, seasonReward, CHAINS, dailyMissions, ACH_COINS, levelCoins, UNLOCKS, bonusCoins, weeklyCoins } from "./econ.js?v=land1";
+import { walletInit, claim, buy as wBuy, buySid, spin as wSpin, migrated, fuse as wFuse } from "./wallet.js?v=land1";
 export { SEASON, seasonReward, CHAINS };
 const isoWeek = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + Math.ceil(((t - y0) / 86400000 + 1) / 7); };
-import { WORLDS } from "./worlds.js?v=warm2";
-import { FRAMES, TITLES } from "./profile.js?v=warm2";
+import { WORLDS } from "./worlds.js?v=land1";
+import { FRAMES, TITLES } from "./profile.js?v=land1";
 
 export const KV = (() => {
   const mem = new Map(); let ls = null; let full = false;
@@ -312,6 +312,11 @@ export class Store {
   gtPrice(i) { const G = GTRAILS[i]; return G ? G.price | 0 : 0; }
   buyGTrail(i, price) { const G = GTRAILS[i], base = this.gtPrice(i); if (!G || !base) return "na"; if (price != null && Number.isFinite(Number(price)) && Number(price) > 0 && !this._priceOk(price, base)) return "badPrice";
     return this.purchase("gt:" + i, price ?? base, () => { if (!this.p.owned.includes("gt:" + G.id)) this.p.owned.push("gt:" + G.id); }, () => this.unlocked("gtrail", i), { k: "gt", ix: i }); }
+  // land1: skin fusion, decided by the server (ownership, the pair once, the fee). Returns "ok" | "own" | an ERR-style code.
+  async fuse(a, b) { if (a === b || !fusable(a) || !fusable(b)) return "na"; const r = await wFuse(a, b, FUSION_FEE);
+    if (r && r.err === "price" && r.fee) { setFusionFee(r.fee); return "badPrice"; } if (r && r.ok) { const k = fuKey(a, b); if (!this.p.owned.includes(k)) this.p.owned.push(k); this.save(); return "ok"; }
+    if (r && r.err === "own") { const k = fuKey(a, b); if (!this.p.owned.includes(k)) this.p.owned.push(k); this.save(); return "own"; }
+    return r && r.err === "offline" ? "offline" : r && r.err === "noCoins" ? "noCoins" : r && r.err === "rate" ? "busy" : r && r.err === "notOwned" ? "na" : "oops"; }
   equipGTrail(i) { if (i < 0) { this.p.gt = ""; this.save(); return "ok"; } const G = GTRAILS[i]; if (!G) return "na"; if (!this.unlocked("gtrail", i)) return "locked"; this.p.gt = G.id; this.save(); return "ok"; }
   seasonTier() { return Math.min(SEASON.tiers, Math.floor(this.p.season.xp / SEASON.per)); }
   addSeasonXp(n) { const b = this.seasonTier(); this.p.season.xp += Math.max(0, Math.round(n)); const a = this.seasonTier(); this.save(); return a > b ? a - b : 0; }

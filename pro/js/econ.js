@@ -1,9 +1,9 @@
 // coin1: the coin economy's single source of truth, shared by the game (display, optimistic amounts) and the worker (the
 // wallet decides). Pure data + rules: no DOM, no storage. The server never takes an amount from the client: it recomputes
 // every reward from these tables and every price from the catalogue (and this week's offers) before it moves a coin.
-import { SKINS, FLAGS, FLAG_PRICE, GTRAILS } from "./skins.js?v=warm2";
-import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=warm2";
-import { CONTESTS } from "./sim.js?v=warm2";
+import { SKINS, FLAGS, FLAG_PRICE, GTRAILS, fuParse } from "./skins.js?v=land1";
+import { weeklyOffers, monthlyBundle, occasionBundle } from "./offers.js?v=land1";
+import { CONTESTS } from "./sim.js?v=land1";
 
 export const DAY = 86400000;
 // ---------- daily login calendar + lucky wheel (were in profile.js) ----------
@@ -88,7 +88,7 @@ export function catItem(k, i) {
 // a known item key (migration import, owner grants): true when the catalogue or the cosmetic list has it
 export function validKey(key) {
   key = String(key || ""); if (COS_KEY.test(key)) return true; if (/^fl:\d{1,3}$/.test(key)) return !!FLAGS[+key.slice(3)]; if (/^gt:[a-z0-9_]{1,24}$/.test(key)) return GTRAILS.some((g) => g.id === key.slice(3));
-  if (/^sid:\d{5}$/.test(key)) return true; return SKINS.some((s) => s.id === key && s.src);
+  if (/^sid:\d{5}$/.test(key)) return true; if (/^fu:/.test(key)) return !!fuParse(key); /* land1: a fusion skin */ return SKINS.some((s) => s.id === key && s.src);
 }
 // the offers a player could be looking at right now: every local time zone (UTC-12 .. UTC+14) of this moment, with the
 // player's server-held items skipped exactly like the shop does on the device

@@ -1,23 +1,24 @@
 // Game loop, modes, offline backend, effects, cinematics, adaptive music, HUD feed, auto-quality.
 // Renderer-agnostic (3D or 2D fallback). Modes: classic, time, survival, zen, online + battle royale (storm),
 // king of the hill, boss event (giant AI snake with phases), team battle.
-import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=warm2"; // Track B: extra modes + skill chain
-import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=warm2";
-import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=warm2";
-import { GTrail } from "./gfx/gtrail.js?v=warm2"; // trail1: cosmetic ground trail decals (never in the sim)
-import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=warm2";
-import { NetBackend } from "./net.js?v=warm2";
-import { pidTier, PID_GLYPH } from "./pid.js?v=warm2"; // srv2
-import { onFind, findHide, accountMatchEnd } from "./account.js?v=warm2"; // srv2
-import { t, fmtNum } from "./i18n.js?v=warm2"; import { onlineBlock } from "./admin2.js?v=warm2"; // admin2
-import { haptic } from "./audio.js?v=warm2";
-import { rankOf, rpDelta } from "./profile.js?v=warm2";
-import { Replay } from "./replay.js?v=warm2";
-import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=warm2"; // comp1
-import { onServerTrophy } from "./compui.js?v=warm2";
-import { Governor } from "./gov.js?v=warm2"; // perf2: adaptive render governor
-import { claim, claimId } from "./wallet.js?v=warm2"; // coin1: offline match coins are claimed from the server wallet
-import { emit } from "./events.js?v=warm2"; import "./play2.js"; // play2 strings // aaa2: fx.* hooks (renderers + audio subscribe)
+import { XMODES, XMODE_CFG, XMODE_EVENTS, XT, xFinish } from "./modes.js?v=land1"; // Track B: extra modes + skill chain
+import { Sim, C, BOT_NAMES, pickBotName, bodyPoints, PU, PU_COL, PU_ICON, PU_DUR, GOLD_FC } from "./sim.js?v=land1";
+import { compileSkin, SKINS, FLAGS, NAME_COLORS, primaryColor, skinFx, LEGEND, gtIndex } from "./skins.js?v=land1";
+import { GTrail } from "./gfx/gtrail.js?v=land1"; // trail1: cosmetic ground trail decals (never in the sim)
+import { FOOD_COLORS, FOOD_COLORS_CB, WORLDS } from "./worlds.js?v=land1";
+import { NetBackend } from "./net.js?v=land1";
+import { pidTier, PID_GLYPH } from "./pid.js?v=land1"; // srv2
+import { onFind, findHide, accountMatchEnd } from "./account.js?v=land1"; // srv2
+import { t, fmtNum } from "./i18n.js?v=land1"; import { onlineBlock } from "./admin2.js?v=land1"; // admin2
+import { haptic } from "./audio.js?v=land1";
+import { rankOf, rpDelta } from "./profile.js?v=land1";
+import { Replay } from "./replay.js?v=land1";
+import { afterMatch, applyServer, devKey, trophies } from "./league.js?v=land1"; // comp1
+import { onServerTrophy } from "./compui.js?v=land1";
+import { Governor } from "./gov.js?v=land1"; // perf2: adaptive render governor
+import { claim, claimId } from "./wallet.js?v=land1"; // coin1: offline match coins are claimed from the server wallet
+import { terView, terLb, terTick, terLeft, onTerr, terOnlineRes, terOnDeath } from "./land1.js?v=land1"; // land1: territory (registers its offline mode before MODES below)
+import { emit } from "./events.js?v=land1"; import "./play2.js"; // play2 strings // aaa2: fx.* hooks (renderers + audio subscribe)
 const EV = { eat: {}, kill: {}, mykill: {}, death: {}, pos: {}, boost: { on: false } }; // reused payloads (no allocation on the hot path)
 
 const toLin = (v) => v * v * (0.7 + 0.3 * v);
@@ -133,6 +134,7 @@ export class Game {
     this.combo = 0; this.comboT = 0; this.gainAcc = 0; this.gainT = 0; this.rankShown = 99; this.massMile = 0; this.liveMs = new Set(); this.puLast = null; this.hintI = 0; this.hintT = 4; this.stats.bonus = 0; this.stats.pu = 0; this.stats.bounty = 0; this.watching = false; this.killer = null; this.selfHit = false; this.deathCause = 0; this.emoT = 0; this.rainFx = null; this.evNow = null; // no stale killer from the last match
     this.matchT0 = performance.now(); this.slowWins = 0; this.goodWins = 0; this.slowQ = 0; this.qRose = false; this.ft.fill(1000 / (this.app.store.settings.fpsCap || 60)); this.ended = false; this.paused = false; this.deathT = 0; this.spectate = null; this.feed = []; this.lastLb = 0; this.killcam = null; this.victory = null; this.streak = 0; this.streakT = 0; this.endAt = 0; this.respawnAt = 0;
     if (!this.rec) this.rec = new Replay(); this.rec.reset(); this.rec.clip = null; this.rec.meRef = null; this.replay = null; this.rpPending = false; this.recMs = 0; this.recN = 0; this.app.ui.replayHide && this.app.ui.replayHide();
+    this.terOnline = false; this.terPk = 0; this.terDeath = null; this.terFinal = null; this._xl = ""; // land1
     this.zone = null; this.hill = null; this.boss = null; this.teamScore = [0, 0]; this.kothPts = new Map(); this.lives = this.M.lives || 0; this.win = false; this.place = 0;
     const skin = this.mySkin();
     const cb = {
@@ -142,12 +144,13 @@ export class Game {
       onPu: (s, k, hit, p) => this.onPu(s, k, hit, p), onShield: (s) => this.onShield(s),
       onEvt: (e) => this.onEvt(e), onMeteor: (M) => this.onMeteor(M), onImpact: (x, y, r) => this.onImpact(x, y, r),
       onTrophy: (m) => this.onTrophy(m), onFind: (f) => onFind(f), // srv2: finding-a-server overlay
+      onTerr: (e) => onTerr(this, e), // land1: territory room events
       onBounty: (m) => { this.hud.banner("👑 " + t("p2_btyGot", { n: fmtNum(m.c | 0) }), 2600, "sub"); }, // play2: crown bounty paid by the room (no sound)
       onMut: (k) => { if (k && k !== this._mutShown) { this._mutShown = k; this.hud.banner("✨ " + t("p2_mutOn", { k: t("p2_mut_" + k) }), 2600, "sub"); } }, // play2: weekend rule
     };
     this.troMsg = null;
     if (cfg.mode === "online") {
-      this.mseed = null; this.backend = new NetBackend({ room: cfg.room, name: p.name, skin, cb, bots: cfg.bots, pk: devKey(this.app.store) }); this.backend.connect(); this.hud.net(t("connecting"));
+      this.mseed = null; this.backend = new NetBackend({ room: cfg.room, name: p.name, skin, cb, bots: cfg.bots, pk: devKey(this.app.store), md: cfg.ter && !cfg.room ? "t" : "" }); /* land1: md t = territory matchmaking */ this.backend.connect(); this.hud.net(t("connecting"));
     } else {
       const sd = cfg.seed ?? ((Math.random() * 1e9) | 0); this.mseed = sd; /* grow1: challenge links share it */ this.backend = new LocalBackend(cfg.mode, { diff: cfg.diff, seed: sd }, cb); this.backend.spawn(p.name, skin);
       if (cfg.mode === "time") this.stats.timeLeft = MODES.time.dur;
@@ -188,7 +191,7 @@ export class Game {
     if (this.mode === "online" && b && b.status === "online" && !b.closed) {
       const p = this.app.store.p; this.ended = false; this.endAt = 0; this.spectate = null; this.killer = null;
       this.stats = { kills: 0, food: 0, boost: 0, life: 0, best: 0, rankBest: 99, t0: performance.now(), lifeT0: performance.now(), deaths: 0, score: 0, timeLeft: 0, wave: 1 };
-      b.spawn(p.name, this.mySkin()); this.app.input.reset(); this.app.input.enabled = true; this.hud.show("online"); return;
+      b.spawn(p.name, this.mySkin()); this.app.input.reset(); this.app.input.enabled = true; this.hud.show("online"); this.terDeath = null; this.deathCause = 0; if (b.ter) { this._xl = ""; onTerr(this, { ph: "on" }); } return; // land1: territory HUD back
     }
     this.restart();
   }
@@ -295,20 +298,20 @@ export class Game {
   }
   onMyDeath(by, cause) {
     const A = this.app, me = this.backend.me; if (!me) return;
-    { const E = EV.death; E.x = me.x; E.y = me.y; E.cause = cause | 0; emit("fx.death", E); }
+    { const E = EV.death; E.x = me.x; E.y = me.y; E.cause = cause | 0; emit("fx.death", E); } terOnDeath(this); // land1: place + share at the moment of death
     this.stats.deaths++; const life = (performance.now() - this.stats.lifeT0) / 1000; this.stats.life = Math.max(this.stats.life, life);
     A.audio.play("die"); A.audio.boost(false); haptic.pattern([40, 30, 80]); this.r.shake(1.2); this.r.kick && this.r.kick(1.2, [0.6, 0, 0], 0.35);
     const f = skinFn(this.mySkin()), lin = this.colOf({ skin: this.mySkin() });
     const calm = A.store.settings.calmFx; if (!calm) { this.r.shatter(me, f, 40); this.r.burst(me.x, me.y, lin, 16, 9, 0.8, 0.7, 6); this.hud.flash(); } this.r.ring(me.x, me.y, [1, 1, 1], 6); // calm1: short, cheap death beat, no slow-motion
     me.alive = false; me.deadAt = performance.now(); this.deathT = performance.now(); if (this.qPend) setTimeout(() => this.flushQ(), 700); /* resp2 fix3 */ this.killer = by && by !== me.id ? this.findSnake(by) : null; if (this.killer === me) this.killer = null; const selfHit = (this.selfHit = false); /* noself1: own body never kills */ this.deathCause = cause;
     this.spectate = this.killer; A.input.enabled = false; A.input.reset(); this.streak = 0;
-    const msg = by && this.killer ? t("killedBy", { n: this.killer.name }) : cause === 6 ? t("meteorDeath") : cause === 3 && this.mode === "br" ? t("stormDeath") : cause === 1 ? t("hitWall") : t("eliminated");
+    const msg = cause === 7 ? t("ter_over") : by && this.killer ? t("killedBy", { n: this.killer.name }) : cause === 6 ? t("meteorDeath") : cause === 3 && this.mode === "br" ? t("stormDeath") : cause === 1 ? t("hitWall") : t("eliminated");
     if (by && this.killer) this.pushFeed(this.killer.name, t("you"), false); this.hud.combo(0); this.hud.puClear();
     const respawn = (this.mode === "time" && this.stats.timeLeft > 2) || this.mode === "koth" || this.mode === "team" || (this.mode === "boss" && --this.lives > 0) || !!(this.xm && this.xm.respawn && this.xm.respawn(this));
     if (respawn) { this.respawnAt = performance.now() + 1900; this.hud.banner(msg + (this.mode === "boss" ? " · " + t("livesN", { n: this.lives }) : ""), 1700); }
     else { if (this.mode === "br") this.place = this.backend.sim.snakes.filter((x) => x.alive).length + 1; this.endAt = performance.now() + 650; this.hud.banner(msg, 1200); // calm1: results almost straight away
       // replay1: freeze the last seconds as a clip; it plays after the short death beat, then results
-      this.rpPending = false; if (this.rec && this.mode !== "zen" && A.store.settings.replay !== false) { if (this.rec.meRef === me) { this.build(0); this.rec.record(performance.now(), this.view, me, true); /* fix1: last sample = the frame of the actual contact */ } this.rpPending = this.rec.freeze({ cause, self: selfHit, killer: this.killer ? this.killer.id : 0 }); } else if (this.rec) this.rec.clip = null; }
+      this.rpPending = false; if (this.rec && this.mode !== "zen" && cause !== 7 && A.store.settings.replay !== false) { if (this.rec.meRef === me) { this.build(0); this.rec.record(performance.now(), this.view, me, true); /* fix1: last sample = the frame of the actual contact */ } this.rpPending = this.rec.freeze({ cause, self: selfHit, killer: this.killer ? this.killer.id : 0 }); } else if (this.rec) this.rec.clip = null; }
   }
   onNet(st, n) {
     const A = this.app;
@@ -338,7 +341,7 @@ export class Game {
   }
   onTrophy(m) { // comp1
     if (m.t === "tro0") { applyServer(this.app.store, m); if (this.backend && this.backend.me) this.backend.me.tr = trophies(this.app.store.p); return; }
-    if (this.ended && this.app.ui.lastCmp && this.app.ui.lastCmp.pending) onServerTrophy(this.app.ui, m); else this.troMsg = m;
+    if (this.ended && this.app.ui.lastCmp && this.app.ui.lastCmp.pending) onServerTrophy(this.app.ui, m); else if (m.rd && this.ended) applyServer(this.app.store, m); else this.troMsg = m; // land1: a late round result still counts
   }
   finish(reason) {
     if (this.ended) return; this.ended = true; this.victory = null; this.killcam = null; const A = this.app, S = A.store, p = S.p, st = this.stats, me = this.backend && this.backend.me;
@@ -357,23 +360,26 @@ export class Game {
     if (st.rankBest === 1 && this.mode !== "zen") P.top++;
     // coin1: online lives are paid by the room (server-observed); every other match is claimed with its numbers and the server
     // recomputes the coins (plausibility for the time played, caps). The balance shown here becomes the server's when it answers.
-    if (this.mode !== "online") { p.coins += coins; claim("match", "m:" + claimId(), { mode: this.mode, diff: this.cfg.diff ?? 1, dur: Math.round(dur), best: Math.round(st.best), kills: st.kills | 0, wave: st.wave | 0, pu: st.pu | 0, bonus: Math.round(st.bonus || 0), bounty: st.bounty | 0, win: !!this.win, at: Date.now() }, coins); }
+    if (this.mode !== "online") { p.coins += coins; claim("match", "m:" + claimId(), { mode: this.mode, diff: this.cfg.diff ?? 1, dur: Math.round(dur), best: Math.round(this.xm && this.xm.best ? this.xm.best(this) : st.best), kills: st.kills | 0, wave: st.wave | 0, pu: st.pu | 0, bonus: Math.round(st.bonus || 0), bounty: st.bounty | 0, win: !!this.win, at: Date.now() }, coins); } // land1: territory land share counts like mass
     const lv = S.addXp(xp); const tiers = S.addSeasonXp(xp);
     const bestKey = this.mode; const pos = S.addBest(bestKey, { s: score, k: st.kills, d: Date.now(), w: this.world, m: Math.round(st.best) });
     const missions = S.missionProgress({ food: st.food, kills: st.kills, mass: st.best, life: st.life, boost: st.boost, online: this.mode === "online" });
     const mp = S.matchProgress({ food: st.food, kills: st.kills, mass: st.best, life: st.life, boost: st.boost, wave: st.wave, mode: this.mode, win: this.win || st.rankBest === 1 });
-    const rank = this.mode === "br" ? (this.win ? 1 : this.place || "—") : st.rankBest < 99 ? st.rankBest : "—";
+    const terR = this.mode === "online" ? terOnlineRes(this) : null; // land1: online territory life (round placement or place at death)
+    const rank = this.xm && this.xm.place ? this.xm.place(this) : terR && terR.place ? terR.place : this.mode === "br" ? (this.win ? 1 : this.place || "—") : st.rankBest < 99 ? st.rankBest : "—";
     // ranked points + history (last 10) + games per mode for the profile
     const rk0 = rankOf(p.rp).i, rp = rpDelta({ mode: this.mode, rank: typeof rank === "number" ? rank : 99, win: this.win, kills: st.kills }); p.rp = Math.max(0, p.rp + rp); const rankUp = rankOf(p.rp).i > rk0;
     S.pushHistory({ m: this.mode, s: score, k: st.kills, r: typeof rank === "number" ? rank : 0, w: this.win ? 1 : 0, ms: Math.round(st.best), t: Math.round(dur), d: Date.now(), rp });
     // comp1: trophies. Offline: decided now (capped). Online: the server's "tro" for this life (maybe already here) decides.
-    const field = Math.max(2, st.field | 0, typeof rank === "number" ? rank : 2), room = this.cfg.room || "";
-    let cmp = afterMatch(S, { mode: this.mode, place: this.win ? 1 : typeof rank === "number" ? rank : field, field, kills: st.kills, life: this.mode === "online" ? Math.max(st.life, 0) : dur, score, online: this.mode === "online", priv: this.mode === "online" && !!room && !/^pub-/.test(room) });
+    const field = Math.max(2, this.xm && this.xm.field ? this.xm.field(this) : terR && terR.field ? terR.field : st.field | 0, typeof rank === "number" ? rank : 2), room = this.cfg.room || "";
+    let cmp = afterMatch(S, { mode: this.mode, place: this.win ? 1 : typeof rank === "number" ? rank : field, field, kills: st.kills, life: this.mode === "online" ? Math.max(st.life, 0) : dur, score, online: this.mode === "online", priv: this.mode === "online" && !!room && !/^(pub|tp)-/.test(room) });
+    if (cmp.pending && terR && !(terR.over && terR.tro)) cmp = { ...cmp, pending: false, none: "ter" }; // land1: territory trophies come only with the round result
     if (cmp.pending && this.troMsg) { const m = this.troMsg; this.troMsg = null; const res = applyServer(S, m); cmp = m.err ? { none: "err" } : { ...res, d: res.d }; }
     else if (cmp.pending) setTimeout(() => { const U = A.ui; if (U.lastCmp === cmp && cmp.pending) onServerTrophy(U, { err: 1 }); }, 9000);
     const ach = S.checkAch(); S.save(); accountMatchEnd(); // srv2: snapshot at match end
-    const title = this.win ? t("victory") : reason === "time" ? t("timeUp") : this.mode === "zen" ? t("zenDone") : t("gameOver");
-    const sub = this.win ? t("vic_" + this.mode) : this.killer ? t("killedBy", { n: this.killer.name }) : this.deathCause === 6 ? t("meteorDeath") : this.deathCause === 3 && this.mode === "br" ? t("stormDeath") : this.deathCause === 1 ? t("hitWall") : "";
+    const title = terR && terR.over ? t("ter_over") : this.win ? t("victory") : reason === "time" ? t("timeUp") : this.mode === "zen" ? t("zenDone") : t("gameOver");
+    const terSub = terR || this.terFinal ? t("ter_res", { p: (terR || this.terFinal).place || "—", n: (Math.round(((terR || this.terFinal).pct || 0) * 10) / 10).toFixed(1) }) : ""; // land1
+    const sub = terSub && (this.win || (terR && terR.over) || !this.killer) ? terSub : this.win ? t("vic_" + this.mode) : this.killer ? t("killedBy", { n: this.killer.name }) : this.deathCause === 6 ? t("meteorDeath") : this.deathCause === 3 && this.mode === "br" ? t("stormDeath") : this.deathCause === 1 ? t("hitWall") : "";
     this.watching = false; A.ui.showResults({ cmp, replay: !!(this.rec && this.rec.clip), killer: this.killer && this.killer.alive && !this.win ? this.killer : null, seasonXp: xp, pu: st.pu || 0, title, sub, score, mass: Math.round(st.best), kills: st.kills, rank, time: dur, xp, coins: coins + lv.coins, lv, newBest: pos === 0 && score > 0, missions, ach, mode: this.mode, wave: st.wave, win: this.win, tiers, mp, rp, rankUp });
     if (lv.up) A.audio.play("level"); else if (ach.length) A.audio.play("ach");
     if (pos === 0 && score > 0 && this.r.confetti && me) this.r.confetti(me.x, me.y, 120);
@@ -529,6 +535,7 @@ export class Game {
     v.zone = this.zone && this.mode === "br" ? this.zone : null; v.hill = this.hill && this.mode === "koth" ? { x: this.hill.x, y: this.hill.y, r: this.hill.r, c: this.hill.mine ? [0.3, 1, 0.5] : this.hill.contested ? [1, 0.3, 0.3] : [1, 0.8, 0.2] } : null;
     v.cores = this.boss && this.boss.s.alive ? this.boss.cores : null; v.goldMode = this.mode === "goldrush"; // candy1: Gold Rush gold renders as coins
     if (this.xm && this.xm.view) this.xm.view(this, v); // Track B
+    terView(this, v); // land1: territory layer (offline sim or the online mirror)
     // camera
     const me = b.me; let tx = this.camX, ty = this.camY, zoom = 1; const cam = v.cam;
     cam.gz = 1; cam.title = undefined; cam.intro = undefined; cam.kill = null; cam.victory = undefined; cam.orbit = undefined; v.letterbox = false; v.hideNames = false;
@@ -557,8 +564,9 @@ export class Game {
     all.sort((a, c) => c.m - a.m); const rank = me && me.alive ? all.indexOf(me) + 1 : 0; if (rank > 0) st.rankBest = Math.min(st.rankBest, rank); if (all.length > (st.field | 0)) st.field = all.length; // comp1: field size for trophies
     let top = all.slice(0, 5), scoreList = null;
     if (this.xm && this.xm.lb) scoreList = this.xm.lb(this); // Track B
+    else if (b.ter) { scoreList = terLb(this); terTick(this); } // land1: online territory
     if (this.mode === "koth") scoreList = [...this.kothPts.entries()].sort((a, c) => c[1] - a[1]).slice(0, 5).map(([id, v]) => ({ s: this.findSnake(id), v: Math.floor(v) })).filter((x) => x.s);
-    this.hud.update({ bt: b.online && b.bt ? b.bt : null, mass: me && me.alive ? me.m : 0, rank, total: all.length, top, me, kills: st.kills, timeLeft: this.M && (this.mode === "time" || this.M.dur) ? st.timeLeft : null, wave: this.mode === "survival" ? st.wave : null, ping: b.online ? b.ping : null, nq: b.online ? b.quality : null, humans: b.online ? b.humans : null, scoreList, kothMine: this.mode === "koth" && me ? Math.floor(this.kothPts.get(me.id) || 0) : null, target: this.M && this.M.target, alive: this.mode === "br" ? all.length : null, zone: this.zone && this.zone.phase === "wait" ? Math.ceil(this.zoneNext) : null, hill: this.hill });
+    this.hud.update({ bt: b.online && b.bt ? b.bt : null, mass: me && me.alive ? me.m : 0, rank, total: all.length, top, me, kills: st.kills, timeLeft: this.M && (this.mode === "time" || this.M.dur) ? st.timeLeft : b.ter ? terLeft(this) : null, wave: this.mode === "survival" ? st.wave : null, ping: b.online ? b.ping : null, nq: b.online ? b.quality : null, humans: b.online ? b.humans : null, scoreList, kothMine: this.mode === "koth" && me ? Math.floor(this.kothPts.get(me.id) || 0) : null, target: this.M && this.M.target, alive: this.mode === "br" ? all.length : null, zone: this.zone && this.zone.phase === "wait" ? Math.ceil(this.zoneNext) : null, hill: this.hill });
     if (this.app.store.settings.minimap) this.hud.minimap(all, me, b.R || C.R, this.view.foodPalCss, this.zone, this.hill, this.boss && this.boss.s, b.pus);
     if (me && me.alive && !this.ended) {
       this.hud.pu(me.pu, me.slow);

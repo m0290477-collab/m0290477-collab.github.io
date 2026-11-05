@@ -2,15 +2,15 @@
 // Same frame(view) contract as Renderer3D so the game never knows which one it drives.
 // Built for steady frame times on phones: DPR cap, cached colour strings, batched paths (shadows, highlights, food by
 // colour), cached sprites for power-ups, cached ground pattern and vignette, no per-segment shadowBlur, no per-frame allocations.
-import { pidFill } from "./pid.js?v=warm2"; // srv2
-import { stageBox } from "./stage.js?v=warm2";
-import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC } from "./sim.js?v=warm2";
+import { pidFill } from "./pid.js?v=land1"; // srv2
+import { stageBox } from "./stage.js?v=land1";
+import { taperAt, HEAD_K, bodyPoints, PU_COL, PU_SVG, magReach, GOLD_FC, TER } from "./sim.js?v=land1";
 const TUBE_STEPS = [[1, 0.28], [0.9, 0.51], [0.78, 0.85], [0.66, 1]]; // tube1: [fraction of the spine from the head, half-width / r]
-import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=warm2";
-import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=warm2";
-import { EYES, SKINS, LEGEND } from "./skins.js?v=warm2";
-import { on as onEv } from "./events.js?v=warm2";
-import { gtAtlas, GT_CAP, GT_CELL } from "./gfx/gtrail.js?v=warm2"; // trail1: ground trails
+import { candyBig, candyType, candySize2, drawCandySprite, drawCoinSprite, SPR_K, T_MAC, T_LOLLY, CANDY_CSS, CANDY_N } from "./gfx/candy.js?v=land1";
+import { WORLDS, paintGround, worldAsset, FOOD_COLORS_CB } from "./worlds.js?v=land1";
+import { EYES, SKINS, LEGEND } from "./skins.js?v=land1";
+import { on as onEv } from "./events.js?v=land1";
+import { gtAtlas, GT_CAP, GT_CELL } from "./gfx/gtrail.js?v=land1"; // trail1: ground trails
 const NO2 = 220;
 // perf2: governor levels (see gov.js): pixel-ratio cap, particle cap
 const GOV_PR = [3, 2, 1.5, 1.25], GOV_PC = [300, 180, 100, 50];
@@ -153,6 +153,21 @@ export class Renderer2D {
     if (false) { g.fillStyle = glow; for (let k = 0; k < 14; k++) { const a = t * 0.8 + k / 14 * TAU, r2 = R * (1.15 + 0.12 * Math.sin(t * 2 + k)), x = cx + Math.cos(a) * r2, y = cy + R * 0.2 + Math.sin(a) * r2 * 0.42 - Math.sin(t + k) * R * 0.3; g.globalAlpha = 0.55; g.beginPath(); g.arc(x, y, 1.6 + (k % 3), 0, TAU); g.fill(); } g.globalAlpha = 1; }
   }
 
+  // land1: territory. One canvas at 3 px per cell kept in sync from the Terr change log (only changed cells are rewritten, one
+  // putImageData of their bounding box), drawn with one scaled drawImage under food and snakes; smoothing on, so an edge is soft
+  // over a third of a cell (crisp land, no blocky pixels, no dark fringe). Own land a little stronger. Nothing per frame while
+  // nothing changes; a colour change (new snake) repaints only the owned cells.
+  _terr(g, D) {
+    const T = D.T, K = 3; let L = this._tl;
+    if (!L || L.T !== T) { const c = document.createElement("canvas"); c.width = c.height = T.dim * K; const x = c.getContext("2d"), im = x.createImageData(T.dim * K, T.dim * K); L = this._tl = { T, c, x, im, u: new Uint32Array(im.data.buffer), gen: -1, seq: 0, me: -1, cv: -1 }; }
+    const me = D.me | 0, own = T.own, rgb = T.rgb, ok = T.colOk, U = L.u, d = T.dim, W = d * K; let x0 = d, y0 = d, x1 = -1, y1 = -1;
+    const put = (i) => { const s = own[i], xi = i % d, yi = (i - xi) / d, c = s * 3, v = s && ok[s] ? ((s === me ? 150 : 104) << 24 | rgb[c + 2] << 16 | rgb[c + 1] << 8 | rgb[c]) >>> 0 : 0; let o = yi * K * W + xi * K;
+      for (let r = 0; r < K; r++, o += W) { U[o] = v; U[o + 1] = v; U[o + 2] = v; } };
+    if (L.gen !== T.gen || L.me !== me || L.cv !== T.colV || T.seq - L.seq > TER.LOG) { U.fill(0); for (let i = 0; i < T.N; i++) if (own[i]) put(i); L.gen = T.gen; L.me = me; L.cv = T.colV; L.seq = T.seq; x0 = y0 = 0; x1 = y1 = d - 1; }
+    else if (T.seq !== L.seq) { for (let q = L.seq; q < T.seq; q++) { const i = T.log[q % TER.LOG], xi = i % d, yi = (i - xi) / d; put(i); if (xi < x0) x0 = xi; if (xi > x1) x1 = xi; if (yi < y0) y0 = yi; if (yi > y1) y1 = yi; } L.seq = T.seq; }
+    if (x1 >= 0) L.x.putImageData(L.im, 0, 0, x0 * K, y0 * K, (x1 - x0 + 1) * K, (y1 - y0 + 1) * K);
+    const sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.drawImage(L.c, -T.off, -T.off, d * T.cell, d * T.cell); g.imageSmoothingEnabled = sm;
+  }
   frame(v) {
     if (v.scene === "show") { this._show(v); return; }
     if (!v.food) return;
@@ -181,6 +196,7 @@ export class Renderer2D {
     if (v.hill) { const h = v.hill, c = lin2css(h.c || [1, 0.8, 0.2]); g.globalAlpha = 0.14; g.fillStyle = c; g.beginPath(); g.arc(h.x, h.y, h.r, 0, TAU); g.fill(); g.globalAlpha = 0.6; g.strokeStyle = c; g.lineWidth = 0.3; g.stroke(); g.globalAlpha = 1; }
     if (v.zone) { const z = v.zone, zr = Math.max(0.5, z.r); g.save(); g.beginPath(); g.rect(cx - vr * 1.5, cy - vr * 1.5, vr * 3, vr * 3); g.arc(z.x, z.y, zr, 0, TAU, true); g.fillStyle = "rgba(40,24,64,0.45)"; g.fill("evenodd"); g.restore();
       g.strokeStyle = "#b9a6e0"; g.globalAlpha = 0.12; g.lineWidth = 2.2; g.beginPath(); g.arc(z.x, z.y, zr - 1, 0, TAU); g.stroke(); g.globalAlpha = 0.55; g.lineWidth = 0.3; g.beginPath(); g.arc(z.x, z.y, zr, 0, TAU); g.stroke(); g.globalAlpha = 1; }
+    if (v.terr && v.terr.T) this._terr(g, v.terr); // land1: territory layer (one cached image, changed cells only)
     if (v.gt) this._gtrail(g, v, dt, cx, cy, vr2); // trail1: ground trail decals, on the ground under food and snakes
     // candy1: big flat candy sprites (one cached sprite per type + colour, no glow), coins in Gold Rush; eaten candy
     // shrinks and slides into the eater's mouth (ghosts), drawn under the snakes

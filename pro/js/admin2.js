@@ -1,9 +1,9 @@
 // admin2: owner admin (ID 1 only; every action is checked again on the server and written to the audit log) + the player side of
 // the owner config: announcement banner, maintenance / switched-off modes, price overrides, promo codes, owner wallet edits.
-import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=warm2";
-import { SKINS, FLAGS, GTRAILS, setFlagPrice } from "./skins.js?v=warm2"; import { MUTS, mutNow } from "./sim.js?v=warm2"; // play2
-import { AVATARS, FRAMES, TITLES, BANNERS } from "./profile.js?v=warm2";
-import { pidHtml } from "./pid.js?v=warm2";
+import { t, fmtNum, addStrings, LANG } from "./i18n.js?v=land1";
+import { SKINS, FLAGS, GTRAILS, setFlagPrice, setFusionFee } from "./skins.js?v=land1"; import { MUTS, mutNow } from "./sim.js?v=land1"; // play2
+import { AVATARS, FRAMES, TITLES, BANNERS } from "./profile.js?v=land1";
+import { pidHtml } from "./pid.js?v=land1";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -14,7 +14,7 @@ const PX0 = new Map();
 function applyPx(px) { px = px || {};
   for (const S of SKINS) { if (!S.src || !/^coins:/.test(S.src)) continue; if (!PX0.has(S.id)) PX0.set(S.id, +S.src.split(":")[1]); const v = px[S.id] | 0; S.src = "coins:" + (v > 0 ? v : PX0.get(S.id)); }
   for (const G of GTRAILS) { if (!G.price) continue; const k = "gt:" + G.id; if (!PX0.has(k)) PX0.set(k, G.price | 0); const v = px[k] | 0; G.price = v > 0 ? v : PX0.get(k); }
-  setFlagPrice(px.flags | 0); } // play2: one owner price for every flag
+  setFlagPrice(px.flags | 0); setFusionFee(px.fusion | 0); } // land1: fusion fee // play2: one owner price for every flag
 
 export function setCfg(c, own) { if (!c) return; CF.cfg = { ann: c.ann || null, mnt: c.mnt || null, moff: c.moff || [], eoff: c.eoff || [], px: c.px || {}, mut: c.mut || "auto" }; if (own !== undefined) CF.own = !!own; applyPx(CF.cfg.px);
   const ui = CF.ui; if (ui && ui.cur === "lobby") { try { ui.renderLobby(); } catch (_) {} } annBar(); try { CF.mutBar && CF.mutBar(); } catch (_) {} }
@@ -56,7 +56,7 @@ export function ecoHtml(adm) { const C = A2.cfg; if (!C) { adm("a_cfg").then((r)
   const it = (s) => { const a = (() => { try { return JSON.parse(s || "[]"); } catch (_) { return []; } })(); return a.length ? " + " + a.map(esc).join(", ") : ""; };
   return `<div class="pv-g2"><div class="pv-card"><div class="pv-h">🎁 ${t("a2_gift")}<button class="btn gold ac-b ad-sm" data-a2="gift">${t("a2_new1")}</button></div>${C.gifts.length ? C.gifts.map((g) => `<p class="fine">#${g.id} ◆${fmtNum(g.coins)}${it(g.items)} · ${t("a2_claimed")} ${fmtNum(g.n)} · ${g.exp > Date.now() ? t("a2_until") + " " + esc(fmtT(g.exp)) : t("a2_ended")}<br><span dir="auto">${esc(g.why)}</span></p>`).join("") : `<p class="fine">${t("a2_none")}</p>`}</div>
     <div class="pv-card"><div class="pv-h">🏷 ${t("a2_promo")}<button class="btn gold ac-b ad-sm" data-a2="promo">${t("a2_new1")}</button></div>${C.promos.length ? `<table class="lb ad-tb"><tr><th>${t("a2_code")}</th><th>${t("a2_reward")}</th><th>${t("a2_uses")}</th><th></th></tr>` + C.promos.map((p) => `<tr class="${p.off || p.exp < Date.now() ? "dim" : ""}"><td dir="ltr"><b>${esc(p.code)}</b></td><td>◆${fmtNum(p.coins)}${it(p.items)}</td><td>${p.used}/${p.max}</td><td>${p.off ? t("a2_off") : p.exp < Date.now() ? t("a2_ended") : `<button class="btn ac-b ad-sm" data-poff="${esc(p.code)}">${t("a2_disable")}</button>`}</td></tr>`).join("") + `</table>` : `<p class="fine">${t("a2_none")}</p>`}</div></div>
-    <div class="pv-card"><div class="pv-h">🛒 ${t("a2_prices")}</div><table class="lb ad-tb a2-px"><tr><th>${t("a2_item")}</th><th>${t("a2_base")}</th><th>${t("a2_now")}</th><th></th></tr>${C.prices.map((p) => `<tr><td dir="ltr">${p.k === "flags" ? "🏳 " + esc(t("a2_flags")) : esc(p.k)}</td><td>◆${fmtNum(p.b)}</td><td class="${p.p !== p.b ? "g" : ""}">◆${fmtNum(p.p)}</td><td><button class="btn ac-b ad-sm" data-px="${esc(p.k)}|${p.p}|${p.b}">${t("a2_edit")}</button></td></tr>`).join("")}</table></div>`; }
+    <div class="pv-card"><div class="pv-h">🛒 ${t("a2_prices")}</div><table class="lb ad-tb a2-px"><tr><th>${t("a2_item")}</th><th>${t("a2_base")}</th><th>${t("a2_now")}</th><th></th></tr>${C.prices.map((p) => `<tr><td dir="ltr">${p.k === "flags" ? "🏳 " + esc(t("a2_flags")) : p.k === "fusion" ? "⚗ " + esc(t("lk_fusion")) : esc(p.k)}</td><td>◆${fmtNum(p.b)}</td><td class="${p.p !== p.b ? "g" : ""}">◆${fmtNum(p.p)}</td><td><button class="btn ac-b ad-sm" data-px="${esc(p.k)}|${p.p}|${p.b}">${t("a2_edit")}</button></td></tr>`).join("")}</table></div>`; }
 export function playerExtra(v) { if (!v || !v.card || v.err) return "";
   return `<div class="pv-card"><div class="pv-h">${t("a2_owner")}</div><div class="ad-kvs"><div class="ad-kv"><small>${t("ad_level")}</small><b>${v.lv == null ? "—" : v.lv}</b></div><div class="ad-kv"><small>🏆</small><b>${v.tr == null ? "—" : fmtNum(v.tr)}</b></div><div class="ad-kv"><small>${t("a2_items")}</small><b>${(v.items || []).length}</b></div><div class="ad-kv"><small>${t("a2_msgs")}</small><b>${v.msgs | 0}</b></div></div>
     <div class="ad-acts"><button class="btn gold ac-b" data-p2="coins">◆ ${t("a2_setCoins")}</button><button class="btn ac-b" data-p2="give">＋ ${t("a2_giveItem")}</button><button class="btn ac-b danger" data-p2="take">− ${t("a2_takeItem")}</button><button class="btn ac-b" data-p2="lvl">${t("a2_setLvl")}</button>
@@ -102,7 +102,7 @@ export function bind2(ui, el, adm, A, reload) {
   on('[data-a2="promo"]', () => dlg(ui, { title: "🏷 " + t("a2_promo"), fields: [{ n: "code", l: "a2_code", ph: "EID2026", max: 16 }, { n: "coins", l: "ad_coins", num: 1, v: 200, max: 6 }, { n: "items", l: "ad_items", ph: "fl:3", max: 200 }, { n: "max", l: "a2_maxUses", num: 1, v: 100, max: 6 }, { n: "days", l: "a2_days", num: 1, v: 7, max: 3 }],
     run: (v) => adm("a_promo", { ...v, coins: +v.coins || 0, max: +v.max || 100, days: +v.days || 7, items: v.items.split(/[,\s]+/).filter(Boolean) }), done: rc }));
   on("[data-poff]", (b) => dlg(ui, { title: t("a2_disable") + " " + b.dataset.poff, danger: 1, run: (v) => adm("a_promo", { ...v, code: b.dataset.poff, off: 1 }), done: rc }));
-  on("[data-px]", (b) => { const [k, p, base] = b.dataset.px.split("|"); dlg(ui, { title: "🛒 " + (k === "flags" ? t("a2_flags") : k), sub: t("a2_base") + " ◆" + fmtNum(+base) + " · " + t("a2_pxSub"), fields: [{ n: "price", l: "a2_now", num: 1, v: p, max: 7 }], run: (v) => adm("a_price", { ...v, key: k, price: +v.price || 0 }), done: rc }); });
+  on("[data-px]", (b) => { const [k, p, base] = b.dataset.px.split("|"); dlg(ui, { title: "🛒 " + (k === "flags" ? t("a2_flags") : k === "fusion" ? t("lk_fusion") : k), sub: t("a2_base") + " ◆" + fmtNum(+base) + " · " + t("a2_pxSub"), fields: [{ n: "price", l: "a2_now", num: 1, v: p, max: 7 }], run: (v) => adm("a_price", { ...v, key: k, price: +v.price || 0 }), done: rc }); });
   // one player
   const V = A.view; if (!V || !V.card) return; const id = V.card.id, who = esc(V.card.n) + " · " + pidHtml(id), rv = async () => { const x = await adm("a_view", { id }); if (x && x.card) A.view = x; A.aud = null; reload(); };
   on('[data-p2="coins"]', () => dlg(ui, { title: "◆ " + t("a2_setCoins"), sub: who + " · ◆" + fmtNum(V.wal ? V.wal.bal : 0), fields: [{ n: "bal", l: "a2_exact", num: 1, v: V.wal ? V.wal.bal : 0, max: 9 }], danger: 0, run: (v) => adm("a_coins", { ...v, id, bal: +v.bal, sure: V.wal && +v.bal < V.wal.bal ? 1 : undefined }), done: rv }));

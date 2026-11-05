@@ -2,7 +2,7 @@
 // this module shows the last balance the server sent (+ rewards still queued for it), queues reward claims (offline too,
 // each with a unique claim id so it can be paid only once), imports the device balance once on the first updated connect,
 // and buys only online. Nothing here can raise the balance: the server prices every claim itself.
-import { SEASON, UNLOCKS, COS_KEY } from "./econ.js?v=warm2";
+import { SEASON, UNLOCKS, COS_KEY } from "./econ.js?v=land1";
 
 const KC = "ssp-wc", KQ = "ssp-wq", MAXQ = 200, XPK = new Set(["match", "ms", "wk"]);
 export const WL = { S: null, ui: null, call: null, up: () => false, st: null, q: [], busy: null, migrating: false, kv: null, jp: null, onBal: null };
@@ -85,6 +85,11 @@ export async function buy(desc) {
   if (!WL.call || !(await ready())) return "offline"; await flush();
   const r = await WL.call("w_buy", { ...desc, rid: rid() }); if (r && r.w) apply(r.w);
   if (r && r.ok) return "ok"; if (!r || r.err === "offline" || r.err === "mig") return "offline"; return ERR[r.err] || "oops";
+}
+// land1: skin fusion (two owned skins + the fee -> a new owned skin). One server step; rid makes a retried request a no-op.
+export async function fuse(a, b, fee) {
+  if (!WL.call || !(await ready())) return { err: "offline" }; await flush();
+  const r = await WL.call("w_fuse", { a, b, fee, rid: rid() }); if (r && r.w) apply(r.w); return r || { err: "offline" };
 }
 export async function buySid(n, price) {
   if (!WL.call || !(await ready())) return { err: "offline" }; await flush();
